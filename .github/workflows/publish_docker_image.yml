@@ -42,8 +42,8 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: |
-            ${{ env.GITHUB_REGISTRY }}/${{ github.actor }}/${{ github.repository }}
-            ${{ env.DOCKER_HUB_REGISTRY }}/${{ secrets.DOCKER_USERNAME }}/${{ github.repository }}
+            ${{ env.GITHUB_REGISTRY }}/${{ github.repository }}
+            ${{ env.DOCKER_HUB_REGISTRY }}/${{ github.repository }}
           tags: |
             type=semver,pattern={{version}}
             type=sha
