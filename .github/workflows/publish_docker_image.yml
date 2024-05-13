@@ -48,11 +48,6 @@ jobs:
             type=semver,pattern={{version}}
             type=sha
 
-      - name: Print labels and tags
-        run: |
-          echo "Labels: ${{ steps.meta.outputs.labels }}"
-          echo "Tags: ${{ steps.meta.outputs.tags }}"
-
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
