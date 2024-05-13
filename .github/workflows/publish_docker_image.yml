@@ -10,7 +10,6 @@ env:
   DOCKER_HUB_REGISTRY: docker.io
   GITHUB_REGISTRY: ghcr.io
   DOCKERFILE_DIR: ./src
-  DOCKER_IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   build-and-push-image:
@@ -43,8 +42,8 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: |
-            ${{ env.GITHUB_REGISTRY }}/${{ github.actor }}/${{ env.DOCKER_IMAGE_NAME }}
-            ${{ env.DOCKER_HUB_REGISTRY }}/${{ secrets.DOCKER_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}
+            ${{ env.GITHUB_REGISTRY }}/${{ github.actor }}/${{ github.repository }}
+            ${{ env.DOCKER_HUB_REGISTRY }}/${{ secrets.DOCKER_USERNAME }}/${{ github.repository }}
           tags: |
             type=semver,pattern={{version}}
             type=sha
