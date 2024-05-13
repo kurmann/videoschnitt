@@ -1,0 +1,54 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+
+    <RootNamespace>Kurmann.Videoschnitt.Kraftwerk</RootNamespace>
+    <AssemblyName>Kurmann.Videoschnitt.Kraftwerk</AssemblyName>
+    <PackageId>Kurmann.Videoschnitt.Kraftwerk</PackageId>
+
+    <!-- Package-Tages zur Katalogisierung auf Nuget.org. Mehrere Tags mit Semikolen ";" trennen. -->
+    <PackageTags>Kurmann.Videoschnitt</PackageTags>
+
+    <!-- Die Kurzbeschreibung des NuGet-Packets. Die längere Beschreibung wird als README.md eingebunden -->
+    <Description>Teilautomatisierung und Verwaltung für privaten Videoschnitt – das Kraftwerk für Familienfilme</Description>
+
+    <!-- Die README.md-Datei, die im NuGet-Paket eingebettet wird. Entspricht gleichzeitig der GitHub Readme-Datei. -->
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+
+    <!-- Die Lizenzdatei, die im NuGet-Paket eingebettet wird (befindet sich im Wurzelverzeichnis). -->
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+
+    <!-- Das Icon, das im NuGet-Paket eingebettet wird (befindet sich im Wurzelverzeichnis). -->
+    <PackageIcon>PackageIcon.png</PackageIcon>
+
+    <!-- Assemblies und Symbol-Dateien werden im NuGet-Paket eingebettet. -->
+    <IncludeContentInPackage>true</IncludeContentInPackage>
+    <IncludeBuildOutput>true</IncludeBuildOutput>
+    <ContentTargetFolders>content</ContentTargetFolders>
+
+    <!-- Integration von Symbolen und Quelltext -->
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <Deterministic>true</Deterministic>
+
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CSharpFunctionalExtensions" Version="2.41.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
+  </ItemGroup>
+
+  <!-- Spezifisch für NuGet-Packetierung -->
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+    <None Include="..\..\LICENSE" Pack="true" PackagePath="\" />
+    <None Include="..\..\PackageIcon.png" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+</Project>
