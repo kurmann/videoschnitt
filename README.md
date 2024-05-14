@@ -186,10 +186,6 @@ Um die Anwendung lokal zu installieren und zu starten, folgen Sie diesen Schritt
     dotnet run
     ```
 
-## Nutzung
-
-Kurmann.Videoschnitt.Kraftwerk kann durch REST-APIs oder direkt über die Benutzeroberfläche genutzt werden. Die API-Dokumentation ist unter `/swagger` nach dem Start der Anwendung zu finden.
-
 ## Namensgebung
 
 Das Repository wurde als "videoschnitt-kraftwerk" unter dem GitHub-Account "kurmann" erstellt. Diese Namenskonvention sorgt dafür, dass der Name des Docker-Images direkt aus dem Repository-Namen abgeleitet werden kann, was die Verwaltung und Nutzung des Images erleichtert. Innerhalb der Anwendung und bei der Erstellung von NuGet-Paketen wird die Punktnotation verwendet, wie es bei .NET-Projekten üblich ist, um eine klare Struktur und Namenskonvention zu gewährleisten.
