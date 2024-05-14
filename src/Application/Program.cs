@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Kurmann.Videoschnitt.Engine;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 
 namespace Kurmann.Videoschnitt.Kraftwerk.Application;
@@ -19,7 +20,7 @@ internal class Program
             })
             .ConfigureServices((hostContext, services) =>
             {
-                services.AddKraftwerk(hostContext.Configuration);
+                services.AddEngine(hostContext.Configuration);
             });
     }
 }
