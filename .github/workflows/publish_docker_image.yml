@@ -5,7 +5,6 @@ on:
     types: published
   workflow_dispatch:
 
-# Defines two custom environment variables for the workflow.
 env:
   DOCKER_HUB_REGISTRY: docker.io
   GITHUB_REGISTRY: ghcr.io
@@ -19,6 +18,9 @@ jobs:
       id-token: write
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
@@ -44,11 +46,16 @@ jobs:
             type=semver,pattern={{version}}
             type=sha
 
+      - name: Print labels and tags
+        run: |
+          echo "Labels: ${{ steps.meta.outputs.labels }}"
+          echo "Tags: ${{ steps.meta.outputs.tags }}"
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: Dockerfile
+          file: ./Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
