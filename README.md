@@ -61,9 +61,7 @@ Um die Anwendung mit Docker Compose zu starten, verwenden Sie den folgenden Befe
 docker-compose up -d
 ```
 
-### Konfiguration des Repositorys
-
-Verwendung von Volumes und Bind Mounts auf Docker-Ebene und Host-System
+### Konfiguration des Repositorys: Verwendung von Volumes und Bind Mounts auf Docker-Ebene und Host-System
 
 #### Überblick
 
@@ -99,9 +97,6 @@ services:
       - videoschnitt-config:/app/config           # Docker Volume
     environment:
       - LocalMediaLibrary__LibraryPath=/app/media
-
-volumes:
-  videoschnitt-config:
 ```
 
 #### Docker Run-Befehl Beispiel
@@ -155,6 +150,32 @@ environment:
   - LocalMediaLibrary__LibraryPath=/app/media
 ```
 
+### Implementierung in der .NET-Anwendung
+
+Die `Kurmann.Videoschnitt.Engine` und andere direkt oder indirekt integrierte Module müssen zwingend im Benutzerverzeichnis arbeiten. Dies hat folgende Gründe und Vorteile:
+
+1. **Sicherheitsgründe**: Das Docker-Image läuft als Nicht-Root-Benutzer, um Sicherheitsrisiken zu minimieren. Der Zugriff auf Systemverzeichnisse ist daher eingeschränkt.
+2. **Verzeichnisverwaltung**: Die Anwendung kann flexibel im Benutzerverzeichnis arbeiten und benötigte Unterverzeichnisse selbst erstellen und verwalten.
+3. **Einfache Konfiguration**: Durch das direkte Mapping der Host-Verzeichnisse auf das Benutzerverzeichnis im Container wird die Konfiguration vereinfacht und ist klar nachvollziehbar.
+
+Hier ist ein Beispiel, wie Ihre .NET-Anwendung den `LibraryPath` aus der Umgebungsvariablen lesen und verwenden kann:
+
+```csharp
+string libraryPath = Environment.GetEnvironmentVariable("LocalMediaLibrary__LibraryPath");
+
+if (!string.IsNullOrEmpty(libraryPath))
+{
+    string fullLibraryPath = Path.Combine(libraryPath, "myFile.txt");
+    File.WriteAllLines(fullLibraryPath, myText);
+}
+else
+{
+    // Fallback, falls die Umgebungsvariable nicht gesetzt ist
+    string defaultPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "library", "myFile.txt");
+    File.WriteAllLines(defaultPath, myText);
+}
+```
+
 ### Zusammenfassung
 
 - **Volumes** und **Bind Mounts** ermöglichen es, Verzeichnisse vom Host-System in den Docker-Container zu integrieren.
@@ -162,10 +183,9 @@ environment:
 - **Bind Mounts** binden spezifische Verzeichnisse des Host-Dateisystems in den Container ein und bieten Flexibilität.
 - Umgebungsvariablen können im Docker Compose-File oder im Docker Run-Befehl gesetzt werden, um Pfade und andere Einstellungen festzulegen.
 - Pfade müssen immer so angegeben werden, wie sie innerhalb des Containers sichtbar sind.
-
-### Beispiel für die Anwendungskonfiguration
-
-Die .NET-Anwendung liest die Konfiguration (wie `InfuseMediaLibraryPath`) aus den Umgebungsvariablen aus, die über Docker Compose oder den Docker Run-Befehl gesetzt werden. Diese Konfiguration wird von der `Kurmann.Videoschnitt.Engine` über den `IServiceCollection`-Mechanismus eingebunden und genutzt, um die Überwachung des angegebenen Verzeichnisses zu ermöglichen.
+- **Sicherheitsgründe**: Das Docker-Image läuft als Nicht-Root-Benutzer, um Sicherheitsrisiken zu minimieren. Der Zugriff auf Systemverzeichnisse ist daher eingeschränkt.
+- **Verzeichnisverwaltung**: Die Anwendung kann flexibel im Benutzerverzeichnis arbeiten und benötigte Unterverzeichnisse selbst erstellen und verwalten.
+- **Einfache Konfiguration**: Durch das direkte Mapping der Host-Verzeichnisse auf das Benutzerverzeichnis im Container wird die Konfiguration vereinfacht und ist klar nachvollziehbar.
 
 Durch die Nutzung dieser Konfigurationsmechanismen wird sichergestellt, dass die Anwendung auf die notwendigen Verzeichnisse zugreifen und korrekt funktionieren kann, unabhängig davon, ob sie in einem Docker-Container oder auf einem Host-System wie einem Synology NAS läuft.
 
