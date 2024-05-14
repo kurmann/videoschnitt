@@ -2,11 +2,11 @@
 
 ## Überblick
 
-Das Kurmann Videoschnitt-Kraftwerk ist eine leistungsstarke Anwendung, die auf der Kurmann.Videoschnitt.Engine aufbaut und sich auf die Automatisierung und Verwaltung von Videoschnittprozessen konzentriert. Diese Anwendung zielt darauf ab, die Effizienz und Produktivität zu steigern, indem sie verschiedene Aufgaben im Videoschnitt automatisiert und optimiert.
+Das Kurmann Videoschnitt-Kraftwerk ist eine leistungsstarke Anwendung, die auf der Kurmann.Videoschnitt.Engine aufbaut und sich auf die Automatisierung und Verwaltung von Videoschnittprozessen konzentriert. Diese Anwendung zielt darauf ab, die Effizienz und Produktivität zu steigern, indem verschiedene Aufgaben im Videoschnitt automatisiert und optimiert werden.
 
 ## Hauptfunktionen
 
-Die folgenden Hauptfunktionen gelten als Ziele der Anwendung und sind derzeit in Entwicklung. Weitere Funktionen können hinzugefügt werden oder wegfallen:
+Die folgenden Hauptfunktionen gelten als Ziele der Anwendung und sind derzeit in Entwicklung. Weitere Funktionen können hinzugefügt oder entfernt werden:
 
 - **Verwaltung Originalmedien**: Organisation und Katalogisierung von Originalvideodateien.
 - **Verwaltung Heimserver-Mediathek**: Verwaltung und Bereitstellung von Videos auf einem Heimserver.
@@ -36,7 +36,7 @@ docker run -d -p 8080:80 kurmann/videoschnitt-kraftwerk
 
 ### Docker Compose
 
-Wir bieten ein Docker Compose-File an, um die Anwendung noch einfacher zu starten. Speichern Sie das folgende Compose-File als `docker-compose.yml`:
+Ein Docker Compose-File wird angeboten, um die Anwendung noch einfacher zu starten. Speichern Sie das folgende Compose-File als `docker-compose.yml`:
 
 ```yaml
 version: '3.8'
@@ -90,7 +90,7 @@ Um die Anwendung lokal zu installieren und zu starten, folgen Sie diesen Schritt
 
 ## Nutzung
 
-Kurmann.Videoschnitt.Kraftwerk kann durch REST-APIs oder direkt über die Benutzeroberfläche genutzt werden. Die API-Dokumentation finden Sie unter `/swagger` nach dem Start der Anwendung.
+Kurmann.Videoschnitt.Kraftwerk kann durch REST-APIs oder direkt über die Benutzeroberfläche genutzt werden. Die API-Dokumentation ist unter `/swagger` nach dem Start der Anwendung zu finden.
 
 ## Namensgebung
 
@@ -98,13 +98,13 @@ Das Repository wurde als "videoschnitt-kraftwerk" unter dem GitHub-Account "kurm
 
 ## Mitwirken
 
-1. **Issue einreichen**: Wenn Sie einen Fehler finden oder eine Funktion anfordern möchten, eröffnen Sie ein Issue im GitHub-Repository.
-2. **Pull Requests**: Wenn Sie eine direkte Änderung oder Ergänzung vorschlagen möchten, senden Sie einen Pull Request mit einer klaren Beschreibung Ihrer Änderungen.
+1. **Issue einreichen**: Wenn ein Fehler gefunden wird oder eine Funktion angefordert werden soll, kann ein Issue im GitHub-Repository eröffnet werden.
+2. **Pull Requests**: Bei Vorschlägen für direkte Änderungen oder Ergänzungen, kann ein Pull Request mit einer klaren Beschreibung der Änderungen eingereicht werden.
 
 ## Lizenz
 
-Dieses Projekt ist unter der Apache-2.0-Lizenz lizenziert. Weitere Details finden Sie in der Datei [LICENSE](LICENSE) im GitHub-Repository.
+Dieses Projekt ist unter der Apache-2.0-Lizenz lizenziert. Weitere Details sind in der Datei [LICENSE](LICENSE) im GitHub-Repository zu finden.
 
 ## Kontakt
 
-Falls Sie Fragen haben oder Unterstützung benötigen, eröffnen Sie bitte ein Issue im GitHub-Repository.
+Falls Fragen bestehen oder Unterstützung benötigt wird, kann ein Issue im GitHub-Repository eröffnet werden.
