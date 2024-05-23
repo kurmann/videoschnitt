@@ -1,0 +1,11 @@
+services:
+  videoschnitt-kraftwerk:
+    build: .
+    container_name: videoschnitt-kraftwerk
+    volumes:
+      - logs:/app/logs
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+
+volumes:
+  logs:
