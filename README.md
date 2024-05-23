@@ -24,14 +24,14 @@ Das Docker-Image ist auf Docker Hub verfügbar. Um das Image zu erstellen und au
 
 ```shell
 docker pull kurmann/videoschnitt-kraftwerk
-docker run -d -p 8080:80 kurmann/videoschnitt-kraftwerk
+docker run -d kurmann/videoschnitt-kraftwerk
 ```
 
 Um das Image lokal zu erstellen und auszuführen, verwenden Sie diese Befehle:
 
 ```shell
 docker build -t kurmann/videoschnitt-kraftwerk .
-docker run -d -p 8080:80 kurmann/videoschnitt-kraftwerk
+docker run -d kurmann/videoschnitt-kraftwerk
 ```
 
 ### Docker Compose
@@ -39,26 +39,31 @@ docker run -d -p 8080:80 kurmann/videoschnitt-kraftwerk
 Ein Docker Compose-File wird angeboten, um die Anwendung noch einfacher zu starten. Speichern Sie das folgende Compose-File als `docker-compose.yml`:
 
 ```yaml
-version: '3.8'
-
 services:
   videoschnitt-kraftwerk:
     image: kurmann/videoschnitt-kraftwerk:latest
     container_name: videoschnitt-kraftwerk
-    ports:
-      - "8080:80"
     volumes:
-      - /path/to/media/library:/app/media
-      - /path/to/config:/app/config
+      - logs:/app/logs
     environment:
-      - LocalMediaLibrary__LibraryPath=/app/media
-      - LocalMediaLibrary__CacheSize=1024
+      - ASPNETCORE_ENVIRONMENT=Production
+
+volumes:
+  logs:
 ```
 
 Um die Anwendung mit Docker Compose zu starten, verwenden Sie den folgenden Befehl:
 
 ```shell
 docker-compose up -d
+```
+
+### Überwachung
+
+Die Überwachung der Anwendung erfolgt vorzugsweise über Docker-Logs:
+
+```shell
+docker logs -f videoschnitt-kraftwerk
 ```
 
 ### Konfiguration des Repositorys: Verwendung von Volumes und Bind Mounts auf Docker-Ebene und Host-System
@@ -90,8 +95,6 @@ services:
   videoschnitt-kraftwerk:
     image: kurmann/videoschnitt-kraftwerk:latest
     container_name: videoschnitt-kraftwerk
-    ports:
-      - "8080:80"
     volumes:
       - /path/to/media/library:/app/media         # Bind Mount
       - videoschnitt-config:/app/config           # Docker Volume
@@ -105,7 +108,6 @@ Alternativ können Volume-Mounts und Bind Mounts direkt beim Starten des Contain
 
 ```bash
 docker run -d \
-  -p 8080:80 \
   -v /path/to/media/library:/app/media \
   -v videoschnitt-config:/app/config \
   -e LocalMediaLibrary__LibraryPath=/app/media \
@@ -208,7 +210,7 @@ Um die Anwendung lokal zu installieren und zu starten, folgen Sie diesen Schritt
 
 ## Namensgebung
 
-Das Repository wurde als "videoschnitt-kraftwerk" unter dem GitHub-Account "kurmann" erstellt. Diese Namenskonvention sorgt dafür, dass der Name des Docker-Images direkt aus dem Repository-Namen abgeleitet werden kann, was die Verwaltung und Nutzung des Images erleichtert. Innerhalb der Anwendung und bei der Erstellung von NuGet-Paketen wird die Punktnotation verwendet, wie es bei .NET-Projekten üblich ist, um eine klare Struktur und Namenskonvention zu gewährleisten.
+Das Repository wurde als “videoschnitt-kraftwerk” unter dem GitHub-Account “kurmann” erstellt. Diese Namenskonvention sorgt dafür, dass der Name des Docker-Images direkt aus dem Repository-Namen abgeleitet werden kann, was die Verwaltung und Nutzung des Images erleichtert. Innerhalb der Anwendung und bei der Erstellung von NuGet-Paketen wird die Punktnotation verwendet, wie es bei .NET-Projekten üblich ist, um eine klare Struktur und Namenskonvention zu gewährleisten.
 
 ## Mitwirken
 
