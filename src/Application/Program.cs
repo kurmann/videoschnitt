@@ -1,5 +1,6 @@
 ﻿using Kurmann.Videoschnitt.Engine;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 namespace Kurmann.Videoschnitt.Kraftwerk.Application;
@@ -21,6 +22,7 @@ internal class Program
             .ConfigureServices((hostContext, services) =>
             {
                 services.AddEngine(hostContext.Configuration);
+                services.AddHostedService<FileWatcherService>();
             });
     }
 }
