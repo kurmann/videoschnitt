@@ -4,6 +4,8 @@ services:
     container_name: videoschnitt-kraftwerk
     volumes:
       - logs:/app/logs
+    env_file:
+      - .env
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
 
