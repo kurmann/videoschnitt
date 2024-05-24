@@ -9,8 +9,8 @@ RUN dotnet restore
 # Build and publish a release
 RUN dotnet publish ./Application/Application.csproj -c Release -o out
 
-# Runtime Image
-FROM mcr.microsoft.com/dotnet/runtime:8.0-jammy-chiseled
+# Image
+FROM mcr.microsoft.com/dotnet/aspnet:8.0.3-jammy-chiseled
 
 # Set the working directory
 WORKDIR /app
