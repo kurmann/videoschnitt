@@ -3,13 +3,9 @@ services:
     build: .
     container_name: videoschnitt-kraftwerk
     volumes:
-      - logs:/app/logs
-      - ${LocalMediaLibrary__LibraryPath}:/media/library
+      - ${LOCAL_MEDIA_LIBRARY_PATH}:/media/library:rw
     env_file:
       - .env
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - LOCAL_MEDIA_LIBRARY_PATH=/media/library
-
-volumes:
-  logs:
