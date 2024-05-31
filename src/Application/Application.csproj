@@ -6,8 +6,8 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <RootNamespace>Kurmann.Videoschnitt.Kraftwerk.Application</RootNamespace>
-    <AssemblyName>Kurmann.Videoschnitt.Kraftwerk.Application</AssemblyName>
+    <RootNamespace>Kurmann.Videoschnitt.Application</RootNamespace>
+    <AssemblyName>Kurmann.Videoschnitt.Application</AssemblyName>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 

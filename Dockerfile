@@ -19,4 +19,4 @@ WORKDIR /app
 COPY --from=build-env /app/out .
 
 # Set the entry point for the application
-ENTRYPOINT ["dotnet", "Kurmann.Videoschnitt.Kraftwerk.Application.dll"]
+ENTRYPOINT ["dotnet", "Kurmann.Videoschnitt.Application.dll"]

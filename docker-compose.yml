@@ -1,7 +1,7 @@
 services:
-  videoschnitt-kraftwerk:
+  videoschnitt:
     build: .
-    container_name: videoschnitt-kraftwerk
+    container_name: videoschnitt
     volumes:
       - ${LOCAL_MEDIA_LIBRARY_PATH}:/media/library:rw
     env_file:

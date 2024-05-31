@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace Kurmann.Videoschnitt.Kraftwerk.Application;
+namespace Kurmann.Videoschnitt.Application;
 
 public class FileWatcherService(ILogger<FileWatcherService> logger) : IHostedService, IDisposable
 {
