@@ -22,7 +22,6 @@ internal class Program
             .ConfigureServices((hostContext, services) =>
             {
                 services.AddEngine(hostContext.Configuration);
-                services.AddHostedService<FileWatcherService>();
             });
     }
 }
