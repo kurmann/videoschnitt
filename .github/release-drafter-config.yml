@@ -24,6 +24,16 @@ template: |
   ## Änderungen
   $CHANGES
 
+# Vorlage für jede Änderung (Pull Request), einschließlich Beschreibung.
+change-template: |
+  ### $TITLE (@$AUTHOR) [#$NUMBER]
+  
+  $BODY
+
+# PRs mit diesen Labels aus den Release Notes ausschließen
+exclude-labels:
+  - 'ignore-in-release-notes'
+
 # Version-Resolver bestimmt die Art der Versionserhöhung basierend auf den PR Labels.
 version-resolver:
   major:
