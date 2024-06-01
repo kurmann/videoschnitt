@@ -3,5 +3,8 @@ using Microsoft.AspNetCore.SignalR;
 namespace Kurmann.Videoschnitt.Application;
 public class LogHub : Hub
 {
-    // Hier kannst du serverseitige Methoden definieren, die vom Client aufgerufen werden können
+    public async Task SendMessage(string message)
+    {
+        await Clients.All.SendAsync("ReceiveLogMessage", message);
+    }
 }

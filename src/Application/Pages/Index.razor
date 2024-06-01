@@ -24,7 +24,7 @@
             .WithUrl(Navigation.ToAbsoluteUri("/logHub"))
             .Build();
 
-        hubConnection.On<string>("ReceiveLog", (message) =>
+        hubConnection.On<string>("ReceiveLogMessage", (message) =>
         {
             logs.Add(message);
             InvokeAsync(StateHasChanged);
