@@ -1,3 +1,4 @@
+using Kurmann.Videoschnitt.Application.Services;
 using Microsoft.OpenApi.Models;
 
 namespace Kurmann.Videoschnitt.Application;
@@ -22,6 +23,10 @@ public class Program
         {
             c.SwaggerDoc("v1", new OpenApiInfo { Title = "Kurmann Videoschnitt API", Version = "v1"});
         });
+
+        builder.Services.AddHostedService<TimerTriggerService>();
+
+        builder.Services.AddSingleton<LogHub>();
 
         var app = builder.Build();
 
