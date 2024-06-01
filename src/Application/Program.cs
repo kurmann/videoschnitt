@@ -1,3 +1,5 @@
+using Microsoft.OpenApi.Models;
+
 namespace Kurmann.Videoschnitt.Application;
 
 public class Program
@@ -14,6 +16,13 @@ public class Program
 
         // Health Checks hinzufügen
         builder.Services.AddHealthChecks();
+        
+        // Controller hinzufügen
+        builder.Services.AddControllers();
+
+        // Swagger hinzufügen, einschliesslich Endpoints API Explorer
+        builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddSwaggerGen();
 
         var app = builder.Build();
 
@@ -28,6 +37,10 @@ public class Program
         app.UseStaticFiles();
 
         app.UseRouting();
+
+        // Swagger Middleware hinzufügen
+        app.UseSwagger();
+        app.UseSwaggerUI();
 
         // Minimal API Endpunkte
         app.MapGet("/api/health", () => Results.Ok(new { status = "Healthy" }));
