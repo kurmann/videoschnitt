@@ -1,5 +1,43 @@
 ﻿@page "/"
+@using Microsoft.AspNetCore.SignalR.Client
+@inject NavigationManager Navigation
 
 <h1>Willkommen bei Kurmann Videoschnitt</h1>
 
 <a href="/swagger">API-Dokumentation</a>
+
+<div id="logContainer" style="margin: 3rem; font-family: monospace; text-align: center;">
+    @foreach (var log in logs)
+    {
+        <div>@log</div>
+    }
+</div>
+
+@code {
+    private List<string> logs = new List<string>();
+
+    private HubConnection? hubConnection;
+
+    protected override async Task OnInitializedAsync()
+    {
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(Navigation.ToAbsoluteUri("/logHub"))
+            .Build();
+
+        hubConnection.On<string>("ReceiveLog", (message) =>
+        {
+            logs.Add(message);
+            InvokeAsync(StateHasChanged);
+        });
+
+        await hubConnection.StartAsync();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.DisposeAsync();
+        }
+    }
+}
