@@ -2,7 +2,7 @@
 @using Microsoft.AspNetCore.SignalR.Client
 @inject NavigationManager Navigation
 
-<h1>Willkommen bei Kurmann Videoschnitt</h1>
+<h1>Willkommen bei <strong>Kurmann Videoschnitt</strong></h1>
 
 <a class="subtitle-link" href="/swagger">API-Dokumentation</a>
 
@@ -23,6 +23,9 @@
         hubConnection = new HubConnectionBuilder()
             .WithUrl(Navigation.ToAbsoluteUri("/logHub"))
             .Build();
+
+        // Füge initiale Log-Nachrichten hinzu um mitzuteilen, das hier die Logs erscheinen
+        logs.Add("Logs werden hier angezeigt.");
 
         hubConnection.On<string>("ReceiveLogMessage", (message) =>
         {
