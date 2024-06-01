@@ -5,10 +5,10 @@ services:
     volumes:
       - ${LOCAL_MEDIA_LIBRARY_PATH}:/media/library:rw
     ports:
-      - "8080:5000"
+      - "8080:5024"
     env_file:
       - .env
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
-      - PORT=5000 # Hier den Port eintragen, auf dem der Server laufen soll (Standard: 5000)
+      - PORT=5024 # Hier den Port eintragen, auf dem der Server laufen soll (Standard: 5024)
       - LOCAL_MEDIA_LIBRARY_PATH=/media/library
