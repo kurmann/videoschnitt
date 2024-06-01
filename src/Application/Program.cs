@@ -22,7 +22,10 @@ public class Program
 
         // Swagger hinzufügen, einschliesslich Endpoints API Explorer
         builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddSwaggerGen();
+        builder.Services.AddSwaggerGen(c =>
+        {
+            c.SwaggerDoc("v1", new OpenApiInfo { Title = "Kurmann Videoschnitt API", Version = "v1"});
+        });
 
         var app = builder.Build();
 
