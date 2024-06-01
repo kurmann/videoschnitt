@@ -8,9 +8,6 @@ namespace Kurmann.Videoschnitt.Application.Services
         private readonly IHubContext<LogHub> _hubContext = hubContext;
         private Timer? _timer;
 
-        public event EventHandler<DateTime>? TimerTriggered;
-        protected virtual void OnTimerTriggered(DateTime e) => TimerTriggered?.Invoke(this, e);
-
         public Task StartAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation("Timer Trigger Service is starting.");
@@ -22,9 +19,9 @@ namespace Kurmann.Videoschnitt.Application.Services
 
         private async Task DoWork(object? state)
         {
-            _logger.LogInformation("Timer Trigger Service is working. Current time: {time}", DateTimeOffset.Now);
-            OnTimerTriggered(DateTime.Now);
-            await _hubContext.Clients.All.SendAsync("ReceiveLogMessage", "Timer Trigger Service is working. Current time: {time}");
+            var now = DateTimeOffset.Now;
+            _logger.LogInformation("Timer Trigger Service is working. Current time: {time}", now);
+            await _hubContext.Clients.All.SendAsync("ReceiveLogMessage", $"Timer Trigger Service is working. Current time: {now}");
         }
 
         public Task StopAsync(CancellationToken cancellationToken)
