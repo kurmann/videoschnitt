@@ -25,6 +25,7 @@ public class Program
         });
 
         builder.Services.AddHostedService<TimerTriggerService>();
+        builder.Services.AddSingleton<TimerTriggerService>();
 
         builder.Services.AddSingleton<LogHub>();
 
