@@ -4,7 +4,11 @@
 
 <h1>Willkommen bei Kurmann Videoschnitt</h1>
 
-<a href="/swagger">API-Dokumentation</a>
+<nav>
+    <a @onclick="ExecuteMetadataProcessing">Metadaten-Verarbeitung</a>
+    <a @onclick="ExecuteTimerService">Timer</a>
+    <a href="/swagger">API-Dokumentation</a>
+</nav>
 
 <div id="logContainer">
     <pre>
@@ -45,5 +49,19 @@
         {
             await hubConnection.DisposeAsync();
         }
+    }
+
+    private void ExecuteMetadataProcessing()
+    {
+        // Platzhalter für die API-Aufruf zur Metadaten-Verarbeitung
+        logs.Add("Metadaten-Verarbeitung gestartet.");
+        StateHasChanged();
+    }
+
+    private void ExecuteTimerService()
+    {
+        // Platzhalter für die API-Aufruf zum Timer-Service
+        logs.Add("Timer-Service gestartet.");
+        StateHasChanged();
     }
 }
