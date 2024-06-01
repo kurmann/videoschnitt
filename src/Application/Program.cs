@@ -1,6 +1,3 @@
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
-
 namespace Kurmann.Videoschnitt.Application;
 
 public class Program
@@ -9,11 +6,14 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
+        var port = Environment.GetEnvironmentVariable("PORT") ?? "5024";
         builder.WebHost.UseUrls($"http://*:{port}");
 
         builder.Services.AddRazorPages();
         builder.Services.AddServerSideBlazor();
+
+        // Health Checks hinzufügen
+        builder.Services.AddHealthChecks();
 
         var app = builder.Build();
 
@@ -29,8 +29,14 @@ public class Program
 
         app.UseRouting();
 
+        // Minimal API Endpunkte
+        app.MapGet("/api/health", () => Results.Ok(new { status = "Healthy" }));
+
         app.MapBlazorHub();
         app.MapFallbackToPage("/_Host");
+
+        // Health Check Endpunkt hinzufügen
+        app.MapHealthChecks("/health");
 
         app.Run();
     }
