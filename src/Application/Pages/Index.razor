@@ -2,15 +2,18 @@
 @using Microsoft.AspNetCore.SignalR.Client
 @inject NavigationManager Navigation
 
-<h1>Willkommen bei <strong>Kurmann Videoschnitt</strong></h1>
+<h1>Willkommen bei Kurmann Videoschnitt</h1>
 
-<a class="subtitle-link" href="/swagger">API-Dokumentation</a>
+<a href="/swagger">API-Dokumentation</a>
 
 <div id="logContainer">
-    @foreach (var log in logs)
-    {
-        <div>@log</div>
-    }
+    <pre>
+        @foreach (var log in logs)
+        {
+            // Ausgabe der Log mit Zeilenumbruch (Environment.NewLine)
+            @log.ToString()@Environment.NewLine;
+        }
+    </pre>
 </div>
 
 @code {
