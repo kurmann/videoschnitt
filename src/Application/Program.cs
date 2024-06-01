@@ -1,3 +1,4 @@
+using Kurmann.Videoschnitt.Application.Services;
 using Microsoft.OpenApi.Models;
 
 namespace Kurmann.Videoschnitt.Application;
@@ -13,19 +14,19 @@ public class Program
 
         builder.Services.AddRazorPages();
         builder.Services.AddServerSideBlazor();
-
-        // Health Checks hinzufügen
-        builder.Services.AddHealthChecks();
-        
-        // Controller hinzufügen
+        builder.Services.AddHealthChecks();    
         builder.Services.AddControllers();
+        builder.Services.AddSignalR();
 
-        // Swagger hinzufügen, einschliesslich Endpoints API Explorer
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(c =>
         {
             c.SwaggerDoc("v1", new OpenApiInfo { Title = "Kurmann Videoschnitt API", Version = "v1"});
         });
+
+        builder.Services.AddHostedService<TimerTriggerService>();
+
+        builder.Services.AddSingleton<LogHub>();
 
         var app = builder.Build();
 
@@ -36,12 +37,8 @@ public class Program
         }
 
         // app.UseHttpsRedirection(); // no certificate available for now
-
         app.UseStaticFiles();
-
         app.UseRouting();
-
-        // Swagger Middleware hinzufügen
         app.UseSwagger();
         app.UseSwaggerUI();
 
@@ -50,6 +47,9 @@ public class Program
 
         app.MapBlazorHub();
         app.MapFallbackToPage("/_Host");
+
+        // SignalR Hub Endpunkt hinzufügen
+        app.MapHub<LogHub>("/logHub");
 
         // Health Check Endpunkt hinzufügen
         app.MapHealthChecks("/health");
