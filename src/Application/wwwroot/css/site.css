@@ -10,15 +10,19 @@ h1 {
     margin-bottom: 1rem;
 }
 
-a {
-    color: #333; /* Gleiche Farbe wie der Text */
-    text-decoration: none;
-    display: block; /* Damit der Link unter dem Titel erscheint */
+nav {
     text-align: center;
     margin-bottom: 2rem;
 }
 
-a:hover {
+nav a {
+    color: #333; /* Gleiche Farbe wie der Text */
+    text-decoration: none;
+    margin: 0 1rem;
+    cursor: pointer;
+}
+
+nav a:hover {
     text-decoration: underline;
 }
 
