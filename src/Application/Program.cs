@@ -43,6 +43,9 @@ public class Program
         app.MapBlazorHub();
         app.MapFallbackToPage("/_Host");
 
+        // SignalR Hub Endpunkt hinzufügen
+        app.MapHub<LogHub>("/logHub");
+
         // Health Check Endpunkt hinzufügen
         app.MapHealthChecks("/health");
 
