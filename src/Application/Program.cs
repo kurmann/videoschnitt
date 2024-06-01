@@ -13,14 +13,10 @@ public class Program
 
         builder.Services.AddRazorPages();
         builder.Services.AddServerSideBlazor();
-
-        // Health Checks hinzufügen
-        builder.Services.AddHealthChecks();
-        
-        // Controller hinzufügen
+        builder.Services.AddHealthChecks();    
         builder.Services.AddControllers();
+        builder.Services.AddSignalR();
 
-        // Swagger hinzufügen, einschliesslich Endpoints API Explorer
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(c =>
         {
@@ -36,12 +32,8 @@ public class Program
         }
 
         // app.UseHttpsRedirection(); // no certificate available for now
-
         app.UseStaticFiles();
-
         app.UseRouting();
-
-        // Swagger Middleware hinzufügen
         app.UseSwagger();
         app.UseSwaggerUI();
 
