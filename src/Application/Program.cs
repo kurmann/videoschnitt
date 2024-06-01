@@ -9,7 +9,7 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        var port = Environment.GetEnvironmentVariable("PORT") ?? "80";
+        var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
         builder.WebHost.UseUrls($"http://*:{port}");
 
         builder.Services.AddRazorPages();
