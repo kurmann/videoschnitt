@@ -1,12 +1,14 @@
 ﻿@page "/"
 @using Microsoft.AspNetCore.SignalR.Client
 @inject NavigationManager Navigation
+@inject TimerTriggerService TimerService
 
 <h1>Willkommen bei Kurmann Videoschnitt</h1>
 
 <nav>
     <a @onclick="ExecuteMetadataProcessing">Metadaten-Verarbeitung</a>
-    <a @onclick="ExecuteTimerService">Timer</a>
+    <a @onclick="StartTimerService">Timer starten</a>
+    <a @onclick="StopTimerService">Timer stoppen</a>
     <a href="/swagger">API-Dokumentation</a>
 </nav>
 
@@ -14,7 +16,6 @@
     <pre>
         @foreach (var log in logs)
         {
-            // Ausgabe der Log mit Zeilenumbruch (Environment.NewLine)
             @log.ToString()@Environment.NewLine;
         }
     </pre>
@@ -22,7 +23,6 @@
 
 @code {
     private List<string> logs = new List<string>();
-
     private HubConnection? hubConnection;
 
     protected override async Task OnInitializedAsync()
@@ -31,13 +31,12 @@
             .WithUrl(Navigation.ToAbsoluteUri("/logHub"))
             .Build();
 
-        // Füge initiale Log-Nachrichten hinzu um mitzuteilen, das hier die Logs erscheinen
         logs.Add("Logs werden hier angezeigt.");
 
-        hubConnection.On<string>("ReceiveLogMessage", (message) =>
+        hubConnection.On<string>("ReceiveLogMessage", async (message) =>
         {
             logs.Add(message);
-            InvokeAsync(StateHasChanged);
+            await InvokeAsync(StateHasChanged);
         });
 
         await hubConnection.StartAsync();
@@ -53,15 +52,21 @@
 
     private void ExecuteMetadataProcessing()
     {
-        // Platzhalter für die API-Aufruf zur Metadaten-Verarbeitung
         logs.Add("Metadaten-Verarbeitung gestartet.");
         StateHasChanged();
     }
 
-    private void ExecuteTimerService()
+    private void StartTimerService()
     {
-        // Platzhalter für die API-Aufruf zum Timer-Service
+        TimerService.StartTimer();
         logs.Add("Timer-Service gestartet.");
+        StateHasChanged();
+    }
+
+    private void StopTimerService()
+    {
+        TimerService.StopTimer();
+        logs.Add("Timer-Service gestoppt.");
         StateHasChanged();
     }
 }
