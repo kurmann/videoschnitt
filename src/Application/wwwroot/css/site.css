@@ -10,6 +10,11 @@ h1 {
     margin-bottom: 2rem;
 }
 
+.subtitle-link {
+    display: block;
+    text-align: center;
+}
+
 a {
     color: #333; /* Gleiche Farbe wie der Text */
     text-decoration: none;
