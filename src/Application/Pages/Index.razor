@@ -2,11 +2,11 @@
 @using Microsoft.AspNetCore.SignalR.Client
 @inject NavigationManager Navigation
 
-<h1>Willkommen bei Kurmann Videoschnitt</h1>
+<h1>Willkommen bei <strong>Kurmann Videoschnitt</strong></h1>
 
-<a href="/swagger">API-Dokumentation</a>
+<a class="subtitle-link" href="/swagger">API-Dokumentation</a>
 
-<div id="logContainer" style="margin: 3rem; font-family: monospace; text-align: center;">
+<div id="logContainer">
     @foreach (var log in logs)
     {
         <div>@log</div>
@@ -23,6 +23,9 @@
         hubConnection = new HubConnectionBuilder()
             .WithUrl(Navigation.ToAbsoluteUri("/logHub"))
             .Build();
+
+        // Füge initiale Log-Nachrichten hinzu um mitzuteilen, das hier die Logs erscheinen
+        logs.Add("Logs werden hier angezeigt.");
 
         hubConnection.On<string>("ReceiveLogMessage", (message) =>
         {
