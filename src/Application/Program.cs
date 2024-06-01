@@ -24,8 +24,9 @@ public class Program
             c.SwaggerDoc("v1", new OpenApiInfo { Title = "Kurmann Videoschnitt API", Version = "v1"});
         });
 
-        builder.Services.AddHostedService<TimerTriggerService>();
+        // TimerTriggerService sowohl als HostedService als auch als Singleton registrieren
         builder.Services.AddSingleton<TimerTriggerService>();
+        builder.Services.AddHostedService(sp => sp.GetRequiredService<TimerTriggerService>());
 
         builder.Services.AddSingleton<LogHub>();
 
