@@ -4,6 +4,8 @@ services:
     container_name: videoschnitt
     volumes:
       - ${LOCAL_MEDIA_LIBRARY_PATH}:/media/library:rw
+    ports:
+      - "8080:80"
     env_file:
       - .env
     environment:

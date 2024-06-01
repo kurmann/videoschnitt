@@ -8,6 +8,10 @@ public class Program
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+
+        var port = Environment.GetEnvironmentVariable("PORT") ?? "80";
+        builder.WebHost.UseUrls($"http://*:{port}");
+
         builder.Services.AddRazorPages();
         builder.Services.AddServerSideBlazor();
 
@@ -19,7 +23,7 @@ public class Program
             app.UseHsts();
         }
 
-        app.UseHttpsRedirection();
+        // app.UseHttpsRedirection(); // no certificate available for now
 
         app.UseStaticFiles();
 
