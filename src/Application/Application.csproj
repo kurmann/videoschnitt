@@ -16,6 +16,5 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Engine\Engine.csproj" />
-    <ProjectReference Include="..\Features\MetadataProcessor\MetadataProcessor.csproj" />
   </ItemGroup>
 </Project>
