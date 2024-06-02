@@ -1,4 +1,4 @@
-namespace Kurmann.Videoschnitt.Messaging.MetadataProcessor
+namespace Kurmann.Videoschnitt.Messaging.Metadata
 {
     public class ProcessMetadataRequest : EventMessageBase { }
 }

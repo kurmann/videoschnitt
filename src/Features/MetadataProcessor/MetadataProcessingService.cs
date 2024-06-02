@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Kurmann.Videoschnitt.Messaging;
-using Kurmann.Videoschnitt.Messaging.MetadataProcessor;
+using Kurmann.Videoschnitt.Messaging.Metadata;
 
 namespace Kurmann.Videoschnitt.Features.MetadataProcessor;
 
@@ -39,7 +39,6 @@ public class MetadataProcessingService
         
         // todo: integrate message service
         // OnMetadataProcessingEvent(new MetadataProcessingEventArgs("Metadatenverarbeitung gestartet auf Verzeichnis " + _metadataProcessingDirectory.FullName));
-        _messageService.Publish(new ProcessMetadataRequest());
 
         _logger.LogInformation("Metadatenverarbeitung abgeschlossen.");
         return Task.CompletedTask;

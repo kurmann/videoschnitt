@@ -5,7 +5,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Kurmann.Videoschnitt.Messaging;
-using Kurmann.Videoschnitt.Messaging.MetadataProcessor;
+using Kurmann.Videoschnitt.Messaging.Metadata;
 using Kurmann.Videoschnitt.Messaging.Timer;
 
 namespace Kurmann.Videoschnitt.Application
