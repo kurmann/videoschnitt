@@ -28,6 +28,9 @@ public class Program
         builder.Services.AddSingleton<TimerTriggerService>();
         builder.Services.AddHostedService(sp => sp.GetRequiredService<TimerTriggerService>());
 
+        // Features registrieren
+        // builder.Services.AddMetadataProcessor(builder.Configuration);
+
         builder.Services.AddSingleton<LogHub>();
 
         var app = builder.Build();

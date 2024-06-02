@@ -6,15 +6,11 @@ namespace Kurmann.Videoschnitt.Features.MetadataProcessor;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddMetadataProcessor(
-        this IServiceCollection services,
-        IConfiguration configuration)
+    public static IServiceCollection AddMetadataProcessor(this IServiceCollection services, IConfiguration configuration)
     {
-        // Bind Root-Konfigurationswerte an Settings
-        services.Configure<Settings>(configuration.GetSection("MetadataProcessor"));
+        services.Configure<Settings>(configuration.GetSection(Settings.SectionName));
 
-        // Register Processor as a hosted service
-        services.AddHostedService<Processor>();
+        services.AddSingleton<MetadataProcessorService>();
 
         return services;
     }

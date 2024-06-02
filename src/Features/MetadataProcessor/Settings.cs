@@ -1,8 +1,9 @@
-namespace Kurmann.Videoschnitt.Features.MetadataProcessor
+namespace Kurmann.Videoschnitt.Features.MetadataProcessor;
+
+public class Settings
 {
-    public class Settings
-    {
-        public List<string>? InputDirectories { get; set; }
-        public string? OutputDirectory { get; set; }
-    }
+    public const string SectionName = "MetadataProcessor";
+
+    public List<string>? InputDirectories { get; set; }
+    public string? OutputDirectory { get; set; }
 }
