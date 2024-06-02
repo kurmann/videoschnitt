@@ -35,6 +35,9 @@ public class Program
         // Steuereinheit registrieren
         builder.Services.AddEngine(builder.Configuration);
 
+        // MessageLogHubService registrieren
+        builder.Services.AddHostedService<MessageLogHubService>();
+
         var app = builder.Build();
 
         if (!app.Environment.IsDevelopment())
