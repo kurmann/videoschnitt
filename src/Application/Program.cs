@@ -1,6 +1,5 @@
-using Kurmann.Videoschnitt.Application.Services;
-using Kurmann.Videoschnitt.Features.MetadataProcessor;
 using Microsoft.OpenApi.Models;
+using Kurmann.Videoschnitt.Engine;
 
 namespace Kurmann.Videoschnitt.Application;
 
@@ -25,15 +24,10 @@ public class Program
             c.SwaggerDoc("v1", new OpenApiInfo { Title = "Kurmann Videoschnitt API", Version = "v1"});
         });
 
-        // TimerTriggerService sowohl als HostedService als auch als Singleton registrieren
-        builder.Services.AddSingleton<TimerTriggerService>();
-        builder.Services.AddSingleton<FeatureService>();
-        builder.Services.AddHostedService(sp => sp.GetRequiredService<TimerTriggerService>());
-
-        // Features registrieren
-        builder.Services.AddMetadataProcessor();
-
         builder.Services.AddSingleton<LogHub>();
+
+        // Steuereinheit registrieren
+        builder.Services.AddEngine(builder.Configuration);
 
         var app = builder.Build();
 
