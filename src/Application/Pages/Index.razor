@@ -64,7 +64,7 @@
     {
         // todo: send message to server
         logs.Add("Timer-Service gestartet.");
-        MessageService.Publish(new StartTimerServiceMessage());
+        MessageService.Publish(new StartTimerRequest());
         StateHasChanged();
     }
 
@@ -75,7 +75,7 @@
         StateHasChanged();
     }
 
-    public class StartTimerServiceMessage : EventMessageBase
+    public class StartTimerRequest : EventMessageBase
     {
 
     }
