@@ -1,5 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Kurmann.Videoschnitt.Messaging;
+using Kurmann.Videoschnitt.Messaging.MetadataProcessor;
 
 namespace Kurmann.Videoschnitt.Features.MetadataProcessor;
 
@@ -7,10 +9,12 @@ public class MetadataProcessingService
 {
     private readonly ILogger<MetadataProcessingService> _logger;
     private readonly DirectoryInfo _metadataProcessingDirectory;
+    private readonly IMessageService _messageService;
 
-    public MetadataProcessingService(ILogger<MetadataProcessingService> logger)
+    public MetadataProcessingService(ILogger<MetadataProcessingService> logger, IMessageService messageService)
     {
         _logger = logger;
+        _messageService = messageService;
 
         // Lade Umgebungsvariablen
         var metadataProcessingDirectoryValue = Environment.GetEnvironmentVariable("METADATA_PROCESSING_DIRECTORY");
@@ -35,18 +39,9 @@ public class MetadataProcessingService
         
         // todo: integrate message service
         // OnMetadataProcessingEvent(new MetadataProcessingEventArgs("Metadatenverarbeitung gestartet auf Verzeichnis " + _metadataProcessingDirectory.FullName));
+        _messageService.Publish(new ProcessMetadataRequest());
 
         _logger.LogInformation("Metadatenverarbeitung abgeschlossen.");
         return Task.CompletedTask;
     }
-}
-
-public class MetadataProcessingEventArgs : EventArgs
-{
-    public MetadataProcessingEventArgs(string message)
-    {
-        Message = message;
-    }
-
-    public string Message { get; }
 }
