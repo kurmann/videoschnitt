@@ -2,6 +2,7 @@
 @using Microsoft.AspNetCore.SignalR.Client
 @inject NavigationManager Navigation
 @inject TimerTriggerService TimerService
+@inject FeatureService FeatureService
 
 <h1>Willkommen bei Kurmann Videoschnitt</h1>
 
@@ -50,8 +51,11 @@
         }
     }
 
-    private void ExecuteMetadataProcessing()
+    private async void ExecuteMetadataProcessing()
     {
+        // todo: Implement metadata processing with FeatureService
+        await FeatureService.ProcessMetadataAsync();
+
         logs.Add("Metadaten-Verarbeitung gestartet.");
         StateHasChanged();
     }

@@ -8,6 +8,12 @@ public class MetadataProcessingService
     private readonly ILogger<MetadataProcessingService> _logger;
     private readonly DirectoryInfo _metadataProcessingDirectory;
 
+    public event EventHandler<MetadataProcessingEventArgs> MetadataProcessingEvent;
+    protected virtual void OnMetadataProcessingEvent(MetadataProcessingEventArgs e)
+    {
+        MetadataProcessingEvent?.Invoke(this, e);
+    }
+
     public MetadataProcessingService(ILogger<MetadataProcessingService> logger)
     {
         _logger = logger;
@@ -26,9 +32,19 @@ public class MetadataProcessingService
             return Task.CompletedTask;
         }
         _logger.LogInformation("Verzeichnis für Metadatenverarbeitung: {directory}", _metadataProcessingDirectory.FullName);
-
+        OnMetadataProcessingEvent(new MetadataProcessingEventArgs("Metadatenverarbeitung gestartet auf Verzeichnis " + _metadataProcessingDirectory.FullName));
 
         _logger.LogInformation("Metadatenverarbeitung abgeschlossen.");
         return Task.CompletedTask;
     }
+}
+
+public class MetadataProcessingEventArgs : EventArgs
+{
+    public MetadataProcessingEventArgs(string message)
+    {
+        Message = message;
+    }
+
+    public string Message { get; }
 }

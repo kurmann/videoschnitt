@@ -27,6 +27,7 @@ public class Program
 
         // TimerTriggerService sowohl als HostedService als auch als Singleton registrieren
         builder.Services.AddSingleton<TimerTriggerService>();
+        builder.Services.AddSingleton<FeatureService>();
         builder.Services.AddHostedService(sp => sp.GetRequiredService<TimerTriggerService>());
 
         // Features registrieren
