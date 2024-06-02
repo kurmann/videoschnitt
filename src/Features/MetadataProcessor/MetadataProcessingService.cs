@@ -49,10 +49,14 @@ public class MetadataProcessingService
             return Task.CompletedTask;
         }
         _logger.LogInformation("Verzeichnis für Metadatenverarbeitung: {directory}", _metadataProcessingDirectory.FullName);
-        
-        // todo: integrate message service
-        // OnMetadataProcessingEvent(new MetadataProcessingEventArgs("Metadatenverarbeitung gestartet auf Verzeichnis " + _metadataProcessingDirectory.FullName));
 
+        // Simuliere Metadatenverarbeitung
+        Thread.Sleep(5000);
+
+        // Veröffentliche Nachricht über abgeschlossene Metadatenverarbeitung
+        var message = new MetadataProcessedEvent("Metadatenverarbeitung abgeschlossen.");
+        _messageService.Publish(message);
+    
         _logger.LogInformation("Metadatenverarbeitung abgeschlossen.");
         return Task.CompletedTask;
     }
