@@ -14,8 +14,10 @@ public static class ServiceCollectionExtensions
         services.Configure<EngineSettings>(configuration.GetSection("Engine"));
         
         // Dienste hinzufügen
-        services.AddHostedService<SampleHostedService>();
+        services.AddSingleton<TimerTriggerService>();
+        services.AddHostedService(sp => sp.GetRequiredService<TimerTriggerService>());
         
         return services;
     }
 }
+ 
