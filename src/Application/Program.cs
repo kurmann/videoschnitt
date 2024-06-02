@@ -1,4 +1,5 @@
 using Kurmann.Videoschnitt.Application.Services;
+using Kurmann.Videoschnitt.Features.MetadataProcessor;
 using Microsoft.OpenApi.Models;
 
 namespace Kurmann.Videoschnitt.Application;
@@ -29,7 +30,7 @@ public class Program
         builder.Services.AddHostedService(sp => sp.GetRequiredService<TimerTriggerService>());
 
         // Features registrieren
-        // builder.Services.AddMetadataProcessor(builder.Configuration);
+        builder.Services.AddMetadataProcessor();
 
         builder.Services.AddSingleton<LogHub>();
 
