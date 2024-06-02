@@ -1,6 +1,9 @@
 using Microsoft.OpenApi.Models;
-using Kurmann.Messaging;
 using Kurmann.Videoschnitt.Engine;
+using Kurmann.Videoschnitt.Messaging;
+using Swashbuckle.AspNetCore.Swagger;
+using Swashbuckle.AspNetCore.SwaggerGen;
+using Microsoft.AspNetCore.Builder;
 
 namespace Kurmann.Videoschnitt.Application;
 
@@ -25,6 +28,7 @@ public class Program
             c.SwaggerDoc("v1", new OpenApiInfo { Title = "Kurmann Videoschnitt API", Version = "v1"});
         });
 
+
         builder.Services.AddSingleton<LogHub>();
         builder.Services.AddSingleton<IMessageService, MessageService>();
 
@@ -43,7 +47,7 @@ public class Program
         app.UseStaticFiles();
         app.UseRouting();
         app.UseSwagger();
-        app.UseSwaggerUI();
+        app.UseSwagger();
 
         // Minimal API Endpunkte
         app.MapGet("/api/health", () => Results.Ok(new { status = "Healthy" }));
