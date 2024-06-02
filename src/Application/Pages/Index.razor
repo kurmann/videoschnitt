@@ -1,6 +1,7 @@
 ﻿@page "/"
 @using Microsoft.AspNetCore.SignalR.Client
 @using Kurmann.Messaging
+@using Kurmann.Videoschnitt.Messaging.Timer;
 @inject NavigationManager Navigation
 @inject IMessageService MessageService
 
@@ -73,10 +74,5 @@
         // todo: send message to server
         logs.Add("Timer-Service gestoppt.");
         StateHasChanged();
-    }
-
-    public class StartTimerRequest : EventMessageBase
-    {
-
     }
 }

@@ -17,5 +17,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Engine\Engine.csproj" />
+    <ProjectReference Include="..\Messaging\Messaging.csproj" />
   </ItemGroup>
 </Project>
