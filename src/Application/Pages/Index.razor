@@ -2,6 +2,7 @@
 @using Microsoft.AspNetCore.SignalR.Client
 @using Kurmann.Videoschnitt.Messaging;
 @using Kurmann.Videoschnitt.Messaging.Timer;
+@using Kurmann.Videoschnitt.Messaging.Metadata;
 @inject NavigationManager Navigation
 @inject IMessageService MessageService
 
@@ -56,15 +57,13 @@
     private void ExecuteMetadataProcessing()
     {
         // todo: send message to server)
-
-        logs.Add("Metadaten-Verarbeitung gestartet.");
+        MessageService.Publish(new ProcessMetadataRequest());
         StateHasChanged();
     }
 
     private void StartTimerService()
     {
         // todo: send message to server
-        logs.Add("Timer-Service gestartet.");
         MessageService.Publish(new StartTimerRequest());
         StateHasChanged();
     }
@@ -72,7 +71,6 @@
     private void StopTimerService()
     {
         // todo: send message to server
-        logs.Add("Timer-Service gestoppt.");
         MessageService.Publish(new StopTimerRequest());
         StateHasChanged();
     }
