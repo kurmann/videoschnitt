@@ -1,4 +1,5 @@
 using Microsoft.OpenApi.Models;
+using Kurmann.Messaging;
 using Kurmann.Videoschnitt.Engine;
 
 namespace Kurmann.Videoschnitt.Application;
@@ -25,6 +26,7 @@ public class Program
         });
 
         builder.Services.AddSingleton<LogHub>();
+        builder.Services.AddSingleton<IMessageService, MessageService>();
 
         // Steuereinheit registrieren
         builder.Services.AddEngine(builder.Configuration);
