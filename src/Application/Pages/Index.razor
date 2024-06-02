@@ -53,7 +53,7 @@
         }
     }
 
-    private async void ExecuteMetadataProcessing()
+    private void ExecuteMetadataProcessing()
     {
         // todo: send message to server)
 
@@ -73,6 +73,7 @@
     {
         // todo: send message to server
         logs.Add("Timer-Service gestoppt.");
+        MessageService.Publish(new StopTimerRequest());
         StateHasChanged();
     }
 }
