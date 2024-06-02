@@ -13,7 +13,13 @@ public class MetadataProcessingService
         _logger = logger;
 
         // Lade Umgebungsvariablen
-        _metadataProcessingDirectory = new DirectoryInfo(Environment.GetEnvironmentVariable("METADATA_PROCESSING_DIRECTORY"));
+        var metadataProcessingDirectoryValue = Environment.GetEnvironmentVariable("METADATA_PROCESSING_DIRECTORY");
+        if (string.IsNullOrEmpty(metadataProcessingDirectoryValue))
+        {
+            _logger.LogWarning("Umgebungsvariable METADATA_PROCESSING_DIRECTORY ist nicht gesetzt.");
+            return;
+        }
+        _metadataProcessingDirectory = new DirectoryInfo(metadataProcessingDirectoryValue);
     }
 
     public Task ProcessMetadataAsync()
