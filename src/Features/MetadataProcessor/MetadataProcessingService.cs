@@ -8,7 +8,7 @@ namespace Kurmann.Videoschnitt.Features.MetadataProcessor;
 public class MetadataProcessingService
 {
     private readonly ILogger<MetadataProcessingService> _logger;
-    private readonly DirectoryInfo _metadataProcessingDirectory;
+    private readonly DirectoryInfo? _metadataProcessingDirectory;
     private readonly IMessageService _messageService;
 
     public MetadataProcessingService(ILogger<MetadataProcessingService> logger, IMessageService messageService)
@@ -23,7 +23,20 @@ public class MetadataProcessingService
             _logger.LogWarning("Umgebungsvariable METADATA_PROCESSING_DIRECTORY ist nicht gesetzt.");
             return;
         }
-        _metadataProcessingDirectory = new DirectoryInfo(metadataProcessingDirectoryValue);
+        var directory = new DirectoryInfo(metadataProcessingDirectoryValue);
+        if (_metadataProcessingDirectory == null)
+        {
+            _logger.LogWarning("Ungültiger Wert für Umgebungsvariable METADATA_PROCESSING_DIRECTORY: {value}", metadataProcessingDirectoryValue);
+            return;
+        }
+
+        if (!_metadataProcessingDirectory.Exists)
+        {
+            _logger.LogWarning("Verzeichnis {directory} existiert nicht.", _metadataProcessingDirectory.FullName);
+            return;
+        }
+
+        _metadataProcessingDirectory = directory;
     }
 
     public Task ProcessMetadataAsync()
