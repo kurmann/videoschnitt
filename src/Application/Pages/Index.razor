@@ -1,6 +1,10 @@
 ﻿@page "/"
 @using Microsoft.AspNetCore.SignalR.Client
+@using Kurmann.Messaging
+@using Kurmann.Videoschnitt.Messaging.Timer;
 @inject NavigationManager Navigation
+@inject IMessageService MessageService
+
 
 <h1>Willkommen bei Kurmann Videoschnitt</h1>
 
@@ -49,9 +53,9 @@
         }
     }
 
-    private async void ExecuteMetadataProcessing()
+    private void ExecuteMetadataProcessing()
     {
-        // todo: send message to server
+        // todo: send message to server)
 
         logs.Add("Metadaten-Verarbeitung gestartet.");
         StateHasChanged();
@@ -61,6 +65,7 @@
     {
         // todo: send message to server
         logs.Add("Timer-Service gestartet.");
+        MessageService.Publish(new StartTimerRequest());
         StateHasChanged();
     }
 
@@ -68,6 +73,7 @@
     {
         // todo: send message to server
         logs.Add("Timer-Service gestoppt.");
+        MessageService.Publish(new StopTimerRequest());
         StateHasChanged();
     }
 }
