@@ -1,4 +1,5 @@
 using Kurmann.Videoschnitt.Application.Services;
+using Kurmann.Videoschnitt.Features.MetadataProcessor;
 using Microsoft.OpenApi.Models;
 
 namespace Kurmann.Videoschnitt.Application;
@@ -26,7 +27,11 @@ public class Program
 
         // TimerTriggerService sowohl als HostedService als auch als Singleton registrieren
         builder.Services.AddSingleton<TimerTriggerService>();
+        builder.Services.AddSingleton<FeatureService>();
         builder.Services.AddHostedService(sp => sp.GetRequiredService<TimerTriggerService>());
+
+        // Features registrieren
+        builder.Services.AddMetadataProcessor();
 
         builder.Services.AddSingleton<LogHub>();
 
