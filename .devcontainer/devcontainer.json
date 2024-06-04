@@ -4,8 +4,7 @@
           "extensions": [
               "GitHub.copilot", 
               "GitHub.vscode-github-actions", 
-              "ms-dotnettools.csdevkit",
-              "ms-azuretools.vscode-docker"
+              "ms-dotnettools.csdevkit"
           ]
         }
     }

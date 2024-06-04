@@ -1,16 +1,14 @@
 ﻿@page "/"
 @using Microsoft.AspNetCore.SignalR.Client
-@using Kurmann.Videoschnitt.Messaging;
-@using Kurmann.Videoschnitt.Messaging.Timer;
-@using Kurmann.Videoschnitt.Messaging.Metadata;
+@using Kurmann.Videoschnitt.Features.MetadataProcessor.Events
 @inject NavigationManager Navigation
-@inject IMessageService MessageService
+@inject Wolverine.IMessageBus bus
 
 
 <h1>Willkommen bei Kurmann Videoschnitt</h1>
 
 <nav>
-    <a @onclick="ExecuteMetadataProcessing">Metadaten-Verarbeitung</a>
+    <a @onclick="async () => await ExecuteMetadataProcessing()">Metadaten-Verarbeitung</a>
     <a @onclick="StartTimerService">Timer starten</a>
     <a @onclick="StopTimerService">Timer stoppen</a>
     <a href="/swagger">API-Dokumentation</a>
@@ -29,7 +27,7 @@
     private List<string> logs = new List<string>();
     private HubConnection? hubConnection;
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
         hubConnection = new HubConnectionBuilder()
             .WithUrl(Navigation.ToAbsoluteUri("/logHub"))
@@ -42,8 +40,6 @@
             logs.Add(message);
             await InvokeAsync(StateHasChanged);
         });
-
-        await hubConnection.StartAsync();
     }
 
     public async ValueTask DisposeAsync()
@@ -54,24 +50,22 @@
         }
     }
 
-    private void ExecuteMetadataProcessing()
+    private async Task ExecuteMetadataProcessing()
     {
         // todo: send message to server)
-        MessageService.Publish(new ProcessMetadataRequest());
+        await bus.SendAsync(new ProcessMetadataRequest());
         StateHasChanged();
     }
 
     private void StartTimerService()
     {
         // todo: send message to server
-        MessageService.Publish(new StartTimerRequest());
         StateHasChanged();
     }
 
     private void StopTimerService()
     {
         // todo: send message to server
-        MessageService.Publish(new StopTimerRequest());
         StateHasChanged();
     }
 }
