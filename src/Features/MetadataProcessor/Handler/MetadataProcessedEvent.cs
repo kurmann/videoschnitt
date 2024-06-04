@@ -1,6 +1,6 @@
-namespace Kurmann.Videoschnitt.Messaging.Metadata
+namespace Kurmann.Videoschnitt.Features.MetadataProcessor.Handler
 {
-    public class MetadataProcessedEvent : EventMessageBase
+    public class MetadataProcessedEvent
     {
         public MetadataProcessedEvent(string message)
         {

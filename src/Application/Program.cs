@@ -1,9 +1,7 @@
 using Microsoft.OpenApi.Models;
 using Kurmann.Videoschnitt.Engine;
 using Kurmann.Videoschnitt.Messaging;
-using Swashbuckle.AspNetCore.Swagger;
-using Swashbuckle.AspNetCore.SwaggerGen;
-using Microsoft.AspNetCore.Builder;
+using Kurmann.Videoschnitt.Features.MetadataProcessor;
 
 namespace Kurmann.Videoschnitt.Application;
 
@@ -34,6 +32,7 @@ public class Program
 
         // Steuereinheit registrieren
         builder.Services.AddEngine(builder.Configuration);
+        builder.Services.AddMetadataProcessorFeature();
 
         // MessageLogHubService registrieren
         builder.Services.AddHostedService<MessageLogHubService>();

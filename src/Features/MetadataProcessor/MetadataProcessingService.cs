@@ -1,7 +1,6 @@
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Kurmann.Videoschnitt.Messaging;
 using Kurmann.Videoschnitt.Messaging.Metadata;
+using Wolverine;
 
 namespace Kurmann.Videoschnitt.Features.MetadataProcessor;
 
@@ -9,12 +8,12 @@ public class MetadataProcessingService
 {
     private readonly ILogger<MetadataProcessingService> _logger;
     private readonly DirectoryInfo? _metadataProcessingDirectory;
-    private readonly IMessageService _messageService;
+    private readonly IMessageBus _bus;
 
-    public MetadataProcessingService(ILogger<MetadataProcessingService> logger, IMessageService messageService)
+    public MetadataProcessingService(ILogger<MetadataProcessingService> logger, IMessageBus bus)
     {
         _logger = logger;
-        _messageService = messageService;
+        _bus = bus;
 
         // Lade Umgebungsvariablen
         var metadataProcessingDirectoryValue = Environment.GetEnvironmentVariable("METADATA_PROCESSING_DIRECTORY");
@@ -24,40 +23,33 @@ public class MetadataProcessingService
             return;
         }
         var directory = new DirectoryInfo(metadataProcessingDirectoryValue);
-        if (_metadataProcessingDirectory == null)
+        if (directory == null || !directory.Exists)
         {
-            _logger.LogWarning("Ungültiger Wert für Umgebungsvariable METADATA_PROCESSING_DIRECTORY: {value}", metadataProcessingDirectoryValue);
-            return;
-        }
-
-        if (!_metadataProcessingDirectory.Exists)
-        {
-            _logger.LogWarning("Verzeichnis {directory} existiert nicht.", _metadataProcessingDirectory.FullName);
+            _logger.LogWarning("Ungültiger oder nicht existierender Wert für Umgebungsvariable METADATA_PROCESSING_DIRECTORY: {value}", metadataProcessingDirectoryValue);
             return;
         }
 
         _metadataProcessingDirectory = directory;
     }
 
-    public Task ProcessMetadataAsync()
+    public async Task ProcessMetadataAsync()
     {
         _logger.LogInformation("Metadatenverarbeitung gestartet.");
 
-        if (!_metadataProcessingDirectory.Exists)
+        if (_metadataProcessingDirectory == null || !_metadataProcessingDirectory.Exists)
         {
-            _logger.LogWarning("Verzeichnis {directory} existiert nicht.", _metadataProcessingDirectory.FullName);
-            return Task.CompletedTask;
+            _logger.LogWarning("Verzeichnis existiert nicht.");
+            return;
         }
         _logger.LogInformation("Verzeichnis für Metadatenverarbeitung: {directory}", _metadataProcessingDirectory.FullName);
 
         // Simuliere Metadatenverarbeitung
-        Thread.Sleep(5000);
+        await Task.Delay(5000);
 
         // Veröffentliche Nachricht über abgeschlossene Metadatenverarbeitung
         var message = new MetadataProcessedEvent("Metadatenverarbeitung abgeschlossen.");
-        _messageService.Publish(message);
+        await _bus.PublishAsync(message);
     
         _logger.LogInformation("Metadatenverarbeitung abgeschlossen.");
-        return Task.CompletedTask;
     }
 }

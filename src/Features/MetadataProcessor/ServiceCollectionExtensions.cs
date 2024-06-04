@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Wolverine;
 
 namespace Kurmann.Videoschnitt.Features.MetadataProcessor;
 
@@ -8,6 +9,12 @@ public static class ServiceCollectionExtensions
     {
         // Register MetadataProcessingService
         services.AddSingleton<MetadataProcessingService>();
+
+        // Wolverine und Handler registrieren
+        services.AddWolverine(opts =>
+        {
+            opts.Handlers.Include<MetadataProcessedEventHandler>();
+        });
 
         return services;
     }
