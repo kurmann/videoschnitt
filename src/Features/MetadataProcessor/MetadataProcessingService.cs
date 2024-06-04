@@ -1,5 +1,5 @@
 using Microsoft.Extensions.Logging;
-using Kurmann.Videoschnitt.Messaging.Metadata;
+using Kurmann.Videoschnitt.Features.MetadataProcessor.Handler;
 using Wolverine;
 
 namespace Kurmann.Videoschnitt.Features.MetadataProcessor;
@@ -46,9 +46,7 @@ public class MetadataProcessingService
         // Simuliere Metadatenverarbeitung
         await Task.Delay(5000);
 
-        // Veröffentliche Nachricht über abgeschlossene Metadatenverarbeitung
-        var message = new MetadataProcessedEvent("Metadatenverarbeitung abgeschlossen.");
-        await _bus.PublishAsync(message);
+        // todo: Veröffentliche Nachricht über abgeschlossene Metadatenverarbeitung
     
         _logger.LogInformation("Metadatenverarbeitung abgeschlossen.");
     }

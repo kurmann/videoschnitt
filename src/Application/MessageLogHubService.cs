@@ -1,9 +1,4 @@
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 using Kurmann.Videoschnitt.Messaging;
 using Kurmann.Videoschnitt.Messaging.Metadata;
 using Kurmann.Videoschnitt.Messaging.Timer;
@@ -29,7 +24,6 @@ namespace Kurmann.Videoschnitt.Application
             _messageService.Subscribe<StartTimerRequest>(HandleStartTimerRequest);
             _messageService.Subscribe<StopTimerRequest>(HandleStopTimerRequest);
             _messageService.Subscribe<ProcessMetadataRequest>(HandleProcessMetadataRequest);
-            _messageService.Subscribe<MetadataProcessedEvent>(HandleMetadataProcessedEvent);
             return Task.CompletedTask;
         }
 
@@ -58,12 +52,6 @@ namespace Kurmann.Videoschnitt.Application
         {
             // Nachricht an den LogHub senden
             await _hubContext.Clients.All.SendAsync("ReceiveLogMessage", "Anfrage für Metadatenverarbeitung: " + request.Timestamp);
-        }
-
-        private async Task HandleMetadataProcessedEvent(MetadataProcessedEvent @event)
-        {
-            // Nachricht an den LogHub senden
-            await _hubContext.Clients.All.SendAsync("ReceiveLogMessage", "Metadatenverarbeitung abgeschlossen: " + @event.Timestamp);
         }
     }
 }

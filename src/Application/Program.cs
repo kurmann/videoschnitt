@@ -1,7 +1,7 @@
 using Microsoft.OpenApi.Models;
-using Kurmann.Videoschnitt.Engine;
 using Kurmann.Videoschnitt.Messaging;
 using Kurmann.Videoschnitt.Features.MetadataProcessor;
+using Wolverine;
 
 namespace Kurmann.Videoschnitt.Application;
 
@@ -10,6 +10,11 @@ public class Program
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+        builder.Host.UseWolverine(opts =>
+        {
+            // Fügen Sie so viele andere Assemblys hinzu, wie Sie benötigen
+            opts.Discovery.IncludeAssembly(typeof(MetadataProcessingService).Assembly);
+        });
 
         var port = Environment.GetEnvironmentVariable("PORT") ?? "5024";
         builder.WebHost.UseUrls($"http://*:{port}");
@@ -29,10 +34,6 @@ public class Program
 
         builder.Services.AddSingleton<LogHub>();
         builder.Services.AddSingleton<IMessageService, MessageService>();
-
-        // Steuereinheit registrieren
-        builder.Services.AddEngine(builder.Configuration);
-        builder.Services.AddMetadataProcessorFeature();
 
         // MessageLogHubService registrieren
         builder.Services.AddHostedService<MessageLogHubService>();

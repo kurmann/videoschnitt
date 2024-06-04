@@ -10,12 +10,6 @@ public static class ServiceCollectionExtensions
         // Register MetadataProcessingService
         services.AddSingleton<MetadataProcessingService>();
 
-        // Wolverine und Handler registrieren
-        services.AddWolverine(opts =>
-        {
-            opts.Handlers.Include<MetadataProcessedEventHandler>();
-        });
-
         return services;
     }
 }

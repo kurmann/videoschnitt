@@ -5,12 +5,13 @@
 @using Kurmann.Videoschnitt.Messaging.Metadata;
 @inject NavigationManager Navigation
 @inject IMessageService MessageService
+@inject Wolverine.IMessageBus bus
 
 
 <h1>Willkommen bei Kurmann Videoschnitt</h1>
 
 <nav>
-    <a @onclick="ExecuteMetadataProcessing">Metadaten-Verarbeitung</a>
+    <a @onclick="async () => await ExecuteMetadataProcessing()">Metadaten-Verarbeitung</a>
     <a @onclick="StartTimerService">Timer starten</a>
     <a @onclick="StopTimerService">Timer stoppen</a>
     <a href="/swagger">API-Dokumentation</a>
@@ -42,8 +43,6 @@
             logs.Add(message);
             await InvokeAsync(StateHasChanged);
         });
-
-        await hubConnection.StartAsync();
     }
 
     public async ValueTask DisposeAsync()
@@ -54,10 +53,10 @@
         }
     }
 
-    private void ExecuteMetadataProcessing()
+    private async Task ExecuteMetadataProcessing()
     {
         // todo: send message to server)
-        MessageService.Publish(new ProcessMetadataRequest());
+        await bus.SendAsync(new ProcessMetadataRequest());
         StateHasChanged();
     }
 
