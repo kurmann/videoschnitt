@@ -1,10 +1,7 @@
 ﻿@page "/"
 @using Microsoft.AspNetCore.SignalR.Client
-@using Kurmann.Videoschnitt.Messaging;
-@using Kurmann.Videoschnitt.Messaging.Timer;
-@using Kurmann.Videoschnitt.Messaging.Metadata;
+@using Kurmann.Videoschnitt.Features.MetadataProcessor.Events
 @inject NavigationManager Navigation
-@inject IMessageService MessageService
 @inject Wolverine.IMessageBus bus
 
 
@@ -30,7 +27,7 @@
     private List<string> logs = new List<string>();
     private HubConnection? hubConnection;
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
         hubConnection = new HubConnectionBuilder()
             .WithUrl(Navigation.ToAbsoluteUri("/logHub"))
@@ -63,14 +60,12 @@
     private void StartTimerService()
     {
         // todo: send message to server
-        MessageService.Publish(new StartTimerRequest());
         StateHasChanged();
     }
 
     private void StopTimerService()
     {
         // todo: send message to server
-        MessageService.Publish(new StopTimerRequest());
         StateHasChanged();
     }
 }
