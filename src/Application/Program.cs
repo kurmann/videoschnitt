@@ -1,7 +1,7 @@
 using Microsoft.OpenApi.Models;
-using Kurmann.Videoschnitt.Features.MetadataProcessor;
 using Wolverine;
 using System.Globalization;
+using Kurmann.Videoschnitt.Features.MetadataProcessor;
 
 namespace Kurmann.Videoschnitt.Application;
 
