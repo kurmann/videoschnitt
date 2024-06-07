@@ -2,6 +2,7 @@ using Microsoft.OpenApi.Models;
 using Kurmann.Videoschnitt.Messaging;
 using Kurmann.Videoschnitt.Features.MetadataProcessor;
 using Wolverine;
+using System.Globalization;
 
 namespace Kurmann.Videoschnitt.Application;
 
@@ -9,6 +10,9 @@ public class Program
 {
     public static void Main(string[] args)
     {
+        CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
+        CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
+
         var builder = WebApplication.CreateBuilder(args);
         builder.Host.UseWolverine(opts =>
         {
