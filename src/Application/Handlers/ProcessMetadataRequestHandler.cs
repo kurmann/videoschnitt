@@ -1,20 +1,21 @@
 using Kurmann.Videoschnitt.Features.MetadataProcessor.Events;
+using Microsoft.AspNetCore.SignalR;
 
 namespace Kurmann.Videoschnitt.Application;
 
 public class ProcessMetadataRequestHandler
 {
-    private readonly LogHub _logHub;
+    private readonly IHubContext<LogHub> _logHubContext;
 
-    public ProcessMetadataRequestHandler(LogHub logHub)
+    public ProcessMetadataRequestHandler(IHubContext<LogHub> logHubContext)
     {
-        _logHub = logHub;
+        _logHubContext = logHubContext;
     }
 
     public async Task Handle(ProcessMetadataRequest message)
     {
         var logMessage = "Anfrage zur Verarbeitung der Metadaten erhalten.";
-        await _logHub.SendMessage(logMessage);
+        await _logHubContext.Clients.All.SendAsync("ReceiveLogMessage", logMessage);
         Console.WriteLine(logMessage);
     }
 }
