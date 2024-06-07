@@ -1,19 +1,16 @@
+using System.Threading.Tasks;
 using Kurmann.Videoschnitt.Features.MetadataProcessor.Events;
-using Wolverine;
 
 namespace Kurmann.Videoschnitt.Features.MetadataProcessor.Handler;
 
 public class MetadataProcessedEventHandler
 {
-    public void Handle(MetadataProcessedEvent message)
-    {
-        Console.WriteLine($"Metadata processed: {message.Message}");
-        // Weitere Logik zur Verarbeitung der Nachricht
-    }
+    private readonly MetadataProcessingService _metadataProcessingService;
 
-    public void Handle(ProcessMetadataRequest request)
+    public MetadataProcessedEventHandler(MetadataProcessingService metadataProcessingService) => _metadataProcessingService = metadataProcessingService;
+
+    public async Task Handle(MetadataProcessedEvent message)
     {
-        Console.WriteLine("Processing metadata...");
-        // Weitere Logik zur Verarbeitung der Nachricht
-    } 
+        // Konkrete Schritte zur Verarbeitung der Metadaten
+    }
 }

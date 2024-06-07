@@ -11,5 +11,3 @@ public class MetadataProcessedEvent
 
     public List<FileInfo> ProcessedFiles { get; } = new();
 }
-
-public class ProcessMetadataRequest {}

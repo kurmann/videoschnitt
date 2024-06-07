@@ -27,7 +27,7 @@
     private List<string> logs = new List<string>();
     private HubConnection? hubConnection;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         hubConnection = new HubConnectionBuilder()
             .WithUrl(Navigation.ToAbsoluteUri("/logHub"))
@@ -40,6 +40,8 @@
             logs.Add(message);
             await InvokeAsync(StateHasChanged);
         });
+
+        await hubConnection.StartAsync();
     }
 
     public async ValueTask DisposeAsync()

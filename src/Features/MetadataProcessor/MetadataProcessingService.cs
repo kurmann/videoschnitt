@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Kurmann.Videoschnitt.Features.MetadataProcessor.Handler;
+using Kurmann.Videoschnitt.Features.MetadataProcessor.Events;
 using Wolverine;
 
 namespace Kurmann.Videoschnitt.Features.MetadataProcessor;
@@ -44,10 +45,13 @@ public class MetadataProcessingService
         _logger.LogInformation("Verzeichnis für Metadatenverarbeitung: {directory}", _metadataProcessingDirectory.FullName);
 
         // Simuliere Metadatenverarbeitung
-        await Task.Delay(5000);
+        await Task.Delay(3000);
 
         // todo: Veröffentliche Nachricht über abgeschlossene Metadatenverarbeitung
     
         _logger.LogInformation("Metadatenverarbeitung abgeschlossen.");
+
+        await _bus.PublishAsync(new MetadataProcessedEvent($"Metadatanverarbeitung für Verzeichnis {_metadataProcessingDirectory.FullName} abgeschlossen."));
+        
     }
 }
