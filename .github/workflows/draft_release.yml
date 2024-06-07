@@ -16,7 +16,7 @@ jobs:
 
     env:
       CSPROJ_FILE: src/Application/Application.csproj
-      DOTNET_VERSION: '8.0.x'
+      DOTNET_VERSION: '9.0.x'
 
     steps:
       - uses: actions/checkout@v4

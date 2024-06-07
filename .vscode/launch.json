@@ -6,7 +6,7 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/src/Application/bin/Debug/net7.0/Kurmann.Videoschnitt.Application.dll",
+            "program": "${workspaceFolder}/src/Application/bin/Debug/net9.0/Kurmann.Videoschnitt.Application.dll",
             "args": [],
             "cwd": "${workspaceFolder}",
             "stopAtEntry": false,
