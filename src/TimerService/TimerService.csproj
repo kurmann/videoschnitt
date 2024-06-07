@@ -15,4 +15,8 @@
     <PackageReference Include="WolverineFx" Version="2.12.2" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Messages\Messages.csproj" />
+  </ItemGroup>
+
 </Project>

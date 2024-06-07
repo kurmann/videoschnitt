@@ -1,6 +1,7 @@
 ﻿@page "/"
 @using Microsoft.AspNetCore.SignalR.Client
 @using Kurmann.Videoschnitt.Messages.Metadata
+@using Kurmann.Videoschnitt.Messages.Timer
 @inject NavigationManager Navigation
 @inject Wolverine.IMessageBus bus
 
@@ -59,9 +60,10 @@
         StateHasChanged();
     }
 
-    private void StartTimerService()
+    private async Task StartTimerService()
     {
         // todo: send message to server
+        await bus.SendAsync(new StartTimerRequest());
         StateHasChanged();
     }
 
