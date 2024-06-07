@@ -1,4 +1,4 @@
-// Datei: Kurmann.Videoschnitt.Features.MetadataProcessor/Properties/AssemblyInfo.cs
+// Datei: Kurmann.Videoschnitt.MetadataProcessor/Properties/AssemblyInfo.cs
 using Wolverine.Attributes;
 
 [assembly: WolverineModule]
