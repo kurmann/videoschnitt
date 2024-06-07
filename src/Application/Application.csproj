@@ -20,6 +20,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Messages\Messages.csproj" />
     <ProjectReference Include="..\MetadataProcessor\MetadataProcessor.csproj" />
-    <ProjectReference Include="..\Timer\Timer.csproj" />
+    <ProjectReference Include="..\TimerService\TimerService.csproj" />
   </ItemGroup>
 </Project>

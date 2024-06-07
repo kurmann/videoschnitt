@@ -1,4 +1,7 @@
-namespace Kurmann.Videoschnitt.Timer.Services;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+
+namespace Kurmann.Videoschnitt.TimerService.Services;
 
 public class TimerTriggerService :  IHostedService, IDisposable
 {
@@ -11,7 +14,7 @@ public class TimerTriggerService :  IHostedService, IDisposable
     public Task StartAsync(CancellationToken cancellationToken)
     {
         _logger.LogInformation("Timer Trigger Service is initialized.");
-        _timer = new Timer(async (state) => await DoWork(state), null, Timeout.Infinite, Timeout.Infinite);
+        _timer = new Timer((state) => DoWork(state), null, Timeout.Infinite, Timeout.Infinite);
         return Task.CompletedTask;
     }
 
@@ -41,7 +44,7 @@ public class TimerTriggerService :  IHostedService, IDisposable
         _logger.LogInformation("Timer Trigger Service stopped on demand.");
     }
 
-    private async Task DoWork(object? state)
+    private void DoWork(object? state)
     {
         var now = DateTimeOffset.Now;
         _logger.LogInformation("Timer Trigger Service is working. Current time: {time}", now);
