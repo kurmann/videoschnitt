@@ -39,9 +39,6 @@ public class Program
         builder.Services.AddSingleton<LogHub>();
         builder.Services.AddSingleton<IMessageService, MessageService>();
 
-        // MessageLogHubService registrieren
-        builder.Services.AddHostedService<MessageLogHubService>();
-
         var app = builder.Build();
 
         if (!app.Environment.IsDevelopment())
