@@ -1,5 +1,4 @@
 using Microsoft.OpenApi.Models;
-using Kurmann.Videoschnitt.Messaging;
 using Kurmann.Videoschnitt.Features.MetadataProcessor;
 using Wolverine;
 using System.Globalization;
@@ -37,7 +36,6 @@ public class Program
 
 
         builder.Services.AddSingleton<LogHub>();
-        builder.Services.AddSingleton<IMessageService, MessageService>();
 
         var app = builder.Build();
 
