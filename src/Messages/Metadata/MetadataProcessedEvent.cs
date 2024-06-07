@@ -1,4 +1,4 @@
-namespace Kurmann.Videoschnitt.Features.MetadataProcessor.Events;
+namespace Kurmann.Videoschnitt.Messages.Metadata;
 
 public class MetadataProcessedEvent
 {
