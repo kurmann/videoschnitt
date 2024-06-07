@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Kurmann.Videoschnitt.Features.MetadataProcessor.Handler;
-using Kurmann.Videoschnitt.Features.MetadataProcessor.Events;
+using Kurmann.Videoschnitt.Messages.Metadata;
 using Wolverine;
 
 namespace Kurmann.Videoschnitt.Features.MetadataProcessor;

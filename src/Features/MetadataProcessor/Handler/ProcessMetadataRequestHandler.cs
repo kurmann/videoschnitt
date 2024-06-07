@@ -1,5 +1,5 @@
 using System.Threading.Tasks;
-using Kurmann.Videoschnitt.Features.MetadataProcessor.Events;
+using Kurmann.Videoschnitt.Messages.Metadata;
 
 namespace Kurmann.Videoschnitt.Features.MetadataProcessor.Handler;
 
