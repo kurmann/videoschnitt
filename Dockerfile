@@ -1,5 +1,5 @@
 # Build Stage
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build-env
+FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build-env
 WORKDIR /app
 
 # Copy everything from the src directory
@@ -10,7 +10,7 @@ RUN dotnet restore
 RUN dotnet publish ./Application/Application.csproj -c Release -o out
 
 # Image
-FROM mcr.microsoft.com/dotnet/aspnet:8.0.3-jammy-chiseled
+FROM mcr.microsoft.com/dotnet/aspnet:7.0-jammy-chiseled
 
 # Set the working directory
 WORKDIR /app
