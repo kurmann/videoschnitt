@@ -1,5 +1,4 @@
 using Microsoft.Extensions.DependencyInjection;
-using Wolverine;
 
 namespace Kurmann.Videoschnitt.MetadataProcessor;
 
