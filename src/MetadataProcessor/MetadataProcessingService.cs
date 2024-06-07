@@ -1,9 +1,9 @@
 using Microsoft.Extensions.Logging;
-using Kurmann.Videoschnitt.Features.MetadataProcessor.Handler;
+using Kurmann.Videoschnitt.MetadataProcessor.Handler;
 using Kurmann.Videoschnitt.Messages.Metadata;
 using Wolverine;
 
-namespace Kurmann.Videoschnitt.Features.MetadataProcessor;
+namespace Kurmann.Videoschnitt.MetadataProcessor;
 
 public class MetadataProcessingService
 {

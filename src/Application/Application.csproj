@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Features\MetadataProcessor\MetadataProcessor.csproj" />
+    <ProjectReference Include="..\MetadataProcessor\MetadataProcessor.csproj" />
     <ProjectReference Include="..\Messages\Messages.csproj" />
   </ItemGroup>
 </Project>

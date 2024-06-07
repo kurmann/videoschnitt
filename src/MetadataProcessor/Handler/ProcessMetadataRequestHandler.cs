@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using Kurmann.Videoschnitt.Messages.Metadata;
 
-namespace Kurmann.Videoschnitt.Features.MetadataProcessor.Handler;
+namespace Kurmann.Videoschnitt.MetadataProcessor.Handler;
 
 public class ProcessMetadataRequestHandler
 {
