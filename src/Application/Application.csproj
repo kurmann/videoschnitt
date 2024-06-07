@@ -20,5 +20,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Engine\Engine.csproj" />
     <ProjectReference Include="..\Features\MetadataProcessor\MetadataProcessor.csproj" />
+    <ProjectReference Include="..\Messages\Messages.csproj" />
   </ItemGroup>
 </Project>
