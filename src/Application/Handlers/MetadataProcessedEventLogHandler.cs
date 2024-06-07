@@ -3,19 +3,12 @@ using Kurmann.Videoschnitt.Messages.Metadata;
 
 namespace Kurmann.Videoschnitt.Application;
 
-public class MetadataProcessedEventLogHandler
+public class MetadataProcessedEventLogHandler(IHubContext<LogHub> logHubContext)
 {
-    private readonly IHubContext<LogHub> _logHubContext;
-
-    public MetadataProcessedEventLogHandler(IHubContext<LogHub> logHubContext)
-    {
-        _logHubContext = logHubContext;
-    }
-
     public async Task Handle(MetadataProcessedEvent message)
     {
         var logMessage = $"Metadaten wurden erfolgreich verarbeitet: {message.Message}";
-        await _logHubContext.Clients.All.SendAsync("ReceiveLogMessage", logMessage);
+        await logHubContext.Clients.All.SendAsync("ReceiveLogMessage", logMessage);
         Console.WriteLine(logMessage);
     }
 }

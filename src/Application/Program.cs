@@ -1,7 +1,6 @@
 using Microsoft.OpenApi.Models;
 using Wolverine;
 using System.Globalization;
-using Kurmann.Videoschnitt.Features.MetadataProcessor;
 
 namespace Kurmann.Videoschnitt.Application;
 
@@ -13,11 +12,7 @@ public class Program
         CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
 
         var builder = WebApplication.CreateBuilder(args);
-        builder.Host.UseWolverine(opts =>
-        {
-            // Fügen Sie so viele andere Assemblys hinzu, wie Sie benötigen
-            opts.Discovery.IncludeAssembly(typeof(MetadataProcessingService).Assembly);
-        });
+        builder.Host.UseWolverine();
 
         var port = Environment.GetEnvironmentVariable("PORT") ?? "5024";
         builder.WebHost.UseUrls($"http://*:{port}");
