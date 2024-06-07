@@ -6,7 +6,9 @@
     <Nullable>enable</Nullable>
     <RootNamespace>Kurmann.Videoschnitt.Application</RootNamespace>
     <AssemblyName>Kurmann.Videoschnitt.Application</AssemblyName>
+    <InvariantGlobalization>true</InvariantGlobalization>
   </PropertyGroup>
+  
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="7.0.20" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
