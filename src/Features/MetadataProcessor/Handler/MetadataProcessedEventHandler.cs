@@ -12,6 +12,5 @@ public class MetadataProcessedEventHandler
     public async Task Handle(MetadataProcessedEvent message)
     {
         // Konkrete Schritte zur Verarbeitung der Metadaten
-        await _metadataProcessingService.ProcessMetadataAsync();
     }
 }

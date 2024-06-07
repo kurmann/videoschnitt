@@ -12,7 +12,7 @@ public class ProcessMetadataRequestHandler
         _logHubContext = logHubContext;
     }
 
-    public async Task Handle(ProcessMetadataRequest message)
+    public async Task Handle(ProcessMetadataRequest _)
     {
         var logMessage = "Anfrage zur Verarbeitung der Metadaten erhalten.";
         await _logHubContext.Clients.All.SendAsync("ReceiveLogMessage", logMessage);
