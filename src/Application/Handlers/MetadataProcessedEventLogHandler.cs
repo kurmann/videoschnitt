@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.SignalR;
-using Kurmann.Videoschnitt.Features.MetadataProcessor.Events;
+using Kurmann.Videoschnitt.Messages.Metadata;
 
 namespace Kurmann.Videoschnitt.Application;
 
