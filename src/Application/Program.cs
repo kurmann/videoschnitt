@@ -47,6 +47,7 @@ public class Program
         app.UseRouting();
         app.UseSwagger();
         app.UseSwagger();
+        app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Kurmann Videoschnitt API v1"));
 
         // Minimal API Endpunkte
         app.MapGet("/api/health", () => Results.Ok(new { status = "Healthy" }));
