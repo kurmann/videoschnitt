@@ -2,6 +2,8 @@ using Microsoft.OpenApi.Models;
 using Wolverine;
 using System.Globalization;
 using Kurmann.Videoschnitt.TimerService;
+using Kurmann.Videoschnitt.ApplicationConfiguration;
+using Kurmann.Videoschnitt.MetadataProcessor;
 
 namespace Kurmann.Videoschnitt.Application;
 
@@ -17,6 +19,17 @@ public class Program
 
         var port = Environment.GetEnvironmentVariable("PORT") ?? "5024";
         builder.WebHost.UseUrls($"http://*:{port}");
+
+                    // Add configuration sources
+        builder.Configuration
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+            .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
+            .AddEnvironmentVariables()
+            .AddUserSecrets<Program>();
+
+        // builder.Services.AddApplicationConfiguration(builder.Configuration);
+        builder.Services.AddMetadataProcessor(builder.Configuration);
 
         builder.Services.AddRazorPages();
         builder.Services.AddServerSideBlazor();
