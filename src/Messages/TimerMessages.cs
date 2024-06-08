@@ -1,14 +1,3 @@
-namespace Kurmann.Videoschnitt.Messages.Timer
-{
-    public record TimerElapsedEvent
-    {
-        public TimerElapsedEvent(string message)
-        {
-            Message = message;
-        }
+namespace Kurmann.Videoschnitt.Messages.Timer;
 
-        public string Message { get; }
-    }
-
-    public record StartTimerRequest();
-}
+public record TimerTriggeredEvent(DateTimeOffset TriggeredAt, TimeSpan? Interval = null);

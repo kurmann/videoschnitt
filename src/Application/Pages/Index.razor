@@ -63,7 +63,6 @@
     private async Task StartTimerService()
     {
         // todo: send message to server
-        await bus.SendAsync(new StartTimerRequest());
         StateHasChanged();
     }
 
