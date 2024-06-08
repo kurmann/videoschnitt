@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Logging;
-using Kurmann.Videoschnitt.MetadataProcessor.Handler;
 using Kurmann.Videoschnitt.Messages.Metadata;
 using Wolverine;
 

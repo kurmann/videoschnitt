@@ -1,6 +1,7 @@
 using Microsoft.OpenApi.Models;
 using Wolverine;
 using System.Globalization;
+using Kurmann.Videoschnitt.TimerService;
 
 namespace Kurmann.Videoschnitt.Application;
 
@@ -29,8 +30,9 @@ public class Program
             c.SwaggerDoc("v1", new OpenApiInfo { Title = "Kurmann Videoschnitt API", Version = "v1"});
         });
 
-
         builder.Services.AddSingleton<LogHub>();
+
+        builder.Services.AddTimerServices();
 
         var app = builder.Build();
 
