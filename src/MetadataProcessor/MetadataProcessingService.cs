@@ -53,7 +53,7 @@ public class MetadataProcessingService
     
         _logger.LogInformation("Metadatenverarbeitung abgeschlossen.");
 
-        await _bus.PublishAsync(new MetadataProcessedEvent($"Metadatanverarbeitung für Verzeichnis {_inputDirectory.FullName} abgeschlossen."));
+        await _bus.PublishAsync(new MetadataProcessedEvent(_inputDirectory));
         
     }
 }
