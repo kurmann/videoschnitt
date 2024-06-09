@@ -1,0 +1,19 @@
+;FFMETADATA1
+major_brand=qt  
+minor_version=0
+compatible_brands=qt  
+com.apple.quicktime.copyright=© Patrick Kurmann 2024
+date=2024-06-09
+keywords=5.06.24
+title=2024-06-05 Zeitraffer Wolken Testaufnahme
+copyright=© Patrick Kurmann 2024
+album=Familie Kurmann-Glück
+artist=Patrick Kurmann
+com.apple.quicktime.author=Patrick Kurmann
+com.apple.quicktime.album=Familie Kurmann-Glück
+com.apple.quicktime.keywords=5.06.24
+com.apple.quicktime.displayname=2024-06-05 Zeitraffer Wolken Testaufnahme
+com.apple.quicktime.title=2024-06-05 Zeitraffer Wolken Testaufnahme
+com.apple.quicktime.creationdate=2024-06-09
+com.apple.quicktime.description=Wolkenschauspiel als Testaufnahme. Aufgenommen in AppleLog. Color Grading.
+encoder=Lavf60.16.100

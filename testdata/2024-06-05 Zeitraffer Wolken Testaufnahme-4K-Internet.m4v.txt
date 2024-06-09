@@ -1,0 +1,12 @@
+;FFMETADATA1
+major_brand=M4V 
+minor_version=1
+compatible_brands=M4V M4A isommp42
+album=Familie Kurmann-Glück
+date=2024-06-09
+copyright-eng=
+keywords=5.06.24
+title=2024-06-05 Zeitraffer Wolken Testaufnahme
+copyright=© Patrick Kurmann 2024
+artist=Patrick Kurmann
+encoder=Lavf60.16.100
