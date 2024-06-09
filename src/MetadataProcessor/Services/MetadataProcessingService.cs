@@ -8,51 +8,39 @@ namespace Kurmann.Videoschnitt.MetadataProcessor.Services;
 public class MetadataProcessingService
 {
     private readonly ILogger<MetadataProcessingService> _logger;
-    private readonly DirectoryInfo? _inputDirectory;
+    private readonly Settings _settings;
     private readonly IMessageBus _bus;
+    private readonly MediaFileListenerService _mediaFileListenerService;
 
-    public MetadataProcessingService(ILogger<MetadataProcessingService> logger, IOptions<Settings> settings, IMessageBus bus)
+    public MetadataProcessingService(ILogger<MetadataProcessingService> logger,
+                                     IOptions<Settings> settings,
+                                     IMessageBus bus,
+                                     MediaFileListenerService mediaFileListenerService)
     {
         _logger = logger;
+        _settings = settings.Value;
         _bus = bus;
-
-        // Prüfe, ob das Verzeichnis für die Metadatenverarbeitung definiert ist
-        if (string.IsNullOrWhiteSpace(settings.Value?.InputDirectory))
-        {
-            _logger.LogWarning("Kein Wert für die Umgebungsvariable 'MetadataProcessing__InputDirectory' gesetzt.");
-            return;
-        }
-
-        // Prüfe, ob das Verzeichnis für die Metadatenverarbeitung existiert
-        var directory = new DirectoryInfo(settings.Value.InputDirectory);
-        if (directory == null || !directory.Exists)
-        {
-            _logger.LogWarning("Ungültiger oder nicht existierender Wert für Umgebungsvariable METADATA_PROCESSING_DIRECTORY: {value}", settings.Value.InputDirectory);
-            return;
-        }
-
-        _inputDirectory = directory;
+        _mediaFileListenerService = mediaFileListenerService;
     }
 
     public async Task ProcessMetadataAsync()
     {
         _logger.LogInformation("Metadatenverarbeitung gestartet.");
 
-        if (_inputDirectory == null || !_inputDirectory.Exists)
+        // Liste alle unterstützten Medien-Dateien im Verzeichnis auf
+        var mediaFiles = _mediaFileListenerService.GetSupportedMediaFiles();
+        if (mediaFiles.IsFailure)
         {
-            _logger.LogWarning("Verzeichnis existiert nicht.");
+            _logger.LogError("Fehler beim Auflisten der Medien-Dateien: {Error}", mediaFiles.Error);
             return;
         }
-        _logger.LogInformation("Verzeichnis für Metadatenverarbeitung: {directory}", _inputDirectory.FullName);
 
-        // Simuliere Metadatenverarbeitung
-        await Task.Delay(3000);
-
-        // todo: Veröffentliche Nachricht über abgeschlossene Metadatenverarbeitung
+        // todo: Eigene Logik zur Verarbeitung der Metadaten implementieren
     
         _logger.LogInformation("Metadatenverarbeitung abgeschlossen.");
 
-        await _bus.PublishAsync(new MetadataProcessedEvent(_inputDirectory));
-        
+        // Todo: Beziehe typisierte Directory-Informationen aus dem MediaFileListenerService
+        var directory = new DirectoryInfo(_settings.InputDirectory);
+        await _bus.PublishAsync(new MetadataProcessedEvent(directory, mediaFiles.Value));    
     }
 }
