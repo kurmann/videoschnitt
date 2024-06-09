@@ -1,17 +1,10 @@
 using Kurmann.Videoschnitt.Messages.Metadata;
-using Kurmann.Videoschnitt.MetadataProcessor.Services;
 
 namespace Kurmann.Videoschnitt.MetadataProcessor.Handler;
 
-public class ProcessMetadataRequestHandler
+public class ProcessMetadataRequestHandler(Engine engine)
 {
-    private readonly MetadataProcessingService _metadataProcessingService;
+    private readonly Engine _engine = engine;
 
-    public ProcessMetadataRequestHandler(MetadataProcessingService metadataProcessingService) => _metadataProcessingService = metadataProcessingService;
-
-    public async Task Handle(ProcessMetadataRequest message)
-    {
-        // Konkrete Schritte zur Verarbeitung der Metadaten
-        await _metadataProcessingService.ProcessMetadataAsync();
-    }
+    public async Task Handle(ProcessMetadataRequest _) => await _engine.StartAsync();
 }
