@@ -21,6 +21,5 @@
     <ProjectReference Include="..\Messages\Messages.csproj" />
     <ProjectReference Include="..\MetadataProcessor\MetadataProcessor.csproj" />
     <ProjectReference Include="..\TimerService\TimerService.csproj" />
-    <ProjectReference Include="..\ApplicationConfiguration\ApplicationConfiguration.csproj" />
   </ItemGroup>
 </Project>
