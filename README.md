@@ -224,7 +224,3 @@ Dieses Projekt ist unter der Apache-2.0-Lizenz lizenziert. Weitere Details sind 
 ## Kontakt
 
 Falls Fragen bestehen oder Unterstützung benötigt wird, kann ein Issue im GitHub-Repository eröffnet werden.
-
-## Dokumentation
-
-- [Applikationsbenachrichtigung mit Wolverine](/docs/Wolverine.md)
