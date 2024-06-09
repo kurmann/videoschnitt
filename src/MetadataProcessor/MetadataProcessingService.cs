@@ -2,7 +2,6 @@ using Microsoft.Extensions.Logging;
 using Kurmann.Videoschnitt.Messages.Metadata;
 using Wolverine;
 using Microsoft.Extensions.Options;
-using Kurmann.Videoschnitt.ApplicationConfiguration;
 
 namespace Kurmann.Videoschnitt.MetadataProcessor;
 
@@ -12,7 +11,7 @@ public class MetadataProcessingService
     private readonly DirectoryInfo? _inputDirectory;
     private readonly IMessageBus _bus;
 
-    public MetadataProcessingService(ILogger<MetadataProcessingService> logger, IOptions<MetadataProcessingSettings> settings, IMessageBus bus)
+    public MetadataProcessingService(ILogger<MetadataProcessingService> logger, IOptions<Settings> settings, IMessageBus bus)
     {
         _logger = logger;
         _bus = bus;

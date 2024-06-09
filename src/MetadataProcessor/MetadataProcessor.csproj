@@ -16,7 +16,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Messages\Messages.csproj" />
-    <ProjectReference Include="..\ApplicationConfiguration\ApplicationConfiguration.csproj" />
   </ItemGroup>
   
 </Project>

@@ -2,7 +2,6 @@ using Microsoft.OpenApi.Models;
 using Wolverine;
 using System.Globalization;
 using Kurmann.Videoschnitt.TimerService;
-using Kurmann.Videoschnitt.ApplicationConfiguration;
 using Kurmann.Videoschnitt.MetadataProcessor;
 
 namespace Kurmann.Videoschnitt.Application;
@@ -28,7 +27,6 @@ public class Program
             .AddEnvironmentVariables()
             .AddUserSecrets<Program>();
 
-        // builder.Services.AddApplicationConfiguration(builder.Configuration);
         builder.Services.AddMetadataProcessor(builder.Configuration);
 
         builder.Services.AddRazorPages();

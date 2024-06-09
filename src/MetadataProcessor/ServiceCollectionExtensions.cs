@@ -1,4 +1,3 @@
-using Kurmann.Videoschnitt.ApplicationConfiguration;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -9,7 +8,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddMetadataProcessor(this IServiceCollection services, IConfiguration configuration)
     {   
         // Add configuration sources
-        services.Configure<MetadataProcessingSettings>(configuration.GetSection("MetadataProcessing"));
+        services.Configure<Settings>(configuration.GetSection("MetadataProcessing"));
 
         // Register MetadataProcessingService
         services.AddSingleton<MetadataProcessingService>();
