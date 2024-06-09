@@ -3,7 +3,7 @@ using Kurmann.Videoschnitt.Messages.Metadata;
 using Wolverine;
 using Microsoft.Extensions.Options;
 
-namespace Kurmann.Videoschnitt.MetadataProcessor;
+namespace Kurmann.Videoschnitt.MetadataProcessor.Services;
 
 public class MetadataProcessingService
 {

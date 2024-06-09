@@ -1,4 +1,5 @@
 using Kurmann.Videoschnitt.Messages.Metadata;
+using Kurmann.Videoschnitt.MetadataProcessor.Services;
 
 namespace Kurmann.Videoschnitt.MetadataProcessor.Handler;
 
