@@ -2,16 +2,17 @@
 // README at: https://github.com/devcontainers/templates/tree/main/src/docker-existing-dockerfile
 {
 	"name": "Existing Dockerfile",
-	"build": {
-		// Sets the run context to one level up instead of the .devcontainer folder.
-		"context": "..",
-		// Update the 'dockerFile' property if you aren't using the standard 'Dockerfile' filename.
-		"dockerfile": "../Dockerfile"
-	},
+	"image": "mcr.microsoft.com/dotnet/nightly/sdk:9.0-preview-noble",
 	"features": {
 		"ghcr.io/devcontainers-contrib/features/ffmpeg-apt-get:1": {},
-		"ghcr.io/devcontainers/features/github-cli:1": {}
-	}
+		"ghcr.io/devcontainers/features/github-cli:1": {
+			"installDirectlyFromGitHubRelease": true,
+			"version": "latest"
+		}
+	},
+	"containerEnv": {
+		"MetadataProcessing__InputDirectory": "/workspaces/videoschnitt/testdata"
+	},
 
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},
@@ -23,7 +24,17 @@
 	// "postCreateCommand": "cat /etc/os-release",
 
 	// Configure tool-specific properties.
-	// "customizations": {},
+    "customizations": {
+        "vscode": {
+          "extensions": [
+              "GitHub.copilot", 
+              "GitHub.vscode-github-actions", 
+			  "ms-dotnettools.csharp@prerelease",
+              "ms-dotnettools.csdevkit@prerelease",
+			  "kreativ-software.csharpextensions"
+          ]
+        }
+    }
 
 	// Uncomment to connect as an existing user other than the container default. More info: https://aka.ms/dev-containers-non-root.
 	// "remoteUser": "devcontainer"

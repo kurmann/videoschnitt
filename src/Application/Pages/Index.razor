@@ -2,6 +2,7 @@
 @using Microsoft.AspNetCore.SignalR.Client
 @using Kurmann.Videoschnitt.Messages.Metadata
 @using Kurmann.Videoschnitt.Messages.Timer
+@using Kurmann.Videoschnitt.Messages.HealthCheck
 @inject NavigationManager Navigation
 @inject Wolverine.IMessageBus bus
 
@@ -10,6 +11,7 @@
 
 <nav>
     <a @onclick="async () => await ExecuteMetadataProcessing()">Metadaten-Verarbeitung</a>
+    <a @onclick="async () => await RequestHealthCheck()">Status</a>
     <a href="/swagger">API-Dokumentation</a>
 </nav>
 
@@ -56,5 +58,10 @@
         // todo: send message to server)
         await bus.SendAsync(new ProcessMetadataRequest());
         StateHasChanged();
+    }
+
+    private async Task RequestHealthCheck()
+    {
+        await bus.SendAsync(new HealthCheckRequest());
     }
 }
