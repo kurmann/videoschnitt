@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace Kurmann.Videoschnitt.Application.Handlers;
 
-public class MediaFilesForMetadataProcessingFoundEventHandler(IHubContext<LogHub> logHubContext)
+public class MetadataProcessingHandlers(IHubContext<LogHub> logHubContext)
 {
     public async Task Handle(MediaFilesForMetadataProcessingFoundEvent message)
     {
