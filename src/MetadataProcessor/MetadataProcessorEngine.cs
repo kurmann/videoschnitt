@@ -9,13 +9,13 @@ namespace Kurmann.Videoschnitt.MetadataProcessor
     /// <summary>
     /// Zentrale Steuerungsklasse für die Metadaten-Verarbeitung.
     /// </summary>
-    public class MetadataProcessorEngine(IOptions<Settings> settings,
+    public class MetadataProcessorEngine(IOptions<MetadataProcessorSettings> settings,
                                          ILogger<MetadataProcessorEngine> logger,
                                          IMessageBus bus,
                                          MediaFileListenerService mediaFileListenerService,
                                          MetadataProcessingService metadataProcessingService)
     {
-        private readonly Settings _settings = settings.Value;
+        private readonly MetadataProcessorSettings _settings = settings.Value;
         private readonly ILogger<MetadataProcessorEngine> _logger = logger;
         private readonly IMessageBus _bus = bus;
         private readonly MediaFileListenerService _mediaFileListenerService = mediaFileListenerService;

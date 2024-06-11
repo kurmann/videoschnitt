@@ -5,11 +5,11 @@ using Microsoft.Extensions.Options;
 
 namespace Kurmann.Videoschnitt.MetadataProcessor.Services;
 
-public class MetadataProcessingService(ILogger<MetadataProcessingService> logger, IOptions<Settings> settings,
+public class MetadataProcessingService(ILogger<MetadataProcessingService> logger, IOptions<MetadataProcessorSettings> settings,
                                        IMessageBus bus, MediaFileListenerService mediaFileListenerService)
 {
     private readonly ILogger<MetadataProcessingService> _logger = logger;
-    private readonly Settings _settings = settings.Value;
+    private readonly MetadataProcessorSettings _settings = settings.Value;
     private readonly IMessageBus _bus = bus;
     private readonly MediaFileListenerService _mediaFileListenerService = mediaFileListenerService;
 
