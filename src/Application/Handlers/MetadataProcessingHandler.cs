@@ -10,7 +10,6 @@ public class MetadataProcessingHandler(IHubContext<LogHub> logHubContext)
     {
         var logMessage = "Anfrage zur Verarbeitung der Metadaten erhalten.";
         await logHubContext.Clients.All.SendAsync("ReceiveLogMessage", logMessage);
-        Console.WriteLine(logMessage);
     }
 
     public async Task Handle(MediaFilesForMetadataProcessingFoundEvent message)
@@ -45,7 +44,5 @@ public class MetadataProcessingHandler(IHubContext<LogHub> logHubContext)
             logMessage = $"Verarbeitete Medien-Datei: {processedFile.Name}";
             await logHubContext.Clients.All.SendAsync("ReceiveLogMessage", logMessage);
         }
-
-        Console.WriteLine(logMessage);
     }
 }
