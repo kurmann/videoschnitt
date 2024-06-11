@@ -15,10 +15,6 @@ public class Program
         var builder = WebApplication.CreateBuilder(args);
         builder.Host.UseWolverine();
 
-        var port = Environment.GetEnvironmentVariable("PORT") ?? "5024";
-        builder.WebHost.UseUrls($"http://*:{port}");
-
-                    // Add configuration sources
         builder.Configuration
             .SetBasePath(Directory.GetCurrentDirectory())
             .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
