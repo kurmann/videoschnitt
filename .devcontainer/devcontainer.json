@@ -5,10 +5,8 @@
 	"image": "mcr.microsoft.com/dotnet/nightly/sdk:9.0-preview-noble",
 	"features": {
 		"ghcr.io/devcontainers-contrib/features/ffmpeg-apt-get:1": {},
-		"ghcr.io/devcontainers/features/github-cli:1": {
-			"installDirectlyFromGitHubRelease": true,
-			"version": "latest"
-		}
+		"ghcr.io/devcontainers/features/github-cli:1": {},
+		"ghcr.io/devcontainers/features/docker-in-docker:2": {}
 	},
 	"containerEnv": {
 		"MetadataProcessing__InputDirectory": "/workspaces/videoschnitt/testdata"
