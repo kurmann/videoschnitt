@@ -24,5 +24,9 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 # Copy the built application
 COPY --from=build-env /app/out .
 
+# Define 8080 as the port number
+ENV ASPNETCORE_URLS http://*:8080
+EXPOSE 8080
+
 # Set the entry point for the application
 ENTRYPOINT ["dotnet", "Kurmann.Videoschnitt.Application.dll"]
