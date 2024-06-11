@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Wolverine;
 using Kurmann.Videoschnitt.Messages.MediaFiles;
+using Kurmann.Videoschnitt.MetadataProcessor.Entities;
 
 namespace Kurmann.Videoschnitt.MetadataProcessor
 {
@@ -36,10 +37,17 @@ namespace Kurmann.Videoschnitt.MetadataProcessor
             // Informiere über die Anzahl der gefundenen Medien-Dateien
             await _bus.PublishAsync(new MediaFilesForMetadataProcessingFoundEvent(mediaFiles.Value));
 
+            // Gruppiere die gefundenen Medien-Dateien nach Medienset. Ein Medienset ist eine Gruppe von Medien-Dateien, die zusammengehören.
+            var mediaSets = MediasetCollection.Create(mediaFiles.Value,
+                                                      _settings.MediaSetSettings.VideoVersionSuffixes,
+                                                      _settings.MediaSetSettings.ImageVersionSuffixes,
+                                                      _settings.FileTypeSettings.SupportedVideoExtensions,
+                                                      _settings.FileTypeSettings.SupportedImageExtensions);
+
             // Informiere über den Beginn der Metadaten-Verarbeitung
             await _bus.PublishAsync(new MediaFilesMetadataProcessingStartedEvent());
 
-            // Verarbeite die Metadaten der Medien-Dateien
+            // Verarbeite die Metadaten der Medien-Dateien.
             var processedMediaFiles = await _metadataProcessingService.ProcessMetadataAsync(mediaFiles.Value);
             if (processedMediaFiles.IsFailure)
             {

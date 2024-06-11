@@ -29,4 +29,14 @@ public class MetadataProcessingService(ILogger<MetadataProcessingService> logger
 
         return mediaFiles.ToList();
     }
+
+    internal async Task ProcessMetadataAsync(FileInfo mediaFile)
+    {
+        _logger.LogInformation($"Verarbeite Metadaten für {mediaFile.Name}");
+
+        // Fake processing by waiting 5 seconds
+        await Task.Delay(5000);
+
+        _logger.LogInformation($"Metadaten für {mediaFile.Name} verarbeitet.");
+    }
 }
