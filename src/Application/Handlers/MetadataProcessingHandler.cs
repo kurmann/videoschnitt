@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace Kurmann.Videoschnitt.Application.Handlers;
 
-public class MetadataProcessingHandlers(IHubContext<LogHub> logHubContext)
+public class MetadataProcessingHandler(IHubContext<LogHub> logHubContext)
 {
     public async Task Handle(MediaFilesForMetadataProcessingFoundEvent message)
     {
@@ -12,5 +12,10 @@ public class MetadataProcessingHandlers(IHubContext<LogHub> logHubContext)
         {
             await logHubContext.Clients.All.SendAsync("ReceiveLogMessage", $"- {mediaFile.Name}");
         }
+    }
+
+    public async Task Handle(MediaFilesForMetadataProcessingFoundErrorEvent error)
+    {
+        await logHubContext.Clients.All.SendAsync("ReceiveLogMessage", $"Fehler beim Abrufen der unterstützten Medien-Dateien für die Metadaten-Verarbeitung: {error.Error}");
     }
 }
