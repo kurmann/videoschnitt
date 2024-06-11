@@ -36,7 +36,7 @@ namespace Kurmann.Videoschnitt.MetadataProcessor
             }
 
             // Informiere über die Anzahl der gefundenen Medien-Dateien
-            await _bus.PublishAsync(new SupportedMediaFilesForMetadataProcessingFoundEvent(mediaFiles.Value));
+            await _bus.PublishAsync(new MediaFilesForMetadataProcessingFoundEvent(mediaFiles.Value));
 
             // todo: Verarbeite die Metadaten
         }
