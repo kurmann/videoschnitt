@@ -13,7 +13,7 @@ public static class ServiceCollectionExtensions
 
         // Register MetadataProcessingService
         services.AddSingleton<MetadataProcessingService>();
-        services.AddSingleton<Engine>();
+        services.AddSingleton<MetadataProcessorEngine>();
 
         return services;
     }
