@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Wolverine;
@@ -35,24 +30,24 @@ public class MediaFileListenerService
             // Prüfe ob ein Verzeichnis für die Medien-Dateien konfiguriert wurde
             if (_settings.InputDirectory == null)
             {
-                return Result.Failure<List<FileInfo>>("No input directory configured.");
+                return Result.Failure<List<FileInfo>>("Kein Eingabeverzeichnis konfiguriert.");
             }
             var inputDirectoryOrNull = new DirectoryInfo(_settings.InputDirectory);
             if (inputDirectoryOrNull == null)
             {
-                return Result.Failure<List<FileInfo>>("Invalid input directory.");
+                return Result.Failure<List<FileInfo>>("Ungültiges Eingabeverzeichnis.");
             }
             inputDirectory = inputDirectoryOrNull;
         }
         catch (Exception ex)
         {
-            return Result.Failure<List<FileInfo>>("Invalid input directory: " + ex.Message);
+            return Result.Failure<List<FileInfo>>("Fehler beim Interpretieren des Eingabeverzeichnisses: " + ex.Message);
         }
 
         // Prüfe ob das Verzeichnis existiert
         if (!inputDirectory.Exists)
         {
-            return Result.Failure<List<FileInfo>>("Input directory does not exist.");
+            return Result.Failure<List<FileInfo>>("Das Eingabeverzeichnis existiert nicht.");
         }
 
         // Suche nach Quicktime-Dateien (mov) und MP4-Dateien sowie JPG- und PNG-Dateien
