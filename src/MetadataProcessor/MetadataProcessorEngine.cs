@@ -7,7 +7,7 @@ using Kurmann.Videoschnitt.Messages.MediaFiles;
 namespace Kurmann.Videoschnitt.MetadataProcessor
 {
     /// <summary>
-    /// Zentrale Steuerungsklasse für die Metadaten-Verarbeitung.
+    /// Zentrale Steuereinheit für die Metadaten-Verarbeitung.
     /// </summary>
     public class MetadataProcessorEngine(IOptions<MetadataProcessorSettings> settings,
                                          ILogger<MetadataProcessorEngine> logger,
@@ -23,6 +23,8 @@ namespace Kurmann.Videoschnitt.MetadataProcessor
 
         public async Task StartAsync()
         {
+            _logger.LogInformation("Steuereinheit für die Metadaten-Verarbeitung gestartet.");
+
             // Liste alle unterstützten Medien-Dateien im Verzeichnis auf
             var mediaFiles = _mediaFileListenerService.GetSupportedMediaFiles();
             if (mediaFiles.IsFailure)
@@ -34,7 +36,21 @@ namespace Kurmann.Videoschnitt.MetadataProcessor
             // Informiere über die Anzahl der gefundenen Medien-Dateien
             await _bus.PublishAsync(new MediaFilesForMetadataProcessingFoundEvent(mediaFiles.Value));
 
-            // todo: Verarbeite die Metadaten
+            // Informiere über den Beginn der Metadaten-Verarbeitung
+            await _bus.PublishAsync(new MediaFilesMetadataProcessingStartedEvent());
+
+            // Verarbeite die Metadaten der Medien-Dateien
+            var processedMediaFiles = await _metadataProcessingService.ProcessMetadataAsync(mediaFiles.Value);
+            if (processedMediaFiles.IsFailure)
+            {
+                await _bus.PublishAsync(new MediaFilesMetadataProcessingErrorEvent(processedMediaFiles.Error));
+                return;
+            }
+
+            // Informiere über die erfolgreiche Verarbeitung der Metadaten
+            await _bus.PublishAsync(new MediaFilesMetadataProcessingSuccessEvent(processedMediaFiles.Value));
+
+            _logger.LogInformation("Steuerung für die Metadaten-Verarbeitung abgeschlossen.");
         }
     }
 }

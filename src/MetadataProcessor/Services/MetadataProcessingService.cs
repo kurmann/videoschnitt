@@ -1,42 +1,32 @@
 using Microsoft.Extensions.Logging;
-using Kurmann.Videoschnitt.Messages.Metadata;
-using Wolverine;
 using Microsoft.Extensions.Options;
+using CSharpFunctionalExtensions;
+using JasperFx.Core;
 
 namespace Kurmann.Videoschnitt.MetadataProcessor.Services;
 
-public class MetadataProcessingService(ILogger<MetadataProcessingService> logger, IOptions<MetadataProcessorSettings> settings,
-                                       IMessageBus bus, MediaFileListenerService mediaFileListenerService)
+public class MetadataProcessingService(ILogger<MetadataProcessingService> logger, IOptions<MetadataProcessorSettings> settings)
 {
     private readonly ILogger<MetadataProcessingService> _logger = logger;
     private readonly MetadataProcessorSettings _settings = settings.Value;
-    private readonly IMessageBus _bus = bus;
-    private readonly MediaFileListenerService _mediaFileListenerService = mediaFileListenerService;
 
-    public async Task ProcessMetadataAsync()
+    public async Task<Result<List<FileInfo>>> ProcessMetadataAsync(IEnumerable<FileInfo> mediaFiles)
     {
         _logger.LogInformation("Metadatenverarbeitung gestartet.");
 
-        // Liste alle unterstützten Medien-Dateien im Verzeichnis auf
-        var mediaFiles = _mediaFileListenerService.GetSupportedMediaFiles();
-        if (mediaFiles.IsFailure)
-        {
-            _logger.LogError("Fehler beim Auflisten der Medien-Dateien: {Error}", mediaFiles.Error);
-            return;
-        }
-
         // todo: Eigene Logik zur Verarbeitung der Metadaten implementieren
+
+        // Fake processing by waiting 5 seconds
+        await Task.Delay(5000);
     
         _logger.LogInformation("Metadatenverarbeitung abgeschlossen.");
 
         // Todo: Beziehe typisierte Directory-Informationen aus dem MediaFileListenerService
         if (_settings.InputDirectory == null)
         {
-            _logger.LogError("Kein Eingabeverzeichnis konfiguriert.");
-            return;
+            return Result.Failure<List<FileInfo>>("Kein Eingabeverzeichnis konfiguriert.");
         }
 
-        var directory = new DirectoryInfo(_settings.InputDirectory);
-        await _bus.PublishAsync(new MetadataProcessedEvent(directory, mediaFiles.Value));    
+        return mediaFiles.ToList();
     }
 }

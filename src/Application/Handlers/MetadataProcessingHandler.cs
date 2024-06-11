@@ -45,4 +45,23 @@ public class MetadataProcessingHandler(IHubContext<LogHub> logHubContext)
             await logHubContext.Clients.All.SendAsync("ReceiveLogMessage", logMessage);
         }
     }
+
+    public async Task Handle(MediaFilesMetadataProcessingErrorEvent error)
+    {
+        await logHubContext.Clients.All.SendAsync("ReceiveLogMessage", $"Fehler bei der Verarbeitung der Metadaten: {error.Error}");
+    }
+
+    public async Task Handle(MediaFilesMetadataProcessingSuccessEvent message)
+    {
+        await logHubContext.Clients.All.SendAsync("ReceiveLogMessage", "Metadaten erfolgreich verarbeitet.");
+        foreach (var mediaFile in message.MediaFiles)
+        {
+            await logHubContext.Clients.All.SendAsync("ReceiveLogMessage", $"- {mediaFile.Name}");
+        }
+    }
+
+    public async Task Handle(MediaFilesMetadataProcessingStartedEvent _)
+    {
+        await logHubContext.Clients.All.SendAsync("ReceiveLogMessage", "Metadaten-Verarbeitung gestartet.");
+    }
 }
