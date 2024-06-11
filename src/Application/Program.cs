@@ -43,8 +43,6 @@ public class Program
 
         builder.Services.AddSingleton<LogHub>();
 
-        builder.Services.AddTimerServices();
-
         var app = builder.Build();
 
         if (!app.Environment.IsDevelopment())
