@@ -30,6 +30,12 @@ public class MetadataProcessingService(ILogger<MetadataProcessingService> logger
         _logger.LogInformation("Metadatenverarbeitung abgeschlossen.");
 
         // Todo: Beziehe typisierte Directory-Informationen aus dem MediaFileListenerService
+        if (_settings.InputDirectory == null)
+        {
+            _logger.LogError("Kein Eingabeverzeichnis konfiguriert.");
+            return;
+        }
+
         var directory = new DirectoryInfo(_settings.InputDirectory);
         await _bus.PublishAsync(new MetadataProcessedEvent(directory, mediaFiles.Value));    
     }
