@@ -59,6 +59,7 @@ public class MediasetCollection
         {
             var mediaset = new MediaSet
             {
+                Name = videoMediaset.Key,
                 Videos = videoMediaset.ToList(),
                 Images = imageMediasets.FirstOrDefault(i => i.Key == videoMediaset.Key)?.ToList() ?? new List<FileInfo>()
             };
@@ -116,6 +117,8 @@ public class MediasetCollection
 
 internal record MediaSet
 {
+    public string Name { get; set; }
+
     internal List<FileInfo> Videos { get; set; }
 
     internal List<FileInfo> Images { get; set; }
