@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace Kurmann.Videoschnitt.Messages.Timer;
 
-public class ProcessMetadataRequestHandler(IHubContext<LogHub> logHubContext)
+public class TimerServiceHandler(IHubContext<LogHub> logHubContext)
 {
     public async Task Handle(TimerTriggeredEvent timerTriggeredEvent)
     {

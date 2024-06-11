@@ -1,6 +1,6 @@
 namespace Kurmann.Videoschnitt.MetadataProcessor;
 
-public class Settings
+public class MetadataProcessorSettings
 {
     public string? InputDirectory { get; set; }
 }

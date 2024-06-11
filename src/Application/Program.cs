@@ -1,7 +1,6 @@
 using Microsoft.OpenApi.Models;
 using Wolverine;
 using System.Globalization;
-using Kurmann.Videoschnitt.TimerService;
 using Kurmann.Videoschnitt.MetadataProcessor;
 
 namespace Kurmann.Videoschnitt.Application;

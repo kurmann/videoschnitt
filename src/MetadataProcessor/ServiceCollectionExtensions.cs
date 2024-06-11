@@ -9,11 +9,11 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddMetadataProcessor(this IServiceCollection services, IConfiguration configuration)
     {   
         // Add configuration sources
-        services.Configure<Settings>(configuration.GetSection("MetadataProcessing"));
+        services.Configure<MetadataProcessorSettings>(configuration.GetSection("MetadataProcessing"));
 
         // Register MetadataProcessingService
         services.AddSingleton<MetadataProcessingService>();
-        services.AddSingleton<Engine>();
+        services.AddSingleton<MetadataProcessorEngine>();
 
         return services;
     }

@@ -5,11 +5,11 @@ using Microsoft.Extensions.Options;
 
 namespace Kurmann.Videoschnitt.MetadataProcessor.Services;
 
-public class MetadataProcessingService(ILogger<MetadataProcessingService> logger, IOptions<Settings> settings,
+public class MetadataProcessingService(ILogger<MetadataProcessingService> logger, IOptions<MetadataProcessorSettings> settings,
                                        IMessageBus bus, MediaFileListenerService mediaFileListenerService)
 {
     private readonly ILogger<MetadataProcessingService> _logger = logger;
-    private readonly Settings _settings = settings.Value;
+    private readonly MetadataProcessorSettings _settings = settings.Value;
     private readonly IMessageBus _bus = bus;
     private readonly MediaFileListenerService _mediaFileListenerService = mediaFileListenerService;
 
@@ -30,6 +30,12 @@ public class MetadataProcessingService(ILogger<MetadataProcessingService> logger
         _logger.LogInformation("Metadatenverarbeitung abgeschlossen.");
 
         // Todo: Beziehe typisierte Directory-Informationen aus dem MediaFileListenerService
+        if (_settings.InputDirectory == null)
+        {
+            _logger.LogError("Kein Eingabeverzeichnis konfiguriert.");
+            return;
+        }
+
         var directory = new DirectoryInfo(_settings.InputDirectory);
         await _bus.PublishAsync(new MetadataProcessedEvent(directory, mediaFiles.Value));    
     }

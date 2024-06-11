@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Kurmann.Videoschnitt.MetadataProcessor.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -13,14 +9,14 @@ namespace Kurmann.Videoschnitt.MetadataProcessor
     /// <summary>
     /// Zentrale Steuerungsklasse für die Metadaten-Verarbeitung.
     /// </summary>
-    public class Engine(IOptions<Settings> settings,
-                  ILogger<Engine> logger,
-                  IMessageBus bus,
-                  MediaFileListenerService mediaFileListenerService,
-                  MetadataProcessingService metadataProcessingService)
+    public class MetadataProcessorEngine(IOptions<MetadataProcessorSettings> settings,
+                                         ILogger<MetadataProcessorEngine> logger,
+                                         IMessageBus bus,
+                                         MediaFileListenerService mediaFileListenerService,
+                                         MetadataProcessingService metadataProcessingService)
     {
-        private readonly Settings _settings = settings.Value;
-        private readonly ILogger<Engine> _logger = logger;
+        private readonly MetadataProcessorSettings _settings = settings.Value;
+        private readonly ILogger<MetadataProcessorEngine> _logger = logger;
         private readonly IMessageBus _bus = bus;
         private readonly MediaFileListenerService _mediaFileListenerService = mediaFileListenerService;
         private readonly MetadataProcessingService _metadataProcessingService = metadataProcessingService;
