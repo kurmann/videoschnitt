@@ -31,7 +31,7 @@ namespace Kurmann.Videoschnitt.MetadataProcessor
             var mediaFiles = _mediaFileListenerService.GetSupportedMediaFiles();
             if (mediaFiles.IsFailure)
             {
-                _logger.LogError("Fehler beim Auflisten der Medien-Dateien: {Error}", mediaFiles.Error);
+                await _bus.PublishAsync(new MediaFilesForMetadataProcessingFoundErrorEvent(mediaFiles.Error));
                 return;
             }
 

@@ -28,9 +28,8 @@ public class MediaFileListenerService
 
     internal Result<List<FileInfo>> GetSupportedMediaFiles()
     {
-        DirectoryInfo inputDirectory;
-
         // Interpretiere den Pfad als Verzeichnis
+        DirectoryInfo inputDirectory;
         try
         {
             // Prüfe ob ein Verzeichnis für die Medien-Dateien konfiguriert wurde
