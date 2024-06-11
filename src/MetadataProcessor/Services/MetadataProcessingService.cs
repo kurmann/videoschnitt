@@ -5,23 +5,15 @@ using Microsoft.Extensions.Options;
 
 namespace Kurmann.Videoschnitt.MetadataProcessor.Services;
 
-public class MetadataProcessingService
+public class MetadataProcessingService(ILogger<MetadataProcessingService> logger,
+                                 IOptions<Settings> settings,
+                                 IMessageBus bus,
+                                 MediaFileListenerService mediaFileListenerService)
 {
-    private readonly ILogger<MetadataProcessingService> _logger;
-    private readonly Settings _settings;
-    private readonly IMessageBus _bus;
-    private readonly MediaFileListenerService _mediaFileListenerService;
-
-    public MetadataProcessingService(ILogger<MetadataProcessingService> logger,
-                                     IOptions<Settings> settings,
-                                     IMessageBus bus,
-                                     MediaFileListenerService mediaFileListenerService)
-    {
-        _logger = logger;
-        _settings = settings.Value;
-        _bus = bus;
-        _mediaFileListenerService = mediaFileListenerService;
-    }
+    private readonly ILogger<MetadataProcessingService> _logger = logger;
+    private readonly Settings _settings = settings.Value;
+    private readonly IMessageBus _bus = bus;
+    private readonly MediaFileListenerService _mediaFileListenerService = mediaFileListenerService;
 
     public async Task ProcessMetadataAsync()
     {
