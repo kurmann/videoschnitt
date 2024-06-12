@@ -22,7 +22,7 @@ namespace Kurmann.Videoschnitt.MetadataProcessor
         private readonly MediaFileListenerService _mediaFileListenerService = mediaFileListenerService;
         private readonly MetadataProcessingService _metadataProcessingService = metadataProcessingService;
 
-        public async Task StartAsync()
+        public async Task StartAsync(Action<WorkflowStatusUpdate>? statusCallback = null)
         {
             _logger.LogInformation("Steuereinheit für die Metadaten-Verarbeitung gestartet.");
 
@@ -62,3 +62,5 @@ namespace Kurmann.Videoschnitt.MetadataProcessor
         }
     }
 }
+
+public record WorkflowStatusUpdate(string Message, int Progress, bool IsError = false);
