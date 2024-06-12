@@ -22,17 +22,17 @@
 	// "postCreateCommand": "cat /etc/os-release",
 
 	// Configure tool-specific properties.
-    "customizations": {
-        "vscode": {
-          "extensions": [
-              "GitHub.copilot", 
-              "GitHub.vscode-github-actions", 
-			  "ms-dotnettools.csharp@1.2.6",
-              "ms-dotnettools.csdevkit@1.2.7",
-			  "kreativ-software.csharpextensions"
-          ]
-        }
-    }
+    	"customizations": {
+        	"vscode": {
+          		"extensions": [
+              			"GitHub.copilot", 
+              			"GitHub.vscode-github-actions", 
+			  	"ms-dotnettools.csharp@1.26.0",
+              			"ms-dotnettools.csdevkit@1.2.7",
+			  	"kreativ-software.csharpextensions"
+          		]
+        	}
+    	}
 
 	// Uncomment to connect as an existing user other than the container default. More info: https://aka.ms/dev-containers-non-root.
 	// "remoteUser": "devcontainer"
