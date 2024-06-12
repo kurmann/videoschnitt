@@ -2,26 +2,25 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
-namespace Kurmann.Videoschnitt.Application.Workflows
+namespace Kurmann.Videoschnitt.Application.Workflows;
+
+public class FinalCutProWorkflow
 {
-    public class FinalCutProWorkflow
+    private readonly ILogger<FinalCutProWorkflow> _logger;
+
+    public FinalCutProWorkflow(ILogger<FinalCutProWorkflow> logger) => _logger = logger;
+
+    public async Task ExecuteAsync(IProgress<string> progress)
     {
-        private readonly ILogger<FinalCutProWorkflow> _logger;
+        progress.Report("Metadata processing started.");
 
-        public FinalCutProWorkflow(ILogger<FinalCutProWorkflow> logger) => _logger = logger;
+        // Simuliere die Metadatenverarbeitung
+        await Task.Delay(1000);
+        progress.Report("Step 1 completed.");
 
-        public async Task ExecuteAsync(IProgress<string> progress)
-        {
-            progress.Report("Metadata processing started.");
+        await Task.Delay(1000);
+        progress.Report("Step 2 completed.");
 
-            // Simuliere die Metadatenverarbeitung
-            await Task.Delay(1000);
-            progress.Report("Step 1 completed.");
-
-            await Task.Delay(1000);
-            progress.Report("Step 2 completed.");
-
-            progress.Report("Metadata processing completed.");
-        }
+        progress.Report("Metadata processing completed.");
     }
 }

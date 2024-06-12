@@ -1,5 +1,4 @@
 using CSharpFunctionalExtensions;
-using Kurmann.Videoschnitt.Application.Workflows.Models;
 
 namespace Kurmann.Videoschnitt.Application.Workflows;
 
