@@ -22,6 +22,6 @@
     <ProjectReference Include="..\MetadataProcessor\MetadataProcessor.csproj" />
     <ProjectReference Include="..\TimerService\TimerService.csproj" />
     <ProjectReference Include="..\HealthCheck\HealthCheck.csproj" />
-    <ProjectReference Include="..\Application.Workflows\Application.Workflows.csproj" />
+    <ProjectReference Include="..\Workflows\Workflows.csproj" />
   </ItemGroup>
 </Project>
