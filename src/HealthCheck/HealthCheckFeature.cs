@@ -8,12 +8,12 @@ using Wolverine;
 
 namespace Kurmann.Videoschnitt.HealthCheck;
 
-public class Engine
+public class HealthCheckFeature
 {
     private readonly ToolsVersionService _toolsVersionService;
     private readonly IMessageBus _messageBus;
 
-    public Engine(ToolsVersionService toolsVersionService, IMessageBus messageBus)
+    public HealthCheckFeature(ToolsVersionService toolsVersionService, IMessageBus messageBus)
     {
         _toolsVersionService = toolsVersionService;
         _messageBus = messageBus;

@@ -5,7 +5,7 @@ namespace Kurmann.Videoschnitt.HealthCheck.Handlers;
 
 public class HealthCheckRequestHandler
 {
-    public Task HandleAsync(HealthCheckRequest _, Engine engine)
+    public Task HandleAsync(HealthCheckRequest _, HealthCheckFeature engine)
     {
         return engine.RunHealthCheckAsync();
     }
