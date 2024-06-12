@@ -1,33 +1,26 @@
+using System;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using CSharpFunctionalExtensions;
-using Kurmann.Videoschnitt.Application.Workflows.Models;
-using Kurmann.Videoschnitt.MetadataProcessor;
 
 namespace Kurmann.Videoschnitt.Application.Workflows;
 
-public class FinalCutProWorkflow(ILogger<FinalCutProWorkflow> logger, MetadataProcessorEngine metadataProcessorEngine) : IAsyncWorkflow
+public class FinalCutProWorkflow
 {
-    public async Task<Result> ExecuteAsync(Action<StatusUpdate> statusCallback)
+    private readonly ILogger<FinalCutProWorkflow> _logger;
+
+    public FinalCutProWorkflow(ILogger<FinalCutProWorkflow> logger) => _logger = logger;
+
+    public async Task ExecuteAsync(IProgress<string> progress)
     {
-        logger.LogInformation("Final Cut Pro Workflow gestartet.");
+        progress.Report("Metadata processing started.");
 
-        await metadataProcessorEngine.StartAsync();
+        // Simuliere die Metadatenverarbeitung
+        await Task.Delay(1000);
+        progress.Report("Step 1 completed.");
 
-        // Erste Statusaktualisierung
-        statusCallback(new StatusUpdate("Processing started"));
+        await Task.Delay(1000);
+        progress.Report("Step 2 completed.");
 
-        // Simuliere einen Verarbeitungsschritt
-        await Task.Delay(1000); // Simuliert eine asynchrone Arbeit
-        statusCallback(new StatusUpdate("Step 1 completed"));
-
-        // Simuliere einen weiteren Verarbeitungsschritt
-        await Task.Delay(1000); // Simuliert eine asynchrone Arbeit
-        statusCallback(new StatusUpdate("Step 2 completed"));
-
-        // Abschließende Statusaktualisierung
-        statusCallback(new StatusUpdate("Processing completed"));
-
-        logger.LogInformation("Final Cut Pro Workflow beendet.");
-        return Result.Success();
+        progress.Report("Metadata processing completed.");
     }
 }
