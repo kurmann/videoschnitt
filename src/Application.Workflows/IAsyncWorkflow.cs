@@ -1,4 +1,5 @@
 using CSharpFunctionalExtensions;
+using Kurmann.Videoschnitt.Application.Workflows.Models;
 
 namespace Kurmann.Videoschnitt.Application.Workflows;
 
@@ -7,5 +8,5 @@ namespace Kurmann.Videoschnitt.Application.Workflows;
 /// </summary>
 public interface IAsyncWorkflow
 {
-    Task<Result> ExecuteAsync();
+    Task<Result> ExecuteAsync(Action<StatusUpdate> statusCallback);
 }

@@ -11,7 +11,7 @@
 <h1>Willkommen bei Kurmann Videoschnitt</h1>
 
 <nav>
-    <a @onclick="async () => await FinalCutProWorkflow.ExecuteAsync()">Metadaten-Verarbeitung</a>
+    <a @onclick="async () => await ExecuteMetadataProcessing()">Metadaten-Verarbeitung</a>
     <a @onclick="async () => await RequestHealthCheck()">Status</a>
     <a href="/swagger">API-Dokumentation</a>
 </nav>
@@ -56,9 +56,9 @@
 
     private async Task ExecuteMetadataProcessing()
     {
-        // todo: send message to server)
-        await bus.SendAsync(new ProcessMetadataRequest());
-        StateHasChanged();
+        await FinalCutProWorkflow.ExecuteAsync(
+            statusUpdate => logs.Add(statusUpdate.Message)
+        );
     }
 
     private async Task RequestHealthCheck()
