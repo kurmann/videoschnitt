@@ -1,6 +1,4 @@
-using System;
 using System.Diagnostics;
-using System.Text;
 using CSharpFunctionalExtensions;
 
 namespace Kurmann.Videoschnitt.HealthCheck.Services;
