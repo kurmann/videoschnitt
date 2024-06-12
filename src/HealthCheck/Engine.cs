@@ -8,17 +8,26 @@ using Wolverine;
 
 namespace Kurmann.Videoschnitt.HealthCheck;
 
-public class Engine(ToolsVersionService toolsVersionService, IMessageBus messageBus)
+public class Engine
 {
+    private readonly ToolsVersionService _toolsVersionService;
+    private readonly IMessageBus _messageBus;
+
+    public Engine(ToolsVersionService toolsVersionService, IMessageBus messageBus)
+    {
+        _toolsVersionService = toolsVersionService;
+        _messageBus = messageBus;
+    }
+
     public async Task RunHealthCheckAsync()
     {
         // Ermitteln der FFmpeg-Version
-        var version = toolsVersionService.GetFFmpegVersion();
+        var version = _toolsVersionService.GetFFmpegVersion();
         if (version.IsFailure)
         {
-            await messageBus.PublishAsync(new HealthCheckFailedResponse("FFmpeg version could not be determined"));
+            await _messageBus.PublishAsync(new HealthCheckFailedResponse("FFmpeg version could not be determined"));
             return;
         }
-        await messageBus.PublishAsync(new HealthCheckResponse(version.Value));
+        await _messageBus.PublishAsync(new HealthCheckResponse(version.Value));
     }
 }

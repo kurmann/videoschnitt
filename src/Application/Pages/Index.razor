@@ -1,28 +1,13 @@
 ﻿@page "/"
 @using Microsoft.AspNetCore.SignalR.Client
-@using Kurmann.Videoschnitt.Messages.Metadata
-@using Kurmann.Videoschnitt.Messages.Timer
-@using Kurmann.Videoschnitt.Messages.HealthCheck
+@using Kurmann.Videoschnitt.Application.Components
 @inject NavigationManager Navigation
-@inject Wolverine.IMessageBus bus
-@inject Kurmann.Videoschnitt.Application.Workflows.FinalCutProWorkflow FinalCutProWorkflow
 
 <h1>Willkommen bei Kurmann Videoschnitt</h1>
 
-<nav>
-    <a @onclick="async () => await ExecuteMetadataProcessing()">Metadaten-Verarbeitung</a>
-    <a @onclick="async () => await RequestHealthCheck()">Status</a>
-    <a href="/swagger">API-Dokumentation</a>
-</nav>
+<MainNavigation OnLogAdded="HandleLogAdded" />
 
-<div id="logContainer">
-    <pre>
-        @foreach (var log in logs)
-        {
-            @log.ToString()@Environment.NewLine;
-        }
-    </pre>
-</div>
+<LogContainer Logs="logs" />
 
 @code {
     private List<string> logs = new List<string>();
@@ -53,19 +38,9 @@
         }
     }
 
-    private async Task ExecuteMetadataProcessing()
+    private async Task HandleLogAdded(string log)
     {
-        var progress = new Progress<string>(statusUpdate =>
-        {
-            logs.Add(statusUpdate);
-            InvokeAsync(StateHasChanged);
-        });
-
-        await FinalCutProWorkflow.ExecuteAsync(progress);
-    }
-
-    private async Task RequestHealthCheck()
-    {
-        await bus.SendAsync(new HealthCheckRequest());
+        logs.Add(log);
+        await InvokeAsync(StateHasChanged);
     }
 }

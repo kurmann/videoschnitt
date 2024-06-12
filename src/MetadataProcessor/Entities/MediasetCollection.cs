@@ -117,9 +117,9 @@ public class MediasetCollection
 
 internal record MediaSet
 {
-    public string Name { get; set; }
+    public string? Name { get; set; }
 
-    internal List<FileInfo> Videos { get; set; }
+    internal List<FileInfo> Videos { get; set; } = new List<FileInfo>();
 
-    internal List<FileInfo> Images { get; set; }
+    internal List<FileInfo> Images { get; set; } = new List<FileInfo>();
 }
