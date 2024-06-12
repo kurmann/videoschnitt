@@ -4,8 +4,15 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace Kurmann.Videoschnitt.Application.Handlers;
 
-public class MetadataProcessingHandler(IHubContext<LogHub> logHubContext)
+public class MetadataProcessingHandler
 {
+    private readonly IHubContext<LogHub> logHubContext;
+
+    public MetadataProcessingHandler(IHubContext<LogHub> logHubContext)
+    {
+        this.logHubContext = logHubContext;
+    }
+
     public async Task Handle(ProcessMetadataRequest _)
     {
         var logMessage = "Anfrage zur Verarbeitung der Metadaten erhalten.";

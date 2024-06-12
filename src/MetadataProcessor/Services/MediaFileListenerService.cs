@@ -7,10 +7,16 @@ namespace Kurmann.Videoschnitt.MetadataProcessor.Services;
 /// <summary>
 /// Verantwortlich für das Auflisten von unterstützten Medien-Dateien eines Verzeichnisses.
 /// Unterstützte Mediendateien sind Quicktime-Dateien (mov) und MP4-Dateien sowie JPG- und PNG-Dateien, die als Thumbnails verwendet werden können.
-public class MediaFileListenerService(ILogger<MediaFileListenerService> logger, IOptions<MetadataProcessorSettings> settings)
+public class MediaFileListenerService
 {
-    private readonly ILogger<MediaFileListenerService> _logger = logger;
-    private readonly MetadataProcessorSettings _settings = settings.Value;
+    private readonly ILogger<MediaFileListenerService> _logger;
+    private readonly MetadataProcessorSettings _settings;
+
+    public MediaFileListenerService(ILogger<MediaFileListenerService> logger, IOptions<MetadataProcessorSettings> settings)
+    {
+        _logger = logger;
+        _settings = settings.Value;
+    }
 
     internal Result<List<FileInfo>> GetSupportedMediaFiles()
     {

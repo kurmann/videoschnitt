@@ -77,15 +77,16 @@ public class FileNameInfo
     private class CrossPlatformInvalidCharsHandler
     {
         public static readonly List<char> InvalidChars;
-        public static readonly List<char> InvalidCharsForWindowsPaths = ['\\', ':', '*', '?', '"', '<', '>', '|'];
-        public static readonly List<char> InvalidCharsForUnixPaths = ['/'];
+        public static readonly List<char> InvalidCharsForWindowsPaths = new List<char>{'\\', ':', '*', '?', '"', '<', '>', '|'};
+        public static readonly List<char> InvalidCharsForUnixPaths = new List<char>{'/'};
 
         static CrossPlatformInvalidCharsHandler()
         {
-            InvalidChars =
-            [
-                '<', '>', ':', '"', '|', '?', '*', // Gemeinsam für Datei- und Verzeichnisnamen
-        ];
+            // Gemeinsam für Datei- und Verzeichnisnamen
+            InvalidChars = new List<char>
+            {
+                '<', '>', ':', '"', '|', '?', '*',
+            };
 
             for (int i = 0; i < 32; i++) // Steuerzeichen
             {

@@ -14,16 +14,16 @@ public class MediaSetSettings
     /// <summary>
     /// Liste der Varianten-Suffixe, die in den Dateinamen von Videos vorkommen können, einschließlich des Trennzeichens.
     /// </summary>
-    public List<string>? VideoVersionSuffixes { get; set; } = ["-4K-Internet", "-4K-Medienserver", "-1080p-Internet"];
+    public List<string>? VideoVersionSuffixes { get; set; } = new List<string>{"-4K-Internet", "-4K-Medienserver", "-1080p-Internet"};
 
     /// <summary>
     /// Liste der Varianten-Suffixe, die in den Dateinamen von Bilddateien vorkommen können, einschließlich des Trennzeichens.
     /// </summary>
-    public List<string>? ImageVersionSuffixes { get; set; } = ["", "-fanart",];
+    public List<string>? ImageVersionSuffixes { get; set; } = new List<string>{"", "-fanart"};
 }
 
 public class FileTypeSettings
 {
-    public List<string>? SupportedVideoExtensions { get; set; } = [".mov", ".mp4", ".m4v"];
-    public List<string>? SupportedImageExtensions { get; set; } = [".jpg", ".jpeg", ".png"];
+    public List<string>? SupportedVideoExtensions { get; set; } = new List<string> { ".mov", ".mp4", ".m4v" };
+    public List<string>? SupportedImageExtensions { get; set; } = new List<string> { ".jpg", ".jpeg", ".png" };
 }

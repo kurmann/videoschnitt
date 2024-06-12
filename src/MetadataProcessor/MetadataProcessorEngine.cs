@@ -10,17 +10,26 @@ namespace Kurmann.Videoschnitt.MetadataProcessor
     /// <summary>
     /// Zentrale Steuereinheit für die Metadaten-Verarbeitung.
     /// </summary>
-    public class MetadataProcessorEngine(IOptions<MetadataProcessorSettings> settings,
+    public class MetadataProcessorEngine
+    {
+        private readonly MetadataProcessorSettings _settings;
+        private readonly ILogger<MetadataProcessorEngine> _logger;
+        private readonly IMessageBus _bus;
+        private readonly MediaFileListenerService _mediaFileListenerService;
+        private readonly MetadataProcessingService _metadataProcessingService;
+
+        public MetadataProcessorEngine(IOptions<MetadataProcessorSettings> settings,
                                          ILogger<MetadataProcessorEngine> logger,
                                          IMessageBus bus,
                                          MediaFileListenerService mediaFileListenerService,
                                          MetadataProcessingService metadataProcessingService)
-    {
-        private readonly MetadataProcessorSettings _settings = settings.Value;
-        private readonly ILogger<MetadataProcessorEngine> _logger = logger;
-        private readonly IMessageBus _bus = bus;
-        private readonly MediaFileListenerService _mediaFileListenerService = mediaFileListenerService;
-        private readonly MetadataProcessingService _metadataProcessingService = metadataProcessingService;
+        {
+            _settings = settings.Value;
+            _logger = logger;
+            _bus = bus;
+            _mediaFileListenerService = mediaFileListenerService;
+            _metadataProcessingService = metadataProcessingService;
+        }
 
         public async Task StartAsync(Action<WorkflowStatusUpdate>? statusCallback = null)
         {

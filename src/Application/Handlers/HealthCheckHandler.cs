@@ -3,8 +3,15 @@ using Kurmann.Videoschnitt.Messages.HealthCheck;
 
 namespace Kurmann.Videoschnitt.Application.Handlers;
 
-public class HealthCheckHandler(IHubContext<LogHub> logHubContext)
+public class HealthCheckHandler
 {
+    private readonly IHubContext<LogHub> logHubContext;
+
+    public HealthCheckHandler(IHubContext<LogHub> logHubContext)
+    {
+        this.logHubContext = logHubContext;
+    }
+
     public async Task Handle(HealthCheckRequest _)
     {
         var logMessage = "Anfrage für Statusabfrage (HealthCheck) erhalten.";
