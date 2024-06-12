@@ -5,8 +5,8 @@
     <LangVersion>10</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <RootNamespace>Kurmann.Videoschnitt.ApplicationWorkflows</RootNamespace>
-    <AssemblyName>Kurmann.Videoschnitt.ApplicationWorkflows</AssemblyName>
+    <RootNamespace>Kurmann.Videoschnitt.Workflows</RootNamespace>
+    <AssemblyName>Kurmann.Videoschnitt.Workflows</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
