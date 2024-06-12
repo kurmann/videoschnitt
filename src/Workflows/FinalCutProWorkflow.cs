@@ -2,7 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
-namespace Kurmann.Videoschnitt.Application.Workflows;
+namespace Kurmann.Videoschnitt.Workflows;
 
 public class FinalCutProWorkflow
 {
