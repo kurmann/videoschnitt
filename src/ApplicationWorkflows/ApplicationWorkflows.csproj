@@ -1,0 +1,11 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Kurmann.Videoschnitt.ApplicationWorkflows</RootNamespace>
+    <AssemblyName>Kurmann.Videoschnitt.ApplicationWorkflows</AssemblyName>
+  </PropertyGroup>
+
+</Project>
