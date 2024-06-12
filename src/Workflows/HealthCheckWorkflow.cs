@@ -1,23 +1,24 @@
 using CSharpFunctionalExtensions;
+using Kurmann.Videoschnitt.HealthCheck;
 
-namespace Kurmann.Videoschnitt.Workflows
+namespace Kurmann.Videoschnitt.Workflows;
+
+public class HealthCheckWorkflow : IWorkflow
 {
-    public class HealthCheckWorkflow : IAsyncWorkflow
+    private readonly HealthCheckFeature _healthCheckFeature;
+
+    public HealthCheckWorkflow(HealthCheckFeature healthCheckFeature)
     {
-        public async Task<Result> ExecuteAsync(IProgress<string> progress)
-        {
-            progress.Report("Health check started.");
+        _healthCheckFeature = healthCheckFeature;
+    }
 
-            // Simulate health check
-            await Task.Delay(1000);
-            progress.Report("Step 1 completed.");
+    public Result Execute(IProgress<string> progress)
+    {
+        progress.Report("Health check started.");
 
-            await Task.Delay(1000);
-            progress.Report("Step 2 completed.");
+        _healthCheckFeature.RunHealthCheck(progress);
 
-            progress.Report("Health check completed.");
-
-            return Result.Success();
-        }
+        progress.Report("Health check completed.");
+        return Result.Success();
     }
 }

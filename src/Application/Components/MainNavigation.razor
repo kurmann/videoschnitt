@@ -8,7 +8,7 @@
 
 <nav>
     <a @onclick="async () => await ExecuteMetadataProcessing()">Metadaten-Verarbeitung</a>
-    <a @onclick="async () => await ExecuteHealthCheck()">Status</a>
+    <a @onclick="ExecuteHealthCheck">Status</a>
     <a href="/swagger">API-Dokumentation</a>
 </nav>
 
@@ -26,13 +26,14 @@
         await FinalCutProWorkflow.ExecuteAsync(progress);
     }
 
-    private async Task ExecuteHealthCheck()
+    private void ExecuteHealthCheck()
     {
         var progress = new Progress<string>(async statusUpdate =>
         {
             await OnLogAdded.InvokeAsync(statusUpdate);
         });
 
-        await HealthCheckWorkflow.ExecuteAsync(progress);
+        _ = HealthCheckWorkflow.Execute(progress);
+
     }
 }

@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\MetadataProcessor\MetadataProcessor.csproj" />
+    <ProjectReference Include="..\HealthCheck\HealthCheck.csproj" />
   </ItemGroup>
 
 </Project>
