@@ -1,0 +1,14 @@
+@namespace Kurmann.Videoschnitt.Application.Components
+@code {
+    [Parameter]
+    public List<string> Logs { get; set; } = new List<string>();
+}
+
+<div id="logContainer">
+    <pre>
+        @foreach (var log in Logs)
+        {
+            @log.ToString()@Environment.NewLine;
+        }
+    </pre>
+</div>

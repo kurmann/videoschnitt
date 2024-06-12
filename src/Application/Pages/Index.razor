@@ -10,14 +10,7 @@
 
 <MainNavigation OnLogAdded="HandleLogAdded" />
 
-<div id="logContainer">
-    <pre>
-        @foreach (var log in logs)
-        {
-            @log.ToString()@Environment.NewLine;
-        }
-    </pre>
-</div>
+<LogContainer Logs="logs" />
 
 @code {
     private List<string> logs = new List<string>();
