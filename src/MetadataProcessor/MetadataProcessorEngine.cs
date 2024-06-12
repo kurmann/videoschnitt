@@ -15,7 +15,7 @@ namespace Kurmann.Videoschnitt.MetadataProcessor
         private readonly MediaFileListenerService _mediaFileListenerService;
         private readonly MetadataProcessingService _metadataProcessingService;
 
-        public MetadataProcessorEngine(IOptions<MetadataProcessorSettings> settings, ILogger<MetadataProcessorEngine> logger, IMessageBus bus,
+        public MetadataProcessorEngine(IOptions<MetadataProcessorSettings> settings, ILogger<MetadataProcessorEngine> logger,
             MediaFileListenerService mediaFileListenerService, MetadataProcessingService metadataProcessingService)
         {
             _settings = settings.Value;
@@ -31,8 +31,7 @@ namespace Kurmann.Videoschnitt.MetadataProcessor
             var mediaFiles = _mediaFileListenerService.GetSupportedMediaFiles();
             if (mediaFiles.IsFailure)
             {
-                progress.Report("Fehler beim Ermitteln der Medien-Dateien.");
-                return Result.Failure(mediaFiles.Error);
+                return Result.Failure($"Fehler beim Ermitteln der Medien-Dateien: {mediaFiles.Error}");
             }
 
             // Informiere über die Anzahl der gefundenen Medien-Dateien

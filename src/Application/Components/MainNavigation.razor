@@ -1,8 +1,8 @@
 @namespace Kurmann.Videoschnitt.Application.Components
 
 @using Microsoft.AspNetCore.Components
+@using CSharpFunctionalExtensions
 @inject NavigationManager Navigation
-@inject Wolverine.IMessageBus bus
 @inject Kurmann.Videoschnitt.Workflows.FinalCutProWorkflow FinalCutProWorkflow
 @inject Kurmann.Videoschnitt.Workflows.HealthCheckWorkflow HealthCheckWorkflow
 
@@ -23,7 +23,11 @@
             await OnLogAdded.InvokeAsync(statusUpdate);
         });
 
-        await FinalCutProWorkflow.ExecuteAsync(progress);
+        var result = await FinalCutProWorkflow.ExecuteAsync(progress);
+        if (result.IsFailure)
+        {
+            await OnLogAdded.InvokeAsync(result.Error);
+        }
     }
 
     private void ExecuteHealthCheck()
@@ -33,7 +37,10 @@
             await OnLogAdded.InvokeAsync(statusUpdate);
         });
 
-        _ = HealthCheckWorkflow.Execute(progress);
-
+        var result = HealthCheckWorkflow.Execute(progress);
+        if (result.IsFailure)
+        {
+            OnLogAdded.InvokeAsync(result.Error);
+        }
     }
 }

@@ -22,8 +22,7 @@ public class FinalCutProWorkflow : IAsyncWorkflow
         var result = await _metadataProcessorEngine.StartAsync(progress);
         if (result.IsFailure)
         {
-            progress.Report("Fehler beim Ausführen des Final Cut Pro Workflows.");
-            return Result.Failure(result.Error);
+            return Result.Failure($"Fehler beim Ausführen des Final Cut Pro Workflows: {result.Error}");
         }
 
         progress.Report("Final Cut Pro Workflow beendet.");

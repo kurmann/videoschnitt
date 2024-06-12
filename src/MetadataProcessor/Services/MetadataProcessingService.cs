@@ -1,7 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using CSharpFunctionalExtensions;
-using JasperFx.Core;
 
 namespace Kurmann.Videoschnitt.MetadataProcessor.Services;
 
