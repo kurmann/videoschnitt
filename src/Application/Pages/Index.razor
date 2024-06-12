@@ -7,7 +7,6 @@
 @inject Wolverine.IMessageBus bus
 @inject Kurmann.Videoschnitt.Application.Workflows.FinalCutProWorkflow FinalCutProWorkflow
 
-
 <h1>Willkommen bei Kurmann Videoschnitt</h1>
 
 <nav>
@@ -56,9 +55,13 @@
 
     private async Task ExecuteMetadataProcessing()
     {
-        await FinalCutProWorkflow.ExecuteAsync(
-            statusUpdate => logs.Add(statusUpdate.Message)
-        );
+        var progress = new Progress<string>(statusUpdate =>
+        {
+            logs.Add(statusUpdate);
+            InvokeAsync(StateHasChanged);
+        });
+
+        await FinalCutProWorkflow.ExecuteAsync(progress);
     }
 
     private async Task RequestHealthCheck()

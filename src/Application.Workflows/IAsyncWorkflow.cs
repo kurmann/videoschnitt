@@ -8,5 +8,5 @@ namespace Kurmann.Videoschnitt.Application.Workflows;
 /// </summary>
 public interface IAsyncWorkflow
 {
-    Task<Result> ExecuteAsync(Action<StatusUpdate> statusCallback);
+    Task<Result> ExecuteAsync(IProgress<string> progress);
 }
