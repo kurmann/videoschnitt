@@ -27,8 +27,8 @@
           "extensions": [
               "GitHub.copilot", 
               "GitHub.vscode-github-actions", 
-			  "ms-dotnettools.csharp@prerelease",
-              "ms-dotnettools.csdevkit@prerelease",
+			  "ms-dotnettools.csharp@1.2.6",
+              "ms-dotnettools.csdevkit@1.2.7",
 			  "kreativ-software.csharpextensions"
           ]
         }
