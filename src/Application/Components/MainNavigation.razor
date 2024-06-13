@@ -14,17 +14,17 @@
     [Parameter]
     public EventCallback<string> OnLogAdded { get; set; }
 
-    private void ExecuteMetadataProcessing()
+    private async Task ExecuteMetadataProcessing()
     {
         var progress = new Progress<string>(async statusUpdate =>
         {
             await OnLogAdded.InvokeAsync(statusUpdate);
         });
 
-        var result = FinalCutProWorkflow.Execute(progress);
+        var result = await FinalCutProWorkflow.ExecuteAsync(progress);
         if (result.IsFailure)
         {
-            OnLogAdded.InvokeAsync(result.Error);
+            await OnLogAdded.InvokeAsync(result.Error);
         }
     }
 

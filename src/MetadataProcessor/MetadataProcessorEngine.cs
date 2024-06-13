@@ -25,7 +25,7 @@ namespace Kurmann.Videoschnitt.MetadataProcessor
             _ffmpegMetadataService = ffmpegMetadataService;
         }
 
-        public Result Start(IProgress<string> progress)
+        public async Task<Result> Start(IProgress<string> progress)
         {
             progress.Report("Steuereinheit für die Metadaten-Verarbeitung gestartet.");
 
@@ -53,7 +53,7 @@ namespace Kurmann.Videoschnitt.MetadataProcessor
                                                       _settings.FileTypeSettings.SupportedImageExtensions);
 
             // Verarbeite alle Mediensets
-            var result = Process(mediaSets, progress);
+            var result = await Process(mediaSets, progress);
             if (result.IsFailure)
             {
                 return Result.Failure($"Fehler bei der Verarbeitung der Mediensets: {result.Error}");
@@ -65,7 +65,7 @@ namespace Kurmann.Videoschnitt.MetadataProcessor
         /// <summary>
         /// Verarbeitet die Metadaten eines Mediensets.
         /// </summary>
-        private Result Process(MediasetCollection mediasetCollection, IProgress<string> progress)
+        private async Task<Result> Process(MediasetCollection mediasetCollection, IProgress<string> progress)
         {
             if (mediasetCollection?.Mediasets == null)
             {
@@ -76,7 +76,7 @@ namespace Kurmann.Videoschnitt.MetadataProcessor
             foreach (var mediaSet in mediasetCollection.Mediasets)
             {
                 // Verarbeite das Medienset
-                var result = Process(mediaSet, progress);
+                var result = await Process(mediaSet, progress);
                 if (result.IsFailure)
                 {
                     return Result.Failure($"Fehler bei der Verarbeitung des Mediensets {mediaSet.Name}: {result.Error}");
@@ -87,7 +87,7 @@ namespace Kurmann.Videoschnitt.MetadataProcessor
             return Result.Success();
         }
 
-        private Result Process(MediaSet mediaSet, IProgress<string> progress)
+        private async Task<Result> Process(MediaSet mediaSet, IProgress<string> progress)
         {
             // Nimm die zuerst gefundene QuickTime MOV Datei als Referenz für die Metadaten-Verarbeitung
             var referenceMediaFile = mediaSet.QuickTimeVideos.FirstOrDefault();
@@ -100,7 +100,7 @@ namespace Kurmann.Videoschnitt.MetadataProcessor
             progress.Report("Beginne mit der Verarbeitung der Metadaten.");
 
             // Lies die Metadaten der Referenzdatei aus
-            var metadataResult = _ffmpegMetadataService.GetFFmpegMetadata(referenceMediaFile.FullName);
+            var metadataResult = await _ffmpegMetadataService.GetFFmpegMetadataAsync(referenceMediaFile.FullName);
             if (metadataResult.IsFailure)
             {
                 return Result.Failure($"Fehler beim Auslesen der Metadaten der Referenzdatei {referenceMediaFile.Name}: {metadataResult.Error}");

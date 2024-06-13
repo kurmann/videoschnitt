@@ -1,41 +1,31 @@
-using System.Diagnostics;
 using CSharpFunctionalExtensions;
+using Microsoft.Extensions.Logging;
 
 namespace Kurmann.Videoschnitt.MetadataProcessor.Services;
 
 public class FFmpegMetadataService
 {
-    public Result<string> GetFFmpegMetadata(string filePath)
+    private readonly CommandExecutorService _executorService;
+    private readonly ILogger<FFmpegMetadataService> _logger;
+
+    public FFmpegMetadataService(CommandExecutorService executorService, ILogger<FFmpegMetadataService> logger)
     {
-        try
-        {
-            var process = new Process()
-            {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = "/bin/bash",
-                    Arguments = $"-c \"ffmpeg -i '{filePath}' -f ffmetadata -\"",
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                }
-            };
-            process.Start();
-            string result = process.StandardOutput.ReadToEnd();
-            string error = process.StandardError.ReadToEnd();
-            process.WaitForExit();
+        _executorService = executorService;
+        _logger = logger;
+    }
 
-            if (!string.IsNullOrWhiteSpace(error))
-            {
-                return Result.Failure<string>(error);
-            }
+    public async Task<Result<string>> GetFFmpegMetadataAsync(string filePath)
+    {
+        var arguments = $"-i \"{filePath}\" -f ffmetadata -";
+        var result = await _executorService.ExecuteCommandAsync("/usr/bin/ffmpeg", arguments);
 
-            return Result.Success(result);
-        }
-        catch (Exception ex)
+        if (result.IsSuccess)
         {
-            return Result.Failure<string>(ex.Message);
+            var rawMetadata = string.Join("\n", result.Value);
+            return Result.Success(rawMetadata);
         }
+
+        _logger.LogError($"Error retrieving FFmpeg metadata: {result.Error}");
+        return Result.Failure<string>(result.Error);
     }
 }
