@@ -9,7 +9,8 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddMetadataProcessor(this IServiceCollection services, IConfiguration configuration)
     {   
         // Add configuration sources
-        services.Configure<MetadataProcessorSettings>(options => configuration.GetSection("MetadataProcessor").Bind(options));
+        var section = configuration.GetSection(MetadataProcessorSettings.SectionName);
+        services.Configure<MetadataProcessorSettings>(options => section.Bind(options));
 
         // Register MetadataProcessingService
         services.AddSingleton<MetadataProcessingService>();
