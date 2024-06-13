@@ -1,7 +1,7 @@
 using Kurmann.Videoschnitt.MetadataProcessor.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Kurmann.Videoschnitt.MetadataProcessor.Entities;
+using Kurmann.Videoschnitt.MetadataProcessor.Entities.SupportedMediaTypes;
 using CSharpFunctionalExtensions;
 
 namespace Kurmann.Videoschnitt.MetadataProcessor
@@ -15,14 +15,20 @@ namespace Kurmann.Videoschnitt.MetadataProcessor
         private readonly MediaFileListenerService _mediaFileListenerService;
         private readonly MetadataProcessingService _metadataProcessingService;
         private readonly FFmpegMetadataService _ffmpegMetadataService;
+        private readonly MediaTypeDetectorService _mediaTypeDetectorService;
+        private readonly MediaSetVariantService _mediaSetVariantService;
 
         public MetadataProcessorEngine(IOptions<MetadataProcessorSettings> settings, ILogger<MetadataProcessorEngine> logger,
-            MediaFileListenerService mediaFileListenerService, MetadataProcessingService metadataProcessingService, FFmpegMetadataService ffmpegMetadataService)
+            MediaFileListenerService mediaFileListenerService, MetadataProcessingService metadataProcessingService, 
+            FFmpegMetadataService ffmpegMetadataService, MediaTypeDetectorService mediaTypeDetectorService,
+            MediaSetVariantService mediaSetVariantService)
         {
             _settings = settings.Value;
             _mediaFileListenerService = mediaFileListenerService;
             _metadataProcessingService = metadataProcessingService;
             _ffmpegMetadataService = ffmpegMetadataService;
+            _mediaTypeDetectorService = mediaTypeDetectorService;
+            _mediaSetVariantService = mediaSetVariantService;
         }
 
         public async Task<Result> Start(IProgress<string> progress)
@@ -48,80 +54,36 @@ namespace Kurmann.Videoschnitt.MetadataProcessor
             // Informiere über die Anzahl der gefundenen Medien-Dateien
             progress.Report($"Anzahl der gefundenen Medien-Dateien: {mediaFiles.Value.Count}");
 
-            // Liste alle Medien-Dateien auf
+            // Iteriere über alle Medien-Dateien und ermittle den Medientyp
             foreach (var mediaFile in mediaFiles.Value)
             {
-                progress.Report(mediaFile.Name);
-            }
-
-            // Gruppiere die gefundenen Medien-Dateien nach Medienset. Ein Medienset ist eine Gruppe von Medien-Dateien, die zusammengehören.
-            var mediaSets = MediasetCollection.Create(mediaFiles.Value,
-                                                      _settings.MediaSetSettings.VideoVersionSuffixes,
-                                                      _settings.MediaSetSettings.ImageVersionSuffixes,
-                                                      _settings.FileTypeSettings.SupportedVideoExtensions,
-                                                      _settings.FileTypeSettings.SupportedImageExtensions);
-
-            // Verarbeite alle Mediensets
-            var result = await Process(mediaSets, progress);
-            if (result.IsFailure)
-            {
-                return Result.Failure($"Fehler bei der Verarbeitung der Mediensets: {result.Error}");
-            }
-
-            return Result.Success();
-        }
-
-        /// <summary>
-        /// Verarbeitet die Metadaten eines Mediensets.
-        /// </summary>
-        private async Task<Result> Process(MediasetCollection mediasetCollection, IProgress<string> progress)
-        {
-            if (mediasetCollection?.Mediasets == null)
-            {
-                return Result.Failure("Keine Mediensets gefunden.");
-            }
-
-            // Iteriere über alle Mediensets
-            foreach (var mediaSet in mediasetCollection.Mediasets)
-            {
-                // Verarbeite das Medienset
-                var result = await Process(mediaSet, progress);
-                if (result.IsFailure)
+                var mediaTypeResult = _mediaTypeDetectorService.DetectMediaType(mediaFile);
+                if (mediaTypeResult.IsFailure)
                 {
-                    return Result.Failure($"Fehler bei der Verarbeitung des Mediensets {mediaSet.Name}: {result.Error}");
+                    progress.Report($"Fehler beim Ermitteln des Medientyps für Datei {mediaFile.Name}: {mediaTypeResult.Error}");
+                    continue;
                 }
-                progress.Report($"Medienset {mediaSet.Name} erfolgreich verarbeitet.");
+
+                // Informiere über den ermittelten Medientyp
+                progress.Report($"Medientyp für Datei {mediaFile.Name}: {mediaTypeResult.Value.GetType().Name}");
+
+                // Wenn die Datei ein Mpeg4-Video ist, ermittle die QuickTime-Movie-Variante
+                if (mediaTypeResult.Value is Mpeg4Video mpeg4Video)
+                {
+                    var quickTimeMovieVariantResult = _mediaSetVariantService.GetQuickTimeMovieVariant(mpeg4Video, mediaFiles.Value);
+                    if (quickTimeMovieVariantResult.IsFailure)
+                    {
+                        progress.Report($"Fehler beim Ermitteln der QuickTime-Movie-Variante für Mpeg4-Video {mpeg4Video.FileInfo.Name}: {quickTimeMovieVariantResult.Error}");
+                        continue;
+                    }
+
+                    // Informiere über die gefundene QuickTime-Movie-Variante
+                    progress.Report($"QuickTime-Movie-Variante für Mpeg4-Video {mpeg4Video.FileInfo.Name}: {quickTimeMovieVariantResult.Value.FileInfo.FullName}");
+                }
             }
 
             return Result.Success();
         }
-
-        private async Task<Result> Process(MediaSet mediaSet, IProgress<string> progress)
-        {
-            // Nimm die zuerst gefundene QuickTime MOV Datei als Referenz für die Metadaten-Verarbeitung
-            var referenceMediaFile = mediaSet.QuickTimeVideos.FirstOrDefault();
-            if (referenceMediaFile == null)
-            {
-                return Result.Failure($"Keine QuickTime MOV Datei gefunden im Medienset {mediaSet.Name} um die Metadaten auszulesen.");
-            }
-
-            // Informiere über den Beginn der Metadaten-Verarbeitung
-            progress.Report("Beginne mit der Verarbeitung der Metadaten.");
-
-            // Lies die Metadaten der Referenzdatei aus
-            var metadataResult = await _ffmpegMetadataService.GetFFmpegMetadataAsync(referenceMediaFile.FullName);
-            if (metadataResult.IsFailure)
-            {
-                return Result.Failure($"Fehler beim Auslesen der Metadaten der Referenzdatei {referenceMediaFile.Name}: {metadataResult.Error}");
-            }
-
-            // Informiere über die erfolgreiche Verarbeitung der Metadaten
-            progress.Report("Metadaten erfolgreich verarbeitet.");
-
-            // Informiere über die Metadaten der Referenzdatei
-            progress.Report(metadataResult.Value);
-
-            return Result.Success();
-        }
+    
     }
 }
