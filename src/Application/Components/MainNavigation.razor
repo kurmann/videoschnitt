@@ -5,7 +5,7 @@
 @inject Kurmann.Videoschnitt.Workflows.HealthCheckWorkflow HealthCheckWorkflow
 
 <nav>
-    <a @onclick="async () => await ExecuteMetadataProcessing()">Metadaten-Verarbeitung</a>
+    <a @onclick="ExecuteMetadataProcessing">Metadaten-Verarbeitung</a>
     <a @onclick="ExecuteHealthCheck">Status</a>
     <a href="/swagger">API-Dokumentation</a>
 </nav>

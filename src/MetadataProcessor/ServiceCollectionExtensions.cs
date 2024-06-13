@@ -16,6 +16,8 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<MetadataProcessingService>();
         services.AddSingleton<MetadataProcessorEngine>();
         services.AddSingleton<MediaFileListenerService>();
+        services.AddSingleton<FFmpegMetadataService>();
+        services.AddSingleton<CommandExecutorService>();
 
         return services;
     }

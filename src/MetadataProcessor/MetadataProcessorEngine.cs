@@ -14,16 +14,18 @@ namespace Kurmann.Videoschnitt.MetadataProcessor
         private readonly MetadataProcessorSettings _settings;
         private readonly MediaFileListenerService _mediaFileListenerService;
         private readonly MetadataProcessingService _metadataProcessingService;
+        private readonly FFmpegMetadataService _ffmpegMetadataService;
 
         public MetadataProcessorEngine(IOptions<MetadataProcessorSettings> settings, ILogger<MetadataProcessorEngine> logger,
-            MediaFileListenerService mediaFileListenerService, MetadataProcessingService metadataProcessingService)
+            MediaFileListenerService mediaFileListenerService, MetadataProcessingService metadataProcessingService, FFmpegMetadataService ffmpegMetadataService)
         {
             _settings = settings.Value;
             _mediaFileListenerService = mediaFileListenerService;
             _metadataProcessingService = metadataProcessingService;
+            _ffmpegMetadataService = ffmpegMetadataService;
         }
 
-        public async Task<Result> StartAsync(IProgress<string> progress)
+        public async Task<Result> Start(IProgress<string> progress)
         {
             progress.Report("Steuereinheit für die Metadaten-Verarbeitung gestartet.");
 
@@ -50,19 +52,66 @@ namespace Kurmann.Videoschnitt.MetadataProcessor
                                                       _settings.FileTypeSettings.SupportedVideoExtensions,
                                                       _settings.FileTypeSettings.SupportedImageExtensions);
 
+            // Verarbeite alle Mediensets
+            var result = await Process(mediaSets, progress);
+            if (result.IsFailure)
+            {
+                return Result.Failure($"Fehler bei der Verarbeitung der Mediensets: {result.Error}");
+            }
+
+            return Result.Success();
+        }
+
+        /// <summary>
+        /// Verarbeitet die Metadaten eines Mediensets.
+        /// </summary>
+        private async Task<Result> Process(MediasetCollection mediasetCollection, IProgress<string> progress)
+        {
+            if (mediasetCollection?.Mediasets == null)
+            {
+                return Result.Failure("Keine Mediensets gefunden.");
+            }
+
+            // Iteriere über alle Mediensets
+            foreach (var mediaSet in mediasetCollection.Mediasets)
+            {
+                // Verarbeite das Medienset
+                var result = await Process(mediaSet, progress);
+                if (result.IsFailure)
+                {
+                    return Result.Failure($"Fehler bei der Verarbeitung des Mediensets {mediaSet.Name}: {result.Error}");
+                }
+                progress.Report($"Medienset {mediaSet.Name} erfolgreich verarbeitet.");
+            }
+
+            return Result.Success();
+        }
+
+        private async Task<Result> Process(MediaSet mediaSet, IProgress<string> progress)
+        {
+            // Nimm die zuerst gefundene QuickTime MOV Datei als Referenz für die Metadaten-Verarbeitung
+            var referenceMediaFile = mediaSet.QuickTimeVideos.FirstOrDefault();
+            if (referenceMediaFile == null)
+            {
+                return Result.Failure($"Keine QuickTime MOV Datei gefunden im Medienset {mediaSet.Name} um die Metadaten auszulesen.");
+            }
+
             // Informiere über den Beginn der Metadaten-Verarbeitung
             progress.Report("Beginne mit der Verarbeitung der Metadaten.");
 
-            // Verarbeite die Metadaten der Medien-Dateien.
-            var processedMediaFiles = await _metadataProcessingService.ProcessMetadataAsync(mediaFiles.Value);
-            if (processedMediaFiles.IsFailure)
+            // Lies die Metadaten der Referenzdatei aus
+            var metadataResult = await _ffmpegMetadataService.GetFFmpegMetadataAsync(referenceMediaFile.FullName);
+            if (metadataResult.IsFailure)
             {
-                progress.Report("Fehler bei der Verarbeitung der Metadaten.");
-                return Result.Failure(processedMediaFiles.Error);
+                return Result.Failure($"Fehler beim Auslesen der Metadaten der Referenzdatei {referenceMediaFile.Name}: {metadataResult.Error}");
             }
 
             // Informiere über die erfolgreiche Verarbeitung der Metadaten
             progress.Report("Metadaten erfolgreich verarbeitet.");
+
+            // Informiere über die Metadaten der Referenzdatei
+            progress.Report(metadataResult.Value);
+
             return Result.Success();
         }
     }
