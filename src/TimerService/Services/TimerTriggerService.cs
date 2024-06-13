@@ -1,6 +1,5 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Wolverine;
 using Kurmann.Videoschnitt.Messages.Timer;
 
 namespace Kurmann.Videoschnitt.TimerService.Services;
@@ -9,13 +8,11 @@ public class TimerTriggerService :  IHostedService, IDisposable
 {
     private readonly ILogger<TimerTriggerService> _logger;
     private Timer? _timer;
-    private IMessageBus _bus;
     private const int IntervalInSeconds = 5;
 
-    public TimerTriggerService(ILogger<TimerTriggerService> logger, IMessageBus bus)
+    public TimerTriggerService(ILogger<TimerTriggerService> logger)
     {
         _logger = logger;
-        _bus = bus;
     }
 
     public Task StartAsync(CancellationToken cancellationToken)
@@ -25,11 +22,12 @@ public class TimerTriggerService :  IHostedService, IDisposable
         return Task.CompletedTask;
     }
 
-    private async void DoWork(object? state)
+    private void DoWork(object? state)
     {
         var now = DateTimeOffset.Now;
         var timerEvent = new TimerTriggeredEvent(now, TimeSpan.FromSeconds(IntervalInSeconds));
-        await _bus.PublishAsync(timerEvent);
+
+        // here's where we implement the timer logic
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
