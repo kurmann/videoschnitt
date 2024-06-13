@@ -29,6 +29,15 @@ namespace Kurmann.Videoschnitt.MetadataProcessor
         {
             progress.Report("Steuereinheit für die Metadaten-Verarbeitung gestartet.");
 
+            // Prüfe ob die Einstellungen korrekt geladen wurden
+            if (_settings.InputDirectory == null)
+            {
+                return Result.Failure("Kein Eingabeverzeichnis konfiguriert. Wenn Umgebungsvariablen verwendet werden, sollte der Name der Umgebungsvariable 'MetadataProcessing__InputDirectory' lauten.");
+            }
+
+            // Informiere über das Eingabeverzeichnis
+            progress.Report($"Eingabeverzeichnis: {_settings.InputDirectory}");
+
             // Liste alle unterstützten Medien-Dateien im Verzeichnis auf
             var mediaFiles = _mediaFileListenerService.GetSupportedMediaFiles();
             if (mediaFiles.IsFailure)
