@@ -2,6 +2,8 @@ namespace Kurmann.Videoschnitt.MetadataProcessor;
 
 public class MetadataProcessorSettings
 {
+    public const string SectionName = "MetadataProcessing";
+
     public string? InputDirectory { get; set; }
 
     public MediaSetSettings? MediaSetSettings { get; set; } = new MediaSetSettings();
