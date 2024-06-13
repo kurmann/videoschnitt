@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
 namespace Kurmann.Videoschnitt.MetadataProcessor.Entities;
 
 /// <summary>
@@ -23,10 +18,12 @@ namespace Kurmann.Videoschnitt.MetadataProcessor.Entities;
 public class MediasetCollection
 {
     public List<FileInfo> IgnoredFiles { get; }
+    public List<MediaSet> Mediasets { get; }
 
-    private MediasetCollection(List<FileInfo> ignoredFiles)
+    private MediasetCollection(List<FileInfo> ignoredFile, List<MediaSet> mediasets)
     {
-        IgnoredFiles = ignoredFiles;
+        IgnoredFiles = ignoredFile;
+        Mediasets = mediasets;
     }
 
     public static MediasetCollection Create(IEnumerable<FileInfo> mediaFiles,
@@ -66,7 +63,7 @@ public class MediasetCollection
             mediasets.Add(mediaset);
         }
 
-        return new MediasetCollection(filesWithoutLeadingIsoDate);
+        return new MediasetCollection(filesWithoutLeadingIsoDate, mediasets);
     }
 
     // Gib eine Liste von Medien-Dateien zurück, die ohne ISO-Datum und nachfolgendem Leerzeichen beginnen
@@ -115,11 +112,21 @@ public class MediasetCollection
     }
 }
 
-internal record MediaSet
+public record MediaSet
 {
     public string? Name { get; set; }
 
     internal List<FileInfo> Videos { get; set; } = new List<FileInfo>();
 
     internal List<FileInfo> Images { get; set; } = new List<FileInfo>();
+
+    /// <summary>
+    /// Filtere nach QuickTime MOV Dateien und berücksichtige Gross- und Kleinschreibung (.mov und .MOV)
+    /// </summary>
+    public List<FileInfo> QuickTimeVideos => Videos.Where(v => v.Extension.Equals(".mov", StringComparison.OrdinalIgnoreCase)).ToList();
+
+    /// <summary>
+    /// Filtere nach MP4 Dateien und berücksichtige Gross- und Kleinschreibung (.mp4 und .MP4 sowie .m4v und .M4V)
+    /// </summary>
+    public List<FileInfo> Mp4Videos => Videos.Where(v => v.Extension.Equals(".mp4", StringComparison.OrdinalIgnoreCase) || v.Extension.Equals(".m4v", StringComparison.OrdinalIgnoreCase)).ToList();
 }

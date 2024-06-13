@@ -4,7 +4,7 @@ using CSharpFunctionalExtensions;
 
 namespace Kurmann.Videoschnitt.Workflows;
 
-public class FinalCutProWorkflow : IAsyncWorkflow
+public class FinalCutProWorkflow : IWorkflow
 {
     private readonly ILogger<FinalCutProWorkflow> _logger;
     private readonly MetadataProcessorEngine _metadataProcessorEngine;
@@ -15,11 +15,11 @@ public class FinalCutProWorkflow : IAsyncWorkflow
         _metadataProcessorEngine = metadataProcessorEngine;
     }
 
-    public async Task<Result> ExecuteAsync(IProgress<string> progress)
+    public Result Execute(IProgress<string> progress)
     {
         progress.Report("Final Cut Pro Workflow gestartet.");
 
-        var result = await _metadataProcessorEngine.StartAsync(progress);
+        var result = _metadataProcessorEngine.Start(progress);
         if (result.IsFailure)
         {
             return Result.Failure($"Fehler beim Ausführen des Final Cut Pro Workflows: {result.Error}");

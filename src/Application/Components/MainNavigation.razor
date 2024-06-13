@@ -5,7 +5,7 @@
 @inject Kurmann.Videoschnitt.Workflows.HealthCheckWorkflow HealthCheckWorkflow
 
 <nav>
-    <a @onclick="async () => await ExecuteMetadataProcessing()">Metadaten-Verarbeitung</a>
+    <a @onclick="ExecuteMetadataProcessing">Metadaten-Verarbeitung</a>
     <a @onclick="ExecuteHealthCheck">Status</a>
     <a href="/swagger">API-Dokumentation</a>
 </nav>
@@ -14,17 +14,17 @@
     [Parameter]
     public EventCallback<string> OnLogAdded { get; set; }
 
-    private async Task ExecuteMetadataProcessing()
+    private void ExecuteMetadataProcessing()
     {
         var progress = new Progress<string>(async statusUpdate =>
         {
             await OnLogAdded.InvokeAsync(statusUpdate);
         });
 
-        var result = await FinalCutProWorkflow.ExecuteAsync(progress);
+        var result = FinalCutProWorkflow.Execute(progress);
         if (result.IsFailure)
         {
-            await OnLogAdded.InvokeAsync(result.Error);
+            OnLogAdded.InvokeAsync(result.Error);
         }
     }
 
