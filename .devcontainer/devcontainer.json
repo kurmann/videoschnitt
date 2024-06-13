@@ -11,29 +11,23 @@
 	"containerEnv": {
 		"MetadataProcessing__InputDirectory": "/workspaces/videoschnitt/testdata"
 	},
-
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},
-
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],
-
 	// Uncomment the next line to run commands after the container is created.
 	// "postCreateCommand": "cat /etc/os-release",
-
 	// Configure tool-specific properties.
-    	"customizations": {
-        	"vscode": {
-          		"extensions": [
-              			"GitHub.copilot", 
-              			"GitHub.vscode-github-actions", 
-			  	"ms-dotnettools.csharp@1.26.0",
-              			"ms-dotnettools.csdevkit@1.2.7",
-			  	"kreativ-software.csharpextensions"
-          		]
-        	}
-    	}
-
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"GitHub.copilot",
+				"GitHub.vscode-github-actions",
+				"ms-dotnettools.csharp@1.26.0",
+				"kreativ-software.csharpextensions"
+			]
+		}
+	}
 	// Uncomment to connect as an existing user other than the container default. More info: https://aka.ms/dev-containers-non-root.
 	// "remoteUser": "devcontainer"
 }

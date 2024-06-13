@@ -1,7 +1,9 @@
 using Microsoft.OpenApi.Models;
-using Wolverine;
 using System.Globalization;
 using Kurmann.Videoschnitt.MetadataProcessor;
+using Kurmann.Videoschnitt.Workflows;
+using Kurmann.Videoschnitt.HealthCheck;
+using Kurmann.Videoschnitt.HealthCheck.Services;
 
 namespace Kurmann.Videoschnitt.Application;
 
@@ -13,7 +15,6 @@ public class Program
         CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
 
         var builder = WebApplication.CreateBuilder(args);
-        builder.Host.UseWolverine();
 
         builder.Configuration
             .SetBasePath(Directory.GetCurrentDirectory())
@@ -37,6 +38,10 @@ public class Program
         });
 
         builder.Services.AddSingleton<LogHub>();
+        builder.Services.AddScoped<FinalCutProWorkflow>();
+        builder.Services.AddScoped<HealthCheckWorkflow>();
+        builder.Services.AddScoped<HealthCheckFeature>();
+        builder.Services.AddScoped<ToolsVersionService>();
 
         var app = builder.Build();
 

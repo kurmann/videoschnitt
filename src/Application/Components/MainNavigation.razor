@@ -1,14 +1,12 @@
 @namespace Kurmann.Videoschnitt.Application.Components
 
-@using Microsoft.AspNetCore.Components
-@using Kurmann.Videoschnitt.Messages.HealthCheck
 @inject NavigationManager Navigation
-@inject Wolverine.IMessageBus bus
 @inject Kurmann.Videoschnitt.Workflows.FinalCutProWorkflow FinalCutProWorkflow
+@inject Kurmann.Videoschnitt.Workflows.HealthCheckWorkflow HealthCheckWorkflow
 
 <nav>
     <a @onclick="async () => await ExecuteMetadataProcessing()">Metadaten-Verarbeitung</a>
-    <a @onclick="async () => await RequestHealthCheck()">Status</a>
+    <a @onclick="ExecuteHealthCheck">Status</a>
     <a href="/swagger">API-Dokumentation</a>
 </nav>
 
@@ -23,11 +21,24 @@
             await OnLogAdded.InvokeAsync(statusUpdate);
         });
 
-        await FinalCutProWorkflow.ExecuteAsync(progress);
+        var result = await FinalCutProWorkflow.ExecuteAsync(progress);
+        if (result.IsFailure)
+        {
+            await OnLogAdded.InvokeAsync(result.Error);
+        }
     }
 
-    private async Task RequestHealthCheck()
+    private void ExecuteHealthCheck()
     {
-        await bus.SendAsync(new HealthCheckRequest());
+        var progress = new Progress<string>(async statusUpdate =>
+        {
+            await OnLogAdded.InvokeAsync(statusUpdate);
+        });
+
+        var result = HealthCheckWorkflow.Execute(progress);
+        if (result.IsFailure)
+        {
+            OnLogAdded.InvokeAsync(result.Error);
+        }
     }
 }
