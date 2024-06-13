@@ -19,6 +19,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<FFmpegMetadataService>();
         services.AddSingleton<CommandExecutorService>();
         services.AddSingleton<MediaTypeDetectorService>();
+        services.AddSingleton<MediaSetVariantService>();
 
         return services;
     }

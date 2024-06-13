@@ -1,7 +1,7 @@
 using Kurmann.Videoschnitt.MetadataProcessor.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Kurmann.Videoschnitt.MetadataProcessor.Entities;
+using Kurmann.Videoschnitt.MetadataProcessor.Entities.SupportedMediaTypes;
 using CSharpFunctionalExtensions;
 
 namespace Kurmann.Videoschnitt.MetadataProcessor
@@ -16,16 +16,19 @@ namespace Kurmann.Videoschnitt.MetadataProcessor
         private readonly MetadataProcessingService _metadataProcessingService;
         private readonly FFmpegMetadataService _ffmpegMetadataService;
         private readonly MediaTypeDetectorService _mediaTypeDetectorService;
+        private readonly MediaSetVariantService _mediaSetVariantService;
 
         public MetadataProcessorEngine(IOptions<MetadataProcessorSettings> settings, ILogger<MetadataProcessorEngine> logger,
             MediaFileListenerService mediaFileListenerService, MetadataProcessingService metadataProcessingService, 
-            FFmpegMetadataService ffmpegMetadataService, MediaTypeDetectorService mediaTypeDetectorService)
+            FFmpegMetadataService ffmpegMetadataService, MediaTypeDetectorService mediaTypeDetectorService,
+            MediaSetVariantService mediaSetVariantService)
         {
             _settings = settings.Value;
             _mediaFileListenerService = mediaFileListenerService;
             _metadataProcessingService = metadataProcessingService;
             _ffmpegMetadataService = ffmpegMetadataService;
             _mediaTypeDetectorService = mediaTypeDetectorService;
+            _mediaSetVariantService = mediaSetVariantService;
         }
 
         public async Task<Result> Start(IProgress<string> progress)
@@ -64,7 +67,19 @@ namespace Kurmann.Videoschnitt.MetadataProcessor
                 // Informiere über den ermittelten Medientyp
                 progress.Report($"Medientyp für Datei {mediaFile.Name}: {mediaTypeResult.Value.GetType().Name}");
 
+                // Wenn die Datei ein Mpeg4-Video ist, ermittle die QuickTime-Movie-Variante
+                if (mediaTypeResult.Value is Mpeg4Video mpeg4Video)
+                {
+                    var quickTimeMovieVariantResult = _mediaSetVariantService.GetQuickTimeMovieVariant(mpeg4Video, mediaFiles.Value);
+                    if (quickTimeMovieVariantResult.IsFailure)
+                    {
+                        progress.Report($"Fehler beim Ermitteln der QuickTime-Movie-Variante für Mpeg4-Video {mpeg4Video.FileInfo.Name}: {quickTimeMovieVariantResult.Error}");
+                        continue;
+                    }
 
+                    // Informiere über die gefundene QuickTime-Movie-Variante
+                    progress.Report($"QuickTime-Movie-Variante für Mpeg4-Video {mpeg4Video.FileInfo.Name}: {quickTimeMovieVariantResult.Value.FileInfo.FullName}");
+                }
             }
 
             return Result.Success();
