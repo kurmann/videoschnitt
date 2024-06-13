@@ -3,8 +3,7 @@ services:
     build: .
     container_name: videoschnitt
     volumes:
-      - ${LOCAL_MEDIA_LIBRARY_PATH}:/media/library:rw
-      - ${METADATA_PROCESSING_DIRECTORY}:/media/metadata-processing:rw
+      - ${MetadataProcessing__InputDirectory}:/media/metadata-processing:rw
     ports:
       - "8080:8080"
     env_file:
@@ -12,5 +11,4 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - PORT=8080
-      - LOCAL_MEDIA_LIBRARY_PATH=/media/library
-      - METADATA_PROCESSING_DIRECTORY=/media/metadata-processing
+      - MetadataProcessing__InputDirectory=/media/metadata-processing
