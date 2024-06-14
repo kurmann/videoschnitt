@@ -19,11 +19,12 @@ public class MetadataProcessorEngine
     private readonly MediaTypeDetectorService _mediaTypeDetectorService;
     private readonly MediaSetVariantService _mediaSetVariantService;
     private readonly InfuseXmlService _infuseXmlService;
+    private readonly TargetDirectoryResolver _targetDirectoryResolver;
 
     public MetadataProcessorEngine(IOptions<MetadataProcessorSettings> settings, ILogger<MetadataProcessorEngine> logger,
         MediaFileListenerService mediaFileListenerService, MetadataProcessingService metadataProcessingService, 
         FFmpegMetadataService ffmpegMetadataService, MediaTypeDetectorService mediaTypeDetectorService,
-        MediaSetVariantService mediaSetVariantService, InfuseXmlService infuseXmlService)
+        MediaSetVariantService mediaSetVariantService, InfuseXmlService infuseXmlService, TargetDirectoryResolver targetDirectoryResolver)
     {
         _settings = settings.Value;
         _mediaFileListenerService = mediaFileListenerService;
@@ -32,6 +33,7 @@ public class MetadataProcessorEngine
         _mediaTypeDetectorService = mediaTypeDetectorService;
         _mediaSetVariantService = mediaSetVariantService;
         _infuseXmlService = infuseXmlService;
+        _targetDirectoryResolver = targetDirectoryResolver;
     }
 
     public async Task<Result> Start(IProgress<string> progress)
@@ -162,7 +164,12 @@ public class MetadataProcessorEngine
                 // Informiere über den Erfolg
                 progress.Report($"Infuse-XML-Datei für Medien-Objekt {mediaFile.FullName} erfolgreich geschrieben.");
             }
+
+            // Ermittle das Zielverzeichnis für die Infuse-Mediathek
+            
         }
+
+
 
         return Result.Success();
     }

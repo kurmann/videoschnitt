@@ -21,6 +21,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<MediaTypeDetectorService>();
         services.AddSingleton<MediaSetVariantService>();
         services.AddSingleton<InfuseXmlService>();
+        services.AddSingleton<TargetDirectoryResolver>();
 
         return services;
     }
