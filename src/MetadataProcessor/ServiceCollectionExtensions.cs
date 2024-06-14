@@ -13,15 +13,15 @@ public static class ServiceCollectionExtensions
         services.Configure<MetadataProcessorSettings>(options => section.Bind(options));
 
         // Register MetadataProcessingService
-        services.AddSingleton<MetadataProcessingService>();
-        services.AddSingleton<MetadataProcessorEngine>();
-        services.AddSingleton<MediaFileListenerService>();
-        services.AddSingleton<FFmpegMetadataService>();
-        services.AddSingleton<CommandExecutorService>();
-        services.AddSingleton<MediaTypeDetectorService>();
-        services.AddSingleton<MediaSetVariantService>();
-        services.AddSingleton<InfuseXmlService>();
-        services.AddSingleton<TargetDirectoryResolver>();
+        services.AddScoped<MetadataProcessingService>();
+        services.AddScoped<MetadataProcessorEngine>();
+        services.AddScoped<MediaFileListenerService>();
+        services.AddScoped<FFmpegMetadataService>();
+        services.AddScoped<CommandExecutorService>();
+        services.AddScoped<MediaTypeDetectorService>();
+        services.AddScoped<MediaSetVariantService>();
+        services.AddScoped<InfuseXmlService>();
+        services.AddScoped<TargetDirectoryResolver>();
 
         return services;
     }
