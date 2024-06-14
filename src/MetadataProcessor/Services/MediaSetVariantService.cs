@@ -60,4 +60,49 @@ public class MediaSetVariantService
         // Wenn keine passende QuickTime-Movie-Variante gefunden wurde, gib None zurück. Dies ist kein Fehler.
         return Result.Success<Maybe<QuickTimeMovie>>(Maybe<QuickTimeMovie>.None);
     }
+
+    /// <summary>
+    /// Ermittle den Dateinamen des Infuse-XML-Objekts. Der Dateiname entspricht dem Dateinamen des Medien-Objekts ohne Varianten-Suffix und mit der Dateiendung '.xml'
+    /// </summary>
+    public Result<FileInfo> GetInfuseXmlFileName(FileInfo? mediaFile)
+    {   
+        if (mediaFile == null)
+        {
+            return Result.Failure<FileInfo>("Das Medien-Objekt ist null.");
+        }
+
+        _logger.LogInformation($"Ermittle Dateinamen des Infuse-XML-Objekts für Medien-Objekt {mediaFile.FullName}");
+
+        // Ermittle das Verzeichnis
+        var directoryPath = mediaFile.DirectoryName;
+        if (directoryPath == null)
+        {
+            return Result.Failure<FileInfo>($"Das Verzeichnis des Medien-Objekts {mediaFile.FullName} konnte nicht ermittelt werden.");
+        }
+
+        var variantSuffixes = _settings.MediaSetSettings?.VideoVersionSuffixes;
+        if (variantSuffixes == null || variantSuffixes.Count == 0)
+        {
+            return Result.Failure<FileInfo>("Keine Variantensuffixe für Infuse-XML-Objekte konfiguriert.");
+        }
+
+        // Nimm als Ausgangslage den Dateinamen des Mpeg4-Videos ohne Variantensuffix und ohne Dateiendung
+        var baseFileName = Path.GetFileNameWithoutExtension(mediaFile.Name);
+        foreach (var variantSuffix in variantSuffixes)
+        {
+            // Prüfe ob der Dateiname mit dem Variantensuffix endet
+            if (baseFileName.EndsWith(variantSuffix, StringComparison.InvariantCultureIgnoreCase))
+            {
+                // Entferne das Variantensuffix, falls vorhanden
+                baseFileName = baseFileName.Replace(variantSuffix, string.Empty, StringComparison.InvariantCultureIgnoreCase);
+
+                // Erstelle den Dateinamen des Infuse-XML-Objekts
+                var infuseXmlFileName = Path.Combine(directoryPath, $"{baseFileName}.xml");
+                return Result.Success(new FileInfo(infuseXmlFileName));
+            }
+        }
+
+        // Wenn kein passender Dateiname für das Infuse-XML-Objekt gefunden wurde, gib einen Fehler zurück
+        return Result.Failure<FileInfo>($"Kein passender Dateiname für das Infuse-XML-Objekt des Medien-Objekts {mediaFile.FullName} gefunden.");
+    }
 }

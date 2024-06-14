@@ -71,7 +71,7 @@ namespace Kurmann.Videoschnitt.MetadataProcessor
                 progress.Report($"Medientyp für Datei {mediaFile.Name}: {mediaTypeResult.Value.GetType().Name}");
 
                 // Wenn die Datei ein Mpeg4-Video ist, ermittle die QuickTime-Movie-Variante
-                XDocument infuseXml = null;
+                var infuseXml = Maybe<XDocument>.None;
                 if (mediaTypeResult.Value is Mpeg4Video mpeg4Video)
                 {
                     var quickTimeMovieVariantResult = _mediaSetVariantService.GetQuickTimeMovieVariant(mpeg4Video, mediaFiles.Value);
@@ -134,6 +134,17 @@ namespace Kurmann.Videoschnitt.MetadataProcessor
                     // Fahre mit der nächsten Datei fort
                     continue;
                 }
+
+                // Ermittle den Dateinamen des Infuse-XML-Objekts. Der Dateiname entspricht dem Dateinamen des Medien-Objekts ohne Varianten-Suffix und mit der Dateiendung '.xml'
+                var infuseXmlFileName = _mediaSetVariantService.GetInfuseXmlFileName(mediaFile);
+                if (infuseXmlFileName.IsFailure)
+                {
+                    progress.Report(infuseXmlFileName.Error);
+                    continue;
+                }
+
+                // Informiere über den Dateinamen des Infuse-XML-Objekts
+                progress.Report($"Dateiname des Infuse-XML-Objekts für Medien-Objekt {mediaFile.FullName}: {infuseXmlFileName.Value.FullName}");
             }
 
             return Result.Success();
