@@ -25,7 +25,9 @@ namespace Kurmann.Videoschnitt.MetadataProcessor.Entities
         public string? Encoder { get; }
         public DateOnly? PublishedDate { get; private set; }
 
-        private FFmpegMetadata(Dictionary<string, string> metadata)
+        public string RawString { get; }
+
+        private FFmpegMetadata(Dictionary<string, string> metadata, string rawString)
         {
             MajorBrand = metadata.GetValueOrDefault("major_brand");
             MinorVersion = metadata.GetValueOrDefault("minor_version");
@@ -43,6 +45,8 @@ namespace Kurmann.Videoschnitt.MetadataProcessor.Entities
             Encoder = metadata.GetValueOrDefault("encoder");
 
             ParseTitleForDate();
+
+            RawString = rawString;
         }
 
         public static Result<FFmpegMetadata> Create(string rawString)
@@ -72,7 +76,7 @@ namespace Kurmann.Videoschnitt.MetadataProcessor.Entities
                 return Result.Failure<FFmpegMetadata>($"Error while parsing FFmpeg metadata: {ex.Message}");
             }
 
-            return new FFmpegMetadata(metadata);
+            return new FFmpegMetadata(metadata, rawString);
         }
 
         private static DateOnly? ParseDate(string? dateString)

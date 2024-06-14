@@ -37,7 +37,7 @@ namespace Kurmann.Videoschnitt.MetadataProcessor.Services
             }
 
             // Informiere über die extrahierten Metadaten
-            progress.Report($"Extrahierte Metadaten aus QuickTime-Movie {quickTimeMovie.FileInfo.Name}: {ffmpegMetadata.Value}");
+            progress.Report($"Extrahierte Metadaten aus QuickTime-Movie {quickTimeMovie.FileInfo.Name}:\n{ffmpegMetadata.Value.RawString}");
 
             // Erstelle ein Infuse-XML-Objekt aus den Metadaten
             var infuseXml = ffmpegMetadata.Value.ToInfuseXml();
