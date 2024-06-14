@@ -20,6 +20,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<CommandExecutorService>();
         services.AddSingleton<MediaTypeDetectorService>();
         services.AddSingleton<MediaSetVariantService>();
+        services.AddSingleton<InfuseXmlService>();
 
         return services;
     }
