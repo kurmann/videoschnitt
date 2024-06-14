@@ -23,5 +23,6 @@
     <ProjectReference Include="..\TimerService\TimerService.csproj" />
     <ProjectReference Include="..\HealthCheck\HealthCheck.csproj" />
     <ProjectReference Include="..\Workflows\Workflows.csproj" />
+    <ProjectReference Include="..\InfuseMediaLibrary\InfuseMediaLibrary.csproj" />
   </ItemGroup>
 </Project>
