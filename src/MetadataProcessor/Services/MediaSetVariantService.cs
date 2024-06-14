@@ -22,14 +22,14 @@ public class MediaSetVariantService
     /// Gibt die QuickTime-Movie-Variante eines Mpeg4-Videos zurück, die in den gegebenen Medien-Dateien gefunden wurde.
     /// Die Varianten werden anhand von den Variantensuffixen ermittelt, die in den Einstellungen konfiguriert sind.
     /// </summary>
-    public Result<QuickTimeMovie> GetQuickTimeMovieVariant(Mpeg4Video mpeg4Video, IEnumerable<FileInfo> mediaFiles)
+    public Result<Maybe<QuickTimeMovie>> GetQuickTimeMovieVariant(Mpeg4Video mpeg4Video, IEnumerable<FileInfo> mediaFiles)
     {
         _logger.LogInformation($"Ermittle QuickTime-Movie-Variante für Mpeg4-Video {mpeg4Video.FileInfo.FullName}");
 
         var variantSuffixes = _settings.MediaSetSettings?.VideoVersionSuffixes;
         if (variantSuffixes == null || variantSuffixes.Count == 0)
         {
-            return Result.Failure<QuickTimeMovie>("Keine Variantensuffixe konfiguriert.");
+            return Result.Failure<Maybe<QuickTimeMovie>>("Keine Variantensuffixe für QuickTime-Movie-Varianten konfiguriert.");
         }
 
         // Suche für das gegebene Mpeg4-Video nach einer passenden QuickTime-Movie-Variante in den gegebenen Medien-Dateien
@@ -53,10 +53,11 @@ public class MediaSetVariantService
             if (quickTimeMovie != null)
             {
                 _logger.LogInformation($"QuickTime-Movie-Variante für Mpeg4-Video {mpeg4Video.FileInfo.FullName} gefunden: {quickTimeMovie.FileInfo.FullName}");
-                return Result.Success(quickTimeMovie);
+                return Result.Success<Maybe<QuickTimeMovie>>(quickTimeMovie);
             }
         }
 
-        return Result.Failure<QuickTimeMovie>($"Keine QuickTime-Movie-Variante für Mpeg4-Video {mpeg4Video.FileInfo.FullName} gefunden.");
+        // Wenn keine passende QuickTime-Movie-Variante gefunden wurde, gib None zurück. Dies ist kein Fehler.
+        return Result.Success<Maybe<QuickTimeMovie>>(Maybe<QuickTimeMovie>.None);
     }
 }

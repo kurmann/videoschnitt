@@ -1,3 +1,4 @@
+using System.Xml.Linq;
 using CSharpFunctionalExtensions;
 
 namespace Kurmann.Videoschnitt.MetadataProcessor.Entities;
@@ -60,7 +61,7 @@ public class FFmpegMetadata
                 }
             }
         }
-        catch (System.Exception ex)
+        catch (Exception ex)
         {
             return Result.Failure<FFmpegMetadata>($"Error while parsing FFmpeg metadata: {ex.Message}");
         }
@@ -76,5 +77,50 @@ public class FFmpegMetadata
         }
 
         return null;
+    }
+
+    public XDocument ToInfuseXml()
+    {
+        var mediaElement = new XElement("media", new XAttribute("type", "Other"));
+
+        if (!string.IsNullOrEmpty(Title))
+            mediaElement.Add(new XElement("title", Title));
+        
+        if (!string.IsNullOrEmpty(Description))
+            mediaElement.Add(new XElement("description", Description));
+        
+        if (!string.IsNullOrEmpty(Artist))
+            mediaElement.Add(new XElement("artist", Artist));
+        
+        if (!string.IsNullOrEmpty(Copyright))
+            mediaElement.Add(new XElement("copyright", Copyright));
+        
+        if (Date.HasValue)
+            mediaElement.Add(new XElement("published", Date.Value.ToString("yyyy-MM-dd")));
+        
+        if (CreationDate.HasValue)
+            mediaElement.Add(new XElement("releasedate", CreationDate.Value.ToString("yyyy-MM-dd")));
+        
+        if (!string.IsNullOrEmpty(Author))
+            mediaElement.Add(new XElement("studio", Author));
+        
+        if (!string.IsNullOrEmpty(Keywords))
+            mediaElement.Add(new XElement("keywords", Keywords));
+        
+        if (!string.IsNullOrEmpty(Artist))
+        {
+            var producersElement = new XElement("producers");
+            producersElement.Add(new XElement("name", Artist));
+            mediaElement.Add(producersElement);
+        }
+        
+        if (!string.IsNullOrEmpty(Artist))
+        {
+            var directorsElement = new XElement("directors");
+            directorsElement.Add(new XElement("name", Artist));
+            mediaElement.Add(directorsElement);
+        }
+
+        return new XDocument(new XDeclaration("1.0", "UTF-8", "yes"), mediaElement);
     }
 }

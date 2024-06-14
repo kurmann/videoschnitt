@@ -1,8 +1,10 @@
 using Kurmann.Videoschnitt.MetadataProcessor.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Kurmann.Videoschnitt.MetadataProcessor.Entities;
 using Kurmann.Videoschnitt.MetadataProcessor.Entities.SupportedMediaTypes;
 using CSharpFunctionalExtensions;
+using System.Xml.Linq;
 
 namespace Kurmann.Videoschnitt.MetadataProcessor
 {
@@ -77,12 +79,89 @@ namespace Kurmann.Videoschnitt.MetadataProcessor
                         continue;
                     }
 
+                    // Prüfe ob eine QuickTime-Movie-Variante gefunden wurde
+                    if (quickTimeMovieVariantResult.Value.HasNoValue)
+                    {
+                        var readMpeg4MetadataResult = await ReadMetadataFromMpeg4Video(mpeg4Video, progress);
+                        if (readMpeg4MetadataResult.IsFailure)
+                        {
+                            progress.Report(readMpeg4MetadataResult.Error);
+                        }
+
+                        // Informiere über die extrahierten Metadaten im Infuse-XML-Format
+                        progress.Report($"Infuse-XML aus Metadaten von Mpeg4-Video {mpeg4Video.FileInfo.Name}: {readMpeg4MetadataResult.Value}");
+
+                        continue;
+                    }
+
                     // Informiere über die gefundene QuickTime-Movie-Variante
-                    progress.Report($"QuickTime-Movie-Variante für Mpeg4-Video {mpeg4Video.FileInfo.Name}: {quickTimeMovieVariantResult.Value.FileInfo.FullName}");
+                    progress.Report($"QuickTime-Movie-Variante für Mpeg4-Video {mpeg4Video.FileInfo.Name}: {quickTimeMovieVariantResult.Value.Value.FileInfo.Name}");
+
+                    // Extrahiere Metadaten aus der QuickTime-Movie-Variante
+                    var readQuickTimeMetadataResult = await ReadMetdataFromQuickTimeMovie(quickTimeMovieVariantResult.Value.Value, progress);
+                    if (readQuickTimeMetadataResult.IsFailure)
+                    {
+                        progress.Report(readQuickTimeMetadataResult.Error);
+                    }
+
+                    // Informiere über die extrahierten Metadaten im Infuse-XML-Format
+                    progress.Report($"Infuse-XML aus Metadaten von QuickTime-Movie {quickTimeMovieVariantResult.Value.Value.FileInfo.Name}: {readQuickTimeMetadataResult.Value}");
+
+                    continue;
                 }
             }
 
             return Result.Success();
+        }
+
+        private async Task<Result<XDocument>> ReadMetdataFromQuickTimeMovie(QuickTimeMovie quickTimeMovie, IProgress<string> progress)
+        {
+            progress.Report($"Extrahiere Metadaten aus QuickTime-Movie {quickTimeMovie.FileInfo.Name}");
+            var metadataResult = await _ffmpegMetadataService.GetFFmpegMetadataAsync(quickTimeMovie.FileInfo.FullName);
+            if (metadataResult.IsFailure)
+            {
+                return Result.Failure<XDocument>(($"Fehler beim Extrahieren der Metadaten aus QuickTime-Movie {quickTimeMovie.FileInfo.Name}: {metadataResult.Error}"));
+            }
+
+            // Parse die FFMpeg-Metadaten
+            var ffmpegMetadata = FFmpegMetadata.Create(metadataResult.Value);
+            if (ffmpegMetadata.IsFailure)
+            {
+                return Result.Failure<XDocument>($"Fehler beim Parsen der extrahierten Metadaten aus QuickTime-Movie {quickTimeMovie.FileInfo.Name}: {ffmpegMetadata.Error}");
+            }
+
+            // Informiere über die extrahierten Metadaten
+            progress.Report($"Extrahierte Metadaten aus QuickTime-Movie {quickTimeMovie.FileInfo.Name}: {ffmpegMetadata.Value}");
+
+            // Erstelle ein Infuse-XML-Objekt aus den Metadaten
+            var infuseXml = ffmpegMetadata.Value.ToInfuseXml();
+            return infuseXml;
+        }
+
+        private async Task<Result<XDocument>> ReadMetadataFromMpeg4Video(Mpeg4Video mpeg4Video, IProgress<string> progress)
+        {
+            progress.Report($"Extrahiere Metadaten aus Mpeg4-Video {mpeg4Video.FileInfo.Name}");
+            var metadataResult = await _ffmpegMetadataService.GetFFmpegMetadataAsync(mpeg4Video.FileInfo.FullName);
+            if (metadataResult.IsFailure)
+            {
+                return Result.Failure<XDocument>($"Fehler beim Extrahieren der Metadaten aus Mpeg4-Video {mpeg4Video.FileInfo.Name}: {metadataResult.Error}");
+            }
+
+            // Parse die FFMpeg-Metadaten
+            var ffmpegMetadata = FFmpegMetadata.Create(metadataResult.Value);
+            if (ffmpegMetadata.IsFailure)
+            {
+                return Result.Failure<XDocument>($"Fehler beim Parsen der extrahierten Metadaten aus Mpeg4-Video {mpeg4Video.FileInfo.Name}: {ffmpegMetadata.Error}");
+            }
+
+            // Informiere über die extrahierten Metadaten
+            progress.Report($"Extrahierte Metadaten aus Mpeg4-Video {mpeg4Video.FileInfo.Name}: {ffmpegMetadata.Value}");
+
+            // Erstelle ein Infuse-XML-Objekt aus den Metadaten
+            var infuseXml = ffmpegMetadata.Value.ToInfuseXml();
+            progress.Report($"Infuse-XML aus Metadaten von Mpeg4-Video {mpeg4Video.FileInfo.Name}: {infuseXml}");
+
+            return infuseXml;
         }
     
     }
