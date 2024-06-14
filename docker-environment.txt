@@ -1,0 +1,1 @@
+MetadataProcessing__InputDirectory="/Users/patrickkurmann/Movies/Final Cut Exporte"
