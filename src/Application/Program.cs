@@ -4,6 +4,7 @@ using Kurmann.Videoschnitt.MetadataProcessor;
 using Kurmann.Videoschnitt.Workflows;
 using Kurmann.Videoschnitt.HealthCheck;
 using Kurmann.Videoschnitt.HealthCheck.Services;
+using Kurmann.Videoschnitt.InfuseMediaLibrary;
 
 namespace Kurmann.Videoschnitt.Application;
 
@@ -24,6 +25,7 @@ public class Program
             .AddUserSecrets<Program>();
 
         builder.Services.AddMetadataProcessor(builder.Configuration);
+        builder.Services.AddInfuseMediaLibrary(builder.Configuration);
 
         builder.Services.AddRazorPages();
         builder.Services.AddServerSideBlazor();
