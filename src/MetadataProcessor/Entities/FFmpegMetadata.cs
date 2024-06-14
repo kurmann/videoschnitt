@@ -131,6 +131,9 @@ namespace Kurmann.Videoschnitt.MetadataProcessor.Entities
             
             if (!string.IsNullOrEmpty(Keywords))
                 mediaElement.Add(new XElement("keywords", Keywords));
+
+            if (!string.IsNullOrEmpty(Album))
+                mediaElement.Add(new XElement("album", Album));
             
             if (!string.IsNullOrEmpty(Artist))
             {
