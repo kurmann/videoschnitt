@@ -12,6 +12,9 @@ public static class ServiceCollectionExtensions
         var section = configuration.GetSection(Settings.SectionName);
         services.Configure<Settings>(options => section.Bind(options));
 
+        // Register Engine
+        services.AddScoped<Engine>();
+
         return services;
     }
 }
