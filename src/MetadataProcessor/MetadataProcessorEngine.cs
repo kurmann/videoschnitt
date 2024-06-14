@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Kurmann.Videoschnitt.MetadataProcessor.Entities.SupportedMediaTypes;
 using CSharpFunctionalExtensions;
+using System.Xml.Linq;
 
 namespace Kurmann.Videoschnitt.MetadataProcessor
 {
@@ -70,12 +71,28 @@ namespace Kurmann.Videoschnitt.MetadataProcessor
                 progress.Report($"Medientyp für Datei {mediaFile.Name}: {mediaTypeResult.Value.GetType().Name}");
 
                 // Wenn die Datei ein Mpeg4-Video ist, ermittle die QuickTime-Movie-Variante
+                XDocument infuseXml = null;
                 if (mediaTypeResult.Value is Mpeg4Video mpeg4Video)
                 {
                     var quickTimeMovieVariantResult = _mediaSetVariantService.GetQuickTimeMovieVariant(mpeg4Video, mediaFiles.Value);
                     if (quickTimeMovieVariantResult.IsFailure)
                     {
                         progress.Report($"Fehler beim Ermitteln der QuickTime-Movie-Variante für Mpeg4-Video {mpeg4Video.FileInfo.Name}: {quickTimeMovieVariantResult.Error}");
+                        progress.Report($"Extrahiere Metadaten aus Mpeg4-Video {mpeg4Video.FileInfo.Name}");
+
+                        var readMpeg4MetadataResult = await _infuseXmlService.ReadMetadataFromMpeg4Video(mpeg4Video, progress);
+                        if (readMpeg4MetadataResult.IsFailure)
+                        {
+                            progress.Report(readMpeg4MetadataResult.Error);
+                        }
+
+                        // Informiere über die extrahierten Metadaten im Infuse-XML-Format
+                        progress.Report($"Infuse-XML aus Metadaten von Mpeg4-Video {mpeg4Video.FileInfo.Name}: {readMpeg4MetadataResult.Value}");
+
+                        // Speichere das Infuse-XML-Objekt
+                        infuseXml = readMpeg4MetadataResult.Value;
+
+                        // Fahre mit der nächsten Datei fort
                         continue;
                     }
 
@@ -91,6 +108,10 @@ namespace Kurmann.Videoschnitt.MetadataProcessor
                         // Informiere über die extrahierten Metadaten im Infuse-XML-Format
                         progress.Report($"Infuse-XML aus Metadaten von Mpeg4-Video {mpeg4Video.FileInfo.Name}: {readMpeg4MetadataResult.Value}");
 
+                        // Speichere das Infuse-XML-Objekt
+                        infuseXml = readMpeg4MetadataResult.Value;
+
+                        // Fahre mit der nächsten Datei fort
                         continue;
                     }
 
@@ -107,6 +128,10 @@ namespace Kurmann.Videoschnitt.MetadataProcessor
                     // Informiere über die extrahierten Metadaten im Infuse-XML-Format
                     progress.Report($"Infuse-XML aus Metadaten von QuickTime-Movie {quickTimeMovieVariantResult.Value.Value.FileInfo.Name}: {readQuickTimeMetadataResult.Value}");
 
+                    // Speichere das Infuse-XML-Objekt
+                    infuseXml = readQuickTimeMetadataResult.Value;
+
+                    // Fahre mit der nächsten Datei fort
                     continue;
                 }
             }
