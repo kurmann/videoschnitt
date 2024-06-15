@@ -1,6 +1,7 @@
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Kurmann.Videoschnitt.InfuseMediaLibrary.Services;
 
 namespace Kurmann.Videoschnitt.InfuseMediaLibrary;
 
@@ -14,6 +15,8 @@ public static class ServiceCollectionExtensions
 
         // Register Engine
         services.AddScoped<Engine>();
+        services.AddScoped<TargetDirectoryResolver>();
+        services.AddScoped<InfuseMetadataXmlService>();
 
         return services;
     }
