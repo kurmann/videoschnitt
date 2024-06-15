@@ -56,9 +56,13 @@ public class MediaIntegratorService
             return Result.Failure(errorMessage);
         }
 
-        // Bewege die Datei in das Infuse-Mediathek-Verzeichnis
         var mediaSetFileToMove = mediaSetFilesToMove.First();
-        var targetFilePath = Path.Combine(targetDirectory.FullName, mediaSetFileToMove.Name);
+        
+        // Die integrierte Datei im Infuse-Mediathek-Verzeichnis sollte den Dateinamen ohne Varianten-Suffix haben
+        var fileNameWithoutVariantSuffix = GetFileNameWithoutVariantSuffix(mediaSetFileToMove.Name, suffixesToIntegrate);
+
+        // Bewege die Datei in das Infuse-Mediathek-Verzeichnis
+        var targetFilePath = Path.Combine(targetDirectory.FullName, fileNameWithoutVariantSuffix);
         try
         {   
             mediaSetFileToMove.MoveTo(targetFilePath);
@@ -89,5 +93,24 @@ public class MediaIntegratorService
         }
 
         return fileName;
+    }
+}
+
+public record IntegratedMediaSetFile
+{
+    /// <summary>
+    /// Die Quelldatei, die in das Infuse-Mediathek-Verzeichnis integriert wurde.
+    /// </summary>
+    public FileInfo SourceFile { get; }
+
+    /// <summary>
+    /// Die Zieldatei im Infuse-Mediathek-Verzeichnis.
+    /// </summary>
+    public FileInfo TargetFile { get; }
+
+    public IntegratedMediaSetFile(FileInfo sourceFile, FileInfo targetFile)
+    {
+        SourceFile = sourceFile;
+        TargetFile = targetFile;
     }
 }
