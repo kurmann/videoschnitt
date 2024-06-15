@@ -120,6 +120,24 @@ public class Engine
                 continue;
             }
 
+            // Entferne das Aufnahmedatum aus dem Infuse-Metadaten-XML-Dateinamen.
+            // Das Aufnahmedatum ist im ISO-Fomat (yyyy-MM-dd) und wird durch einen Leerzeichen getrennt vom restlichen Dateinamen. Es steht am Anfang des Dateinamens.
+            var infuseMetadataXmlFileNameWithoutRecordingDate = infuseMetadataXmlFile.FileInfo.Name.Replace($"{recordingDateIsoString} ", string.Empty);
+
+            // Kopiere das Infuse-Metadaten-XML-Datei in das Infuse-Mediathek-Verzeichnis damit die Infuse-Mediathek die Metadaten lesen kann
+            var targetInfuseMetadataXmlFilePath = Path.Combine(targetDirectoryResult.Value.FullName, infuseMetadataXmlFileNameWithoutRecordingDate);
+            try
+            {
+                File.Copy(infuseMetadataXmlFile.FileInfo.FullName, targetInfuseMetadataXmlFilePath, true);
+                progress.Report($"Infuse-Metadaten-XML-Datei {infuseMetadataXmlFile.FileInfo.FullName} wurde erfolgreich in das Infuse-Mediathek-Verzeichnis {targetDirectoryResult.Value.FullName} kopiert.");
+            }
+            catch (Exception ex)
+            {
+                progress.Report($"Fehler beim Kopieren der Infuse-Metadaten-XML-Datei {infuseMetadataXmlFile.FileInfo.FullName} in das Infuse-Mediathek-Verzeichnis {targetDirectoryResult.Value.FullName}: {ex.Message}");
+                progress.Report("Das Medienset wird ignoriert.");
+                continue;
+            }
+
             progress.Report($"Medienset {infuseMetadataXmlFile.FileInfo.Name} wurde erfolgreich in das Infuse-Mediathek-Verzeichnis {targetDirectoryResult.Value.FullName} verschoben.");
         }
 
