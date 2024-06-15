@@ -10,14 +10,14 @@ public class MediaIntegratorService
 
     public MediaIntegratorService(ILogger<MediaIntegratorService> logger) => _logger = logger;
 
-    public Result IntegrateMediaSet(IEnumerable<FileInfo> mediaSetFiles, DirectoryInfo targetDirectory, IEnumerable<string> suffixesToIntegrate)
+    public Result<IntegratedMediaSetFile> IntegrateMediaSet(IEnumerable<FileInfo> mediaSetFiles, DirectoryInfo targetDirectory, IEnumerable<string> suffixesToIntegrate)
     {
         if (mediaSetFiles == null || !mediaSetFiles.Any())
-            return Result.Failure("MediaSetFiles darf nicht null oder leer sein.");
+            return Result.Failure<IntegratedMediaSetFile>("MediaSetFiles darf nicht null oder leer sein.");
         if (targetDirectory == null)
-            return Result.Failure("Das Zielverzeichnis muss angegeben sein.");
+            return Result.Failure<IntegratedMediaSetFile>("TargetDirectory darf nicht null sein.");
         if (suffixesToIntegrate == null || !suffixesToIntegrate.Any())
-            return Result.Failure("SuffixesToIntegrate darf nicht null oder leer sein.");
+            return Result.Failure<IntegratedMediaSetFile>("SuffixesToIntegrate darf nicht null oder leer sein.");
 
         _logger.LogInformation($"Integriere Medienset in das Infuse-Mediathek-Verzeichnis {targetDirectory}.");
 
@@ -31,7 +31,7 @@ public class MediaIntegratorService
         }
         catch (Exception ex)
         {
-            return Result.Failure($"Das Zielverzeichnis {targetDirectory} konnte nicht erstellt werden: {ex.Message}");
+            return Result.Failure<IntegratedMediaSetFile>($"Das Infuse-Mediathek-Verzeichnis {targetDirectory} konnte nicht erstellt werden: {ex.Message}");
         }
 
         // Ermittle die Dateien im Medienset, die in das Infuse-Mediathek-Verzeichnis integriert werden sollen, ignoriere Groß-/Kleinschreibung und die Dateiendung
@@ -40,7 +40,7 @@ public class MediaIntegratorService
         // Prüfe ob überhaupt eine Datei im Medienset gefunden wurde, die in das Infuse-Mediathek-Verzeichnis integriert werden soll
         if (!mediaSetFilesToMove.Any())
         {
-            return Result.Failure("Es wurde keine Datei im Medienset gefunden, die in das Infuse-Mediathek-Verzeichnis integriert werden soll.");
+            return Result.Failure<IntegratedMediaSetFile>("Es wurde keine Datei im Medienset gefunden, die in das Infuse-Mediathek-Verzeichnis integriert werden soll.");
         }
 
         // Für die Integration in die Infuse-Mediathek sollte nur eine Datei unter den Dateien im Medienset vorhanden sein
@@ -53,27 +53,32 @@ public class MediaIntegratorService
                 .Append(string.Join(", ", mediaSetFilesToMove))
                 .ToString();
 
-            return Result.Failure(errorMessage);
+            return Result.Failure<IntegratedMediaSetFile>(errorMessage);
         }
 
         var mediaSetFileToMove = mediaSetFilesToMove.First();
         
         // Die integrierte Datei im Infuse-Mediathek-Verzeichnis sollte den Dateinamen ohne Varianten-Suffix haben
-        var fileNameWithoutVariantSuffix = GetFileNameWithoutVariantSuffix(mediaSetFileToMove.Name, suffixesToIntegrate);
+        var filePathWithoutVariantSuffix = GetFileNameWithoutVariantSuffix(mediaSetFileToMove, suffixesToIntegrate);
+        if (filePathWithoutVariantSuffix.IsFailure)
+        {
+            return Result.Failure<IntegratedMediaSetFile>($"Der Dateiname {mediaSetFileToMove.Name} konnte nicht ohne Varianten-Suffix ermittelt werden: {filePathWithoutVariantSuffix.Error}");
+        }
 
         // Bewege die Datei in das Infuse-Mediathek-Verzeichnis
-        var targetFilePath = Path.Combine(targetDirectory.FullName, fileNameWithoutVariantSuffix);
         try
         {   
+            // Ermittle den Ziel-Pfad der Datei im Infuse-Mediathek-Verzeichnis
+            var targetFilePath = Path.Combine(targetDirectory.FullName, filePathWithoutVariantSuffix.Value);
+
             mediaSetFileToMove.MoveTo(targetFilePath);
-            _logger.LogInformation($"Datei {mediaSetFileToMove.FullName} wurde in das Infuse-Mediathek-Verzeichnis {targetDirectory} verschoben.");
+            _logger.LogInformation($"Die Datei {mediaSetFileToMove.FullName} wurde in das Infuse-Mediathek-Verzeichnis {targetDirectory} verschoben.");
+            return Result.Success(new IntegratedMediaSetFile(mediaSetFileToMove, new FileInfo(targetFilePath)));
         }
         catch (Exception ex)
         {
-            return Result.Failure($"Datei {mediaSetFileToMove.FullName} konnte nicht in das Infuse-Mediathek-Verzeichnis {targetDirectory} verschoben werden: {ex.Message}");
+            return Result.Failure<IntegratedMediaSetFile>($"Die Datei {mediaSetFileToMove.FullName} konnte nicht in das Infuse-Mediathek-Verzeichnis {targetDirectory} verschoben werden: {ex.Message}");
         }
-
-        return Result.Success();
     }
 
     private bool IsFileToMove(FileInfo file, IEnumerable<string> suffixesToIntegrate)
@@ -82,17 +87,26 @@ public class MediaIntegratorService
         return suffixesToIntegrate.Any(suffix => fileNameWithoutExtension.EndsWith(suffix, StringComparison.OrdinalIgnoreCase));
     }
 
-    private string GetFileNameWithoutVariantSuffix(string fileName, IEnumerable<string> suffixesToIntegrate)
+    private Result<string> GetFileNameWithoutVariantSuffix(FileInfo file, IEnumerable<string> suffixesToIntegrate)
     {
+        // Ermittle das Verzeichnis der Datei
+        var fileDirectory = file.Directory;
+        if (fileDirectory == null)
+        {
+            return Result.Failure<string>($"Das Verzeichnis der Datei {file.FullName} konnte nicht ermittelt werden.");
+        }
+
         foreach (var suffix in suffixesToIntegrate)
         {
-            if (fileName.EndsWith(suffix, StringComparison.OrdinalIgnoreCase))
+            if (Path.GetFileNameWithoutExtension(file.FullName).EndsWith(suffix, StringComparison.OrdinalIgnoreCase))
             {
-                return fileName.Substring(0, fileName.Length - suffix.Length);
+                // Der Dateiname enthält das Varianten-Suffix, entferne es
+                var fileNameWithoutVariantSuffix = Path.Combine(Path.GetFileNameWithoutExtension(file.Name).Replace(suffix, string.Empty, StringComparison.OrdinalIgnoreCase) + file.Extension);
+                return Result.Success(fileNameWithoutVariantSuffix);
             }
         }
 
-        return fileName;
+        return Result.Failure<string>($"Der Dateiname {file.Name} enthält kein Varianten-Suffix.");
     }
 }
 
