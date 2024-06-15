@@ -29,7 +29,7 @@ public class Engine
         // Prüfe den Infuse-Mediathek-Pfad aus den Einstellungen
         if (_applicationSettings.InfuseMediaLibraryPath == null)
         {
-            return Result.Failure($"Kein Infuse-Mediathek-Verzeichnis konfiguriert. Wenn Umgebungsvariablen verwendet werden, sollte der Name der Umgebungsvariable '{ModuleSettings.SectionName}__{nameof(_applicationSettings.InfuseMediaLibraryPath)}' lauten.");
+            return Result.Failure($"Kein Infuse-Mediathek-Verzeichnis konfiguriert. Wenn Umgebungsvariablen verwendet werden, sollte der Name der Umgebungsvariable '{ApplicationSettings.SectionName}__{nameof(_applicationSettings.InfuseMediaLibraryPath)}' lauten.");
         }
         if (!Directory.Exists(_applicationSettings.InfuseMediaLibraryPath))
         {
@@ -39,7 +39,7 @@ public class Engine
         // Prüfe das Quellverzeichnis aus den Einstellungen
         if (_applicationSettings.InputDirectory == null)
         {
-            return Result.Failure($"Kein Quellverzeichnis konfiguriert. Wenn Umgebungsvariablen verwendet werden, sollte der Name der Umgebungsvariable '{ModuleSettings.SectionName}__{nameof(_applicationSettings.InputDirectory)}' lauten.");
+            return Result.Failure($"Kein Quellverzeichnis konfiguriert. Wenn Umgebungsvariablen verwendet werden, sollte der Name der Umgebungsvariable '{ApplicationSettings.SectionName}__{nameof(_applicationSettings.InputDirectory)}' lauten.");
         }
         if (!Directory.Exists(_applicationSettings.InputDirectory))
         {
