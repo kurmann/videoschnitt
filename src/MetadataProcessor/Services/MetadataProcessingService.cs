@@ -7,9 +7,9 @@ namespace Kurmann.Videoschnitt.MetadataProcessor.Services;
 public class MetadataProcessingService
 {
     private readonly ILogger<MetadataProcessingService> _logger ;
-    private readonly MetadataProcessorSettings _settings;
+    private readonly ApplicationSettings _settings;
 
-    public MetadataProcessingService(ILogger<MetadataProcessingService> logger, IOptions<MetadataProcessorSettings> settings)
+    public MetadataProcessingService(ILogger<MetadataProcessingService> logger, IOptions<ApplicationSettings> settings)
     {
         _logger = logger;
         _settings = settings.Value;

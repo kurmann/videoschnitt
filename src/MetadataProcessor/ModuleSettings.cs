@@ -1,13 +1,11 @@
 namespace Kurmann.Videoschnitt.MetadataProcessor;
 
-public class MetadataProcessorSettings
+public class ModuleSettings
 {
     public const string SectionName = "MetadataProcessing";
 
-    public string? InputDirectory { get; set; } = "/media/inputDirectory";
-
-    public MediaSetSettings? MediaSetSettings { get; set; } = new MediaSetSettings();
-    public FileTypeSettings? FileTypeSettings { get; set; } = new FileTypeSettings();
+    public MediaSetSettings? MediaSet { get; set; } = new MediaSetSettings();
+    public FileTypeSettings? FileTypes { get; set; } = new FileTypeSettings();
 }
 
 public class MediaSetSettings

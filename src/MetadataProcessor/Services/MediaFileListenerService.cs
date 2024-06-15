@@ -10,9 +10,9 @@ namespace Kurmann.Videoschnitt.MetadataProcessor.Services;
 public class MediaFileListenerService
 {
     private readonly ILogger<MediaFileListenerService> _logger;
-    private readonly MetadataProcessorSettings _settings;
+    private readonly ApplicationSettings _settings;
 
-    public MediaFileListenerService(ILogger<MediaFileListenerService> logger, IOptions<MetadataProcessorSettings> settings)
+    public MediaFileListenerService(ILogger<MediaFileListenerService> logger, IOptions<ApplicationSettings> settings)
     {
         _logger = logger;
         _settings = settings.Value;
@@ -29,24 +29,24 @@ public class MediaFileListenerService
             // Prüfe ob ein Verzeichnis für die Medien-Dateien konfiguriert wurde
             if (_settings.InputDirectory == null)
             {
-                return Result.Failure<List<FileInfo>>("Kein Eingabeverzeichnis konfiguriert.");
+                return Result.Failure<List<FileInfo>>("Kein Eingangsverzeichnis konfiguriert.");
             }
             var inputDirectoryOrNull = new DirectoryInfo(_settings.InputDirectory);
             if (inputDirectoryOrNull == null)
             {
-                return Result.Failure<List<FileInfo>>("Ungültiges Eingabeverzeichnis.");
+                return Result.Failure<List<FileInfo>>("Ungültiges Eingangsverzeichnis.");
             }
             inputDirectory = inputDirectoryOrNull;
         }
         catch (Exception ex)
         {
-            return Result.Failure<List<FileInfo>>("Fehler beim Interpretieren des Eingabeverzeichnisses: " + ex.Message);
+            return Result.Failure<List<FileInfo>>("Fehler beim Interpretieren des Eingangsverzeichnis: " + ex.Message);
         }
 
         // Prüfe ob das Verzeichnis existiert
         if (!inputDirectory.Exists)
         {
-            return Result.Failure<List<FileInfo>>("Das Eingabeverzeichnis existiert nicht.");
+            return Result.Failure<List<FileInfo>>($"Das Eingangsverzeichnis {_settings.InputDirectory} existiert nicht.");
         }
 
         // Suche nach Quicktime-Dateien (mov) und MP4-Dateien sowie JPG- und PNG-Dateien
