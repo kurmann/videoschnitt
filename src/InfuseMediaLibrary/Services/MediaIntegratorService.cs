@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using CSharpFunctionalExtensions;
+using System.Text;
 
 namespace Kurmann.Videoschnitt.InfuseMediaLibrary.Services;
 
@@ -35,21 +36,37 @@ public class MediaIntegratorService
 
         // Ermittle die Dateien im Medienset, die in das Infuse-Mediathek-Verzeichnis integriert werden sollen, ignoriere Groß-/Kleinschreibung und die Dateiendung
         var mediaSetFilesToMove = mediaSetFiles.Where(file => IsFileToMove(file, suffixesToIntegrate)).ToList();
-        _logger.LogInformation($"Es wurden {mediaSetFilesToMove.Count} Dateien im Medienset gefunden, die in das Infuse-Mediathek-Verzeichnis integriert werden sollen.");
 
-        // Bewege die betroffenen Dateien in das Infuse-Mediathek-Verzeichnis
-        foreach (var mediaSetFile in mediaSetFilesToMove)
+        // Prüfe ob überhaupt eine Datei im Medienset gefunden wurde, die in das Infuse-Mediathek-Verzeichnis integriert werden soll
+        if (!mediaSetFilesToMove.Any())
         {
-            var targetFilePath = Path.Combine(targetDirectory.FullName, mediaSetFile.Name);
-            try
-            {
-                mediaSetFile.MoveTo(targetFilePath);
-                _logger.LogInformation($"Datei {mediaSetFile.FullName} wurde in das Infuse-Mediathek-Verzeichnis {targetDirectory} verschoben.");
-            }
-            catch (Exception ex)
-            {
-                return Result.Failure($"Datei {mediaSetFile.FullName} konnte nicht in das Infuse-Mediathek-Verzeichnis {targetDirectory} verschoben werden: {ex.Message}");
-            }
+            return Result.Failure("Es wurde keine Datei im Medienset gefunden, die in das Infuse-Mediathek-Verzeichnis integriert werden soll.");
+        }
+
+        // Für die Integration in die Infuse-Mediathek sollte nur eine Datei unter den Dateien im Medienset vorhanden sein
+        if (mediaSetFilesToMove.Count > 1)
+        {
+            var stringBuilder = new StringBuilder();
+            var errorMessage = stringBuilder.Append("Es wurde mehr als eine Datei im Medienset gefunden, die in das Infuse-Mediathek-Verzeichnis integriert werden soll.")
+                .Append("Dies ist nicht vorgesehen, da die Infuse-Mediathek mehrere Versionen von Eigenproduktionen nicht zufriedenstellend unterstützt.")
+                .Append("Die Dateien sind: ")
+                .Append(string.Join(", ", mediaSetFilesToMove))
+                .ToString();
+
+            return Result.Failure(errorMessage);
+        }
+
+        // Bewege die Datei in das Infuse-Mediathek-Verzeichnis
+        var mediaSetFileToMove = mediaSetFilesToMove.First();
+        var targetFilePath = Path.Combine(targetDirectory.FullName, mediaSetFileToMove.Name);
+        try
+        {   
+            mediaSetFileToMove.MoveTo(targetFilePath);
+            _logger.LogInformation($"Datei {mediaSetFileToMove.FullName} wurde in das Infuse-Mediathek-Verzeichnis {targetDirectory} verschoben.");
+        }
+        catch (Exception ex)
+        {
+            return Result.Failure($"Datei {mediaSetFileToMove.FullName} konnte nicht in das Infuse-Mediathek-Verzeichnis {targetDirectory} verschoben werden: {ex.Message}");
         }
 
         return Result.Success();
@@ -59,5 +76,18 @@ public class MediaIntegratorService
     {
         var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(file.Name);
         return suffixesToIntegrate.Any(suffix => fileNameWithoutExtension.EndsWith(suffix, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private string GetFileNameWithoutVariantSuffix(string fileName, IEnumerable<string> suffixesToIntegrate)
+    {
+        foreach (var suffix in suffixesToIntegrate)
+        {
+            if (fileName.EndsWith(suffix, StringComparison.OrdinalIgnoreCase))
+            {
+                return fileName.Substring(0, fileName.Length - suffix.Length);
+            }
+        }
+
+        return fileName;
     }
 }
