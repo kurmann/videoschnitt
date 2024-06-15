@@ -10,7 +10,10 @@ public class MediaIntegratorService
 
     public MediaIntegratorService(ILogger<MediaIntegratorService> logger) => _logger = logger;
 
-    public Result<IntegratedMediaSetFile> IntegrateMediaSet(IEnumerable<FileInfo> mediaSetFiles, DirectoryInfo targetDirectory, IEnumerable<string> suffixesToIntegrate)
+    public Result<IntegratedMediaSetFile> IntegrateMediaSet(IEnumerable<FileInfo> mediaSetFiles,
+                                                            DirectoryInfo targetDirectory,
+                                                            IEnumerable<string> suffixesToIntegrate,
+                                                            string recordingDateIsoString)
     {
         if (mediaSetFiles == null || !mediaSetFiles.Any())
             return Result.Failure<IntegratedMediaSetFile>("MediaSetFiles darf nicht null oder leer sein.");
@@ -18,6 +21,8 @@ public class MediaIntegratorService
             return Result.Failure<IntegratedMediaSetFile>("TargetDirectory darf nicht null sein.");
         if (suffixesToIntegrate == null || !suffixesToIntegrate.Any())
             return Result.Failure<IntegratedMediaSetFile>("SuffixesToIntegrate darf nicht null oder leer sein.");
+        if (string.IsNullOrWhiteSpace(recordingDateIsoString))
+            return Result.Failure<IntegratedMediaSetFile>("RecordingDateIsoString darf nicht null oder leer sein.");
 
         _logger.LogInformation($"Integriere Medienset in das Infuse-Mediathek-Verzeichnis {targetDirectory}.");
 
@@ -65,11 +70,14 @@ public class MediaIntegratorService
             return Result.Failure<IntegratedMediaSetFile>($"Der Dateiname {mediaSetFileToMove.Name} konnte nicht ohne Varianten-Suffix ermittelt werden: {filePathWithoutVariantSuffix.Error}");
         }
 
+        // Entferne das führende Aufnahmedatum aus dem Dateinamen (getrennt mit einem Leerzeichen vom Rest des Dateinamens) denn das Aufnahmedatum ist in den Infuse-Metadaten enthalten und das Verzeichnis wird danach benannt
+        var fileNameWithoutRecordingDateAndVariantSuffix = filePathWithoutVariantSuffix.Value.Replace($"{recordingDateIsoString} ", string.Empty, StringComparison.OrdinalIgnoreCase);
+
         // Bewege die Datei in das Infuse-Mediathek-Verzeichnis
         try
         {   
             // Ermittle den Ziel-Pfad der Datei im Infuse-Mediathek-Verzeichnis
-            var targetFilePath = Path.Combine(targetDirectory.FullName, filePathWithoutVariantSuffix.Value);
+            var targetFilePath = Path.Combine(targetDirectory.FullName, fileNameWithoutRecordingDateAndVariantSuffix);
 
             mediaSetFileToMove.MoveTo(targetFilePath);
             _logger.LogInformation($"Die Datei {mediaSetFileToMove.FullName} wurde in das Infuse-Mediathek-Verzeichnis {targetDirectory} verschoben.");

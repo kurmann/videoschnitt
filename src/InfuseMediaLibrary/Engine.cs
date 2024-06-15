@@ -87,9 +87,9 @@ public class Engine
             var mediaSetFiles = infuseMetadataXmlFileDirectory.GetFiles($"{Path.GetFileNameWithoutExtension(infuseMetadataXmlFile.FileInfo.Name)}*").ToList();
 
             // Informiere über das Album und das Aufnahmedatum, das in den Infuse-Metadaten gefunden wurde und nun für die Benennung des Zielverzeichnisses verwendet wird
-            var recordingDate = infuseMetadataXmlFile.Metadata.Published != null ? infuseMetadataXmlFile.Metadata.Published.Value.ToString("yyyy-MM-dd") : "unbekannt";
+            var recordingDateIsoString = infuseMetadataXmlFile.Metadata.Published != null ? infuseMetadataXmlFile.Metadata.Published.Value.ToString("yyyy-MM-dd") : "unbekannt";
             progress.Report($"Folgendes Album wurde in den Infuse-Metadaten gefunden: {infuseMetadataXmlFile.Metadata.Album}");
-            progress.Report($"Folgendes Aufnahmedatum wurde in den Infuse-Metadaten gefunden: {recordingDate}");
+            progress.Report($"Folgendes Aufnahmedatum wurde in den Infuse-Metadaten gefunden: {recordingDateIsoString}");
 
             // Ermittle mit dem TargetDirectoryResolver das Zielverzeichnis für die Medien-Dateien
             var targetDirectoryResult = _targetDirectoryResolver.ResolveTargetDirectory(mediaSetFiles, _applicationSettings.InfuseMediaLibraryPath);
@@ -112,7 +112,7 @@ public class Engine
             }
 
             // Versuche, die Medien-Dateien in das Zielverzeichnis zu verschieben
-            var moveMediaFilesResult = _mediaIntegratorService.IntegrateMediaSet(mediaSetFiles, targetDirectoryResult.Value, suffixesToIntegrate);
+            var moveMediaFilesResult = _mediaIntegratorService.IntegrateMediaSet(mediaSetFiles, targetDirectoryResult.Value, suffixesToIntegrate, recordingDateIsoString);
             if (moveMediaFilesResult.IsFailure)
             {
                 progress.Report($"Fehler beim Verschieben der Medien-Dateien in das Infuse-Mediathek-Verzeichnis {targetDirectoryResult.Value.FullName}: {moveMediaFilesResult.Error}");
