@@ -2,6 +2,9 @@
 FROM mcr.microsoft.com/dotnet/nightly/sdk:9.0-preview-noble AS build-env
 WORKDIR /app
 
+# Create the directories
+RUN mkdir -p /media/inputDirectory /media/infuseLibrary
+
 # Copy everything from the src directory
 COPY src/ ./
 # Restore as distinct layers
