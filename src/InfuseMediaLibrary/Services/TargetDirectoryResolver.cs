@@ -36,11 +36,11 @@ public class TargetDirectoryResolver
         return Result.Success(targetDirectory);
     }
 
-    public Result<FileInfo> ResolveTargetDirectory(List<FileInfo>? mediaSetFiles, string libraryPath)
+    public Result<DirectoryInfo> ResolveTargetDirectory(List<FileInfo>? mediaSetFiles, string libraryPath)
     {
         if (mediaSetFiles == null || mediaSetFiles.Count == 0)
         {
-            return Result.Failure<FileInfo>("MediaSetFiles darf nicht null oder leer sein.");
+            return Result.Failure<DirectoryInfo>("MediaSetFiles darf nicht null oder leer sein.");
         }
 
         // Filtere XML-Dateien aus den Medienset-Dateien unter Benutzung von StringComparison.OrdinalIgnoreCase
@@ -66,18 +66,28 @@ public class TargetDirectoryResolver
 
         if (albumNameFromMetadata == null)
         {
-            return Result.Failure<FileInfo>("Keine Infuse-Metadaten-XML-Datei gefunden.");
+            return Result.Failure<DirectoryInfo>("Kein Albumname in den Infuse-Metadaten gefunden.");
         }
         if (recordingDate == null)
         {
-            return Result.Failure<FileInfo>("Kein Aufnahmedatum in den Infuse-Metadaten gefunden.");
+            return Result.Failure<DirectoryInfo>("Kein Aufnahmedatum in den Infuse-Metadaten gefunden.");
         }
 
         // Ermittle das Zielverzeichnis mit dem Format "<LibraryPath>/<AlbumNameFromMetadata>/YYYY/YYYY-MM-DD"
         // Das Datum ist als Aufnahmedatum aus den Infuse-Metadaten definiert
         var targetDirectory = Path.Combine(libraryPath, albumNameFromMetadata, recordingDate.Value.Year.ToString(), recordingDate.Value.ToString("yyyy-MM-dd"));
 
-        return Result.Success(new FileInfo(targetDirectory));
+        // Definiere ein DirectoryInfo-Objekt für das Zielverzeichnis
+        try
+        {
+            Directory.CreateDirectory(targetDirectory);
+        }
+        catch (Exception ex)
+        {
+            return Result.Failure<DirectoryInfo>($"Fehler beim Definieren des Zielverzeichnisses {targetDirectory}: {ex.Message}");
+        }
+
+        return Result.Success(new DirectoryInfo(targetDirectory));
     }
     
 }
