@@ -43,17 +43,8 @@ public class TargetDirectoryResolver
             return Result.Failure<FileInfo>("MediaSetFiles darf nicht null oder leer sein.");
         }
 
-        var mediaSetFilesDirectory = mediaSetFiles.First().Directory;
-        if (mediaSetFilesDirectory == null)
-        {
-            return Result.Failure<FileInfo>("Das Verzeichnis des ersten MediaSetFiles konnte nicht ermittelt werden.");
-        }
-
-        // Ermittle alle XML-Dateien in den Medienset-Dateien
-        var infuseMetadataXmlFiles = mediaSetFiles
-            .SelectMany(mediaSetFile => mediaSetFilesDirectory.EnumerateFiles("*.xml", SearchOption.TopDirectoryOnly))
-            .Where(file => file.Extension.Equals(".xml", StringComparison.OrdinalIgnoreCase))
-            .ToList();
+        // Filtere XML-Dateien aus den Medienset-Dateien unter Benutzung von StringComparison.OrdinalIgnoreCase
+        var infuseMetadataXmlFiles = mediaSetFiles.Where(f => f.Extension.Equals(".xml", StringComparison.OrdinalIgnoreCase)).ToList();
 
         // Iteriere über XML-Dateien in den Medienset-Dateien und prüfe, ob eines davon ein valides Infuse-Metadaten-XML ist
         string? albumNameFromMetadata = null;

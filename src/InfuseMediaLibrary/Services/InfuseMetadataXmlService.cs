@@ -10,19 +10,19 @@ public class InfuseMetadataXmlService
 
     public InfuseMetadataXmlService(ILogger<InfuseMetadataXmlService> logger) => _logger = logger;
 
-    public Result<List<FileInfo>> GetInfuseMetadataXmlFiles(string? directoryPath)
+    public Result<List<CustomProductionInfuseMetadataFile>> GetInfuseMetadataXmlFiles(string? directoryPath)
     {
         // Prüfe, ob ein Verzeichnis angegeben wurde
         if (string.IsNullOrWhiteSpace(directoryPath))
         {
-            return Result.Failure<List<FileInfo>>("Kein Verzeichnis angegeben.");
+            return Result.Failure<List<CustomProductionInfuseMetadataFile>>("Kein Verzeichnis angegeben.");
         }
 
         // Parse den Verzeichnispfad
         var directoryResult = ParseDirectoryPath(directoryPath);
         if (directoryResult.IsFailure)
         {
-            return Result.Failure<List<FileInfo>>(directoryResult.Error);
+            return Result.Failure<List<CustomProductionInfuseMetadataFile>>(directoryResult.Error);
         }
 
         // Ermittle alle XML-Dateien im Verzeichnis
@@ -32,14 +32,27 @@ public class InfuseMetadataXmlService
             .ToList();
 
         // Iteriere über XML-Dateien in den Medienset-Dateien und gib alle validen Infuse-Metadaten-XML-Dateien zurück
-        var infuseMetadataXmlFiles = new List<FileInfo>();
+        var customProductionInfuseMetadataFiles = GetCustomProductionInfuseMetadataFiles(xmlFiles);
+
+        // Informiere über die Anzahl der gefundenen Infuse-Metadaten-XML-Dateien
+        _logger.LogInformation($"Anzahl der gefundenen Infuse-Metadaten-XML-Dateien: {customProductionInfuseMetadataFiles.Count}");
+
+        return Result.Success(customProductionInfuseMetadataFiles);
+    }
+
+    /// <summary>
+    /// Ermittelt alle validen Infuse-Metadaten-XML-Dateien aus einer Liste von FileInfo-Objekten.
+    /// </summary>
+    public List<CustomProductionInfuseMetadataFile> GetCustomProductionInfuseMetadataFiles(List<FileInfo> xmlFiles)
+    {
+        var customProductionInfuseMetadataFiles = new List<CustomProductionInfuseMetadataFile>();
         foreach (var infuseMetadataXmlFile in xmlFiles)
         {
             var infuseMetadataXmlContent = File.ReadAllText(infuseMetadataXmlFile.FullName);
             var infuseMetadataResult = CustomProductionInfuseMetadata.Create(infuseMetadataXmlContent);
             if (infuseMetadataResult.IsSuccess)
             {
-                infuseMetadataXmlFiles.Add(infuseMetadataXmlFile);
+                customProductionInfuseMetadataFiles.Add(new CustomProductionInfuseMetadataFile(infuseMetadataXmlFile, infuseMetadataResult.Value));
             }
             else
             {
@@ -48,7 +61,7 @@ public class InfuseMetadataXmlService
             }
         }
 
-        return infuseMetadataXmlFiles;
+        return customProductionInfuseMetadataFiles;
     }
 
     private Result<DirectoryInfo> ParseDirectoryPath(string directoryPath)
@@ -63,3 +76,5 @@ public class InfuseMetadataXmlService
         }
     }
 }
+
+public record CustomProductionInfuseMetadataFile(FileInfo FileInfo, CustomProductionInfuseMetadata Metadata);
