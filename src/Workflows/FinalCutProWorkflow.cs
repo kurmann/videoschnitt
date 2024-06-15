@@ -21,11 +21,16 @@ public class FinalCutProWorkflow : IAsyncWorkflow
     {
         progress.Report("Final Cut Pro Workflow gestartet.");
 
+        progress.Report(Environment.NewLine);
+        progress.Report("Starte Metadaten-Verarbeitung");
         var metadataProcessorResult = await _metadataProcessorEngine.Start(progress);
         if (metadataProcessorResult.IsFailure)
         {
             return Result.Failure($"Fehler beim Ausführen des Final Cut Pro Workflows: {metadataProcessorResult.Error}");
         }
+
+        progress.Report(Environment.NewLine);
+        progress.Report("Starte Integration in die Infuse-Mediathek");
 
         var infuseMediaLibraryResult = _infuseMediaLibraryEngine.Start(progress);
         if (infuseMediaLibraryResult.IsFailure)
