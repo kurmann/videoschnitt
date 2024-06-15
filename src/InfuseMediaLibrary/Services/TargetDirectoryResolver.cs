@@ -8,9 +8,9 @@ namespace Kurmann.Videoschnitt.InfuseMediaLibrary.Services;
 public class TargetDirectoryResolver
 {
     private readonly ILogger<TargetDirectoryResolver> _logger;
-    private readonly Settings _settings;
+    private readonly ModuleSettings _settings;
 
-    public TargetDirectoryResolver(IOptions<Settings> settings, ILogger<TargetDirectoryResolver> logger)
+    public TargetDirectoryResolver(IOptions<ModuleSettings> settings, ILogger<TargetDirectoryResolver> logger)
     {
         _settings = settings.Value;
         _logger = logger;
