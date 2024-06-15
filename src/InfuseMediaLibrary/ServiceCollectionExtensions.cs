@@ -17,6 +17,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<Engine>();
         services.AddScoped<TargetDirectoryResolver>();
         services.AddScoped<InfuseMetadataXmlService>();
+        services.AddScoped<MediaIntegratorService>();
 
         return services;
     }

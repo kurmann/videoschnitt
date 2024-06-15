@@ -8,9 +8,6 @@
 		"ghcr.io/devcontainers/features/github-cli:1": {},
 		"ghcr.io/devcontainers/features/docker-in-docker:2": {}
 	},
-	"containerEnv": {
-		"MetadataProcessing__InputDirectory": "/workspaces/videoschnitt/testdata"
-	},
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
