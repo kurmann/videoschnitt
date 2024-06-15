@@ -48,10 +48,14 @@ public class Engine
         }
 
         // Versuche, Infuse-Metadaten-XML-Dateien zu finden
-        var infuseMetadataXmlFiles = _infuseMetadataXmlService.TryGetInfuseMetadataXmlFiles(_settings.SourceDirectoryPath);
+        var infuseMetadataXmlFiles = _infuseMetadataXmlService.GetInfuseMetadataXmlFiles(_settings.SourceDirectoryPath);
+        if (infuseMetadataXmlFiles.IsFailure)
+        {
+            return Result.Failure($"Fehler beim Ermitteln der Infuse-Metadaten-XML-Dateien: {infuseMetadataXmlFiles.Error}");
+        }
 
         // Iteriere über alle gefundenen Infuse-Metadaten-XML-Dateien
-        foreach (var infuseMetadataXmlFile in infuseMetadataXmlFiles)
+        foreach (var infuseMetadataXmlFile in infuseMetadataXmlFiles.Value)
         {
             // Informiere über die gefundene Infuse-Metadaten-XML-Datei
             progress.Report($"Gefundene Infuse-Metadaten-XML-Datei: {infuseMetadataXmlFile.FullName}");
