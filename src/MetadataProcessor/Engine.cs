@@ -3,16 +3,16 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Kurmann.Videoschnitt.MetadataProcessor.Entities.SupportedMediaTypes;
 using CSharpFunctionalExtensions;
-using System.Xml.Linq;
 
 namespace Kurmann.Videoschnitt.MetadataProcessor;
 
 /// <summary>
 /// Zentrale Steuereinheit für die Metadaten-Verarbeitung.
 /// </summary>
-public class MetadataProcessorEngine
+public class Engine
 {
-    private readonly MetadataProcessorSettings _settings;
+    private readonly ModuleSettings _moduleSettings;
+    private readonly ApplicationSettings _applicationSettings;
     private readonly MediaFileListenerService _mediaFileListenerService;
     private readonly MetadataProcessingService _metadataProcessingService;
     private readonly FFmpegMetadataService _ffmpegMetadataService;
@@ -20,12 +20,13 @@ public class MetadataProcessorEngine
     private readonly MediaSetVariantService _mediaSetVariantService;
     private readonly InfuseXmlService _infuseXmlService;
 
-    public MetadataProcessorEngine(IOptions<MetadataProcessorSettings> settings, ILogger<MetadataProcessorEngine> logger,
+    public Engine(IOptions<ModuleSettings> moduleSettings, IOptions<ApplicationSettings> applicationSettings, ILogger<Engine> logger,
         MediaFileListenerService mediaFileListenerService, MetadataProcessingService metadataProcessingService, 
         FFmpegMetadataService ffmpegMetadataService, MediaTypeDetectorService mediaTypeDetectorService,
         MediaSetVariantService mediaSetVariantService, InfuseXmlService infuseXmlService)
     {
-        _settings = settings.Value;
+        _moduleSettings = moduleSettings.Value;
+        _applicationSettings = applicationSettings.Value;
         _mediaFileListenerService = mediaFileListenerService;
         _metadataProcessingService = metadataProcessingService;
         _ffmpegMetadataService = ffmpegMetadataService;
@@ -39,13 +40,13 @@ public class MetadataProcessorEngine
         progress.Report("Steuereinheit für die Metadaten-Verarbeitung gestartet.");
 
         // Prüfe ob die Einstellungen korrekt geladen wurden
-        if (_settings.InputDirectory == null)
+        if (_applicationSettings.InputDirectory == null)
         {
-            return Result.Failure("Kein Eingabeverzeichnis konfiguriert. Wenn Umgebungsvariablen verwendet werden, sollte der Name der Umgebungsvariable 'MetadataProcessing__InputDirectory' lauten.");
+            return Result.Failure($"Kein Eingabeverzeichnis konfiguriert. Wenn Umgebungsvariablen verwendet werden, sollte der Name der Umgebungsvariable '{ApplicationSettings.SectionName}__{nameof(_applicationSettings.InputDirectory)}' lauten.");
         }
 
         // Informiere über das Eingabeverzeichnis
-        progress.Report($"Eingabeverzeichnis: {_settings.InputDirectory}");
+        progress.Report($"Eingabeverzeichnis: {_applicationSettings.InputDirectory}");
 
         // Liste alle unterstützten Medien-Dateien im Verzeichnis auf
         var mediaFiles = _mediaFileListenerService.GetSupportedMediaFiles();

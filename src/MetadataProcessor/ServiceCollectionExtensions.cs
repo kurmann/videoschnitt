@@ -9,12 +9,12 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddMetadataProcessor(this IServiceCollection services, IConfiguration configuration)
     {   
         // Add configuration sources
-        var section = configuration.GetSection(MetadataProcessorSettings.SectionName);
-        services.Configure<MetadataProcessorSettings>(options => section.Bind(options));
+        services.Configure<ModuleSettings>(options => configuration.GetSection(ModuleSettings.SectionName).Bind(options));
+        services.Configure<ApplicationSettings>(options => configuration.GetSection(ApplicationSettings.SectionName).Bind(options));
 
         // Register MetadataProcessingService
         services.AddScoped<MetadataProcessingService>();
-        services.AddScoped<MetadataProcessorEngine>();
+        services.AddScoped<Engine>();
         services.AddScoped<MediaFileListenerService>();
         services.AddScoped<FFmpegMetadataService>();
         services.AddScoped<CommandExecutorService>();

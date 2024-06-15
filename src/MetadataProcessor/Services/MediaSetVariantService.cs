@@ -9,10 +9,10 @@ namespace Kurmann.Videoschnitt.MetadataProcessor.Services;
 /// Verantwortlich für die Verwaltung von Medienset-Varianten.
 public class MediaSetVariantService
 {
-    private readonly MetadataProcessorSettings _settings;
+    private readonly ModuleSettings _settings;
     private readonly ILogger<MediaSetVariantService> _logger;
 
-    public MediaSetVariantService(IOptions<MetadataProcessorSettings> settings, ILogger<MediaSetVariantService> logger)
+    public MediaSetVariantService(IOptions<ModuleSettings> settings, ILogger<MediaSetVariantService> logger)
     {
         _settings = settings.Value;
         _logger = logger;
@@ -26,7 +26,7 @@ public class MediaSetVariantService
     {
         _logger.LogInformation($"Ermittle QuickTime-Movie-Variante für Mpeg4-Video {mpeg4Video.FileInfo.FullName}");
 
-        var variantSuffixes = _settings.MediaSetSettings?.VideoVersionSuffixes;
+        var variantSuffixes = _settings.MediaSet?.VideoVersionSuffixes;
         if (variantSuffixes == null || variantSuffixes.Count == 0)
         {
             return Result.Failure<Maybe<QuickTimeMovie>>("Keine Variantensuffixe für QuickTime-Movie-Varianten konfiguriert.");
@@ -80,7 +80,7 @@ public class MediaSetVariantService
             return Result.Failure<FileInfo>($"Das Verzeichnis des Medien-Objekts {mediaFile.FullName} konnte nicht ermittelt werden.");
         }
 
-        var variantSuffixes = _settings.MediaSetSettings?.VideoVersionSuffixes;
+        var variantSuffixes = _settings.MediaSet?.VideoVersionSuffixes;
         if (variantSuffixes == null || variantSuffixes.Count == 0)
         {
             return Result.Failure<FileInfo>("Keine Variantensuffixe für Infuse-XML-Objekte konfiguriert.");

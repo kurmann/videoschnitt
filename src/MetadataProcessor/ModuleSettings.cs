@@ -1,14 +1,11 @@
 namespace Kurmann.Videoschnitt.MetadataProcessor;
 
-public class MetadataProcessorSettings
+public class ModuleSettings
 {
     public const string SectionName = "MetadataProcessing";
 
-    public string? InputDirectory { get; set; }
-
-    public MediaSetSettings? MediaSetSettings { get; set; } = new MediaSetSettings();
-    public FileTypeSettings? FileTypeSettings { get; set; } = new FileTypeSettings();
-    public InfuseMediaLibrarySettings? InfuseMediaLibrarySettings { get; set; } = new InfuseMediaLibrarySettings();
+    public MediaSetSettings? MediaSet { get; set; } = new MediaSetSettings();
+    public FileTypeSettings? FileTypes { get; set; } = new FileTypeSettings();
 }
 
 public class MediaSetSettings
@@ -22,11 +19,6 @@ public class MediaSetSettings
     /// Liste der Varianten-Suffixe, die in den Dateinamen von Bilddateien vorkommen können, einschließlich des Trennzeichens.
     /// </summary>
     public List<string>? ImageVersionSuffixes { get; set; } = new List<string>{"", "-fanart"};
-}
-
-public class InfuseMediaLibrarySettings
-{
-    public string? InfuseMediaLibraryPath { get; set; }
 }
 
 public class FileTypeSettings

@@ -7,14 +7,16 @@ namespace Kurmann.Videoschnitt.InfuseMediaLibrary;
 
 public class Engine
 {
-    private readonly Settings _settings;
+    private readonly ModuleSettings _moduleSettings;
+    private readonly ApplicationSettings _applicationSettings;
     private readonly ILogger<Engine> _logger;
     private readonly InfuseMetadataXmlService _infuseMetadataXmlService;
     private readonly TargetDirectoryResolver _targetDirectoryResolver;
 
-    public Engine(IOptions<Settings> settings, ILogger<Engine> logger, InfuseMetadataXmlService infuseMetadataXmlService, TargetDirectoryResolver targetDirectoryResolver)
+    public Engine(IOptions<ModuleSettings> moduleSettings, IOptions<ApplicationSettings> applicationSettings, ILogger<Engine> logger, InfuseMetadataXmlService infuseMetadataXmlService, TargetDirectoryResolver targetDirectoryResolver)
     {
-        _settings = settings.Value;
+        _moduleSettings = moduleSettings.Value;
+        _applicationSettings = applicationSettings.Value;
         _logger = logger;
         _infuseMetadataXmlService = infuseMetadataXmlService;
         _targetDirectoryResolver = targetDirectoryResolver;
@@ -24,31 +26,31 @@ public class Engine
     {
         progress.Report("InfuseMediaLibrary-Feature gestartet.");
 
-        // Informiere über das Infuse-Mediathek-Verzeichnis, das verwendet wird
-        progress.Report($"Infuse-Mediathek-Verzeichnis: {_settings.LibraryPath}");
-
         // Prüfe den Infuse-Mediathek-Pfad aus den Einstellungen
-        if (_settings.LibraryPath == null)
+        if (_applicationSettings.InfuseMediaLibraryPath == null)
         {
-            return Result.Failure($"Kein Infuse-Mediathek-Verzeichnis konfiguriert. Wenn Umgebungsvariablen verwendet werden, sollte der Name der Umgebungsvariable '{Settings.SectionName}__{nameof(_settings.LibraryPath)}' lauten.");
+            return Result.Failure($"Kein Infuse-Mediathek-Verzeichnis konfiguriert. Wenn Umgebungsvariablen verwendet werden, sollte der Name der Umgebungsvariable '{ApplicationSettings.SectionName}__{nameof(_applicationSettings.InfuseMediaLibraryPath)}' lauten.");
         }
-        if (!Directory.Exists(_settings.LibraryPath))
+        if (!Directory.Exists(_applicationSettings.InfuseMediaLibraryPath))
         {
-            return Result.Failure($"Das Infuse-Mediathek-Verzeichnis {_settings.LibraryPath} existiert nicht.");
+            return Result.Failure($"Das Infuse-Mediathek-Verzeichnis {_applicationSettings.InfuseMediaLibraryPath} existiert nicht.");
         }
 
         // Prüfe das Quellverzeichnis aus den Einstellungen
-        if (_settings.SourceDirectoryPath == null)
+        if (_applicationSettings.InputDirectory == null)
         {
-            return Result.Failure($"Kein Quellverzeichnis konfiguriert. Wenn Umgebungsvariablen verwendet werden, sollte der Name der Umgebungsvariable '{Settings.SectionName}__{nameof(_settings.SourceDirectoryPath)}' lauten.");
+            return Result.Failure($"Kein Quellverzeichnis konfiguriert. Wenn Umgebungsvariablen verwendet werden, sollte der Name der Umgebungsvariable '{ApplicationSettings.SectionName}__{nameof(_applicationSettings.InputDirectory)}' lauten.");
         }
-        if (!Directory.Exists(_settings.SourceDirectoryPath))
+        if (!Directory.Exists(_applicationSettings.InputDirectory))
         {
-            return Result.Failure($"Das Quellverzeichnis {_settings.SourceDirectoryPath} existiert nicht.");
+            return Result.Failure($"Das Quellverzeichnis {_applicationSettings.InputDirectory} existiert nicht.");
         }
 
+        // Informiere über das Quellverzeichnis
+        progress.Report($"Quellverzeichnis für die Integration von Medien in die Infuse-Mediathek: {_applicationSettings.InputDirectory}");
+
         // Versuche, Infuse-Metadaten-XML-Dateien zu finden
-        var infuseMetadataXmlFiles = _infuseMetadataXmlService.GetInfuseMetadataXmlFiles(_settings.SourceDirectoryPath);
+        var infuseMetadataXmlFiles = _infuseMetadataXmlService.GetInfuseMetadataXmlFiles(_applicationSettings.InputDirectory);
         if (infuseMetadataXmlFiles.IsFailure)
         {
             return Result.Failure($"Fehler beim Ermitteln der Infuse-Metadaten-XML-Dateien: {infuseMetadataXmlFiles.Error}");
@@ -83,7 +85,7 @@ public class Engine
             progress.Report($"Folgendes Aufnahmedatum wurde in den Infuse-Metadaten gefunden: {recordingDate}");
 
             // Ermittle mit dem TargetDirectoryResolver das Zielverzeichnis für die Medien-Dateien
-            var targetDirectoryResult = _targetDirectoryResolver.ResolveTargetDirectory(mediaSetFiles, _settings.LibraryPath);
+            var targetDirectoryResult = _targetDirectoryResolver.ResolveTargetDirectory(mediaSetFiles, _applicationSettings.InfuseMediaLibraryPath);
             if (targetDirectoryResult.IsFailure)
             {
                 _logger.LogWarning($"Fehler beim Ermitteln des Zielverzeichnisses für die Medien-Dateien im Medienset {infuseMetadataXmlFile.FileInfo.FullName}: {targetDirectoryResult.Error}");

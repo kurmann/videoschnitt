@@ -3,12 +3,12 @@ services:
     build: .
     container_name: videoschnitt
     volumes:
-      - ${MetadataProcessing__InputDirectory}:/media/metadata-processing:rw
+      - /testdata:/media/inputDirectory:rw
+      - /testlibrary:/media/infuseLibrary:rw
     ports:
       - "8080:8080"
-    env_file:
-      - docker-environment.txt
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
+      - Application__InputDirectory=/media/inputDirectory
+      - Application__InfuseMediaLibraryPath=/media/infuseLibrary
       - PORT=8080
-      - MetadataProcessing__InputDirectory=/media/metadata-processing

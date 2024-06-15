@@ -7,10 +7,10 @@ namespace Kurmann.Videoschnitt.Workflows;
 public class FinalCutProWorkflow : IAsyncWorkflow
 {
     private readonly ILogger<FinalCutProWorkflow> _logger;
-    private readonly MetadataProcessorEngine _metadataProcessorEngine;
+    private readonly Engine _metadataProcessorEngine;
     private readonly InfuseMediaLibrary.Engine _infuseMediaLibraryEngine;
 
-    public FinalCutProWorkflow(ILogger<FinalCutProWorkflow> logger, MetadataProcessorEngine metadataProcessorEngine, InfuseMediaLibrary.Engine infuseMediaLibraryEngine)
+    public FinalCutProWorkflow(ILogger<FinalCutProWorkflow> logger, Engine metadataProcessorEngine, InfuseMediaLibrary.Engine infuseMediaLibraryEngine)
     {
         _logger = logger;
         _metadataProcessorEngine = metadataProcessorEngine;

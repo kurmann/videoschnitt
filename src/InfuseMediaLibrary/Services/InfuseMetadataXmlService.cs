@@ -22,7 +22,7 @@ public class InfuseMetadataXmlService
         var directoryResult = ParseDirectoryPath(directoryPath);
         if (directoryResult.IsFailure)
         {
-            return Result.Failure<List<CustomProductionInfuseMetadataFile>>(directoryResult.Error);
+            return Result.Failure<List<CustomProductionInfuseMetadataFile>>("Fehler beim Parsen des Verzeichnispfads: " + directoryResult.Error);
         }
 
         // Ermittle alle XML-Dateien im Verzeichnis
@@ -30,6 +30,9 @@ public class InfuseMetadataXmlService
         var xmlFiles = directory.EnumerateFiles("*.xml", SearchOption.TopDirectoryOnly)
             .Where(file => file.Extension.Equals(".xml", StringComparison.OrdinalIgnoreCase))
             .ToList();
+
+        // Informiere über die Anzahl der gefundenen XML-Dateien
+        _logger.LogInformation($"Anzahl der gefundenen XML-Dateien: {xmlFiles.Count}");
 
         // Iteriere über XML-Dateien in den Medienset-Dateien und gib alle validen Infuse-Metadaten-XML-Dateien zurück
         var customProductionInfuseMetadataFiles = GetCustomProductionInfuseMetadataFiles(xmlFiles);
