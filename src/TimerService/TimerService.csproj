@@ -15,8 +15,4 @@
     <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.0-preview.4.24266.19" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Messages\Messages.csproj" />
-  </ItemGroup>
-
 </Project>
