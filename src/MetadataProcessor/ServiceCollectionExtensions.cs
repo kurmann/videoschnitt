@@ -21,7 +21,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<MediaTypeDetectorService>();
         services.AddScoped<MediaSetVariantService>();
         services.AddScoped<InfuseXmlService>();
-        services.AddScoped<TargetDirectoryResolver>();
 
         return services;
     }

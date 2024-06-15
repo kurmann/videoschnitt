@@ -4,6 +4,7 @@ using Kurmann.Videoschnitt.MetadataProcessor;
 using Kurmann.Videoschnitt.Workflows;
 using Kurmann.Videoschnitt.HealthCheck;
 using Kurmann.Videoschnitt.HealthCheck.Services;
+using Kurmann.Videoschnitt.InfuseMediaLibrary;
 
 namespace Kurmann.Videoschnitt.Application;
 
@@ -16,14 +17,17 @@ public class Program
 
         var builder = WebApplication.CreateBuilder(args);
 
+        var directory = Directory.GetCurrentDirectory();
+
         builder.Configuration
             .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-            .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
+            .AddJsonFile("src/Application/appsettings.json", optional: true, reloadOnChange: true)
+            .AddJsonFile($"src/Application/appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
             .AddEnvironmentVariables()
             .AddUserSecrets<Program>();
 
         builder.Services.AddMetadataProcessor(builder.Configuration);
+        builder.Services.AddInfuseMediaLibrary(builder.Configuration);
 
         builder.Services.AddRazorPages();
         builder.Services.AddServerSideBlazor();
