@@ -9,7 +9,7 @@ public class FileOperations : IFileOperations
         document.Save(path);
     }
 
-    public void MoveFile(string sourcePath, string destinationPath)
+    public void MoveFile(string sourcePath, string destinationPath, bool overwrite = false)
     {
         if (File.Exists(destinationPath))
         {
@@ -18,7 +18,7 @@ public class FileOperations : IFileOperations
         File.Move(sourcePath, destinationPath);
     }
 
-    public void CopyFile(string sourcePath, string destinationPath, bool overwrite)
+    public void CopyFile(string sourcePath, string destinationPath, bool overwrite = false)
     {
         File.Copy(sourcePath, destinationPath, overwrite);
     }
