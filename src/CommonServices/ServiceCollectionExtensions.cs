@@ -9,8 +9,6 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddCommonServicesEngine(this IServiceCollection services)
     {   
         // Register Engine
-        services.AddScoped<FileTransferService>();
-        services.AddScoped<FilePermissionsService>();
         services.AddScoped<ExecuteCommandService>();
         services.AddScoped<IFileOperations, FileOperations>();
 
