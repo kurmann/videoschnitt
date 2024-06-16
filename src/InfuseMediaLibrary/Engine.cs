@@ -2,7 +2,7 @@ using CSharpFunctionalExtensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Kurmann.Videoschnitt.InfuseMediaLibrary.Services;
-using Kurmann.Videoschnitt.LocalFileSystem.UnixSystems;
+using Kurmann.Videoschnitt.CommonServices.FileSystem.Unix;
 
 namespace Kurmann.Videoschnitt.InfuseMediaLibrary;
 

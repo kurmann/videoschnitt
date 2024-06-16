@@ -3,7 +3,7 @@ using CSharpFunctionalExtensions;
 using System.Xml.Linq;
 using Kurmann.Videoschnitt.MetadataProcessor.Entities;
 using Kurmann.Videoschnitt.MetadataProcessor.Entities.SupportedMediaTypes;
-using Kurmann.Videoschnitt.LocalFileSystem.UnixSystems;
+using Kurmann.Videoschnitt.CommonServices.FileSystem.Unix;
 
 namespace Kurmann.Videoschnitt.MetadataProcessor.Services
 {

@@ -1,4 +1,4 @@
-using Kurmann.Videoschnitt.LocalFileSystem.UnixSystems;
+using Kurmann.Videoschnitt.LocalFileSystem.FileSystem.Unix;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Kurmann.Videoschnitt.CommonServices;

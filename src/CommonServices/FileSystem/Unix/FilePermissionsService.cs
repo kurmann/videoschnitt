@@ -1,7 +1,7 @@
 using CSharpFunctionalExtensions;
 using Kurmann.Videoschnitt.CommonServices;
 
-namespace Kurmann.Videoschnitt.LocalFileSystem.UnixSystems;
+namespace Kurmann.Videoschnitt.CommonServices.FileSystem.Unix;
 
 /// <summary>
 /// Service zum Übertragen von Dateiberechtigungen auf Unix-Systemen.
