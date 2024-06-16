@@ -6,6 +6,7 @@ namespace Kurmann.Videoschnitt.CommonServices.FileSystem.Unix;
 /// <summary>
 /// Service zum Übertragen von Dateiberechtigungen auf Unix-Systemen.
 /// </summary>
+[Obsolete("Dieser Service wurde durch <see cref=\"FileOperations\"/> ersetzt.")]
 public class FilePermissionsService
 {
     private readonly ExecuteCommandService _executeCommandService;

@@ -12,6 +12,7 @@ namespace Kurmann.Videoschnitt.CommonServices.FileSystem.Unix;
 /// da .NET Core als plattformübergreifendes Framework keine Windows-spezifischen Funktionen unterstützt.
 /// Dieser Service verwendet daher die Unix-Befehle "cp" und "mv" und führt sie in einem externen Prozess aus.
 /// </summary>
+[Obsolete("Dieser Service wurde durch <see cref=\"FileOperations\"/> ersetzt.")]
 public class FileTransferService
 {
     private readonly ILogger<FileTransferService> _logger;
