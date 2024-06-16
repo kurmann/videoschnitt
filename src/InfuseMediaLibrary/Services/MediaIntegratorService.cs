@@ -1,16 +1,22 @@
 using Microsoft.Extensions.Logging;
 using CSharpFunctionalExtensions;
 using System.Text;
+using Kurmann.Videoschnitt.CommonServices;
 
 namespace Kurmann.Videoschnitt.InfuseMediaLibrary.Services;
 
 public class MediaIntegratorService
 {
     private readonly ILogger<MediaIntegratorService> _logger;
+    private readonly FileTransferService _fileTransferService;
 
-    public MediaIntegratorService(ILogger<MediaIntegratorService> logger) => _logger = logger;
+    public MediaIntegratorService(ILogger<MediaIntegratorService> logger, FileTransferService fileTransferService)
+    {
+        _logger = logger;
+        _fileTransferService = fileTransferService;
+    }
 
-    public Result<IntegratedMediaSetFile> IntegrateMediaSet(IEnumerable<FileInfo> mediaSetFiles,
+    public async Task<Result<IntegratedMediaSetFile>> IntegrateMediaSet(IEnumerable<FileInfo> mediaSetFiles,
                                                             DirectoryInfo targetDirectory,
                                                             IEnumerable<string> suffixesToIntegrate,
                                                             string recordingDateIsoString)
@@ -81,6 +87,15 @@ public class MediaIntegratorService
 
             mediaSetFileToMove.MoveTo(targetFilePath);
             _logger.LogInformation($"Die Datei {mediaSetFileToMove.FullName} wurde in das Infuse-Mediathek-Verzeichnis {targetDirectory} verschoben.");
+
+
+            // Übertrage die Dateiberechtigungen von Quelle zu Ziel
+            var transferPermissionsResult = await _fileTransferService.TransferPermissionsAsync(mediaSetFileToMove.FullName, targetFilePath);
+            if (transferPermissionsResult.IsFailure)
+            {
+                return Result.Failure<IntegratedMediaSetFile>($"Die Dateiberechtigungen von {mediaSetFileToMove.FullName} konnten nicht auf {targetFilePath} übertragen werden: {transferPermissionsResult.Error}");
+            }
+
             return Result.Success(new IntegratedMediaSetFile(mediaSetFileToMove, new FileInfo(targetFilePath)));
         }
         catch (Exception ex)
