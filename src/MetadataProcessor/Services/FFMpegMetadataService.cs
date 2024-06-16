@@ -1,23 +1,24 @@
 using CSharpFunctionalExtensions;
 using Microsoft.Extensions.Logging;
+using Kurmann.Videoschnitt.CommonServices;
 
 namespace Kurmann.Videoschnitt.MetadataProcessor.Services;
 
 public class FFmpegMetadataService
 {
-    private readonly CommandExecutorService _executorService;
+    private readonly ExecuteCommandService _executeCommandService;
     private readonly ILogger<FFmpegMetadataService> _logger;
 
-    public FFmpegMetadataService(CommandExecutorService executorService, ILogger<FFmpegMetadataService> logger)
+    public FFmpegMetadataService(ExecuteCommandService executeCommandService, ILogger<FFmpegMetadataService> logger)
     {
-        _executorService = executorService;
+        _executeCommandService = executeCommandService;
         _logger = logger;
     }
 
     public async Task<Result<string>> GetFFmpegMetadataAsync(string filePath)
     {
         var arguments = $"-i \"{filePath}\" -f ffmetadata -";
-        var result = await _executorService.ExecuteCommandAsync("ffmpeg", arguments);
+        var result = await _executeCommandService.ExecuteCommandAsync("ffmpeg", arguments);
 
         if (result.IsSuccess)
         {

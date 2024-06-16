@@ -29,7 +29,7 @@ public class Engine
         _mediaIntegratorService = mediaIntegratorService;
     }
 
-    public Result Start(IProgress<string> progress)
+    public async Task<Result> StartAsync(IProgress<string> progress)
     {
         progress.Report("InfuseMediaLibrary-Feature gestartet.");
 
@@ -57,7 +57,7 @@ public class Engine
         progress.Report($"Quellverzeichnis für die Integration von Medien in die Infuse-Mediathek: {_applicationSettings.InputDirectory}");
 
         // Versuche, Infuse-Metadaten-XML-Dateien zu finden
-        var infuseMetadataXmlFiles = _infuseMetadataXmlService.GetInfuseMetadataXmlFiles(_applicationSettings.InputDirectory);
+        var infuseMetadataXmlFiles = await _infuseMetadataXmlService.GetInfuseMetadataXmlFilesAsync(_applicationSettings.InputDirectory);
         if (infuseMetadataXmlFiles.IsFailure)
         {
             return Result.Failure($"Fehler beim Ermitteln der Infuse-Metadaten-XML-Dateien: {infuseMetadataXmlFiles.Error}");
@@ -112,7 +112,7 @@ public class Engine
             }
 
             // Versuche, die Medien-Dateien in das Zielverzeichnis zu verschieben
-            var moveMediaFilesResult = _mediaIntegratorService.IntegrateMediaSet(mediaSetFiles, targetDirectoryResult.Value, suffixesToIntegrate, recordingDateIsoString);
+            var moveMediaFilesResult = await _mediaIntegratorService.IntegrateMediaSetAsync(mediaSetFiles, targetDirectoryResult.Value, suffixesToIntegrate, recordingDateIsoString);
             if (moveMediaFilesResult.IsFailure)
             {
                 progress.Report($"Fehler beim Verschieben der Medien-Dateien in das Infuse-Mediathek-Verzeichnis {targetDirectoryResult.Value.FullName}: {moveMediaFilesResult.Error}");
