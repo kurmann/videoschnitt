@@ -7,11 +7,16 @@ public class FileOperations : IFileOperations
 {
     private readonly ExecuteCommandService _executeCommandService;
 
-    public FileOperations(ExecuteCommandService executeCommandService)
-    {
-        _executeCommandService = executeCommandService;
-    }
+    public FileOperations(ExecuteCommandService executeCommandService) => _executeCommandService = executeCommandService;
 
+    /// <summary>
+    /// Speichert das XDocument-Dokument an dem angegebenen Pfad. Bietet gegenüber dem Speichern mit XDocument.Save() die Möglichkeit, die Berechtigungen des übergeordneten Ordners zu erben.
+    /// Dies ist insbesondere auf Unix-Systemen wichtig, da .NET Core keine Möglichkeit bietet, die Berechtigungen beim Speichern von Dateien zu übernehmen.
+    /// </summary>
+    /// <param name="document">Das XDocument-Dokument, das gespeichert werden soll.</param>
+    /// <param name="path">Der Pfad, an dem das Dokument gespeichert werden soll.</param>
+    /// <param name="inheritPermissions">Gibt an, ob die Berechtigungen des übergeordneten Ordners geerbt werden sollen. Standardmäßig ist dies true.</param>
+    /// <returns>Ein Result-Objekt, das den Erfolg oder Misserfolg des Speicherns angibt.</returns>
     public async Task<Result> SaveFile(XDocument document, string path, bool inheritPermissions = true)
     {
         try
@@ -33,6 +38,23 @@ public class FileOperations : IFileOperations
         }
     }
 
+    /// <summary>
+    /// Verschiebt eine Datei vom Quellpfad zum Zielort. Bietet gegenüber dem Verschieben mit File.Move() die Möglichkeit, die Berechtigungen zu erben.
+    /// Dies ist insbesondere auf Unix-Systemen wichtig, da .NET Core keine Möglichkeit bietet, die Berechtigungen beim Verschieben von Dateien zu übernehmen.
+    /// </summary>
+    /// <param name="sourcePath">Der Pfad der zu verschiebenden Datei.</param>
+    /// <param name="destinationPath">Der Zielort, an dem die Datei verschoben werden soll.</param>
+    /// <param name="overwrite">Gibt an, ob die Zieldatei überschrieben werden soll, falls sie bereits existiert. Standardmäßig ist dies false.</param>
+    /// <param name="inheritPermissions">Gibt an, ob die Berechtigungen von der Quelldatei auf die Zieldatei übernommen werden sollen. Standardmäßig ist dies true.</param>
+    /// <returns>Ein <see cref="Task{Result}"/>, das die asynchrone Operation repräsentiert. Das Ergebnis der Aufgabe enthält ein <see cref="Result"/>, das den Erfolg oder Misserfolg der Operation angibt.</returns>
+    /// <summary>
+    /// Moves a file from the source path to the destination path.
+    /// </summary>
+    /// <param name="sourcePath">The path of the file to be moved.</param>
+    /// <param name="destinationPath">The destination path where the file should be moved to.</param>
+    /// <param name="overwrite">Specifies whether to overwrite the destination file if it already exists. Default is false.</param>
+    /// <param name="inheritPermissions">Specifies whether to inherit permissions from the source file to the destination file. Default is true.</param>
+    /// <returns>A <see cref="Task{Result}"/> representing the asynchronous operation. The task result contains a <see cref="Result"/> indicating the success or failure of the operation.</returns>
     public async Task<Result> MoveFile(string sourcePath, string destinationPath, bool overwrite = false, bool inheritPermissions = true)
     {
         try
@@ -60,6 +82,15 @@ public class FileOperations : IFileOperations
         }
     }
 
+    /// <summary>
+    /// Kopiert eine Datei von einem Quellpfad zu einem Ziel- pfad. Bietet gegenüber dem Kopieren mit File.Copy() die Möglichkeit, die Berechtigungen zu erben.
+    /// Dies ist insbesondere auf Unix-Systemen wichtig, da .NET Core keine Möglichkeit bietet, die Berechtigungen beim Kopieren von Dateien zu übernehmen.
+    /// </summary>
+    /// <param name="sourcePath">Der Quellpfad der Datei.</param>
+    /// <param name="destinationPath">Der Zielpfad, an dem die Datei kopiert werden soll.</param>
+    /// <param name="overwrite">Gibt an, ob eine vorhandene Datei überschrieben werden soll. Der Standardwert ist <c>false</c>.</param>
+    /// <param name="inheritPermissions">Gibt an, ob die Berechtigungen der Ziel- datei von der Quelldatei geerbt werden sollen. Der Standardwert ist <c>true</c>.</param>
+    /// <returns>Ein <see cref="Result"/>-Objekt, das den Erfolg oder Misserfolg des Kopiervorgangs darstellt.</returns>
     public async Task<Result> CopyFile(string sourcePath, string destinationPath, bool overwrite = false, bool inheritPermissions = true)
     {
         try
@@ -82,6 +113,11 @@ public class FileOperations : IFileOperations
         }
     }
 
+    /// <summary>
+    /// Liest den Inhalt einer Datei.
+    /// </summary>
+    /// <param name="path">Der Pfad zur Datei.</param>
+    /// <returns>Ein Result-Objekt, das den gelesenen Inhalt enthält, falls erfolgreich. Andernfalls enthält es eine Fehlermeldung.</returns>
     public Result<string> ReadFile(string path)
     {
         try
