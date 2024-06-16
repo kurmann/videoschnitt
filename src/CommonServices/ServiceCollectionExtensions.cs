@@ -8,6 +8,7 @@ public static class ServiceCollectionExtensions
     {   
         // Register Engine
         services.AddScoped<FileTransferService>();
+        services.AddScoped<ExecuteCommandService>();
 
         return services;
     }
