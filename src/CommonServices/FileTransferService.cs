@@ -67,5 +67,18 @@ namespace Kurmann.Videoschnitt.CommonServices
                 return Result.Failure<string>($"Fehler beim Lesen der Datei {filePath}: {ex.Message}");
             }
         }
+
+        /// <summary>
+        /// Schreibt den Inhalt in eine Datei.
+        /// </summary>
+        /// <param name="content">Der Inhalt, der geschrieben werden soll.</param>
+        /// <param name="filePath">Der Pfad der Datei.</param>
+        /// <returns>Ein Result-Objekt, das den Erfolg oder Fehler enthält.</returns>
+        public async Task<Result> WriteFileAsync(string content, string filePath)
+        {
+            var commandPath = "sh";
+            var arguments = $"-c 'echo \"{content.Replace("\"", "\\\"")}\" > \"{filePath}\"'";
+            return await _executeCommandService.ExecuteCommandAsync(commandPath, arguments);
+        }
     }
 }

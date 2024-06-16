@@ -100,7 +100,17 @@ public class Engine
                 progress.Report($"Dateiname des Infuse-XML-Objekts für Medien-Objekt \n{mediaFile.FullName}:\n{infuseXmlFileName.Value.FullName}");
 
                 // Schreibe die Datei
-                infuseXml.Save(infuseXmlFileName.Value.FullName);
+                var saveResult = await _infuseXmlService.SaveInfuseXmlAsync(infuseXml, infuseXmlFileName.Value.FullName);
+
+                if (saveResult.IsSuccess)
+                {
+                    // Informiere über den Erfolg
+                    progress.Report($"Infuse-XML-Datei für Medien-Objekt {mediaFile.FullName} erfolgreich geschrieben.");
+                }
+                else
+                {
+                    progress.Report($"Fehler beim Schreiben der Infuse-XML-Datei für Medien-Objekt {mediaFile.FullName}: {saveResult.Error}");
+                }
 
                 // Informiere über den Erfolg
                 progress.Report($"Infuse-XML-Datei für Medien-Objekt {mediaFile.FullName} erfolgreich geschrieben.");
@@ -158,7 +168,17 @@ public class Engine
                 var infuseXml = readMpeg4MetadataResult.Value;
 
                 // Schreibe die Datei
-                infuseXml.Save(infuseXmlFileName.Value.FullName);
+                var saveResult = await _infuseXmlService.SaveInfuseXmlAsync(infuseXml, infuseXmlFileName.Value.FullName);
+
+                if (saveResult.IsSuccess)
+                {
+                    // Informiere über den Erfolg
+                    progress.Report($"Infuse-XML-Datei für Medien-Objekt {mediaFile.FullName} erfolgreich geschrieben.");
+                }
+                else
+                {
+                    progress.Report($"Fehler beim Schreiben der Infuse-XML-Datei für Medien-Objekt {mediaFile.FullName}: {saveResult.Error}");
+                }
 
                 // Informiere über den Erfolg
                 progress.Report($"Infuse-XML-Datei für Medien-Objekt {mediaFile.FullName} erfolgreich geschrieben.");
