@@ -3,7 +3,7 @@ using System.Text;
 using CSharpFunctionalExtensions;
 using Microsoft.Extensions.Logging;
 
-namespace Kurmann.Videoschnitt.LocalFileSystem.Services;
+namespace Kurmann.Videoschnitt.CommonServices;
 
 /// <summary>
 /// Service zum Kopieren, Verschieben und Lesen von Dateien.
