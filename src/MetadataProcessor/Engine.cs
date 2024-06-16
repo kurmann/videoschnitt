@@ -2,7 +2,6 @@ using Kurmann.Videoschnitt.MetadataProcessor.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Kurmann.Videoschnitt.MetadataProcessor.Entities.SupportedMediaTypes;
-using Kurmann.Videoschnitt.CommonServices;
 using CSharpFunctionalExtensions;
 
 namespace Kurmann.Videoschnitt.MetadataProcessor;
@@ -20,12 +19,11 @@ public class Engine
     private readonly MediaTypeDetectorService _mediaTypeDetectorService;
     private readonly MediaSetVariantService _mediaSetVariantService;
     private readonly InfuseXmlService _infuseXmlService;
-    private readonly FileTransferService _fileTransferService;
 
     public Engine(IOptions<ModuleSettings> moduleSettings, IOptions<ApplicationSettings> applicationSettings, ILogger<Engine> logger,
         MediaFileListenerService mediaFileListenerService, MetadataProcessingService metadataProcessingService, 
         FFmpegMetadataService ffmpegMetadataService, MediaTypeDetectorService mediaTypeDetectorService,
-        MediaSetVariantService mediaSetVariantService, InfuseXmlService infuseXmlService, FileTransferService fileTransferService)
+        MediaSetVariantService mediaSetVariantService, InfuseXmlService infuseXmlService)
     {
         _moduleSettings = moduleSettings.Value;
         _applicationSettings = applicationSettings.Value;
@@ -107,16 +105,6 @@ public class Engine
                 // Informiere über den Erfolg
                 progress.Report($"Infuse-XML-Datei für Medien-Objekt {mediaFile.FullName} erfolgreich geschrieben.");
 
-                // Entferne die spezifischen Berechtigungen der Infuse-XML-Datei, sodass die Berechtiungen von der Verzeichnisstruktur oberhalb übernommen werden
-                var clearSpecificPermissionsResult = await _fileTransferService.ClearSpecificPermissionsAsync(infuseXmlFileName.Value);
-                if (clearSpecificPermissionsResult.IsFailure)
-                {
-                    progress.Report(clearSpecificPermissionsResult.Error);
-                }
-
-                // Informiere über das Entfernen der spezifischen Berechtigungen
-                progress.Report($"Spezifische Berechtigungen der Infuse-XML-Datei {infuseXmlFileName.Value.FullName} wurden entfernt.");
-
                 // Fahre mit der nächsten Datei fort
                 continue;
             }
@@ -174,24 +162,13 @@ public class Engine
 
                 // Informiere über den Erfolg
                 progress.Report($"Infuse-XML-Datei für Medien-Objekt {mediaFile.FullName} erfolgreich geschrieben.");
-
-                // Entferne die spezifischen Berechtigungen der Infuse-XML-Datei, sodass die Berechtigungen von der Verzeichnisstruktur oberhalb übernommen werden
-                var clearSpecificPermissionsResult = await _fileTransferService.ClearSpecificPermissionsAsync(infuseXmlFileName.Value);
-                if (clearSpecificPermissionsResult.IsFailure)
-                {
-                    progress.Report(clearSpecificPermissionsResult.Error);
-                }
-
-                // Informiere über das Entfernen der spezifischen Berechtigungen
-                progress.Report($"Spezifische Berechtigungen der Infuse-XML-Datei {infuseXmlFileName.Value.FullName} wurden entfernt.");
-
-                // Fahre mit der nächsten Datei fort
-                continue;
             }
          
         }
 
         return Result.Success();
     }
+
+
 
 }
