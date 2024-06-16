@@ -1,8 +1,6 @@
 using System.Xml.Linq;
-using Kurmann.Videoschnitt.CommonServices;
-using Kurmann.Videoschnitt.CommonServices.FileSystem;
 
-namespace Kurmann.Videoschnitt.LocalFileSystem.FileSystem.Unix;
+namespace Kurmann.Videoschnitt.CommonServices.FileSystem.Unix;
 
 public class FileOperations : IFileOperations
 {
