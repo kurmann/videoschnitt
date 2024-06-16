@@ -1,8 +1,8 @@
 using CSharpFunctionalExtensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Kurmann.Videoschnitt.CommonServices;
 using Kurmann.Videoschnitt.InfuseMediaLibrary.Services;
+using Kurmann.Videoschnitt.CommonServices.FileSystem;
 
 namespace Kurmann.Videoschnitt.InfuseMediaLibrary;
 
@@ -14,7 +14,7 @@ public class Engine
     private readonly InfuseMetadataXmlService _infuseMetadataXmlService;
     private readonly TargetDirectoryResolver _targetDirectoryResolver;
     private readonly MediaIntegratorService _mediaIntegratorService;
-    private readonly FileTransferService _fileTransferService;
+    private readonly IFileOperations _fileOperations;
 
 
     public Engine(IOptions<ModuleSettings> moduleSettings,
@@ -23,7 +23,7 @@ public class Engine
                   InfuseMetadataXmlService infuseMetadataXmlService,
                   TargetDirectoryResolver targetDirectoryResolver,
                   MediaIntegratorService mediaIntegratorService,
-                  FileTransferService fileTransferService)
+                  IFileOperations fileOperations)
     {
         _moduleSettings = moduleSettings.Value;
         _applicationSettings = applicationSettings.Value;
@@ -31,7 +31,7 @@ public class Engine
         _infuseMetadataXmlService = infuseMetadataXmlService;
         _targetDirectoryResolver = targetDirectoryResolver;
         _mediaIntegratorService = mediaIntegratorService;
-        _fileTransferService = fileTransferService;
+        _fileOperations = fileOperations;
     }
 
     public async Task<Result> StartAsync(IProgress<string> progress)
@@ -133,20 +133,15 @@ public class Engine
             var targetInfuseMetadataXmlFilePath = Path.Combine(targetDirectoryResult.Value.FullName, infuseMetadataXmlFileNameWithoutRecordingDate);
             try
             {
-                File.Copy(infuseMetadataXmlFile.FileInfo.FullName, targetInfuseMetadataXmlFilePath, true);
-                progress.Report($"Infuse-Metadaten-XML-Datei {infuseMetadataXmlFile.FileInfo.FullName} wurde erfolgreich in das Infuse-Mediathek-Verzeichnis {targetDirectoryResult.Value.FullName} kopiert.");
-
-                // Entferne die spezifischen Berechtigungen der Infuse-Metadaten-XML-Datei damit diese die Berechtigungen des Zielverzeichnisses annimmt
-                var xmlFilePathInfo = new FileInfo(targetInfuseMetadataXmlFilePath);
-                var removePermissionsResult = await _fileTransferService.ClearSpecificPermissionsAsync(xmlFilePathInfo);
-                if (removePermissionsResult.IsFailure)
+                var copyFileResult = await _fileOperations.CopyFile(infuseMetadataXmlFile.FileInfo.FullName, targetInfuseMetadataXmlFilePath, true);
+                if (copyFileResult.IsFailure)
                 {
-                    progress.Report($"Die Berechtigungen der Infuse-Metadaten-XML-Datei {targetInfuseMetadataXmlFilePath} konnten nicht entfernt werden: {removePermissionsResult.Error}");
+                    progress.Report($"Fehler beim Kopieren der Infuse-Metadaten-XML-Datei {infuseMetadataXmlFile.FileInfo.FullName} in das Infuse-Mediathek-Verzeichnis {targetDirectoryResult.Value.FullName}: {copyFileResult.Error}");
+                    progress.Report("Das Medienset wird ignoriert.");
+                    continue;
                 }
 
-                // Informiere über das Entfernen der spezifischen Berechtigungen der Infuse-Metadaten-XML-Datei
-                progress.Report($"Die spezifischen Berechtigungen der Infuse-Metadaten-XML-Datei {targetInfuseMetadataXmlFilePath} wurden entfernt.");
-                
+                progress.Report($"Infuse-Metadaten-XML-Datei {infuseMetadataXmlFile.FileInfo.FullName} wurde erfolgreich in das Infuse-Mediathek-Verzeichnis {targetDirectoryResult.Value.FullName} kopiert.");
             }
             catch (Exception ex)
             {

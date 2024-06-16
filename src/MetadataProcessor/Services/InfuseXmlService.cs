@@ -1,9 +1,9 @@
 using Microsoft.Extensions.Logging;
 using CSharpFunctionalExtensions;
 using System.Xml.Linq;
-using Kurmann.Videoschnitt.CommonServices;
 using Kurmann.Videoschnitt.MetadataProcessor.Entities;
 using Kurmann.Videoschnitt.MetadataProcessor.Entities.SupportedMediaTypes;
+using Kurmann.Videoschnitt.CommonServices.FileSystem.Unix;
 
 namespace Kurmann.Videoschnitt.MetadataProcessor.Services
 {
@@ -14,13 +14,11 @@ namespace Kurmann.Videoschnitt.MetadataProcessor.Services
     {
         private readonly ILogger<InfuseXmlService> _logger;
         private readonly FFmpegMetadataService _ffmpegMetadataService;
-        private readonly FileTransferService _fileTransferService;
 
-        public InfuseXmlService(ILogger<InfuseXmlService> logger, FFmpegMetadataService ffmpegMetadataService, FileTransferService fileTransferService)
+        public InfuseXmlService(ILogger<InfuseXmlService> logger, FFmpegMetadataService ffmpegMetadataService)
         {
             _logger = logger;
             _ffmpegMetadataService = ffmpegMetadataService;
-            _fileTransferService = fileTransferService;
         }
 
         public async Task<Result<XDocument>> ReadMetdataFromQuickTimeMovie(QuickTimeMovie quickTimeMovie, IProgress<string> progress)

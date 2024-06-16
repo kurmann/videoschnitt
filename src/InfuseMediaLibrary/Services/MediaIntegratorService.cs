@@ -1,19 +1,19 @@
+using System.Text;
 using Microsoft.Extensions.Logging;
 using CSharpFunctionalExtensions;
-using System.Text;
-using Kurmann.Videoschnitt.CommonServices;
+using Kurmann.Videoschnitt.CommonServices.FileSystem;
 
 namespace Kurmann.Videoschnitt.InfuseMediaLibrary.Services;
 
 public class MediaIntegratorService
 {
     private readonly ILogger<MediaIntegratorService> _logger;
-    private readonly FileTransferService _fileTransferService;
+    private readonly IFileOperations _fileOperations;
 
-    public MediaIntegratorService(ILogger<MediaIntegratorService> logger, FileTransferService fileTransferService)
+    public MediaIntegratorService(ILogger<MediaIntegratorService> logger, IFileOperations fileOperations)
     {
         _logger = logger;
-        _fileTransferService = fileTransferService;
+        _fileOperations = fileOperations;
     }
 
     public async Task<Result<IntegratedMediaSetFile>> IntegrateMediaSet(IEnumerable<FileInfo> mediaSetFiles,
@@ -85,20 +85,14 @@ public class MediaIntegratorService
             // Ermittle den Ziel-Pfad der Datei im Infuse-Mediathek-Verzeichnis
             var targetFilePath = Path.Combine(targetDirectory.FullName, fileNameWithoutRecordingDateAndVariantSuffix);
 
-            mediaSetFileToMove.MoveTo(targetFilePath);
-            _logger.LogInformation($"Die Datei {mediaSetFileToMove.FullName} wurde in das Infuse-Mediathek-Verzeichnis {targetDirectory} verschoben.");
-
-
-            // Entferne die spezifischen Dateibereichtigungen, die durch das Verschieben der Datei in das Infuse-Mediathek-Verzeichnis durch .MoveTo() gesetzt wurden
-            var targetFilePathInfo = new FileInfo(targetFilePath);
-            var clearSpecificPermissionsResult = await _fileTransferService.ClearSpecificPermissionsAsync(targetFilePathInfo);
-            if (clearSpecificPermissionsResult.IsFailure)
+            // Bewege die Datei in das Infuse-Mediathek-Verzeichnis
+            var moveFileResult = await _fileOperations.MoveFile(mediaSetFileToMove.FullName, targetFilePath, true);
+            if (moveFileResult.IsFailure)
             {
-                return Result.Failure<IntegratedMediaSetFile>($"Die spezifischen Dateiberechtigungen der Datei {targetFilePathInfo.FullName} konnten nicht entfernt werden: {clearSpecificPermissionsResult.Error}");
+                return Result.Failure<IntegratedMediaSetFile>($"Die Datei {mediaSetFileToMove.FullName} konnte nicht in das Infuse-Mediathek-Verzeichnis {targetDirectory} verschoben werden: {moveFileResult.Error}");
             }
 
-            // Informiere über das erfolgreiche Entfernen der spezifischen Dateiberechtigungen
-            _logger.LogInformation($"Die spezifischen Dateiberechtigungen der Datei {targetFilePathInfo.FullName} wurden erfolgreich entfernt.");
+            _logger.LogInformation($"Die Datei {mediaSetFileToMove.FullName} wurde in das Infuse-Mediathek-Verzeichnis {targetDirectory} verschoben und die spezifischen Dateibereichtigungen wurden entfernt.");
 
             return Result.Success(new IntegratedMediaSetFile(mediaSetFileToMove, new FileInfo(targetFilePath)));
         }
