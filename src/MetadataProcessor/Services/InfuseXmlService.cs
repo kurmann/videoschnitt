@@ -14,13 +14,11 @@ namespace Kurmann.Videoschnitt.MetadataProcessor.Services
     {
         private readonly ILogger<InfuseXmlService> _logger;
         private readonly FFmpegMetadataService _ffmpegMetadataService;
-        private readonly FileTransferService _fileTransferService;
 
-        public InfuseXmlService(ILogger<InfuseXmlService> logger, FFmpegMetadataService ffmpegMetadataService, FileTransferService fileTransferService)
+        public InfuseXmlService(ILogger<InfuseXmlService> logger, FFmpegMetadataService ffmpegMetadataService)
         {
             _logger = logger;
             _ffmpegMetadataService = ffmpegMetadataService;
-            _fileTransferService = fileTransferService;
         }
 
         public async Task<Result<XDocument>> ReadMetdataFromQuickTimeMovie(QuickTimeMovie quickTimeMovie, IProgress<string> progress)
