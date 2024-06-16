@@ -57,7 +57,7 @@ public class Engine
         progress.Report($"Quellverzeichnis für die Integration von Medien in die Infuse-Mediathek: {_applicationSettings.InputDirectory}");
 
         // Versuche, Infuse-Metadaten-XML-Dateien zu finden
-        var infuseMetadataXmlFiles = _infuseMetadataXmlService.GetInfuseMetadataXmlFiles(_applicationSettings.InputDirectory);
+        var infuseMetadataXmlFiles = await _infuseMetadataXmlService.GetInfuseMetadataXmlFilesAsync(_applicationSettings.InputDirectory);
         if (infuseMetadataXmlFiles.IsFailure)
         {
             return Result.Failure($"Fehler beim Ermitteln der Infuse-Metadaten-XML-Dateien: {infuseMetadataXmlFiles.Error}");

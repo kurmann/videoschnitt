@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Kurmann.Videoschnitt.InfuseMediaLibrary.Services;
+using Kurmann.Videoschnitt.LocalFileSystem;
 
 namespace Kurmann.Videoschnitt.InfuseMediaLibrary;
 
@@ -18,7 +19,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<TargetDirectoryResolver>();
         services.AddScoped<InfuseMetadataXmlService>();
         services.AddScoped<MediaIntegratorService>();
-        services.AddScoped<FileTransferService>();
+
+        services.AddLocalFileSystemEngine();
 
         return services;
     }

@@ -3,14 +3,14 @@ using System.Text;
 using CSharpFunctionalExtensions;
 using Microsoft.Extensions.Logging;
 
-namespace Kurmann.Videoschnitt.InfuseMediaLibrary.Services;
+namespace Kurmann.Videoschnitt.LocalFileSystem.Services;
 
 /// <summary>
-/// Verwaltet das Kopieren und Verschieben von Dateien.
-/// Gegenüber dem .NET Framework bietet .NET Core keine Möglichkeit, die Berechtigungen einer Datei zu übernehmen,
-/// da es sich bei .NET Core um eine plattformübergreifende Bibliothek handelt und die Dateiberechtigungen
-/// auf Windows und Linux unterschiedlich sind.
-/// Dieser Service umgeht das Problem, indem er den Befehl `cp -p` oder `mv -p` ausführt.
+/// Service zum Kopieren, Verschieben und Lesen von Dateien.
+/// Dieser Service tritt an die Stelle von System.IO.File, um die Berechtigungen beim Kopieren und Verschieben zu übernehmen.
+/// .NET Core bietet keine Möglichkeit, die Berechtigungen beim Kopieren und Verschieben von Dateien zu übernehmen,
+/// da .NET Core als plattformübergreifendes Framework keine Windows-spezifischen Funktionen unterstützt.
+/// Dieser Service verwendet daher die Unix-Befehle "cp" und "mv" und führt sie in einem externen Prozess aus.
 /// </summary>
 public class FileTransferService
 {
@@ -37,7 +37,27 @@ public class FileTransferService
     /// <returns>Ein Result-Objekt, das den Erfolg oder Fehler enthält.</returns>
     public async Task<Result> MoveFileWithPermissionsAsync(string sourcePath, string destinationPath)
     {
-        return await ExecuteCommandAsync("mv", $"-p \"{sourcePath}\" \"{destinationPath}\"");
+        // Der mv-Befehl benötigt kein spezielles Flag, um Berechtigungen zu erhalten
+        return await ExecuteCommandAsync("mv", $"\"{sourcePath}\" \"{destinationPath}\"");
+    }
+
+    /// <summary>
+    /// Liest den Inhalt einer Datei.
+    /// </summary>
+    /// <param name="filePath">Der Pfad der Datei.</param>
+    /// <returns>Ein Result-Objekt, das den Erfolg oder Fehler enthält.</returns>
+    public async Task<Result<string>> ReadFileAsync(string filePath)
+    {
+        try
+        {
+            var content = await File.ReadAllTextAsync(filePath, Encoding.UTF8);
+            return Result.Success(content);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Fehler beim Lesen der Datei {filePath}: {ex.Message}");
+            return Result.Failure<string>($"Fehler beim Lesen der Datei {filePath}: {ex.Message}");
+        }
     }
 
     /// <summary>
