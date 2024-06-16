@@ -89,12 +89,16 @@ public class MediaIntegratorService
             _logger.LogInformation($"Die Datei {mediaSetFileToMove.FullName} wurde in das Infuse-Mediathek-Verzeichnis {targetDirectory} verschoben.");
 
 
-            // Übertrage die Dateiberechtigungen von Quelle zu Ziel
-            var transferPermissionsResult = await _fileTransferService.TransferPermissionsAsync(mediaSetFileToMove.FullName, targetFilePath);
-            if (transferPermissionsResult.IsFailure)
+            // Entferne die spezifischen Dateibereichtigungen, die durch das Verschieben der Datei in das Infuse-Mediathek-Verzeichnis durch .MoveTo() gesetzt wurden
+            var targetFilePathInfo = new FileInfo(targetFilePath);
+            var clearSpecificPermissionsResult = await _fileTransferService.ClearSpecificPermissionsAsync(targetFilePathInfo);
+            if (clearSpecificPermissionsResult.IsFailure)
             {
-                return Result.Failure<IntegratedMediaSetFile>($"Die Dateiberechtigungen von {mediaSetFileToMove.FullName} konnten nicht auf {targetFilePath} übertragen werden: {transferPermissionsResult.Error}");
+                return Result.Failure<IntegratedMediaSetFile>($"Die spezifischen Dateiberechtigungen der Datei {targetFilePathInfo.FullName} konnten nicht entfernt werden: {clearSpecificPermissionsResult.Error}");
             }
+
+            // Informiere über das erfolgreiche Entfernen der spezifischen Dateiberechtigungen
+            _logger.LogInformation($"Die spezifischen Dateiberechtigungen der Datei {targetFilePathInfo.FullName} wurden erfolgreich entfernt.");
 
             return Result.Success(new IntegratedMediaSetFile(mediaSetFileToMove, new FileInfo(targetFilePath)));
         }

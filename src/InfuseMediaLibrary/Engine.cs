@@ -1,6 +1,7 @@
 using CSharpFunctionalExtensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Kurmann.Videoschnitt.CommonServices;
 using Kurmann.Videoschnitt.InfuseMediaLibrary.Services;
 
 namespace Kurmann.Videoschnitt.InfuseMediaLibrary;
@@ -13,13 +14,16 @@ public class Engine
     private readonly InfuseMetadataXmlService _infuseMetadataXmlService;
     private readonly TargetDirectoryResolver _targetDirectoryResolver;
     private readonly MediaIntegratorService _mediaIntegratorService;
+    private readonly FileTransferService _fileTransferService;
+
 
     public Engine(IOptions<ModuleSettings> moduleSettings,
                   IOptions<ApplicationSettings> applicationSettings,
                   ILogger<Engine> logger,
                   InfuseMetadataXmlService infuseMetadataXmlService,
                   TargetDirectoryResolver targetDirectoryResolver,
-                  MediaIntegratorService mediaIntegratorService)
+                  MediaIntegratorService mediaIntegratorService,
+                  FileTransferService fileTransferService)
     {
         _moduleSettings = moduleSettings.Value;
         _applicationSettings = applicationSettings.Value;
@@ -27,6 +31,7 @@ public class Engine
         _infuseMetadataXmlService = infuseMetadataXmlService;
         _targetDirectoryResolver = targetDirectoryResolver;
         _mediaIntegratorService = mediaIntegratorService;
+        _fileTransferService = fileTransferService;
     }
 
     public async Task<Result> StartAsync(IProgress<string> progress)
@@ -130,6 +135,18 @@ public class Engine
             {
                 File.Copy(infuseMetadataXmlFile.FileInfo.FullName, targetInfuseMetadataXmlFilePath, true);
                 progress.Report($"Infuse-Metadaten-XML-Datei {infuseMetadataXmlFile.FileInfo.FullName} wurde erfolgreich in das Infuse-Mediathek-Verzeichnis {targetDirectoryResult.Value.FullName} kopiert.");
+
+                // Entferne die spezifischen Berechtigungen der Infuse-Metadaten-XML-Datei damit diese die Berechtigungen des Zielverzeichnisses annimmt
+                var xmlFilePathInfo = new FileInfo(targetInfuseMetadataXmlFilePath);
+                var removePermissionsResult = await _fileTransferService.ClearSpecificPermissionsAsync(xmlFilePathInfo);
+                if (removePermissionsResult.IsFailure)
+                {
+                    progress.Report($"Die Berechtigungen der Infuse-Metadaten-XML-Datei {targetInfuseMetadataXmlFilePath} konnten nicht entfernt werden: {removePermissionsResult.Error}");
+                }
+
+                // Informiere über das Entfernen der spezifischen Berechtigungen der Infuse-Metadaten-XML-Datei
+                progress.Report($"Die spezifischen Berechtigungen der Infuse-Metadaten-XML-Datei {targetInfuseMetadataXmlFilePath} wurden entfernt.");
+                
             }
             catch (Exception ex)
             {
