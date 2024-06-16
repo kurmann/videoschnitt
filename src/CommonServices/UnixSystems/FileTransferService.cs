@@ -1,8 +1,9 @@
 using CSharpFunctionalExtensions;
+using Kurmann.Videoschnitt.CommonServices;
 using Microsoft.Extensions.Logging;
 using System.Text;
 
-namespace Kurmann.Videoschnitt.CommonServices;
+namespace Kurmann.Videoschnitt.LocalFileSystem.UnixSystems;
 
 /// <summary>
 /// Service zum Kopieren, Verschieben und Lesen von Dateien.
@@ -178,5 +179,20 @@ public class FileTransferService
 
         var chmodResult = await _executeCommandService.ExecuteCommandAsync("chmod", $"u+rX,g+rX,o+rX \"{file.FullName}\"");
         return chmodResult;
+    }
+
+    public override bool Equals(object? obj)
+    {
+        return base.Equals(obj);
+    }
+
+    public override int GetHashCode()
+    {
+        return base.GetHashCode();
+    }
+
+    public override string? ToString()
+    {
+        return base.ToString();
     }
 }
