@@ -1,4 +1,3 @@
-using System.Text;
 using CSharpFunctionalExtensions;
 using Microsoft.Extensions.Logging;
 
@@ -131,4 +130,38 @@ public class FileTransferService
         return Result.Success();
     }
 
+    /// <summary>
+    /// Löscht spezifische Berechtigungen in einem Verzeichnis, sodass die Berechtigungen von der Verzeichnisstruktur oberhalb übernommen werden.
+    /// </summary>
+    /// <param name="targetDirectory">Das Zielverzeichnis.</param>
+    /// <returns>Ein Result-Objekt, das den Erfolg oder Fehler enthält.</returns>
+    public async Task<Result> ClearSpecificPermissionsAsync(string targetDirectory)
+    {
+        if (!Directory.Exists(targetDirectory))
+        {
+            return Result.Failure($"Zielverzeichnis '{targetDirectory}' existiert nicht.");
+        }
+
+        var targetDirInfo = new DirectoryInfo(targetDirectory);
+
+        foreach (var targetFile in targetDirInfo.GetFiles("*", SearchOption.AllDirectories))
+        {
+            var chmodResult = await _executeCommandService.ExecuteCommandAsync("chmod", $"u+rX,g+rX,o+rX \"{targetFile.FullName}\"");
+            if (chmodResult.IsFailure)
+            {
+                return chmodResult;
+            }
+        }
+
+        foreach (var targetSubDir in targetDirInfo.GetDirectories("*", SearchOption.AllDirectories))
+        {
+            var chmodResult = await _executeCommandService.ExecuteCommandAsync("chmod", $"u+rX,g+rX,o+rX \"{targetSubDir.FullName}\"");
+            if (chmodResult.IsFailure)
+            {
+                return chmodResult;
+            }
+        }
+
+        return Result.Success();
+    }
 }
