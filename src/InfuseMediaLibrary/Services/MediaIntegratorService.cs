@@ -17,9 +17,9 @@ public class MediaIntegratorService
     }
 
     public async Task<Result<IntegratedMediaSetFile>> IntegrateMediaSet(IEnumerable<FileInfo> mediaSetFiles,
-                                                            DirectoryInfo targetDirectory,
-                                                            IEnumerable<string> suffixesToIntegrate,
-                                                            string recordingDateIsoString)
+                                                                        DirectoryInfo targetDirectory,
+                                                                        IEnumerable<string> suffixesToIntegrate,
+                                                                        string recordingDateIsoString)
     {
         if (mediaSetFiles == null || !mediaSetFiles.Any())
             return Result.Failure<IntegratedMediaSetFile>("MediaSetFiles darf nicht null oder leer sein.");
