@@ -1,6 +1,7 @@
 using Kurmann.Videoschnitt.MetadataProcessor.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Kurmann.Videoschnitt.CommonServices;
 
 namespace Kurmann.Videoschnitt.MetadataProcessor;
 
@@ -17,10 +18,11 @@ public static class ServiceCollectionExtensions
         services.AddScoped<Engine>();
         services.AddScoped<MediaFileListenerService>();
         services.AddScoped<FFmpegMetadataService>();
-        services.AddScoped<CommandExecutorService>();
         services.AddScoped<MediaTypeDetectorService>();
         services.AddScoped<MediaSetVariantService>();
         services.AddScoped<InfuseXmlService>();
+
+        services.AddCommonServicesEngine();
 
         return services;
     }
