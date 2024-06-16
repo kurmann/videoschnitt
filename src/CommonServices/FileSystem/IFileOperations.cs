@@ -1,11 +1,12 @@
 using System.Xml.Linq;
+using CSharpFunctionalExtensions;
 
 namespace Kurmann.Videoschnitt.CommonServices.FileSystem;
 
 public interface IFileOperations
 {
-    void SaveFile(XDocument document, string path, bool inheritPermissions = true);
-    void MoveFile(string sourcePath, string destinationPath, bool overwrite = false, bool inheritPermissions = true);
-    void CopyFile(string sourcePath, string destinationPath, bool overwrite = false, bool inheritPermissions = true);
-    string ReadFile(string path);
+    Task<Result> SaveFile(XDocument document, string path, bool inheritPermissions = true);
+    Task<Result> MoveFile(string sourcePath, string destinationPath, bool overwrite = false, bool inheritPermissions = true);
+    Task<Result> CopyFile(string sourcePath, string destinationPath, bool overwrite = false, bool inheritPermissions = true);
+    Result<string> ReadFile(string path);
 }
