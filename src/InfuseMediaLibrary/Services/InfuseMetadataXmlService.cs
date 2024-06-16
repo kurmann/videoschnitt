@@ -1,22 +1,16 @@
 using Microsoft.Extensions.Logging;
 using CSharpFunctionalExtensions;
 using Kurmann.Videoschnitt.InfuseMediaLibrary.Entities;
-using Kurmann.Videoschnitt.CommonServices;
 
 namespace Kurmann.Videoschnitt.InfuseMediaLibrary.Services;
 
 public class InfuseMetadataXmlService
 {
     private readonly ILogger<InfuseMetadataXmlService> _logger;
-    private readonly FileTransferService _fileTransferService;
 
-    public InfuseMetadataXmlService(ILogger<InfuseMetadataXmlService> logger, FileTransferService fileTransferService)
-    {
-        _logger = logger;
-        _fileTransferService = fileTransferService;
-    }
+    public InfuseMetadataXmlService(ILogger<InfuseMetadataXmlService> logger) => _logger = logger;
 
-    public async Task<Result<List<CustomProductionInfuseMetadataFile>>> GetInfuseMetadataXmlFilesAsync(string? directoryPath)
+    public Result<List<CustomProductionInfuseMetadataFile>> GetInfuseMetadataXmlFiles(string? directoryPath)
     {
         // Prüfe, ob ein Verzeichnis angegeben wurde
         if (string.IsNullOrWhiteSpace(directoryPath))
@@ -41,7 +35,7 @@ public class InfuseMetadataXmlService
         _logger.LogInformation($"Anzahl der gefundenen XML-Dateien: {xmlFiles.Count}");
 
         // Iteriere über XML-Dateien in den Medienset-Dateien und gib alle validen Infuse-Metadaten-XML-Dateien zurück
-        var customProductionInfuseMetadataFiles = await GetCustomProductionInfuseMetadataFilesAsync(xmlFiles);
+        var customProductionInfuseMetadataFiles = GetCustomProductionInfuseMetadataFiles(xmlFiles);
 
         // Informiere über die Anzahl der gefundenen Infuse-Metadaten-XML-Dateien
         _logger.LogInformation($"Anzahl der gefundenen Infuse-Metadaten-XML-Dateien: {customProductionInfuseMetadataFiles.Count}");
@@ -52,28 +46,21 @@ public class InfuseMetadataXmlService
     /// <summary>
     /// Ermittelt alle validen Infuse-Metadaten-XML-Dateien aus einer Liste von FileInfo-Objekten.
     /// </summary>
-    public async Task<List<CustomProductionInfuseMetadataFile>> GetCustomProductionInfuseMetadataFilesAsync(List<FileInfo> xmlFiles)
+    public List<CustomProductionInfuseMetadataFile> GetCustomProductionInfuseMetadataFiles(List<FileInfo> xmlFiles)
     {
         var customProductionInfuseMetadataFiles = new List<CustomProductionInfuseMetadataFile>();
         foreach (var infuseMetadataXmlFile in xmlFiles)
         {
-            var infuseMetadataXmlContentResult = await _fileTransferService.ReadFileAsync(infuseMetadataXmlFile.FullName);
-            if (infuseMetadataXmlContentResult.IsSuccess)
+            var infuseMetadataXmlContent = File.ReadAllText(infuseMetadataXmlFile.FullName);
+            var infuseMetadataResult = CustomProductionInfuseMetadata.Create(infuseMetadataXmlContent);
+            if (infuseMetadataResult.IsSuccess)
             {
-                var infuseMetadataResult = CustomProductionInfuseMetadata.Create(infuseMetadataXmlContentResult.Value);
-                if (infuseMetadataResult.IsSuccess)
-                {
-                    customProductionInfuseMetadataFiles.Add(new CustomProductionInfuseMetadataFile(infuseMetadataXmlFile, infuseMetadataResult.Value));
-                }
-                else
-                {
-                    // Informiere, dass die XML-Datei nicht als Infuse-Metadaten-XML-Datei erkannt wurde
-                    _logger.LogWarning($"Die XML-Datei {infuseMetadataXmlFile.FullName} konnte nicht als Infuse-Metadaten-XML-Datei erkannt werden. XML-Datei wird ignoriert.");
-                }
+                customProductionInfuseMetadataFiles.Add(new CustomProductionInfuseMetadataFile(infuseMetadataXmlFile, infuseMetadataResult.Value));
             }
             else
             {
-                _logger.LogWarning($"Die XML-Datei {infuseMetadataXmlFile.FullName} konnte nicht gelesen werden: {infuseMetadataXmlContentResult.Error}");
+                // Informiere, dass die XML-Datei nicht als Infuse-Metadaten-XML-Datei erkannt wurde
+                _logger.LogWarning($"Die XML-Datei {infuseMetadataXmlFile.FullName} konnte nicht als Infuse-Metadaten-XML-Datei erkannt werden. XML-Datei wird ignoriert.");
             }
         }
 

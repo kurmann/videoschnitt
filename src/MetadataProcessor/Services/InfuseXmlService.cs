@@ -3,7 +3,6 @@ using CSharpFunctionalExtensions;
 using System.Xml.Linq;
 using Kurmann.Videoschnitt.MetadataProcessor.Entities;
 using Kurmann.Videoschnitt.MetadataProcessor.Entities.SupportedMediaTypes;
-using Kurmann.Videoschnitt.CommonServices;
 
 namespace Kurmann.Videoschnitt.MetadataProcessor.Services
 {
@@ -14,13 +13,11 @@ namespace Kurmann.Videoschnitt.MetadataProcessor.Services
     {
         private readonly ILogger<InfuseXmlService> _logger;
         private readonly FFmpegMetadataService _ffmpegMetadataService;
-        private readonly FileTransferService _fileTransferService;
 
-        public InfuseXmlService(ILogger<InfuseXmlService> logger, FFmpegMetadataService ffmpegMetadataService, FileTransferService fileTransferService)
+        public InfuseXmlService(ILogger<InfuseXmlService> logger, FFmpegMetadataService ffmpegMetadataService)
         {
             _logger = logger;
             _ffmpegMetadataService = ffmpegMetadataService;
-            _fileTransferService = fileTransferService;
         }
 
         public async Task<Result<XDocument>> ReadMetdataFromQuickTimeMovie(QuickTimeMovie quickTimeMovie, IProgress<string> progress)
@@ -71,29 +68,6 @@ namespace Kurmann.Videoschnitt.MetadataProcessor.Services
             progress.Report($"Infuse-XML aus Metadaten von Mpeg4-Video {mpeg4Video.FileInfo.Name}: {infuseXml}");
 
             return infuseXml;
-        }
-
-        public async Task<Result> SaveInfuseXmlAsync(XDocument infuseXml, string filePath, bool overwriteExistingFile = true)
-        {
-            try
-            {
-                var xmlString = infuseXml.ToString();
-                var result = await _fileTransferService.WriteFileAsync(xmlString, filePath, overwriteExistingFile);
-
-                if (result.IsSuccess)
-                {
-                    _logger.LogInformation($"Successfully saved Infuse XML to {filePath}");
-                    return Result.Success();
-                }
-
-                _logger.LogError($"Failed to save Infuse XML to {filePath}: {result.Error}");
-                return Result.Failure(result.Error);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Error saving Infuse XML to {filePath}: {ex.Message}");
-                return Result.Failure($"Error saving Infuse XML to {filePath}: {ex.Message}");
-            }
         }
     }
 }
