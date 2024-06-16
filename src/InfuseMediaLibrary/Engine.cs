@@ -14,7 +14,7 @@ public class Engine
     private readonly InfuseMetadataXmlService _infuseMetadataXmlService;
     private readonly TargetDirectoryResolver _targetDirectoryResolver;
     private readonly MediaIntegratorService _mediaIntegratorService;
-    private readonly FileTransferService _fileTransferService;
+    private readonly FilePermissionsService _filePermissionsService;
 
 
     public Engine(IOptions<ModuleSettings> moduleSettings,
@@ -23,7 +23,7 @@ public class Engine
                   InfuseMetadataXmlService infuseMetadataXmlService,
                   TargetDirectoryResolver targetDirectoryResolver,
                   MediaIntegratorService mediaIntegratorService,
-                  FileTransferService fileTransferService)
+                  FilePermissionsService filePermissionsService)
     {
         _moduleSettings = moduleSettings.Value;
         _applicationSettings = applicationSettings.Value;
@@ -31,7 +31,7 @@ public class Engine
         _infuseMetadataXmlService = infuseMetadataXmlService;
         _targetDirectoryResolver = targetDirectoryResolver;
         _mediaIntegratorService = mediaIntegratorService;
-        _fileTransferService = fileTransferService;
+        _filePermissionsService = filePermissionsService;
     }
 
     public async Task<Result> StartAsync(IProgress<string> progress)
@@ -138,7 +138,7 @@ public class Engine
 
                 // Entferne die spezifischen Berechtigungen der Infuse-Metadaten-XML-Datei damit diese die Berechtigungen des Zielverzeichnisses annimmt
                 var xmlFilePathInfo = new FileInfo(targetInfuseMetadataXmlFilePath);
-                var removePermissionsResult = await _fileTransferService.ClearSpecificPermissionsAsync(xmlFilePathInfo);
+                var removePermissionsResult = await _filePermissionsService.ClearSpecificPermissionsAsync(xmlFilePathInfo);
                 if (removePermissionsResult.IsFailure)
                 {
                     progress.Report($"Die Berechtigungen der Infuse-Metadaten-XML-Datei {targetInfuseMetadataXmlFilePath} konnten nicht entfernt werden: {removePermissionsResult.Error}");

@@ -8,12 +8,12 @@ namespace Kurmann.Videoschnitt.InfuseMediaLibrary.Services;
 public class MediaIntegratorService
 {
     private readonly ILogger<MediaIntegratorService> _logger;
-    private readonly FileTransferService _fileTransferService;
+    private readonly FilePermissionsService _filePermissionsService;
 
-    public MediaIntegratorService(ILogger<MediaIntegratorService> logger, FileTransferService fileTransferService)
+    public MediaIntegratorService(ILogger<MediaIntegratorService> logger, FilePermissionsService filePermissionsService)
     {
         _logger = logger;
-        _fileTransferService = fileTransferService;
+        _filePermissionsService = filePermissionsService;
     }
 
     public async Task<Result<IntegratedMediaSetFile>> IntegrateMediaSet(IEnumerable<FileInfo> mediaSetFiles,
@@ -91,7 +91,7 @@ public class MediaIntegratorService
 
             // Entferne die spezifischen Dateibereichtigungen, die durch das Verschieben der Datei in das Infuse-Mediathek-Verzeichnis durch .MoveTo() gesetzt wurden
             var targetFilePathInfo = new FileInfo(targetFilePath);
-            var clearSpecificPermissionsResult = await _fileTransferService.ClearSpecificPermissionsAsync(targetFilePathInfo);
+            var clearSpecificPermissionsResult = await _filePermissionsService.ClearSpecificPermissionsAsync(targetFilePathInfo);
             if (clearSpecificPermissionsResult.IsFailure)
             {
                 return Result.Failure<IntegratedMediaSetFile>($"Die spezifischen Dateiberechtigungen der Datei {targetFilePathInfo.FullName} konnten nicht entfernt werden: {clearSpecificPermissionsResult.Error}");
