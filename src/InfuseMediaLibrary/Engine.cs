@@ -2,7 +2,7 @@ using CSharpFunctionalExtensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Kurmann.Videoschnitt.InfuseMediaLibrary.Services;
-using Kurmann.Videoschnitt.CommonServices.FileSystem.Unix;
+using Kurmann.Videoschnitt.CommonServices.FileSystem;
 
 namespace Kurmann.Videoschnitt.InfuseMediaLibrary;
 
@@ -14,7 +14,7 @@ public class Engine
     private readonly InfuseMetadataXmlService _infuseMetadataXmlService;
     private readonly TargetDirectoryResolver _targetDirectoryResolver;
     private readonly MediaIntegratorService _mediaIntegratorService;
-    private readonly FileOperations _fileOperations;
+    private readonly IFileOperations _fileOperations;
 
 
     public Engine(IOptions<ModuleSettings> moduleSettings,
@@ -23,7 +23,7 @@ public class Engine
                   InfuseMetadataXmlService infuseMetadataXmlService,
                   TargetDirectoryResolver targetDirectoryResolver,
                   MediaIntegratorService mediaIntegratorService,
-                  FileOperations fileOperations)
+                  IFileOperations fileOperations)
     {
         _moduleSettings = moduleSettings.Value;
         _applicationSettings = applicationSettings.Value;

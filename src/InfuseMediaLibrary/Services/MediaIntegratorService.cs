@@ -1,16 +1,16 @@
 using System.Text;
 using Microsoft.Extensions.Logging;
 using CSharpFunctionalExtensions;
-using Kurmann.Videoschnitt.CommonServices.FileSystem.Unix;
+using Kurmann.Videoschnitt.CommonServices.FileSystem;
 
 namespace Kurmann.Videoschnitt.InfuseMediaLibrary.Services;
 
 public class MediaIntegratorService
 {
     private readonly ILogger<MediaIntegratorService> _logger;
-    private readonly FileOperations _fileOperations;
+    private readonly IFileOperations _fileOperations;
 
-    public MediaIntegratorService(ILogger<MediaIntegratorService> logger, FileOperations fileOperations)
+    public MediaIntegratorService(ILogger<MediaIntegratorService> logger, IFileOperations fileOperations)
     {
         _logger = logger;
         _fileOperations = fileOperations;
@@ -91,7 +91,7 @@ public class MediaIntegratorService
             {
                 return Result.Failure<IntegratedMediaSetFile>($"Die Datei {mediaSetFileToMove.FullName} konnte nicht in das Infuse-Mediathek-Verzeichnis {targetDirectory} verschoben werden: {moveFileResult.Error}");
             }
-            
+
             _logger.LogInformation($"Die Datei {mediaSetFileToMove.FullName} wurde in das Infuse-Mediathek-Verzeichnis {targetDirectory} verschoben und die spezifischen Dateibereichtigungen wurden entfernt.");
 
             return Result.Success(new IntegratedMediaSetFile(mediaSetFileToMove, new FileInfo(targetFilePath)));
