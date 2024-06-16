@@ -73,9 +73,15 @@ namespace Kurmann.Videoschnitt.CommonServices
         /// </summary>
         /// <param name="content">Der Inhalt, der geschrieben werden soll.</param>
         /// <param name="filePath">Der Pfad der Datei.</param>
+        /// <param name="overwriteExistingFile">Gibt an, ob eine existierende Datei überschrieben werden soll.</param>
         /// <returns>Ein Result-Objekt, das den Erfolg oder Fehler enthält.</returns>
-        public async Task<Result> WriteFileAsync(string content, string filePath)
+        public async Task<Result> WriteFileAsync(string content, string filePath, bool overwriteExistingFile = false)
         {
+            if (!overwriteExistingFile && File.Exists(filePath))
+            {
+                return Result.Failure($"File '{filePath}' already exists.");
+            }
+
             var commandPath = "sh";
             var arguments = $"-c 'echo \"{content.Replace("\"", "\\\"")}\" > \"{filePath}\"'";
             return await _executeCommandService.ExecuteCommandAsync(commandPath, arguments);

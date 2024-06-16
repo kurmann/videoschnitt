@@ -73,12 +73,12 @@ namespace Kurmann.Videoschnitt.MetadataProcessor.Services
             return infuseXml;
         }
 
-        public async Task<Result> SaveInfuseXmlAsync(XDocument infuseXml, string filePath)
+        public async Task<Result> SaveInfuseXmlAsync(XDocument infuseXml, string filePath, bool overwriteExistingFile = true)
         {
             try
             {
                 var xmlString = infuseXml.ToString();
-                var result = await _fileTransferService.WriteFileAsync(xmlString, filePath);
+                var result = await _fileTransferService.WriteFileAsync(xmlString, filePath, overwriteExistingFile);
 
                 if (result.IsSuccess)
                 {
