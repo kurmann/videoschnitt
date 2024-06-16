@@ -1,19 +1,25 @@
 using Microsoft.Extensions.Logging;
 using CSharpFunctionalExtensions;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Kurmann.Videoschnitt.InfuseMediaLibrary.Services;
 
 public class MediaIntegratorService
 {
     private readonly ILogger<MediaIntegratorService> _logger;
+    private readonly FileTransferService _fileTransferService;
 
-    public MediaIntegratorService(ILogger<MediaIntegratorService> logger) => _logger = logger;
+    public MediaIntegratorService(ILogger<MediaIntegratorService> logger, FileTransferService fileTransferService)
+    {
+        _logger = logger;
+        _fileTransferService = fileTransferService;
+    }
 
-    public Result<IntegratedMediaSetFile> IntegrateMediaSet(IEnumerable<FileInfo> mediaSetFiles,
-                                                            DirectoryInfo targetDirectory,
-                                                            IEnumerable<string> suffixesToIntegrate,
-                                                            string recordingDateIsoString)
+    public async Task<Result<IntegratedMediaSetFile>> IntegrateMediaSetAsync(IEnumerable<FileInfo> mediaSetFiles,
+                                                                             DirectoryInfo targetDirectory,
+                                                                             IEnumerable<string> suffixesToIntegrate,
+                                                                             string recordingDateIsoString)
     {
         if (mediaSetFiles == null || !mediaSetFiles.Any())
             return Result.Failure<IntegratedMediaSetFile>("MediaSetFiles darf nicht null oder leer sein.");
@@ -79,7 +85,12 @@ public class MediaIntegratorService
             // Ermittle den Ziel-Pfad der Datei im Infuse-Mediathek-Verzeichnis
             var targetFilePath = Path.Combine(targetDirectory.FullName, fileNameWithoutRecordingDateAndVariantSuffix);
 
-            mediaSetFileToMove.MoveTo(targetFilePath);
+            var result = await _fileTransferService.MoveFileWithPermissionsAsync(mediaSetFileToMove.FullName, targetFilePath);
+            if (result.IsFailure)
+            {
+                return Result.Failure<IntegratedMediaSetFile>($"Die Datei {mediaSetFileToMove.FullName} konnte nicht in das Infuse-Mediathek-Verzeichnis {targetDirectory} verschoben werden: {result.Error}");
+            }
+
             _logger.LogInformation($"Die Datei {mediaSetFileToMove.FullName} wurde in das Infuse-Mediathek-Verzeichnis {targetDirectory} verschoben.");
             return Result.Success(new IntegratedMediaSetFile(mediaSetFileToMove, new FileInfo(targetFilePath)));
         }
