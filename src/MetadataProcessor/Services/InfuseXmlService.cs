@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using CSharpFunctionalExtensions;
 using System.Xml.Linq;
+using Kurmann.Videoschnitt.CommonServices;
 using Kurmann.Videoschnitt.MetadataProcessor.Entities;
 using Kurmann.Videoschnitt.MetadataProcessor.Entities.SupportedMediaTypes;
 
@@ -13,11 +14,13 @@ namespace Kurmann.Videoschnitt.MetadataProcessor.Services
     {
         private readonly ILogger<InfuseXmlService> _logger;
         private readonly FFmpegMetadataService _ffmpegMetadataService;
+        private readonly FileTransferService _fileTransferService;
 
-        public InfuseXmlService(ILogger<InfuseXmlService> logger, FFmpegMetadataService ffmpegMetadataService)
+        public InfuseXmlService(ILogger<InfuseXmlService> logger, FFmpegMetadataService ffmpegMetadataService, FileTransferService fileTransferService)
         {
             _logger = logger;
             _ffmpegMetadataService = ffmpegMetadataService;
+            _fileTransferService = fileTransferService;
         }
 
         public async Task<Result<XDocument>> ReadMetdataFromQuickTimeMovie(QuickTimeMovie quickTimeMovie, IProgress<string> progress)
@@ -41,6 +44,7 @@ namespace Kurmann.Videoschnitt.MetadataProcessor.Services
 
             // Erstelle ein Infuse-XML-Objekt aus den Metadaten
             var infuseXml = ffmpegMetadata.Value.ToInfuseXml();
+
             return infuseXml;
         }
 
