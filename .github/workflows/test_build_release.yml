@@ -2,7 +2,8 @@ name: Test, Build, and Release
 
 on:
   release:
-    types: published
+    types:
+      - created
   workflow_dispatch:
 
 jobs:
@@ -12,7 +13,6 @@ jobs:
     env:
       CSPROJ_FILE: src/Application/Application.csproj
       DOTNET_VERSION: '9.0.x'
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
       - uses: actions/checkout@v4
@@ -37,14 +37,8 @@ jobs:
       - name: Archive files
         run: tar -czvf Kurmann.Videoschnitt-macos-arm64.tar.gz -C ./publish .
 
-      - name: Install jq
-        run: brew install jq
-
       - name: Upload Release Asset
-        run: |
-          RELEASE_ID=$(gh api /repos/${{ github.repository }}/releases/latest | jq -r .id)
-          gh api --method POST \
-            -H "Accept: application/vnd.github+json" \
-            -H "X-GitHub-Api-Version: 2022-11-28" \
-            /repos/${{ github.repository }}/releases/$RELEASE_ID/assets?name=Kurmann.Videoschnitt-macos-arm64.tar.gz \
-            -F "file=@Kurmann.Videoschnitt-macos-arm64.tar.gz"
+        uses: shogo82148/actions-upload-release-asset@v1
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: Kurmann.Videoschnitt-macos-arm64.tar.gz
