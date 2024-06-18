@@ -13,7 +13,6 @@ jobs:
     env:
       CSPROJ_FILE: src/Application/Application.csproj
       DOTNET_VERSION: '9.0.x'
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
       - uses: actions/checkout@v4
@@ -34,12 +33,3 @@ jobs:
 
       - name: Publish for Apple Silicon
         run: dotnet publish --configuration Release --self-contained -r osx-arm64 --output ./publish ${{ env.CSPROJ_FILE }}
-
-      - name: Archive files
-        run: tar -czvf Kurmann.Videoschnitt-macos-arm64.tar.gz -C ./publish .
-
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: Kurmann.Videoschnitt-macos-arm64
-          path: Kurmann.Videoschnitt-macos-arm64.tar.gz
