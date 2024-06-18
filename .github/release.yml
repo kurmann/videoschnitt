@@ -11,10 +11,13 @@ changelog:
       labels:
         - Semver-Major
         - breaking-change
+    - title: Documentation
+      labels:
+        - documentation
     - title: Features
       labels:
         - Semver-Minor
         - enhancement
-    - title: Änderungen
+    - title: Other Changes
       labels:
         - "*"
