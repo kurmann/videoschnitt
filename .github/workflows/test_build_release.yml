@@ -37,10 +37,14 @@ jobs:
       - name: Archive files
         run: tar -czvf Kurmann.Videoschnitt-macos-arm64.tar.gz -C ./publish .
 
+      - name: Install jq
+        run: brew install jq
+
       - name: Upload Release Asset
         run: |
+          RELEASE_ID=$(gh api /repos/${{ github.repository }}/releases/latest | jq -r .id)
           gh api --method POST \
             -H "Accept: application/vnd.github+json" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
-            /repos/${{ github.repository }}/releases/${{ github.event.release.id }}/assets?name=Kurmann.Videoschnitt-macos-arm64.tar.gz \
-            -f "@Kurmann.Videoschnitt-macos-arm64.tar.gz"
+            /repos/${{ github.repository }}/releases/$RELEASE_ID/assets?name=Kurmann.Videoschnitt-macos-arm64.tar.gz \
+            -F "file=@Kurmann.Videoschnitt-macos-arm64.tar.gz"
