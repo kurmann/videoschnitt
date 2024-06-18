@@ -212,6 +212,30 @@ Um die Anwendung lokal zu installieren und zu starten, folgen Sie diesen Schritt
 
 Das Repository wurde als “videoschnitt” unter dem GitHub-Account “kurmann” erstellt. Diese Namenskonvention sorgt dafür, dass der Name des Docker-Images direkt aus dem Repository-Namen abgeleitet werden kann, was die Verwaltung und Nutzung des Images erleichtert. Innerhalb der Anwendung und bei der Erstellung von NuGet-Paketen wird die Punktnotation verwendet, wie es bei .NET-Projekten üblich ist, um eine klare Struktur und Namenskonvention zu gewährleisten.
 
+## Gründe für den Wechsel von Docker Containern zu Homebrew
+
+Entscheid vom 18. Juni 2024
+
+**1. Nativer Betrieb auf macOS:**
+Die Anwendung direkt auf macOS laufen zu lassen, ergibt mehr Sinn, da einige Aufgaben, wie die Videokomprimierung, direkt auf dem MacOS-System gelöst werden müssen. Dies ermöglicht eine bessere Integration mit dem Betriebssystem und nutzt die native Leistung des Mac Mini voll aus.
+
+**2. Fokus auf macOS:**
+Der aktuelle Fokus liegt auf der Bereitstellung der Anwendung für macOS. Homebrew bietet eine benutzerfreundliche und weit verbreitete Lösung für die Verteilung von Software auf macOS, ohne die Notwendigkeit von Docker Containern. Dies vereinfacht die Installation und Verwaltung der Anwendung für Endbenutzer erheblich.
+
+**3. Vereinfachte Verteilung:**
+Die Verteilung der Anwendung mit Homebrew anstelle von Docker Containern vereinfacht den gesamten Prozess erheblich. Mit Homebrew können Benutzer die Anwendung einfach installieren und aktualisieren, indem sie bekannte und bewährte Befehle verwenden. Dies reduziert den Aufwand für die Benutzer und stellt sicher, dass sie immer die neueste Version der Anwendung verwenden.
+
+**4. Unkontrolliertes Verhalten in DevContainers:**
+Es wurde festgestellt, dass die Anwendung in Visual Studio Code DevContainers teilweise unkontrolliert reagiert. Diese Instabilitäten treten insbesondere im Zusammenhang mit dem `MetadataProcessor` auf. Auf einer nativen macOS-Docker-Instanz läuft die Anwendung hingegen stabil. Dies lässt Zweifel an der tatsächlichen Plattformunabhängigkeit von Docker Containern aufkommen und zeigt die Vorteile eines nativen Betriebs auf.
+
+**5. Konsistentes Benutzererlebnis:**
+Die Bereitstellung der Anwendung über Homebrew sorgt für ein konsistentes Benutzererlebnis auf macOS. Benutzer sind bereits mit Homebrew vertraut und können die Anwendung nahtlos installieren und verwalten. Dies erhöht die Akzeptanz und Zufriedenheit der Benutzer.
+
+**6. Einfachere Wartung und Debugging:**
+Der native Betrieb auf macOS vereinfacht die Wartung und das Debugging der Anwendung erheblich. Entwickler können direkt auf das Betriebssystem zugreifen, um Probleme zu diagnostizieren und zu beheben, ohne die zusätzliche Komplexität einer Container-Umgebung.
+
+Durch den Wechsel von Docker Containern zu Homebrew kann die Anwendung effizienter betrieben und gewartet werden, während gleichzeitig die Benutzerfreundlichkeit und Stabilität verbessert werden.
+
 ## Mitwirken
 
 1. **Issue einreichen**: Wenn ein Fehler gefunden wird oder eine Funktion angefordert werden soll, kann ein Issue im GitHub-Repository eröffnet werden.
