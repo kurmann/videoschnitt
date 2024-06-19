@@ -45,7 +45,7 @@ public class QuickTimeMovie : ISupportedMediaType
         return new QuickTimeMovie(fileInfo);
     }
 
-    private static bool IsQuickTimeMovieExtension(FileInfo fileInfo)
+    public static bool IsQuickTimeMovieExtension(FileInfo fileInfo)
     {
         return fileInfo.Extension.Equals(".mov", StringComparison.InvariantCultureIgnoreCase) || fileInfo.Extension.Equals(".qt", StringComparison.InvariantCultureIgnoreCase);
     }

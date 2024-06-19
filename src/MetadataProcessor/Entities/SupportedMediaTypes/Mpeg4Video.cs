@@ -36,7 +36,7 @@ public class Mpeg4Video : ISupportedMediaType
         return Result.Failure<Mpeg4Video>($"Die Dateierweiterung {fileInfo.Extension} ist keine MPEG4-Datei.");
     }
 
-    private static bool IsVideoExtensionMpeg4(FileInfo fileInfo)
+    public static bool IsVideoExtensionMpeg4(FileInfo fileInfo)
     {
         return fileInfo.Extension.Equals(".mp4", StringComparison.InvariantCultureIgnoreCase) || fileInfo.Extension.Equals(".m4v", StringComparison.InvariantCultureIgnoreCase);
     }
