@@ -14,177 +14,76 @@ public class Engine
 {
     private readonly ModuleSettings _moduleSettings;
     private readonly ApplicationSettings _applicationSettings;
-    private readonly MediaFileListenerService _mediaFileListenerService;
-    private readonly MetadataProcessingService _metadataProcessingService;
     private readonly FFmpegMetadataService _ffmpegMetadataService;
-    private readonly MediaTypeDetectorService _mediaTypeDetectorService;
-    private readonly MediaSetVariantService _mediaSetVariantService;
-    private readonly InfuseXmlService _infuseXmlService;
     private readonly ILogger<Engine> _logger;
     private readonly MediaSetService _mediaSetService;
 
-    public Engine(IOptions<ModuleSettings> moduleSettings, IOptions<ApplicationSettings> applicationSettings, ILogger<Engine> logger,
-        MediaFileListenerService mediaFileListenerService, MetadataProcessingService metadataProcessingService, 
-        FFmpegMetadataService ffmpegMetadataService, MediaTypeDetectorService mediaTypeDetectorService,
-        MediaSetVariantService mediaSetVariantService, InfuseXmlService infuseXmlService, MediaSetService mediaSetService)
+    public Engine(ILogger<Engine> logger,
+                  IOptions<ModuleSettings> moduleSettings,
+                  IOptions<ApplicationSettings> applicationSettings,
+                  FFmpegMetadataService ffmpegMetadataService,
+                  MediaSetService mediaSetService)
     {
         _moduleSettings = moduleSettings.Value;
         _applicationSettings = applicationSettings.Value;
         _logger = logger;
-        _mediaFileListenerService = mediaFileListenerService;
-        _metadataProcessingService = metadataProcessingService;
         _ffmpegMetadataService = ffmpegMetadataService;
-        _mediaTypeDetectorService = mediaTypeDetectorService;
-        _mediaSetVariantService = mediaSetVariantService;
-        _infuseXmlService = infuseXmlService;
         _mediaSetService = mediaSetService;
     }
 
-    public async Task<Result> Start(IProgress<string> progress)
+    public async Task<Result<List<MediaSetDirectory>>> Start(IProgress<string> progress)
     {
         progress.Report("Steuereinheit für die Metadaten-Verarbeitung gestartet.");
 
         // Prüfe ob die Einstellungen korrekt geladen wurden
         if (_applicationSettings.InputDirectory == null)
         {
-            return Result.Failure($"Kein Eingangsverzeichnis konfiguriert. Wenn Umgebungsvariablen verwendet werden, sollte der Name der Umgebungsvariable '{ApplicationSettings.SectionName}__{nameof(_applicationSettings.InputDirectory)}' lauten.");
+            return Result.Failure<List<MediaSetDirectory>>("Eingabeverzeichnis wurde nicht korrekt aus den Einstellungen geladen.");
         }
 
         // Informiere über das Eingabeverzeichnis
         progress.Report($"Eingangsverzeichnis: {_applicationSettings.InputDirectory}");
 
         _logger.LogInformation("Versuche die Dateien im Eingangsverzeichnis in Medienset zu organisiseren.");
-
-        // Liste alle unterstützten Medien-Dateien im Verzeichnis auf
-        var mediaFiles = _mediaFileListenerService.GetSupportedMediaFiles();
-        if (mediaFiles.IsFailure)
-        {
-            return Result.Failure($"Fehler beim Ermitteln der Medien-Dateien: {mediaFiles.Error}");
-        }
-
-        var metadataTest = await _ffmpegMetadataService.GetMetadataFieldAsync(mediaFiles.Value.First().FullName, "title");
-
-        // todo; Korrekt implementierne
         var mediaSets = await _mediaSetService.GroupToMediaSets(_applicationSettings.InputDirectory);
         if (mediaSets.IsFailure)
         {
-            return Result.Failure($"Fehler beim Gruppieren der Medien-Dateien in Mediensets: {mediaSets.Error}");
+            return Result.Failure<List<MediaSetDirectory>>($"Fehler beim Gruppieren der Medien-Dateien in Mediensets: {mediaSets.Error}");
         }
+        _logger.LogInformation("Mediensets erfolgreich gruppiert.");
 
-        // Informiere über die Anzahl der gefundenen Medien-Dateien
-        progress.Report($"Anzahl der gefundenen Medien-Dateien: {mediaFiles.Value.Count}");
-
-        // Iteriere über alle Medien-Dateien und ermittle den Medientyp
-        foreach (var mediaFile in mediaFiles.Value)
+        _logger.LogInformation("Verschiebe jedes Medienset in ein Unterverzeichnis mit dem Titel des Mediensets.");
+        var mediaSetDirectories = new List<MediaSetDirectory>();
+        foreach (var mediaSet in mediaSets.Value)
         {
-            var mediaTypeResult = _mediaTypeDetectorService.DetectMediaType(mediaFile);
-            if (mediaTypeResult.IsFailure)
+            var mediaSetDirectory = Path.Combine(_applicationSettings.InputDirectory, mediaSet.Title);
+            if (!Directory.Exists(mediaSetDirectory))
             {
-                progress.Report($"Fehler beim Ermitteln des Medientyps für Datei {mediaFile.Name}: {mediaTypeResult.Error}");
-                continue;
+                Directory.CreateDirectory(mediaSetDirectory);
             }
 
-            // Informiere über den ermittelten Medientyp
-            progress.Report($"Medientyp für Datei {mediaFile.Name}: {mediaTypeResult.Value.GetType().Name}");
-
-            // Wenn die Datei ein QuickTime-Movie ist, extrahiere die Metadaten und erstelle ein Infuse-XML-Objekt
-            if (mediaTypeResult.Value is QuickTimeMovie quickTimeMovie)
+            var mediaFiles = mediaSet.ImageFiles.Select(item => item.FileInfo).Concat(mediaSet.VideoFiles.Select(item => item.FileInfo));
+            foreach (var mediaFile in mediaFiles)
             {
-                var readQuickTimeMetadataResult = await _infuseXmlService.ReadMetdataFromQuickTimeMovie(quickTimeMovie, progress);
-                if (readQuickTimeMetadataResult.IsFailure)
+                var destination = Path.Combine(mediaSetDirectory, mediaFile.Name);
+                try
                 {
-                    progress.Report(readQuickTimeMetadataResult.Error);
+                    File.Move(mediaFile.FullName, destination);
+                }
+                catch (Exception ex)
+                {
+                    return Result.Failure<List<MediaSetDirectory>>($"Fehler beim Verschieben der Datei '{mediaFile.FullName}' nach '{destination}': {ex.Message}");
                 }
 
-                // Informiere über die extrahierten Metadaten im Infuse-XML-Format mit Zeilenumbruch vor dem XML-Tag
-                progress.Report($"Infuse-XML aus Metadaten von QuickTime-Movie {quickTimeMovie.FileInfo.Name}:\n{readQuickTimeMetadataResult.Value}");
-
-                // Speichere das Infuse-XML-Objekt
-                var infuseXml = readQuickTimeMetadataResult.Value;
-
-                // Erstelle den Dateinamen für das Infuse-XML-Objekt
-                var infuseXmlFileName = _mediaSetVariantService.GetInfuseXmlFileName(quickTimeMovie.FileInfo);
-                if (infuseXmlFileName.IsFailure)
-                {
-                    progress.Report(infuseXmlFileName.Error);
-                    
-                    // Fahre mit der nächsten Datei fort
-                    continue;
-                }
-
-                // Informiere über den Dateinamen des Infuse-XML-Objekts
-                progress.Report($"Dateiname des Infuse-XML-Objekts für Medien-Objekt \n{mediaFile.FullName}:\n{infuseXmlFileName.Value.FullName}");
-
-                // Schreibe die Datei
-                infuseXml.Save(infuseXmlFileName.Value.FullName);
-
-                // Informiere über den Erfolg
-                progress.Report($"Infuse-XML-Datei für Medien-Objekt {mediaFile.FullName} erfolgreich geschrieben.");
-
-                // Fahre mit der nächsten Datei fort
-                continue;
+                _logger.LogInformation($"Datei '{mediaFile.FullName}' erfolgreich nach '{destination}' verschoben.");
             }
 
-
-            // Wenn die Datei ein Mpeg4-Video ist, dann schreibe die Infuse-XML-Datei nur wenn kein Infuse-XML-Objekt bereits besteht, 
-            // da die QuickTime-Movie-Variante bevorzugt wird aufgrund der besseren Metadaten
-            if (mediaTypeResult.Value is Mpeg4Video mpeg4Video)
-            {
-                // Informiere über das Mpeg4-Video und was wir nun vorhaben
-                progress.Report("Mpeg4-Video gefunden. Es wird geprüft, ob bereits ein Infuse-XML-Objekt existiert.");
-
-                // Ermittle den Dateinamen des Infuse-XML-Objekts, nachdem wir suchen, ob bereits ein Infuse-XML-Objekt existiert
-                var infuseXmlFileName = _mediaSetVariantService.GetInfuseXmlFileName(mpeg4Video.FileInfo);
-                if (infuseXmlFileName.IsFailure)
-                {
-                    progress.Report(infuseXmlFileName.Error);
-
-                    // Fahre mit der nächsten Datei fort
-                    continue;
-                }
-
-                // Informiere über den Dateinamen des Infuse-XML-Objekts
-                progress.Report($"Dateiname des Infuse-XML-Objekts für Medien-Objekt \n{mediaFile.FullName}:\n{infuseXmlFileName.Value.FullName}");
-
-                // Prüfe ob bereits ein Infuse-XML-Objekt existiert
-                if (infuseXmlFileName.Value.Exists)
-                {
-                    progress.Report($"Infuse-XML-Datei für Medien-Objekt {mediaFile.FullName} existiert bereits. Es wird keine neue Datei geschrieben.");
-
-                    // Fahre mit der nächsten Datei fort
-                    continue;
-                }
-
-                // Informiere über das Fehlen des Infuse-XML-Objekts und was wir nun vorhaben
-                progress.Report($"Infuse-XML-Datei für Medien-Objekt {mediaFile.FullName} existiert nicht. Es wird eine neue Datei geschrieben.");
-
-                // Extrahiere die Metadaten und erstelle ein Infuse-XML-Objekt
-                progress.Report($"Extrahiere Metadaten aus Mpeg4-Video {mpeg4Video.FileInfo.Name}");
-                var readMpeg4MetadataResult = await _infuseXmlService.ReadMetadataFromMpeg4Video(mpeg4Video, progress);
-                if (readMpeg4MetadataResult.IsFailure)
-                {
-                    progress.Report(readMpeg4MetadataResult.Error);
-                    continue;
-                }
-
-                // Informiere über die extrahierten Metadaten im Infuse-XML-Format mit Zeilenumbruch vor dem XML-Tag
-                progress.Report($"Infuse-XML aus Metadaten von Mpeg4-Video {mpeg4Video.FileInfo.Name}:\n{readMpeg4MetadataResult.Value}");
-
-                // Speichere das Infuse-XML-Objekt
-                var infuseXml = readMpeg4MetadataResult.Value;
-
-                // Schreibe die Datei
-                infuseXml.Save(infuseXmlFileName.Value.FullName);
-
-                // Informiere über den Erfolg
-                progress.Report($"Infuse-XML-Datei für Medien-Objekt {mediaFile.FullName} erfolgreich geschrieben.");
-            }
-         
+            mediaSetDirectories.Add(new MediaSetDirectory(new DirectoryInfo(mediaSetDirectory), mediaSet.Title, mediaSet.ImageFiles, mediaSet.VideoFiles));
         }
 
-        return Result.Success();
+        return Result.Success(mediaSetDirectories);
     }
 
-
+    public record MediaSetDirectory(DirectoryInfo DirectoryInfo, string MediaSetTitle, IEnumerable<SupportedImage> ImageFiles, IEnumerable<SupportedVideo> VideoFiles);
 
 }

@@ -14,13 +14,8 @@ public static class ServiceCollectionExtensions
         services.Configure<ApplicationSettings>(options => configuration.GetSection(ApplicationSettings.SectionName).Bind(options));
 
         // Register MetadataProcessingService
-        services.AddScoped<MetadataProcessingService>();
         services.AddScoped<Engine>();
-        services.AddScoped<MediaFileListenerService>();
         services.AddScoped<FFmpegMetadataService>();
-        services.AddScoped<MediaTypeDetectorService>();
-        services.AddScoped<MediaSetVariantService>();
-        services.AddScoped<InfuseXmlService>();
         services.AddScoped<MediaSetService>();
 
         services.AddCommonServicesEngine();

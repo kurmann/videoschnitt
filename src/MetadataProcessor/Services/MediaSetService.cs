@@ -1,6 +1,5 @@
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Logging;
-using Kurmann.Videoschnitt.MetadataProcessor.Entities;
 using Kurmann.Videoschnitt.MetadataProcessor.Entities.SupportedMediaTypes;
 using CSharpFunctionalExtensions;
 
@@ -11,14 +10,12 @@ namespace Kurmann.Videoschnitt.MetadataProcessor.Services;
 /// </summary>
 public class MediaSetService
 {
-    private readonly MediaSetVariantService _mediaSetVariantService;
     private readonly ModuleSettings _moduleSettings;
     private readonly ILogger<MediaSetService> _logger;
     private readonly FFmpegMetadataService _fFmpegMetadataService;
 
-    public MediaSetService(MediaSetVariantService mediaSetVariantService, FFmpegMetadataService fFmpegMetadataService, IOptions<ModuleSettings> moduleSettings, ILogger<MediaSetService> logger)
+    public MediaSetService(FFmpegMetadataService fFmpegMetadataService, IOptions<ModuleSettings> moduleSettings, ILogger<MediaSetService> logger)
     {
-        _mediaSetVariantService = mediaSetVariantService;
         _fFmpegMetadataService = fFmpegMetadataService;
         _moduleSettings = moduleSettings.Value;
         _logger = logger;
@@ -26,12 +23,12 @@ public class MediaSetService
 
     /// <summary>
     /// Analysiert das Verzeichnis und gruppiert die Medien-Dateien in Mediensets.
-    public async Task<Result<List<MediaSet>>> GroupToMediaSets(string directory)
+    public async Task<Result<List<MediaFilesByMediaSet>>> GroupToMediaSets(string directory)
     {
         // Prüfe ob ein Verzeichnis angegeben wurde
         if (string.IsNullOrWhiteSpace(directory))
         {
-            return Result.Failure<List<MediaSet>>("Das Verzeichnis darf nicht leer sein.");
+            return Result.Failure<List<MediaFilesByMediaSet>>("Das Verzeichnis darf nicht leer sein.");
         }
 
         try
@@ -40,25 +37,25 @@ public class MediaSetService
         }
         catch (Exception ex)
         {
-            return Result.Failure<List<MediaSet>>($"Fehler beim Gruppieren der Medien-Dateien in Mediensets: {ex.Message}");
+            return Result.Failure<List<MediaFilesByMediaSet>>($"Fehler beim Gruppieren der Medien-Dateien in Mediensets: {ex.Message}");
         }
     }
 
-    public async Task<Result<List<MediaSet>>> GroupToMediaSets(DirectoryInfo directoryInfo)
+    public async Task<Result<List<MediaFilesByMediaSet>>> GroupToMediaSets(DirectoryInfo directoryInfo)
     {
         _logger.LogInformation("Versuche die Dateien im Verzeichnis in Medienset zu organisieren.");
-
         _logger.LogInformation("Prüfe ob das Verzeichnis existiert.");
         if (!directoryInfo.Exists)
         {
-            return Result.Failure<List<MediaSet>>($"Das Verzeichnis {directoryInfo.FullName} existiert nicht.");
+            return Result.Failure<List<MediaFilesByMediaSet>>($"Das Verzeichnis {directoryInfo.FullName} existiert nicht.");
         }
 
         _logger.LogInformation("Prüfe ob das Verzeichnis Dateien enthält.");
+        _logger.LogInformation("Unterverzeichnisse werden nicht berücksichtigt.");
         var files = directoryInfo.GetFiles();
         if (files.Length == 0)
         {
-            return Result.Failure<List<MediaSet>>($"Das Verzeichnis {directoryInfo.FullName} enthält keine Dateien.");
+            return Result.Failure<List<MediaFilesByMediaSet>>($"Das Verzeichnis {directoryInfo.FullName} enthält keine Dateien.");
         }
 
         _logger.LogInformation("Filtere nach unterstützten Medien-Dateien. Diese sind grundsätzlich QuickTime-Movie-Dateien oder MPEG4-Dateien.");
@@ -89,7 +86,7 @@ public class MediaSetService
         _logger.LogInformation("Prüfe ob die Metadaten bei allen Dateien erfolgreich gelesen werden konnten.");
         if (metadataResults.Any(x => x.TitleResult.IsFailure))
         {
-            return Result.Failure<List<MediaSet>>($"Fehler beim Lesen der Metadaten: {metadataResults.First(x => x.TitleResult.IsFailure).TitleResult.Error}");
+            return Result.Failure<List<MediaFilesByMediaSet>>($"Fehler beim Lesen der Metadaten: {metadataResults.First(x => x.TitleResult.IsFailure).TitleResult.Error}");
         }
 
         _logger.LogInformation("Gruppiere die Dateien nach Titel.");
@@ -120,54 +117,20 @@ public class MediaSetService
 
             mediaFilesByMediaSet.Add(new MediaFilesByMediaSet(videos.Title, videos.VideoFiles, supportedImageFiles));
         }
+        _logger.LogInformation("Gruppierung der Medien-Dateien in Mediensets erfolgreich.");
+        _logger.LogInformation("Anzahl Mediensets: {Count}", mediaFilesByMediaSet.Count);
 
-
-        // todo: diese Nachfolgende Logik muss noch korrekt implementiert werden
-
-        _logger.LogInformation("Prüfe ob das Verzeichnis unterstützte Medien-Dateien enthält.");
-        var videoVersionSuffixesForMediaServer = _moduleSettings.MediaSet?.VideoVersionSuffixesForMediaServer;
-        if (videoVersionSuffixesForMediaServer == null || videoVersionSuffixesForMediaServer.Count == 0)
+        foreach (var mediaFiles in mediaFilesByMediaSet)
         {
-            return Result.Failure<List<MediaSet>>("Keine Suffixe für die Medienserver-Versionen konfiguriert. Medienserver-Versionen können nicht erkannt werden.");
+            _logger.LogInformation("Medienset: {Title}", mediaFiles.Title);
+            _logger.LogInformation("Anzahl Videos: {Count}", mediaFiles.VideoFiles.Count());
+            _logger.LogInformation("Anzahl Bilder: {Count}", mediaFiles.ImageFiles.Count());
         }
 
-        _logger.LogInformation("Prüfe ob das Verzeichnis unterstützte Medien-Dateien enthält.");
-        var mediaServerFiles = files.Where(f => videoVersionSuffixesForMediaServer.Any(s => f.Name.Contains(s, StringComparison.InvariantCultureIgnoreCase))).ToList();
-
-        _logger.LogInformation("Liste der Medienserver-Dateien:");
-        foreach (var mediaServerFile in mediaServerFiles)
-        {
-            _logger.LogInformation(mediaServerFile.FullName);
-        }
-
-        if (mediaServerFiles.Count == 0)
-        {
-            return Result.Failure<List<MediaSet>>($"Keine Medienserver-Dateien gefunden. Es wurden keine Dateien mit den Suffixen {string.Join(", ", videoVersionSuffixesForMediaServer)} gefunden.");
-        }
-
-        _logger.LogInformation("Prüfe ob nur eine Medienserver-Datei gefunden wurde.");
-        if (mediaServerFiles.Count > 1)
-        {
-            return Result.Failure<List<MediaSet>>($"Mehrere Medienserver-Dateien gefunden. Es sollte nur eine Datei mit den Suffixen {string.Join(", ", videoVersionSuffixesForMediaServer)} gefunden werden.");
-        }
-
-        _logger.LogInformation("Prüfe ob die Medienserver-Datei eine gültige Medienserver-Datei ist.");
-        var mediaServerFileResult = MediaServerFile.Create(mediaServerFiles.First().FullName);
-        if (mediaServerFileResult.IsFailure)
-        {
-            return Result.Failure<List<MediaSet>>($"Die Medienserver-Datei ist keine gültige Medienserver-Datei: {mediaServerFileResult.Error}");
-        }
-
-        var mediaSet = MediaSet.Create("Test", "TestAsFileName", "TestAsFilePath", mediaServerFileResult.Value);
-        if (mediaSet.IsFailure)
-        {
-            return Result.Failure<List<MediaSet>>($"Das Medienset konnte nicht erstellt werden: {mediaSet.Error}");
-        }
-
-        return Result.Success(new List<MediaSet> { mediaSet.Value });
+        return Result.Success(mediaFilesByMediaSet);
     }
 }
 
-internal record VideosByMediaSet(string Title, IEnumerable<SupportedVideo> VideoFiles);
+public record VideosByMediaSet(string Title, IEnumerable<SupportedVideo> VideoFiles);
 
-internal record MediaFilesByMediaSet(string Title, IEnumerable<SupportedVideo> VideoFiles, IEnumerable<SupportedImage> ImageFiles);
+public record MediaFilesByMediaSet(string Title, IEnumerable<SupportedVideo> VideoFiles, IEnumerable<SupportedImage> ImageFiles);
