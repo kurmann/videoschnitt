@@ -42,11 +42,14 @@ public class Engine
         // Prüfe ob die Einstellungen korrekt geladen wurden
         if (_applicationSettings.InputDirectory == null)
         {
-            return Result.Failure($"Kein Eingabeverzeichnis konfiguriert. Wenn Umgebungsvariablen verwendet werden, sollte der Name der Umgebungsvariable '{ApplicationSettings.SectionName}__{nameof(_applicationSettings.InputDirectory)}' lauten.");
+            return Result.Failure($"Kein Eingangsverzeichnis konfiguriert. Wenn Umgebungsvariablen verwendet werden, sollte der Name der Umgebungsvariable '{ApplicationSettings.SectionName}__{nameof(_applicationSettings.InputDirectory)}' lauten.");
         }
 
         // Informiere über das Eingabeverzeichnis
-        progress.Report($"Eingabeverzeichnis: {_applicationSettings.InputDirectory}");
+        progress.Report($"Eingangsverzeichnis: {_applicationSettings.InputDirectory}");
+
+        _logger.LogInformation("Versuche die Dateien im Eingangsverzeichnis in Medienset zu organisiseren.");
+        // todo: integrate mediaset list
 
         // Liste alle unterstützten Medien-Dateien im Verzeichnis auf
         var mediaFiles = _mediaFileListenerService.GetSupportedMediaFiles();

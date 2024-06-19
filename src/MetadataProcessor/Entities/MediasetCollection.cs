@@ -111,22 +111,3 @@ public class MediasetCollection
         return mediaFiles.Where(f => supportedImageExtensions.Contains(f.Extension)).ToList();
     }
 }
-
-public record MediaSet
-{
-    public string? Name { get; set; }
-
-    internal List<FileInfo> Videos { get; set; } = new List<FileInfo>();
-
-    internal List<FileInfo> Images { get; set; } = new List<FileInfo>();
-
-    /// <summary>
-    /// Filtere nach QuickTime MOV Dateien und berücksichtige Gross- und Kleinschreibung (.mov und .MOV)
-    /// </summary>
-    public List<FileInfo> QuickTimeVideos => Videos.Where(v => v.Extension.Equals(".mov", StringComparison.OrdinalIgnoreCase)).ToList();
-
-    /// <summary>
-    /// Filtere nach MP4 Dateien und berücksichtige Gross- und Kleinschreibung (.mp4 und .MP4 sowie .m4v und .M4V)
-    /// </summary>
-    public List<FileInfo> Mp4Videos => Videos.Where(v => v.Extension.Equals(".mp4", StringComparison.OrdinalIgnoreCase) || v.Extension.Equals(".m4v", StringComparison.OrdinalIgnoreCase)).ToList();
-}
