@@ -28,7 +28,7 @@ public class MediaTypeDetectorService
             return quickTimeMovie.Value;
         }
 
-        var coverArtImage = CoverArtImage.Create(fileInfo);
+        var coverArtImage = SupportedImage.Create(fileInfo);
         if (coverArtImage.IsSuccess)
         {
             return coverArtImage.Value;

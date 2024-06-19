@@ -24,7 +24,7 @@ namespace Kurmann.Videoschnitt.MetadataProcessor.Services
         public async Task<Result<XDocument>> ReadMetdataFromQuickTimeMovie(QuickTimeMovie quickTimeMovie, IProgress<string> progress)
         {
             progress.Report($"Extrahiere Metadaten aus QuickTime-Movie {quickTimeMovie.FileInfo.Name}");
-            var metadataResult = await _ffmpegMetadataService.GetFFmpegMetadataAsync(quickTimeMovie.FileInfo.FullName);
+            var metadataResult = await _ffmpegMetadataService.GetRawMetadataAsync(quickTimeMovie.FileInfo.FullName);
             if (metadataResult.IsFailure)
             {
                 return Result.Failure<XDocument>(($"Fehler beim Extrahieren der Metadaten aus QuickTime-Movie {quickTimeMovie.FileInfo.Name}: {metadataResult.Error}"));
@@ -49,7 +49,7 @@ namespace Kurmann.Videoschnitt.MetadataProcessor.Services
         public async Task<Result<XDocument>> ReadMetadataFromMpeg4Video(Mpeg4Video mpeg4Video, IProgress<string> progress)
         {
             progress.Report($"Extrahiere Metadaten aus Mpeg4-Video {mpeg4Video.FileInfo.Name}");
-            var metadataResult = await _ffmpegMetadataService.GetFFmpegMetadataAsync(mpeg4Video.FileInfo.FullName);
+            var metadataResult = await _ffmpegMetadataService.GetRawMetadataAsync(mpeg4Video.FileInfo.FullName);
             if (metadataResult.IsFailure)
             {
                 return Result.Failure<XDocument>($"Fehler beim Extrahieren der Metadaten aus Mpeg4-Video {mpeg4Video.FileInfo.Name}: {metadataResult.Error}");
