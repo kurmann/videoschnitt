@@ -15,7 +15,7 @@ public class FFmpegMetadataService
         _logger = logger;
     }
 
-    public async Task<Result<string>> GetFFmpegMetadataAsync(string filePath)
+    public async Task<Result<string>> GetRawMetadataAsync(string filePath)
     {
         var arguments = $"-i \"{filePath}\" -f ffmetadata -";
         var result = await _executeCommandService.ExecuteCommandAsync("ffmpeg", arguments);
