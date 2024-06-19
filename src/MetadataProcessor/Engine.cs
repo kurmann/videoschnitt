@@ -2,6 +2,7 @@ using Kurmann.Videoschnitt.MetadataProcessor.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Kurmann.Videoschnitt.MetadataProcessor.Entities.SupportedMediaTypes;
+using Kurmann.Videoschnitt.MetadataProcessor.Entities;
 using CSharpFunctionalExtensions;
 
 namespace Kurmann.Videoschnitt.MetadataProcessor;
@@ -19,20 +20,24 @@ public class Engine
     private readonly MediaTypeDetectorService _mediaTypeDetectorService;
     private readonly MediaSetVariantService _mediaSetVariantService;
     private readonly InfuseXmlService _infuseXmlService;
+    private readonly ILogger<Engine> _logger;
+    private readonly MediaSetService _mediaSetService;
 
     public Engine(IOptions<ModuleSettings> moduleSettings, IOptions<ApplicationSettings> applicationSettings, ILogger<Engine> logger,
         MediaFileListenerService mediaFileListenerService, MetadataProcessingService metadataProcessingService, 
         FFmpegMetadataService ffmpegMetadataService, MediaTypeDetectorService mediaTypeDetectorService,
-        MediaSetVariantService mediaSetVariantService, InfuseXmlService infuseXmlService)
+        MediaSetVariantService mediaSetVariantService, InfuseXmlService infuseXmlService, MediaSetService mediaSetService)
     {
         _moduleSettings = moduleSettings.Value;
         _applicationSettings = applicationSettings.Value;
+        _logger = logger;
         _mediaFileListenerService = mediaFileListenerService;
         _metadataProcessingService = metadataProcessingService;
         _ffmpegMetadataService = ffmpegMetadataService;
         _mediaTypeDetectorService = mediaTypeDetectorService;
         _mediaSetVariantService = mediaSetVariantService;
         _infuseXmlService = infuseXmlService;
+        _mediaSetService = mediaSetService;
     }
 
     public async Task<Result> Start(IProgress<string> progress)
@@ -49,13 +54,19 @@ public class Engine
         progress.Report($"Eingangsverzeichnis: {_applicationSettings.InputDirectory}");
 
         _logger.LogInformation("Versuche die Dateien im Eingangsverzeichnis in Medienset zu organisiseren.");
-        // todo: integrate mediaset list
 
         // Liste alle unterstützten Medien-Dateien im Verzeichnis auf
         var mediaFiles = _mediaFileListenerService.GetSupportedMediaFiles();
         if (mediaFiles.IsFailure)
         {
             return Result.Failure($"Fehler beim Ermitteln der Medien-Dateien: {mediaFiles.Error}");
+        }
+
+        // todo; Korrekt implementierne
+        var mediaSets = _mediaSetService.GroupToMediaSets(_applicationSettings.InputDirectory);
+        if (mediaSets.IsFailure)
+        {
+            return Result.Failure($"Fehler beim Gruppieren der Medien-Dateien in Mediensets: {mediaSets.Error}");
         }
 
         // Informiere über die Anzahl der gefundenen Medien-Dateien
