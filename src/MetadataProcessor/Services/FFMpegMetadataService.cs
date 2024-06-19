@@ -31,6 +31,11 @@ public class FFmpegMetadataService
         return Result.Failure<string>(result.Error);
     }
 
+    public async Task<Result<string>> GetMetadataFieldAsync(FileInfo fileInfo, string field)
+    {
+        return await GetMetadataFieldAsync(fileInfo.FullName, field);
+    }
+
     public async Task<Result<string>> GetMetadataFieldAsync(string filePath, string field)
     {
         var arguments = $"-v quiet -show_entries format_tags={field} -of default=noprint_wrappers=1:nokey=1 \"{filePath}\"";

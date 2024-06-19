@@ -62,8 +62,10 @@ public class Engine
             return Result.Failure($"Fehler beim Ermitteln der Medien-Dateien: {mediaFiles.Error}");
         }
 
+        var metadataTest = await _ffmpegMetadataService.GetMetadataFieldAsync(mediaFiles.Value.First().FullName, "title");
+
         // todo; Korrekt implementierne
-        var mediaSets = _mediaSetService.GroupToMediaSets(_applicationSettings.InputDirectory);
+        var mediaSets = await _mediaSetService.GroupToMediaSets(_applicationSettings.InputDirectory);
         if (mediaSets.IsFailure)
         {
             return Result.Failure($"Fehler beim Gruppieren der Medien-Dateien in Mediensets: {mediaSets.Error}");
