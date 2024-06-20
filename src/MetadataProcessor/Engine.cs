@@ -16,13 +16,15 @@ public class Engine
     private readonly ILogger<Engine> _logger;
     private readonly MediaSetService _mediaSetService;
     private readonly MediaSetSubDirectoryOrganizer _mediaSetSubDirectoryOrganizer;
+    private readonly MediaPurposeOrganizer _mediaPurposeOrganizer;
 
     public Engine(ILogger<Engine> logger,
                   IOptions<ModuleSettings> moduleSettings,
                   IOptions<ApplicationSettings> applicationSettings,
                   FFmpegMetadataService ffmpegMetadataService,
                   MediaSetSubDirectoryOrganizer mediaSetSubDirectoryOrganizer,
-                  MediaSetService mediaSetService)
+                  MediaSetService mediaSetService,
+                  MediaPurposeOrganizer mediaPurposeOrganizer)
     {
         _moduleSettings = moduleSettings.Value;
         _applicationSettings = applicationSettings.Value;
@@ -30,6 +32,7 @@ public class Engine
         _ffmpegMetadataService = ffmpegMetadataService;
         _mediaSetService = mediaSetService;
         _mediaSetSubDirectoryOrganizer = mediaSetSubDirectoryOrganizer;
+        _mediaPurposeOrganizer = mediaPurposeOrganizer;
     }
 
     public async Task<Result<List<MediaSetDirectory>>> Start(IProgress<string> progress)
@@ -59,6 +62,15 @@ public class Engine
         {
             return Result.Failure<List<MediaSetDirectory>>($"Fehler beim Verschieben der Mediensets in Unterverzeichnisse: {mediaSetDirectories.Error}");
         }
+        _logger.LogInformation("Mediensets erfolgreich in Unterverzeichnisse verschoben.");
+
+        _logger.LogInformation("Organisiere die Medien nach ihrem Verwendungszweck.");
+        var organizedMedia = _mediaPurposeOrganizer.OrganizeMediaByPurpose(mediaSetDirectories.Value);
+        if (organizedMedia.IsFailure)
+        {
+            return Result.Failure<List<MediaSetDirectory>>($"Fehler beim Organisieren der Medien nach ihrem Verwendungszweck: {organizedMedia.Error}");
+        }
+        _logger.LogInformation("Medien erfolgreich nach ihrem Verwendungszweck organisiert.");
 
         return Result.Success(mediaSetDirectories.Value);
     }

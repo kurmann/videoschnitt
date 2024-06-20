@@ -18,6 +18,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<FFmpegMetadataService>();
         services.AddScoped<MediaSetService>();
         services.AddScoped<MediaSetSubDirectoryOrganizer>();
+        services.AddScoped<MediaPurposeOrganizer>();
 
         services.AddCommonServicesEngine();
 
