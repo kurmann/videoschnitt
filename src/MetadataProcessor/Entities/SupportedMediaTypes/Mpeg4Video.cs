@@ -40,4 +40,6 @@ public class Mpeg4Video : ISupportedMediaType
     {
         return fileInfo.Extension.Equals(".mp4", StringComparison.InvariantCultureIgnoreCase) || fileInfo.Extension.Equals(".m4v", StringComparison.InvariantCultureIgnoreCase);
     }
+
+    public override string ToString() => FileInfo.Name;
 }

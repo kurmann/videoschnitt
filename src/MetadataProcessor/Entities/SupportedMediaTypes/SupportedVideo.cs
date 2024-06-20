@@ -50,4 +50,6 @@ public class SupportedVideo
     {
         return QuickTimeMovie.IsQuickTimeMovieExtension(fileInfo) || Mpeg4Video.IsVideoExtensionMpeg4(fileInfo);
     }
+
+    public override string ToString() => FileInfo.Name;
 }

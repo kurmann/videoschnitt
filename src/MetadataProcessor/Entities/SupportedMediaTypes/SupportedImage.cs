@@ -23,4 +23,6 @@ public record SupportedImage : ISupportedMediaType
     {
         return fileInfo.Extension.Equals(".jpg", StringComparison.InvariantCultureIgnoreCase) || fileInfo.Extension.Equals(".jpeg", StringComparison.InvariantCultureIgnoreCase) || fileInfo.Extension.Equals(".png", StringComparison.InvariantCultureIgnoreCase);
     }
+
+    public override string ToString() => FileInfo.Name;
 }
