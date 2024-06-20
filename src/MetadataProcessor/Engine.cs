@@ -1,8 +1,6 @@
 using Kurmann.Videoschnitt.MetadataProcessor.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Kurmann.Videoschnitt.MetadataProcessor.Entities.SupportedMediaTypes;
-using Kurmann.Videoschnitt.MetadataProcessor.Entities;
 using CSharpFunctionalExtensions;
 
 namespace Kurmann.Videoschnitt.MetadataProcessor;
@@ -17,11 +15,13 @@ public class Engine
     private readonly FFmpegMetadataService _ffmpegMetadataService;
     private readonly ILogger<Engine> _logger;
     private readonly MediaSetService _mediaSetService;
+    private readonly MediaSetSubDirectoryOrganizer _mediaSetSubDirectoryOrganizer;
 
     public Engine(ILogger<Engine> logger,
                   IOptions<ModuleSettings> moduleSettings,
                   IOptions<ApplicationSettings> applicationSettings,
                   FFmpegMetadataService ffmpegMetadataService,
+                  MediaSetSubDirectoryOrganizer mediaSetSubDirectoryOrganizer,
                   MediaSetService mediaSetService)
     {
         _moduleSettings = moduleSettings.Value;
@@ -29,6 +29,7 @@ public class Engine
         _logger = logger;
         _ffmpegMetadataService = ffmpegMetadataService;
         _mediaSetService = mediaSetService;
+        _mediaSetSubDirectoryOrganizer = mediaSetSubDirectoryOrganizer;
     }
 
     public async Task<Result<List<MediaSetDirectory>>> Start(IProgress<string> progress)
@@ -53,37 +54,13 @@ public class Engine
         _logger.LogInformation("Mediensets erfolgreich gruppiert.");
 
         _logger.LogInformation("Verschiebe jedes Medienset in ein Unterverzeichnis mit dem Titel des Mediensets.");
-        var mediaSetDirectories = new List<MediaSetDirectory>();
-        foreach (var mediaSet in mediaSets.Value)
+        var mediaSetDirectories = _mediaSetSubDirectoryOrganizer.MoveMediaSetsToDirectories(mediaSets.Value, _applicationSettings.InputDirectory);
+        if (mediaSetDirectories.IsFailure)
         {
-            var mediaSetDirectory = Path.Combine(_applicationSettings.InputDirectory, mediaSet.Title);
-            if (!Directory.Exists(mediaSetDirectory))
-            {
-                Directory.CreateDirectory(mediaSetDirectory);
-            }
-
-            var mediaFiles = mediaSet.ImageFiles.Select(item => item.FileInfo).Concat(mediaSet.VideoFiles.Select(item => item.FileInfo));
-            foreach (var mediaFile in mediaFiles)
-            {
-                var destination = Path.Combine(mediaSetDirectory, mediaFile.Name);
-                try
-                {
-                    File.Move(mediaFile.FullName, destination);
-                }
-                catch (Exception ex)
-                {
-                    return Result.Failure<List<MediaSetDirectory>>($"Fehler beim Verschieben der Datei '{mediaFile.FullName}' nach '{destination}': {ex.Message}");
-                }
-
-                _logger.LogInformation($"Datei '{mediaFile.FullName}' erfolgreich nach '{destination}' verschoben.");
-            }
-
-            mediaSetDirectories.Add(new MediaSetDirectory(new DirectoryInfo(mediaSetDirectory), mediaSet.Title, mediaSet.ImageFiles, mediaSet.VideoFiles));
+            return Result.Failure<List<MediaSetDirectory>>($"Fehler beim Verschieben der Mediensets in Unterverzeichnisse: {mediaSetDirectories.Error}");
         }
 
-        return Result.Success(mediaSetDirectories);
+        return Result.Success(mediaSetDirectories.Value);
     }
-
-    public record MediaSetDirectory(DirectoryInfo DirectoryInfo, string MediaSetTitle, IEnumerable<SupportedImage> ImageFiles, IEnumerable<SupportedVideo> VideoFiles);
 
 }
