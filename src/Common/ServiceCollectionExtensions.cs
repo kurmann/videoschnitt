@@ -1,8 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
-using Kurmann.Videoschnitt.CommonServices.FileSystem.Unix;
-using Kurmann.Videoschnitt.CommonServices.FileSystem;
+using Kurmann.Videoschnitt.Common.FileSystem.Unix;
+using Kurmann.Videoschnitt.Common.FileSystem;
 
-namespace Kurmann.Videoschnitt.CommonServices;
+namespace Kurmann.Videoschnitt.Common;
 
 public static class ServiceCollectionExtensions
 {

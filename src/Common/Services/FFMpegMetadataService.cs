@@ -1,10 +1,13 @@
 using CSharpFunctionalExtensions;
 using Microsoft.Extensions.Logging;
-using Kurmann.Videoschnitt.CommonServices;
+using Kurmann.Videoschnitt.Common;
 using System.Text.Json;
 
-namespace Kurmann.Videoschnitt.MetadataProcessor.Services;
+namespace Kurmann.Videoschnitt.Common.Services;
 
+/// <summary>
+/// Verantwortlich für das Extrahieren von Metadaten aus Medien-Dateien mit FFmpeg.
+/// </summary>
 public class FFmpegMetadataService
 {
     private readonly ExecuteCommandService _executeCommandService;
@@ -16,6 +19,11 @@ public class FFmpegMetadataService
         _logger = logger;
     }
 
+    /// <summary>
+    /// Gibt die Roh-Metadaten eines Medien-Files zurück im FFmpeg-Format.
+    /// </summary>
+    /// <param name="filePath"></param>
+    /// <returns></returns>
     public async Task<Result<string>> GetRawMetadataAsync(string filePath)
     {
         var arguments = $"-i \"{filePath}\" -f ffmetadata -";

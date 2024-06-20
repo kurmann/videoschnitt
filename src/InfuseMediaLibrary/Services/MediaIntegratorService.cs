@@ -1,7 +1,10 @@
-using System.Text;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using CSharpFunctionalExtensions;
-using Kurmann.Videoschnitt.CommonServices.FileSystem;
+using Kurmann.Videoschnitt.Common.FileSystem;
+using Kurmann.Videoschnitt.Common.Models;
+using Kurmann.Videoschnitt.Common.Services;
+using Kurmann.Videoschnitt.Common.Entities.MediaTypes;
 
 namespace Kurmann.Videoschnitt.InfuseMediaLibrary.Services;
 
@@ -9,125 +12,160 @@ public class MediaIntegratorService
 {
     private readonly ILogger<MediaIntegratorService> _logger;
     private readonly IFileOperations _fileOperations;
+    private readonly FFmpegMetadataService _ffmpegMetadataService;
+    private readonly ApplicationSettings _applicationSettings; 
 
-    public MediaIntegratorService(ILogger<MediaIntegratorService> logger, IFileOperations fileOperations)
+    public MediaIntegratorService(ILogger<MediaIntegratorService> logger, IFileOperations fileOperations, FFmpegMetadataService ffmpegMetadataService, IOptions<ApplicationSettings> applicationSettings)
     {
         _logger = logger;
         _fileOperations = fileOperations;
+        _ffmpegMetadataService = ffmpegMetadataService;
+        _applicationSettings = applicationSettings.Value;
     }
 
-    public async Task<Result<IntegratedMediaSetFile>> IntegrateMediaSet(IEnumerable<FileInfo> mediaSetFiles,
-                                                                        DirectoryInfo targetDirectory,
-                                                                        IEnumerable<string> suffixesToIntegrate,
-                                                                        string recordingDateIsoString)
+    public async Task<Result<Maybe<LocalMediaServerFiles>>> IntegrateMediaSetToInfuseMediaLibrary(MediaSet mediaSet)
     {
-        if (mediaSetFiles == null || !mediaSetFiles.Any())
-            return Result.Failure<IntegratedMediaSetFile>("MediaSetFiles darf nicht null oder leer sein.");
-        if (targetDirectory == null)
-            return Result.Failure<IntegratedMediaSetFile>("TargetDirectory darf nicht null sein.");
-        if (suffixesToIntegrate == null || !suffixesToIntegrate.Any())
-            return Result.Failure<IntegratedMediaSetFile>("SuffixesToIntegrate darf nicht null oder leer sein.");
-        if (string.IsNullOrWhiteSpace(recordingDateIsoString))
-            return Result.Failure<IntegratedMediaSetFile>("RecordingDateIsoString darf nicht null oder leer sein.");
+        _logger.LogInformation("Integriere Medienset in die Infuse-Mediathek.");
 
-        _logger.LogInformation($"Integriere Medienset in das Infuse-Mediathek-Verzeichnis {targetDirectory}.");
+        if (mediaSet == null)
+            return Result.Failure<Maybe<LocalMediaServerFiles>>("Das Medienset ist null.");
 
-        // Erstelle das Zielverzeichnis, falls es nicht existiert
-        try
+        _logger.LogInformation($"Prüfe ob im Medienset {mediaSet.Title} Medien für lokale Medienserver vorhanden sind.");
+        if (mediaSet.LocalMediaServerFiles.HasNoValue)
         {
-            if (!targetDirectory.Exists)
+            _logger.LogInformation($"Keine Videos für lokale Medienserver im Medienset {mediaSet.Title} vorhanden.");
+            _logger.LogInformation("Überspringe Integration in die Infuse-Mediathek für dieses Medienset.");
+            return Maybe<LocalMediaServerFiles>.None;
+        }
+
+        // Ermittle das Album aus den Metadaten der Video-Datei
+        var albumResult = await _ffmpegMetadataService.GetMetadataFieldAsync(mediaSet.LocalMediaServerFiles.Value.VideoFile.FileInfo, "album");
+        if (albumResult.IsFailure)
+        {
+            return Result.Failure<Maybe<LocalMediaServerFiles>>($"Das Album konnte nicht aus den Metadaten der Video-Datei {mediaSet.LocalMediaServerFiles.Value.VideoFile.FileInfo.Name} ermittelt werden: {albumResult.Error}");
+        }
+        Maybe<string> album = string.IsNullOrWhiteSpace(albumResult.Value) ? Maybe<string>.None : albumResult.Value;
+        if (album.HasNoValue)
+        {
+            _logger.LogTrace($"Album-Tag ist nicht in den Metadaten der Video-Datei {mediaSet.LocalMediaServerFiles.Value.VideoFile.FileInfo.Name} vorhanden.");
+            _logger.LogTrace("Das Album wird für die Integration in die Infuse-Mediathek nicht verwendet.");
+        }
+        else
+        {
+            _logger.LogTrace($"Album-Tag aus den Metadaten der Video-Datei {mediaSet.LocalMediaServerFiles.Value.VideoFile.FileInfo.Name} ermittelt: {album.Value}");
+            _logger.LogTrace($"Das Album wird für die Integration in die Infuse-Mediathek als erste Verzeichnisebene verwendet.");
+        }
+
+        // Ermittle das Aufnahmedatum aus dem Titel der Video-Datei. Das Aufnahemdatum ist als ISO-String im Titel enthalten mit einem Leerzeichen getrennt.
+        var recordingDate = GetRecordingDateFromTitle(mediaSet.Title);
+        if (recordingDate.HasNoValue)
+        {
+            _logger.LogTrace($"Das Aufnahmedatum konnte nicht aus dem Titel der Video-Datei {mediaSet.LocalMediaServerFiles.Value.VideoFile.FileInfo.Name} ermittelt werden.");
+            _logger.LogTrace("Das Aufnahmedatum wird für die Integration in die Infuse-Mediathek nicht verwendet.");
+        }
+        else
+        {
+            _logger.LogTrace($"Aufnahmedatum aus dem Titel der Video-Datei {mediaSet.LocalMediaServerFiles.Value.VideoFile.FileInfo.Name} ermittelt: {recordingDate.Value}");
+            _logger.LogTrace($"Das Aufnahmedatum wird für die Integration in die Infuse-Mediathek als zweite Verzeichnisebene verwendet.");
+        }
+
+        _logger.LogInformation("Gefunden in den Metadaten der Video-Datei:");
+        _logger.LogInformation($"Album: {album}");
+        _logger.LogInformation($"Aufnahmedatum: {recordingDate}");
+
+        var targetFilePathResult = GetTargetFilePath(mediaSet.LocalMediaServerFiles.Value.VideoFile, album.Value, mediaSet.Title, recordingDate.Value);
+        if (targetFilePathResult.IsFailure)
+        {
+            return Result.Failure<Maybe<LocalMediaServerFiles>>($"Das Zielverzeichnis für die Integration in die Infuse-Mediathek konnte nicht ermittelt werden: {targetFilePathResult.Error}");
+        }
+        _logger.LogInformation($"Zielverzeichnis für die Integration in die Infuse-Mediathek ermittelt: {targetFilePathResult.Value.FullName}");
+
+        // Verschiebe die Video-Datei in das Infuse-Mediathek-Verzeichnis und erstelle das Verzeichnis falls es nicht existiert
+        var targetDirectory = targetFilePathResult.Value.Directory;
+        if (targetDirectory == null)
+        {
+            return Result.Failure<Maybe<LocalMediaServerFiles>>($"Das Zielverzeichnis für die Integration in die Infuse-Mediathek konnte nicht ermittelt werden: {targetFilePathResult.Value.FullName}");
+        }
+        if (!targetDirectory.Exists)
+        {
+            _logger.LogInformation($"Das Zielverzeichnis für die Integration in die Infuse-Mediathek existiert nicht. Erstelle Verzeichnis: {targetDirectory.FullName}");
+            try
             {
                 targetDirectory.Create();
             }
+            catch (Exception ex)
+            {
+                return Result.Failure<Maybe<LocalMediaServerFiles>>($"Das Zielverzeichnis für die Integration in die Infuse-Mediathek konnte nicht erstellt werden: {targetDirectory.FullName}. Fehler: {ex.Message}");
+            }
         }
-        catch (Exception ex)
-        {
-            return Result.Failure<IntegratedMediaSetFile>($"Das Infuse-Mediathek-Verzeichnis {targetDirectory} konnte nicht erstellt werden: {ex.Message}");
-        }
-
-        // Ermittle die Dateien im Medienset, die in das Infuse-Mediathek-Verzeichnis integriert werden sollen, ignoriere Groß-/Kleinschreibung und die Dateiendung
-        var mediaSetFilesToMove = mediaSetFiles.Where(file => IsFileToMove(file, suffixesToIntegrate)).ToList();
-
-        // Prüfe ob überhaupt eine Datei im Medienset gefunden wurde, die in das Infuse-Mediathek-Verzeichnis integriert werden soll
-        if (!mediaSetFilesToMove.Any())
-        {
-            return Result.Failure<IntegratedMediaSetFile>("Es wurde keine Datei im Medienset gefunden, die in das Infuse-Mediathek-Verzeichnis integriert werden soll.");
-        }
-
-        // Für die Integration in die Infuse-Mediathek sollte nur eine Datei unter den Dateien im Medienset vorhanden sein
-        if (mediaSetFilesToMove.Count > 1)
-        {
-            var stringBuilder = new StringBuilder();
-            var errorMessage = stringBuilder.Append("Es wurde mehr als eine Datei im Medienset gefunden, die in das Infuse-Mediathek-Verzeichnis integriert werden soll.")
-                .Append("Dies ist nicht vorgesehen, da die Infuse-Mediathek mehrere Versionen von Eigenproduktionen nicht zufriedenstellend unterstützt.")
-                .Append("Die Dateien sind: ")
-                .Append(string.Join(", ", mediaSetFilesToMove))
-                .ToString();
-
-            return Result.Failure<IntegratedMediaSetFile>(errorMessage);
-        }
-
-        var mediaSetFileToMove = mediaSetFilesToMove.First();
-        
-        // Die integrierte Datei im Infuse-Mediathek-Verzeichnis sollte den Dateinamen ohne Varianten-Suffix haben
-        var filePathWithoutVariantSuffix = GetFileNameWithoutVariantSuffix(mediaSetFileToMove, suffixesToIntegrate);
-        if (filePathWithoutVariantSuffix.IsFailure)
-        {
-            return Result.Failure<IntegratedMediaSetFile>($"Der Dateiname {mediaSetFileToMove.Name} konnte nicht ohne Varianten-Suffix ermittelt werden: {filePathWithoutVariantSuffix.Error}");
-        }
-
-        // Entferne das führende Aufnahmedatum aus dem Dateinamen (getrennt mit einem Leerzeichen vom Rest des Dateinamens) denn das Aufnahmedatum ist in den Infuse-Metadaten enthalten und das Verzeichnis wird danach benannt
-        var fileNameWithoutRecordingDateAndVariantSuffix = filePathWithoutVariantSuffix.Value.Replace($"{recordingDateIsoString} ", string.Empty, StringComparison.OrdinalIgnoreCase);
-
-        // Bewege die Datei in das Infuse-Mediathek-Verzeichnis
+        _logger.LogInformation($"Verschiebe Video-Datei {mediaSet.LocalMediaServerFiles.Value.VideoFile.FileInfo.FullName} in das Infuse-Mediathek-Verzeichnis {targetDirectory.FullName}");
         try
-        {   
-            // Ermittle den Ziel-Pfad der Datei im Infuse-Mediathek-Verzeichnis
-            var targetFilePath = Path.Combine(targetDirectory.FullName, fileNameWithoutRecordingDateAndVariantSuffix);
-
-            // Bewege die Datei in das Infuse-Mediathek-Verzeichnis
-            var moveFileResult = await _fileOperations.MoveFile(mediaSetFileToMove.FullName, targetFilePath, true);
-            if (moveFileResult.IsFailure)
-            {
-                return Result.Failure<IntegratedMediaSetFile>($"Die Datei {mediaSetFileToMove.FullName} konnte nicht in das Infuse-Mediathek-Verzeichnis {targetDirectory} verschoben werden: {moveFileResult.Error}");
-            }
-
-            _logger.LogInformation($"Die Datei {mediaSetFileToMove.FullName} wurde in das Infuse-Mediathek-Verzeichnis {targetDirectory} verschoben und die spezifischen Dateibereichtigungen wurden entfernt.");
-
-            return Result.Success(new IntegratedMediaSetFile(mediaSetFileToMove, new FileInfo(targetFilePath)));
+        {
+            System.IO.File.Move(mediaSet.LocalMediaServerFiles.Value.VideoFile.FileInfo.FullName, targetFilePathResult.Value.FullName);
         }
         catch (Exception ex)
         {
-            return Result.Failure<IntegratedMediaSetFile>($"Die Datei {mediaSetFileToMove.FullName} konnte nicht in das Infuse-Mediathek-Verzeichnis {targetDirectory} verschoben werden: {ex.Message}");
+            return Result.Failure<Maybe<LocalMediaServerFiles>>($"Die Video-Datei {mediaSet.LocalMediaServerFiles.Value.VideoFile.FileInfo.FullName} konnte nicht in das Infuse-Mediathek-Verzeichnis {targetDirectory.FullName} verschoben werden. Fehler: {ex.Message}");
         }
+        _logger.LogInformation($"Video-Datei {mediaSet.LocalMediaServerFiles.Value.VideoFile.FileInfo.FullName} erfolgreich in das Infuse-Mediathek-Verzeichnis {targetDirectory.FullName} verschoben.");
+
+        // Erstelle neues LocalMediaServerFiles-Objekt mit der verschobenen Video-Datei
+        var movedSupportedVideo = SupportedVideo.Create(targetFilePathResult.Value);
+        if (movedSupportedVideo.IsFailure)
+        {
+            return Result.Failure<Maybe<LocalMediaServerFiles>>($"Die verschobene Video-Datei {targetFilePathResult.Value.FullName} konnte nicht als SupportedVideo-Objekt erstellt werden: {movedSupportedVideo.Error}");
+        }
+
+        var localMediaServerFiles = new LocalMediaServerFiles(mediaSet.LocalMediaServerFiles.Value.ImageFiles, movedSupportedVideo.Value);
+        return Maybe<LocalMediaServerFiles>.From(localMediaServerFiles);
     }
 
-    private bool IsFileToMove(FileInfo file, IEnumerable<string> suffixesToIntegrate)
+    /// <summary>
+    /// Gibt das Aufnahmedatum aus dem Titel der Video-Datei zurück.
+    /// Das Aufnahemdatum ist zu Beginn des Titels als ISO-String enthalten mit einem Leerzeichen getrennt.
+    /// </summary>
+    /// <param name="videoFile"></param>
+    /// <returns></returns>
+    private Maybe<DateOnly> GetRecordingDateFromTitle(string titleFromMetadata)
     {
-        var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(file.Name);
-        return suffixesToIntegrate.Any(suffix => fileNameWithoutExtension.EndsWith(suffix, StringComparison.OrdinalIgnoreCase));
+        if (string.IsNullOrWhiteSpace(titleFromMetadata))
+            return Maybe<DateOnly>.None;
+
+        var titleParts = titleFromMetadata.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (titleParts.Length == 0)
+            return Maybe<DateOnly>.None;
+
+        var recordingDate = titleParts[0];
+        if (!DateOnly.TryParse(recordingDate, out var recordingDateValue))
+            return Maybe<DateOnly>.None;
+
+        return recordingDateValue;
     }
 
-    private Result<string> GetFileNameWithoutVariantSuffix(FileInfo file, IEnumerable<string> suffixesToIntegrate)
+    /// <summary>
+    /// Gibt das Zielverzeichnis für das Medienset zurück nach folgendem Schema:
+    /// <Infuse-Mediathek-Verzeichnis>/<Album>/<Aufnahmedatum.JJJJ>/<Aufnahmedatum.JJJJ-MM-DD>/<Titel ohne ISO-Datum>.<Dateiendung>
+    /// </summary>
+    /// <param name="album"></param>
+    /// <param name="recordingDate"></param>
+    /// <returns></returns>
+    private Result<FileInfo> GetTargetFilePath(SupportedVideo supportedVideo, string album, string title, DateOnly recordingDate)
     {
-        // Ermittle das Verzeichnis der Datei
-        var fileDirectory = file.Directory;
-        if (fileDirectory == null)
-        {
-            return Result.Failure<string>($"Das Verzeichnis der Datei {file.FullName} konnte nicht ermittelt werden.");
-        }
+        if (_applicationSettings.InfuseMediaLibraryPath == null)
+            return Result.Failure<FileInfo>("Das Infuse-Mediathek-Verzeichnis wurde nicht korrekt aus den Einstellungen geladen.");
 
-        foreach (var suffix in suffixesToIntegrate)
-        {
-            if (Path.GetFileNameWithoutExtension(file.FullName).EndsWith(suffix, StringComparison.OrdinalIgnoreCase))
-            {
-                // Der Dateiname enthält das Varianten-Suffix, entferne es
-                var fileNameWithoutVariantSuffix = Path.Combine(Path.GetFileNameWithoutExtension(file.Name).Replace(suffix, string.Empty, StringComparison.OrdinalIgnoreCase) + file.Extension);
-                return Result.Success(fileNameWithoutVariantSuffix);
-            }
-        }
+        if (supportedVideo.FileInfo == null)
+            return Result.Failure<FileInfo>("Die Quelldatei des SupportedVideo-Objekts ist null.");
 
-        return Result.Failure<string>($"Der Dateiname {file.Name} enthält kein Varianten-Suffix.");
+        var targetDirectory = Path.Combine(_applicationSettings.InfuseMediaLibraryPath, album, recordingDate.Year.ToString(), recordingDate.ToString("yyyy-MM-dd"));
+
+        // Der Ziel-Dateiname ist ohne vorangestelltes ISO-Datum. Dieses muss also aus dem Titel entfernt werden.
+        var titleWithoutLeadingRecordingDate = title.Replace($"{recordingDate.ToString("yyyy-MM-dd")} ", string.Empty);
+
+        var targetFileName = $"{titleWithoutLeadingRecordingDate}{supportedVideo.FileInfo.Extension}";
+        var targetFilePath = Path.Combine(targetDirectory, targetFileName);
+    
+        return new FileInfo(targetFilePath);
     }
 }
 

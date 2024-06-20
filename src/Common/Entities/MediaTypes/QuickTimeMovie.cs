@@ -1,6 +1,6 @@
 using CSharpFunctionalExtensions;
 
-namespace Kurmann.Videoschnitt.MetadataProcessor.Entities.SupportedMediaTypes;
+namespace Kurmann.Videoschnitt.Common.Entities.MediaTypes;
 
 public class QuickTimeMovie : ISupportedMediaType
 {
@@ -15,7 +15,7 @@ public class QuickTimeMovie : ISupportedMediaType
             return Result.Failure<QuickTimeMovie>("The file path must not be empty.");
         }
 
-        try 
+        try
         {
             var fileInfo = new FileInfo(filePath);
             return Create(fileInfo);

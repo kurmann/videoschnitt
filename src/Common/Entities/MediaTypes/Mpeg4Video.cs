@@ -1,6 +1,6 @@
 using CSharpFunctionalExtensions;
 
-namespace Kurmann.Videoschnitt.MetadataProcessor.Entities.SupportedMediaTypes;
+namespace Kurmann.Videoschnitt.Common.Entities.MediaTypes;
 
 public class Mpeg4Video : ISupportedMediaType
 {
