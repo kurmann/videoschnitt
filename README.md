@@ -4,6 +4,41 @@
 
 Kurmann Videoschnitt ist eine leistungsstarke Anwendung, die sich auf die Automatisierung und Verwaltung von Videoschnittprozessen konzentriert. Diese Anwendung zielt darauf ab, die Effizienz und Produktivität zu steigern, indem verschiedene Aufgaben im Videoschnitt automatisiert und optimiert werden.
 
+Verstanden, hier ist die angepasste Version ohne die Übersetzungen:
+
+## Grundlagen
+
+### Medienset
+
+Ein Medienset besteht aus einer Gruppe von Dateien desselben Mastervideos. Zum Beispiel ein Videoschnitt einer Wanderung auf den Pilatus. Ein Medienset enthält Dateien für unterschiedliche Einsatzzwecke und darunter auch Bereitstellungsvarianten. Ein Medienset besteht gewöhnlich aus:
+
+- Einem oder mehreren Videos in unterschiedlicher Auflösung, Bittiefe oder Bildrate.
+- Einer Sidecar-Metadaten-Datei (damit diese nicht immer neu ausgelesen werden müssen).
+- Optional einem Titelbild.
+
+Aktuell sind diese zwei Bereitstellungsvarianten vorgesehen:
+
+- Azure Blob Storage basierend auf ULID-basierten Verzeichnissnamen
+- Lokale Medienbibliothek kompatibel mit Infuse (inklusive zugehöriger Infuse Metadaten-XML-Datei)
+
+### Einsatzzwecke
+
+1. Lokaler Medienserver
+2. Cloud-Streaming
+
+### Bereitstellungsvarianten
+
+#### Geplante Bereitstellungsvarianten für Lokaler Medienserver
+- Nutzung eines Verzeichnisses, das vom Infuse Media Player ausgelesen wird
+
+#### Geplante Bereitstellungsvarianten für Cloud-Streaming
+- Nutzung von Azure Blob Storage mit Hidden Links
+
+### Begriffe
+- **Medienset**: Media Set
+- **Einsatzzweck**: Purpose
+- **Bereitstellungsvariante**: Deployment Option
+
 ## Hauptfunktionen
 
 Die folgenden Hauptfunktionen gelten als Ziele der Anwendung und sind derzeit in Entwicklung. Weitere Funktionen können hinzugefügt oder entfernt werden:
