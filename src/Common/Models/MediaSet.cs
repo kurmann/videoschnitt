@@ -8,8 +8,8 @@ namespace Kurmann.Videoschnitt.Common.Models;
 /// oder sich gewisse Dateien beim Verarbeitungsprozess noch nicht im Medienset-Verzeichnis befinden (bspw. während der Videokomprimierung).
 /// </summary>
 /// <param name="MediaSetDirectory"></param>
-/// <param name="MediaSetTitle"></param>
+/// <param name="Title"></param>
 /// <param name="LocalMediaServerFiles"></param>
 /// <param name="InternetStreaming"></param>
 /// <returns></returns>
-public record MediaSet(string MediaSetTitle, Maybe<LocalMediaServerFiles> LocalMediaServerFiles, Maybe<InternetStreamingFiles> InternetStreaming);
+public record MediaSet(string Title, Maybe<LocalMediaServerFiles> LocalMediaServerFiles, Maybe<InternetStreamingFiles> InternetStreaming);
