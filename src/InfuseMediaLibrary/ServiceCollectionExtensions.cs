@@ -2,9 +2,9 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Kurmann.Videoschnitt.InfuseMediaLibrary.Services;
-using Kurmann.Videoschnitt.CommonServices;
-using Kurmann.Videoschnitt.CommonServices.FileSystem;
-using Kurmann.Videoschnitt.CommonServices.FileSystem.Unix;
+using Kurmann.Videoschnitt.Common;
+using Kurmann.Videoschnitt.Common.FileSystem;
+using Kurmann.Videoschnitt.Common.FileSystem.Unix;
 
 namespace Kurmann.Videoschnitt.InfuseMediaLibrary;
 

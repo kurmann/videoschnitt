@@ -2,7 +2,7 @@ using CSharpFunctionalExtensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Kurmann.Videoschnitt.InfuseMediaLibrary.Services;
-using Kurmann.Videoschnitt.CommonServices.FileSystem;
+using Kurmann.Videoschnitt.Common.FileSystem;
 
 namespace Kurmann.Videoschnitt.InfuseMediaLibrary;
 
@@ -34,7 +34,47 @@ public class Engine
         _fileOperations = fileOperations;
     }
 
-    public async Task<Result> StartAsync(IProgress<string> progress)
+    public async Task<Result> StartAsync(IProgress<string> progress, List<MediaSet> mediaSets)
+    {
+        progress.Report("InfuseMediaLibrary-Feature gestartet.");
+
+        // Prüfe den Infuse-Mediathek-Pfad aus den Einstellungen
+        if (_applicationSettings.InfuseMediaLibraryPath == null)
+        {
+            return Result.Failure($"Kein Infuse-Mediathek-Verzeichnis konfiguriert. Wenn Umgebungsvariablen verwendet werden, sollte der Name der Umgebungsvariable '{ApplicationSettings.SectionName}__{nameof(_applicationSettings.InfuseMediaLibraryPath)}' lauten.");
+        }
+        if (!Directory.Exists(_applicationSettings.InfuseMediaLibraryPath))
+        {
+            return Result.Failure($"Das Infuse-Mediathek-Verzeichnis {_applicationSettings.InfuseMediaLibraryPath} existiert nicht.");
+        }
+
+        // Prüfe das Quellverzeichnis aus den Einstellungen
+        if (_applicationSettings.InputDirectory == null)
+        {
+            return Result.Failure($"Kein Quellverzeichnis konfiguriert. Wenn Umgebungsvariablen verwendet werden, sollte der Name der Umgebungsvariable '{ApplicationSettings.SectionName}__{nameof(_applicationSettings.InputDirectory)}' lauten.");
+        }
+        if (!Directory.Exists(_applicationSettings.InputDirectory))
+        {
+            return Result.Failure($"Das Quellverzeichnis {_applicationSettings.InputDirectory} existiert nicht.");
+        }
+
+        // Informiere über das Quellverzeichnis
+        progress.Report($"Quellverzeichnis für die Integration von Medien in die Infuse-Mediathek: {_applicationSettings.InputDirectory}");
+
+        // Iteriere über alle Mediensets
+        foreach (var mediaSet in mediaSets)
+        {
+            // Informiere über das Medienset
+            progress.Report($"Medienset: {mediaSet.Title}");
+
+            // Ermittle mit dem TargetDirectoryResolver das Zielverzeichnis für die Medien-Dateien
+            var targetDirectoryResult = _targetDirectoryResolver.ResolveTargetDirectory(mediaSet.LocalMediaServerFiles, _applicationSettings.InfuseMediaLibraryPath);
+            if (targetDirectoryResult.IsFailure)
+            {
+                _logger.LogWarning($"Fehler beim Ermitteln des Zielverzeichnisses für die Medien-Dateien im Medienset {mediaSet.Title}: {targetDirectoryResult.Error}");
+                _logger.LogInformation("Das Medienset wird ignoriert.");
+                continue;
+            }
     {
         progress.Report("InfuseMediaLibrary-Feature gestartet.");
 

@@ -1,7 +1,7 @@
 using System.Xml.Linq;
 using CSharpFunctionalExtensions;
 
-namespace Kurmann.Videoschnitt.CommonServices.FileSystem;
+namespace Kurmann.Videoschnitt.Common.FileSystem;
 
 public interface IFileOperations
 {

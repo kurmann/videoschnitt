@@ -39,14 +39,14 @@ public class MediaPurposeOrganizer
                 return Result.Failure<List<MediaSet>>(localMediaServerFiles.Error);
             }
 
-            var internetStreaming = GetFilesForInternetStreaming(mediaFilesByMediaSet);
-            if (internetStreaming.IsFailure)
+            var internetStreamingFiles = GetFilesForInternetStreaming(mediaFilesByMediaSet);
+            if (internetStreamingFiles.IsFailure)
             {
-                return Result.Failure<List<MediaSet>>(internetStreaming.Error);
+                return Result.Failure<List<MediaSet>>(internetStreamingFiles.Error);
             }
 
             _logger.LogInformation($"Medienset-Verzeichnis '{mediaFilesByMediaSet.Title}' wurde erfolgreich nach Einsatzzweck organisiert.");
-            mediaSetDirectoriesWithMediaPurpose.Add(new MediaSet(mediaFilesByMediaSet.Title, localMediaServerFiles.Value, internetStreaming.Value));
+            mediaSetDirectoriesWithMediaPurpose.Add(new MediaSet(mediaFilesByMediaSet.Title, localMediaServerFiles.Value, internetStreamingFiles.Value));
         }
 
         _logger.LogInformation("Medienset-Verzeichnisse wurden erfolgreich nach Einsatzzweck organisiert.");
@@ -91,16 +91,16 @@ public class MediaPurposeOrganizer
         return localMediaServerFiles;
     }
 
-    private Result<Maybe<InternetStreaming>> GetFilesForInternetStreaming(MediaFilesByMediaSet mediaFilesByMediaSets)
+    private Result<Maybe<InternetStreamingFiles>> GetFilesForInternetStreaming(MediaFilesByMediaSet mediaFilesByMediaSets)
     {
         _logger.LogTrace($"Filtere alle Videodateien, die mit einem der Suffixe für das Internet enden.");
 
         if (_moduleSettings.MediaSet?.VideoVersionSuffixesForInternet == null)
         {
-            return Result.Failure<Maybe<InternetStreaming>>("Medienset-Einstellungen wurden nicht korrekt geladen. Es kann keine Unterteilung in Internet-Daten durchgeführt werden.");
+            return Result.Failure<Maybe<InternetStreamingFiles>>("Medienset-Einstellungen wurden nicht korrekt geladen. Es kann keine Unterteilung in Internet-Daten durchgeführt werden.");
         }
 
-        var internetStreaming = Maybe<InternetStreaming>.None;
+        var internetStreaming = Maybe<InternetStreamingFiles>.None;
         var videoFilesForInternet = new List<SupportedVideo>();
         foreach (var videoFile in mediaFilesByMediaSets.VideoFiles)
         {
@@ -112,10 +112,10 @@ public class MediaPurposeOrganizer
         _logger.LogTrace($"Prüfe, ob mindestens eine Videodatei für das Internet vorhanden ist.");
         if (videoFilesForInternet.Count == 0)
         {
-            return Result.Failure<Maybe<InternetStreaming>>($"Es wurde keine Videodatei für das Internet im Medienset-Verzeichnis '{mediaFilesByMediaSets.Title}' gefunden.");
+            return Result.Failure<Maybe<InternetStreamingFiles>>($"Es wurde keine Videodatei für das Internet im Medienset-Verzeichnis '{mediaFilesByMediaSets.Title}' gefunden.");
         }
 
-        internetStreaming = new InternetStreaming(mediaFilesByMediaSets.ImageFiles, videoFilesForInternet);
+        internetStreaming = new InternetStreamingFiles(mediaFilesByMediaSets.ImageFiles, videoFilesForInternet);
         _logger.LogInformation($"Es wurden die Videodateien '{string.Join(", ", videoFilesForInternet.Select(v => v.FileInfo.Name))}' für das Internet im Medienset-Verzeichnis '{mediaFilesByMediaSets.Title}' gefunden.");
 
         return internetStreaming;
@@ -132,7 +132,7 @@ public class MediaPurposeOrganizer
 /// <param name="LocalMediaServerFiles"></param>
 /// <param name="InternetStreaming"></param>
 /// <returns></returns>
-public record MediaSet(string MediaSetTitle, Maybe<LocalMediaServerFiles> LocalMediaServerFiles, Maybe<InternetStreaming> InternetStreaming);
+public record MediaSet(string MediaSetTitle, Maybe<LocalMediaServerFiles> LocalMediaServerFiles, Maybe<InternetStreamingFiles> InternetStreaming);
 
 /// <summary>
 /// Repräsentiert die Dateien eines Mediensets für die Wiedergabe über den lokalen Medienserver.
@@ -154,4 +154,4 @@ public record LocalMediaServerFiles(IEnumerable<SupportedImage> ImageFiles, Supp
 /// <param name="ImageFiles"></param>
 /// <param name="VideoFiles"></param>
 /// <returns></returns>
-public record InternetStreaming(IEnumerable<SupportedImage> ImageFiles, IEnumerable<SupportedVideo> VideoFiles);
+public record InternetStreamingFiles(IEnumerable<SupportedImage> ImageFiles, IEnumerable<SupportedVideo> VideoFiles);

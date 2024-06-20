@@ -1,7 +1,7 @@
 using System.Text;
 using Microsoft.Extensions.Logging;
 using CSharpFunctionalExtensions;
-using Kurmann.Videoschnitt.CommonServices.FileSystem;
+using Kurmann.Videoschnitt.Common.FileSystem;
 
 namespace Kurmann.Videoschnitt.InfuseMediaLibrary.Services;
 

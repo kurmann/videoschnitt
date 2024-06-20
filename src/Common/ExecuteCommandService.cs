@@ -3,7 +3,7 @@ using System.Text;
 using CSharpFunctionalExtensions;
 using Microsoft.Extensions.Logging;
 
-namespace Kurmann.Videoschnitt.CommonServices;
+namespace Kurmann.Videoschnitt.Common;
 
 public class ExecuteCommandService
 {
