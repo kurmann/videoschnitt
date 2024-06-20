@@ -131,6 +131,19 @@ public class MediaSetService
     }
 }
 
+/// <summary>
+/// Repräsentiert eine Gruppierung von unterstützten Videodateien nach Medienset.
+/// </summary>
+/// <param name="Title"></param>
+/// <param name="VideoFiles"></param>
+/// <returns></returns>
 public record VideosByMediaSet(string Title, IEnumerable<SupportedVideo> VideoFiles);
 
+/// <summary>
+/// Repräsentiert eine Gruppierung von separat gelisteten unterstützten Medien-Dateien nach Medienset.
+/// </summary>
+/// <param name="Title"></param>
+/// <param name="VideoFiles"></param>
+/// <param name="ImageFiles"></param>
+/// <returns></returns>
 public record MediaFilesByMediaSet(string Title, IEnumerable<SupportedVideo> VideoFiles, IEnumerable<SupportedImage> ImageFiles);

@@ -49,4 +49,6 @@ public class QuickTimeMovie : ISupportedMediaType
     {
         return fileInfo.Extension.Equals(".mov", StringComparison.InvariantCultureIgnoreCase) || fileInfo.Extension.Equals(".qt", StringComparison.InvariantCultureIgnoreCase);
     }
+
+    public override string ToString() => FileInfo.Name;
 }
