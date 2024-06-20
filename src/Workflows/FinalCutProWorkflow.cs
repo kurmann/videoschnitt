@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Logging;
-using Kurmann.Videoschnitt.MetadataProcessor;
 using CSharpFunctionalExtensions;
 
 namespace Kurmann.Videoschnitt.Workflows;
@@ -7,10 +6,10 @@ namespace Kurmann.Videoschnitt.Workflows;
 public class FinalCutProWorkflow : IAsyncWorkflow
 {
     private readonly ILogger<FinalCutProWorkflow> _logger;
-    private readonly Engine _metadataProcessorEngine;
+    private readonly MetadataProcessor.Engine _metadataProcessorEngine;
     private readonly InfuseMediaLibrary.Engine _infuseMediaLibraryEngine;
 
-    public FinalCutProWorkflow(ILogger<FinalCutProWorkflow> logger, Engine metadataProcessorEngine, InfuseMediaLibrary.Engine infuseMediaLibraryEngine)
+    public FinalCutProWorkflow(ILogger<FinalCutProWorkflow> logger, MetadataProcessor.Engine metadataProcessorEngine, InfuseMediaLibrary.Engine infuseMediaLibraryEngine)
     {
         _logger = logger;
         _metadataProcessorEngine = metadataProcessorEngine;
