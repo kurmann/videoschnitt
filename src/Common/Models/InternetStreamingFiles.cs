@@ -1,6 +1,6 @@
 using Kurmann.Videoschnitt.Common.Entities.MediaTypes;
 
-namespace Kurmann.Videoschnitt.LocalFileSystem.Models;
+namespace Kurmann.Videoschnitt.Common.Models;
 
 /// <summary>
 /// Repräsentiert die Dateien eines Mediensets für das Internetwiedergabe als Teil eines Mediensets.

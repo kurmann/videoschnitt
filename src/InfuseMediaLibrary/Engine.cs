@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Kurmann.Videoschnitt.InfuseMediaLibrary.Services;
 using Kurmann.Videoschnitt.Common.FileSystem;
+using Kurmann.Videoschnitt.Common.Models;
 
 namespace Kurmann.Videoschnitt.InfuseMediaLibrary;
 

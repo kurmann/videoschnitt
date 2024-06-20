@@ -1,6 +1,6 @@
 using CSharpFunctionalExtensions;
 
-namespace Kurmann.Videoschnitt.LocalFileSystem.Models;
+namespace Kurmann.Videoschnitt.Common.Models;
 
 /// <summary>
 /// Repräsentiert ein Medienset-Verzeichnis mit separierten Dateien für den Einsatzzweck auf einem lokalen Medienserver und im Internet.
