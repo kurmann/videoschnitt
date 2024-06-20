@@ -1,7 +1,8 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using CSharpFunctionalExtensions;
-using Kurmann.Videoschnitt.MetadataProcessor.Entities.SupportedMediaTypes;
+using Kurmann.Videoschnitt.LocalFileSystem.Models;
+using Kurmann.Videoschnitt.Common.Entities.MediaTypes;
 
 namespace Kurmann.Videoschnitt.MetadataProcessor.Services;
 
@@ -121,37 +122,3 @@ public class MediaPurposeOrganizer
         return internetStreaming;
     }
 }
-
-/// <summary>
-/// Repräsentiert ein Medienset-Verzeichnis mit separierten Dateien für den Einsatzzweck auf einem lokalen Medienserver und im Internet.
-/// Die jeweiligen Dateien für einen Einsatzzweck können auch leer sein, da nicht alle Mediensets für beide Einsatzzwecke konfiguriert sind
-/// oder sich gewisse Dateien beim Verarbeitungsprozess noch nicht im Medienset-Verzeichnis befinden (bspw. während der Videokomprimierung).
-/// </summary>
-/// <param name="MediaSetDirectory"></param>
-/// <param name="MediaSetTitle"></param>
-/// <param name="LocalMediaServerFiles"></param>
-/// <param name="InternetStreaming"></param>
-/// <returns></returns>
-public record MediaSet(string MediaSetTitle, Maybe<LocalMediaServerFiles> LocalMediaServerFiles, Maybe<InternetStreamingFiles> InternetStreaming);
-
-/// <summary>
-/// Repräsentiert die Dateien eines Mediensets für die Wiedergabe über den lokalen Medienserver.
-/// Hinweis: Auf dem lokalen Medienserver wird nur ein Video unterstützt.
-/// Bilddateien können mehrere sein, da unterschiedliche Bilddateien als Bannerbild und als Thumbnail verwendet werden können.
-/// </summary>
-/// <param name="DirectoryInfo"></param>
-/// <param name="MediaSetTitle"></param>
-/// <param name="ImageFiles"></param>
-/// <param name="VideoFile"></param>
-/// <returns></returns>
-public record LocalMediaServerFiles(IEnumerable<SupportedImage> ImageFiles, SupportedVideo VideoFile);
-
-/// <summary>
-/// Repräsentiert die Dateien eines Mediensets für das Internetwiedergabe als Teil eines Mediensets.
-/// </summary>
-/// <param name="DirectoryInfo"></param>
-/// <param name="MediaSetTitle"></param>
-/// <param name="ImageFiles"></param>
-/// <param name="VideoFiles"></param>
-/// <returns></returns>
-public record InternetStreamingFiles(IEnumerable<SupportedImage> ImageFiles, IEnumerable<SupportedVideo> VideoFiles);

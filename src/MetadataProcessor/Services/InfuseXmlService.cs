@@ -2,8 +2,7 @@ using Microsoft.Extensions.Logging;
 using CSharpFunctionalExtensions;
 using System.Xml.Linq;
 using Kurmann.Videoschnitt.MetadataProcessor.Entities;
-using Kurmann.Videoschnitt.MetadataProcessor.Entities.SupportedMediaTypes;
-using Kurmann.Videoschnitt.Common.FileSystem.Unix;
+using Kurmann.Videoschnitt.Common.Entities.MediaTypes;
 
 namespace Kurmann.Videoschnitt.MetadataProcessor.Services
 {

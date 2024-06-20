@@ -1,6 +1,6 @@
 using CSharpFunctionalExtensions;
 
-namespace Kurmann.Videoschnitt.MetadataProcessor.Entities.SupportedMediaTypes;
+namespace Kurmann.Videoschnitt.Common.Entities.MediaTypes;
 
 /// <summary>
 /// Definiert ein unterstützte Video-Datei.

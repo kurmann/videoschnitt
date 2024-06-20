@@ -32,7 +32,7 @@ public class FinalCutProWorkflow : IAsyncWorkflow
         progress.Report(Environment.NewLine);
         progress.Report("Starte Integration in die Infuse-Mediathek");
 
-        var infuseMediaLibraryResult = await _infuseMediaLibraryEngine.StartAsync(progress);
+        var infuseMediaLibraryResult = await _infuseMediaLibraryEngine.StartAsync(progress, metadataProcessorResult.Value);
         if (infuseMediaLibraryResult.IsFailure)
         {
             return Result.Failure($"Fehler beim Ausführen des Final Cut Pro Workflows: {infuseMediaLibraryResult.Error}");
