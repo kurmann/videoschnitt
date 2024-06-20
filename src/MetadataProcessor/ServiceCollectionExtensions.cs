@@ -2,6 +2,7 @@ using Kurmann.Videoschnitt.MetadataProcessor.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Kurmann.Videoschnitt.Common;
+using Kurmann.Videoschnitt.Common.Services;
 
 namespace Kurmann.Videoschnitt.MetadataProcessor;
 

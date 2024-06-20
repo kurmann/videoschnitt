@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using CSharpFunctionalExtensions;
 using Kurmann.Videoschnitt.Common.Models;
+using Kurmann.Videoschnitt.Common.Services;
 
 namespace Kurmann.Videoschnitt.MetadataProcessor;
 
