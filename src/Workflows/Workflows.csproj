@@ -18,7 +18,7 @@
     <ProjectReference Include="..\MetadataProcessor\MetadataProcessor.csproj" />
     <ProjectReference Include="..\HealthCheck\HealthCheck.csproj" />
     <ProjectReference Include="..\InfuseMediaLibrary\InfuseMediaLibrary.csproj" />
-
+    <ProjectReference Include="..\Common\Common.csproj" />
   </ItemGroup>
 
 </Project>
