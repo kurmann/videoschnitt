@@ -126,6 +126,34 @@ public class FileOperations : IFileOperations
         }
     }
 
+    /// <summary>
+    /// Erstellt ein Verzeichnis mit den angegebenen Berechtigungen.
+    /// </summary>
+    /// <param name="path"></param>
+    /// <param name="inheritPermissions"></param>
+    /// <returns></returns>
+    public async Task<Result> CreateDirectory(string path, bool inheritPermissions = true)
+    {
+        try
+        {
+            Directory.CreateDirectory(path);
+
+            if (inheritPermissions)
+            {
+                var resetResult = await ResetPermissionsToInherit(path);
+                if (resetResult.IsFailure)
+                {
+                    return resetResult;
+                }
+            }
+            return Result.Success();
+        }
+        catch (Exception ex)
+        {
+            return Result.Failure($"Fehler beim Erstellen des Verzeichnisses: {ex.Message}");
+        }
+    }
+
     private async Task<Result> ResetPermissionsToInherit(string path)
     {
         if (string.IsNullOrWhiteSpace(path))

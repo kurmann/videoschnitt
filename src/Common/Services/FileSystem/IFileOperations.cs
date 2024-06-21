@@ -9,4 +9,5 @@ public interface IFileOperations
     Task<Result> MoveFile(string sourcePath, string destinationPath, bool overwrite = false, bool inheritPermissions = true);
     Task<Result> CopyFile(string sourcePath, string destinationPath, bool overwrite = false, bool inheritPermissions = true);
     Result<string> ReadFile(string path);
+    Task<Result> CreateDirectory(string path, bool inheritPermissions = true);
 }
