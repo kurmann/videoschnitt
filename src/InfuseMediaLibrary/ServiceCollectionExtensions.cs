@@ -18,7 +18,6 @@ public static class ServiceCollectionExtensions
 
         // Register Engine
         services.AddScoped<Engine>();
-        services.AddScoped<TargetDirectoryResolver>();
         services.AddScoped<InfuseMetadataXmlService>();
         services.AddScoped<MediaIntegratorService>();
         services.AddScoped<IFileOperations, FileOperations>();

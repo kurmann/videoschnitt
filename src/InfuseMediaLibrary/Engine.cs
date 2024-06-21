@@ -13,7 +13,6 @@ public class Engine
     private readonly ApplicationSettings _applicationSettings;
     private readonly ILogger<Engine> _logger;
     private readonly InfuseMetadataXmlService _infuseMetadataXmlService;
-    private readonly TargetDirectoryResolver _targetDirectoryResolver;
     private readonly MediaIntegratorService _mediaIntegratorService;
     private readonly IFileOperations _fileOperations;
 
@@ -22,7 +21,6 @@ public class Engine
                   IOptions<ApplicationSettings> applicationSettings,
                   ILogger<Engine> logger,
                   InfuseMetadataXmlService infuseMetadataXmlService,
-                  TargetDirectoryResolver targetDirectoryResolver,
                   MediaIntegratorService mediaIntegratorService,
                   IFileOperations fileOperations)
     {
@@ -30,7 +28,6 @@ public class Engine
         _applicationSettings = applicationSettings.Value;
         _logger = logger;
         _infuseMetadataXmlService = infuseMetadataXmlService;
-        _targetDirectoryResolver = targetDirectoryResolver;
         _mediaIntegratorService = mediaIntegratorService;
         _fileOperations = fileOperations;
     }
