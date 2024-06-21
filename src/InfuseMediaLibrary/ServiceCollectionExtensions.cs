@@ -21,6 +21,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<InfuseMetadataXmlService>();
         services.AddScoped<MediaIntegratorService>();
         services.AddScoped<IFileOperations, FileOperations>();
+        services.AddScoped<PosterAndFanartService>();
 
         services.AddCommonServicesEngine();
 
