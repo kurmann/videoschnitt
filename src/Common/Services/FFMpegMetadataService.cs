@@ -66,22 +66,4 @@ public class FFmpegMetadataService
     {
         return await GetMetadataFieldAsync(filePath, "description");
     }
-
-    public async Task<Result<float>> GetAspectRatioAsync(string filePath)
-    {
-        var arguments = $"-v quiet -show_entries stream=display_aspect_ratio -of default=noprint_wrappers=1:nokey=1 \"{filePath}\"";
-        var result = await _executeCommandService.ExecuteCommandAsync("ffprobe", arguments);
-
-        if (result.IsSuccess)
-        {
-            var aspectRatio = string.Join("\n", result.Value).Trim();
-            if (float.TryParse(aspectRatio, out var aspectRatioValue))
-            {
-                return Result.Success(aspectRatioValue);
-            }
-        }
-
-        _logger.LogError($"Error retrieving FFprobe aspect ratio: {result.Error}");
-        return Result.Failure<float>(result.Error);
-    }
 }

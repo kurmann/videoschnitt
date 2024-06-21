@@ -26,8 +26,7 @@ public class PosterAndFanartService
     /// Die Festlegung erfolgt nach folgendem Schema nach Priorität:
     /// 1. Wenn eine Bilddatei im Dateinamen bereits "poster" enthält, wird diese als Poster verwendet und die andere als Hintergrundbild.
     ///    Und wenn eine Bilddatei im Dateinamen bereits "fanart" enthält, wird diese als Hintergrundbild verwendet und die andere als Poster.
-    /// 2. Die Bilddatei mit dem breiteren Seitenverhältnis wird als Poster verwendet (bspw. 16:9 gegenüber 1:1).
-    /// 3. Wenn beide Bilddateien das gleiche Seitenverhältnis haben, wird die jünge Bilddatei als Poster verwendet.
+    /// 2. Wenn beide Bilddateien das gleiche Seitenverhältnis haben, wird die jünge Bilddatei als Poster verwendet.
     /// Hinweis: Die Bildauflösungen werden über den FFMpegMetadataService ermittelt indem die Attribute "width" und "height" aus den Metadaten extrahiert werden.
     /// </summary>
     public async Task<Result<DetectPosterAndFanartImagesResponse>> DetectPosterAndFanartImages(SupportedImage firstImage, SupportedImage secondImage)
@@ -57,45 +56,18 @@ public class PosterAndFanartService
             posterImage = firstImage;
         }
 
-        // Priorität 2: Vergleich der Seitenverhältnisse, wenn noch keine Zuordnung erfolgt ist
-        if (posterImage == null || fanartImage == null)
+        // Priorität 3: Vergleich des Änderungsdatum, wenn Seitenverhältnisse gleich sind. Die jüngere Bilddatei wird als Poster verwendet.
+        else
         {
-            var firstAspectRatio = await _ffmpegMetadataService.GetAspectRatioAsync(firstImage.FileInfo.FullName);
-            if (firstAspectRatio.IsFailure)
-                return Result.Failure<DetectPosterAndFanartImagesResponse>($"Das Seitenverhältnis der Bilddatei {firstImage.FileInfo.FullName} konnte nicht ermittelt werden: {firstAspectRatio.Error}");
-            if (firstAspectRatio.Value == 0)
-                return Result.Failure<DetectPosterAndFanartImagesResponse>($"Das Seitenverhältnis der Bilddatei {firstImage.FileInfo.FullName} ist 0.");
-            
-            var secondAspectRatio = await _ffmpegMetadataService.GetAspectRatioAsync(secondImage.FileInfo.FullName);
-            if (secondAspectRatio.IsFailure)
-                return Result.Failure<DetectPosterAndFanartImagesResponse>($"Das Seitenverhältnis der Bilddatei {secondImage.FileInfo.FullName} konnte nicht ermittelt werden: {secondAspectRatio.Error}");
-            if (secondAspectRatio.Value == 0)
-                return Result.Failure<DetectPosterAndFanartImagesResponse>($"Das Seitenverhältnis der Bilddatei {secondImage.FileInfo.FullName} ist 0.");
-
-            if (firstAspectRatio.Value > secondAspectRatio.Value)
+            if (File.GetLastWriteTime(firstImage.FileInfo.FullName) > File.GetLastWriteTime(secondImage.FileInfo.FullName))
             {
                 posterImage = firstImage;
                 fanartImage = secondImage;
             }
-            else if (secondAspectRatio.Value > firstAspectRatio.Value)
+            else
             {
                 posterImage = secondImage;
                 fanartImage = firstImage;
-            }
-
-            // Priorität 3: Vergleich des Änderungsdatum, wenn Seitenverhältnisse gleich sind. Die jüngere Bilddatei wird als Poster verwendet.
-            else
-            {
-                if (File.GetLastWriteTime(firstImage.FileInfo.FullName) > File.GetLastWriteTime(secondImage.FileInfo.FullName))
-                {
-                    posterImage = firstImage;
-                    fanartImage = secondImage;
-                }
-                else
-                {
-                    posterImage = secondImage;
-                    fanartImage = firstImage;
-                }
             }
         }
 
