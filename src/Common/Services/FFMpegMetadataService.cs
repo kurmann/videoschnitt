@@ -1,7 +1,5 @@
 using CSharpFunctionalExtensions;
 using Microsoft.Extensions.Logging;
-using Kurmann.Videoschnitt.Common;
-using System.Text.Json;
 
 namespace Kurmann.Videoschnitt.Common.Services;
 
@@ -69,7 +67,7 @@ public class FFmpegMetadataService
         return await GetMetadataFieldAsync(filePath, "description");
     }
 
-    public async Task<Result<float>> GetAspectRatio(string filePath)
+    public async Task<Result<float>> GetAspectRatioAsync(string filePath)
     {
         var arguments = $"-v quiet -show_entries stream=display_aspect_ratio -of default=noprint_wrappers=1:nokey=1 \"{filePath}\"";
         var result = await _executeCommandService.ExecuteCommandAsync("ffprobe", arguments);
