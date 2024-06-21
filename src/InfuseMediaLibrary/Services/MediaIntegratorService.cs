@@ -89,23 +89,17 @@ public class MediaIntegratorService
         if (!targetDirectory.Exists)
         {
             _logger.LogInformation($"Das Zielverzeichnis für die Integration in die Infuse-Mediathek existiert nicht. Erstelle Verzeichnis: {targetDirectory.FullName}");
-            try
+            var createDirectoryResult = await _fileOperations.CreateDirectory(targetDirectory.FullName);
+            if (createDirectoryResult.IsFailure)
             {
-                targetDirectory.Create();
-            }
-            catch (Exception ex)
-            {
-                return Result.Failure<Maybe<LocalMediaServerFiles>>($"Das Zielverzeichnis für die Integration in die Infuse-Mediathek konnte nicht erstellt werden: {targetDirectory.FullName}. Fehler: {ex.Message}");
+                return Result.Failure<Maybe<LocalMediaServerFiles>>($"Das Zielverzeichnis für die Integration in die Infuse-Mediathek konnte nicht erstellt werden: {targetDirectory.FullName}. Fehler: {createDirectoryResult.Error}");
             }
         }
         _logger.LogInformation($"Verschiebe Video-Datei {mediaSet.LocalMediaServerFiles.Value.VideoFile.FileInfo.FullName} in das Infuse-Mediathek-Verzeichnis {targetDirectory.FullName}");
-        try
+        var moveFileResult = await _fileOperations.MoveFile(mediaSet.LocalMediaServerFiles.Value.VideoFile.FileInfo.FullName, targetFilePathResult.Value.FullName);
+        if (moveFileResult.IsFailure)
         {
-            System.IO.File.Move(mediaSet.LocalMediaServerFiles.Value.VideoFile.FileInfo.FullName, targetFilePathResult.Value.FullName);
-        }
-        catch (Exception ex)
-        {
-            return Result.Failure<Maybe<LocalMediaServerFiles>>($"Die Video-Datei {mediaSet.LocalMediaServerFiles.Value.VideoFile.FileInfo.FullName} konnte nicht in das Infuse-Mediathek-Verzeichnis {targetDirectory.FullName} verschoben werden. Fehler: {ex.Message}");
+            return Result.Failure<Maybe<LocalMediaServerFiles>>($"Die Video-Datei {mediaSet.LocalMediaServerFiles.Value.VideoFile.FileInfo.FullName} konnte nicht in das Infuse-Mediathek-Verzeichnis {targetDirectory.FullName} verschoben werden. Fehler: {moveFileResult.Error}");
         }
         _logger.LogInformation($"Video-Datei {mediaSet.LocalMediaServerFiles.Value.VideoFile.FileInfo.FullName} erfolgreich in das Infuse-Mediathek-Verzeichnis {targetDirectory.FullName} verschoben.");
 
