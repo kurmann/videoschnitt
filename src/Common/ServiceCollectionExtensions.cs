@@ -1,6 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
-using Kurmann.Videoschnitt.Common.FileSystem.Unix;
-using Kurmann.Videoschnitt.Common.FileSystem;
+using Kurmann.Videoschnitt.Common.Services.FileSystem;
+using Kurmann.Videoschnitt.Common.Services.FileSystem.Unix;
 
 namespace Kurmann.Videoschnitt.Common;
 

@@ -1,7 +1,7 @@
 using System.Xml.Linq;
 using CSharpFunctionalExtensions;
 
-namespace Kurmann.Videoschnitt.Common.FileSystem.Unix;
+namespace Kurmann.Videoschnitt.Common.Services.FileSystem.Unix;
 
 /// <summary>
 /// Stellt Methoden zum Arbeiten mit Dateien auf Unix-Systemen bereit.
@@ -123,6 +123,34 @@ public class FileOperations : IFileOperations
         catch (Exception ex)
         {
             return Result.Failure<string>($"Fehler beim Lesen der Datei: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Erstellt ein Verzeichnis mit den angegebenen Berechtigungen.
+    /// </summary>
+    /// <param name="path"></param>
+    /// <param name="inheritPermissions"></param>
+    /// <returns></returns>
+    public async Task<Result> CreateDirectory(string path, bool inheritPermissions = true)
+    {
+        try
+        {
+            Directory.CreateDirectory(path);
+
+            if (inheritPermissions)
+            {
+                var resetResult = await ResetPermissionsToInherit(path);
+                if (resetResult.IsFailure)
+                {
+                    return resetResult;
+                }
+            }
+            return Result.Success();
+        }
+        catch (Exception ex)
+        {
+            return Result.Failure($"Fehler beim Erstellen des Verzeichnisses: {ex.Message}");
         }
     }
 

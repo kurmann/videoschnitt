@@ -3,8 +3,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Kurmann.Videoschnitt.InfuseMediaLibrary.Services;
 using Kurmann.Videoschnitt.Common;
-using Kurmann.Videoschnitt.Common.FileSystem;
-using Kurmann.Videoschnitt.Common.FileSystem.Unix;
+using Kurmann.Videoschnitt.Common.Services.FileSystem;
+using Kurmann.Videoschnitt.Common.Services.FileSystem.Unix;
 
 namespace Kurmann.Videoschnitt.InfuseMediaLibrary;
 
@@ -18,7 +18,6 @@ public static class ServiceCollectionExtensions
 
         // Register Engine
         services.AddScoped<Engine>();
-        services.AddScoped<TargetDirectoryResolver>();
         services.AddScoped<InfuseMetadataXmlService>();
         services.AddScoped<MediaIntegratorService>();
         services.AddScoped<IFileOperations, FileOperations>();
