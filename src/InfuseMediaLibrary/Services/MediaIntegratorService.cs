@@ -154,7 +154,7 @@ public class MediaIntegratorService
             _logger.LogInformation($"Bild-Datei {supportedImage.FileInfo.FullName} erfolgreich in das Infuse-Mediathek-Verzeichnis {targetDirectory.FullName} verschoben.");
         }
 
-        // Wenn zwei Bilder vorhanden sind, wird anhand von verschiedenen Kriterien das Poster und Fanart ermittelt.
+        // Wenn mehr als ein Bild vorhanden ist, dann werden die ersten zwei Bilder als Poster und Fanart verwendet und mit Hilfe des PosterAndFanartService die passenden Bilder ermittelt.
         var detectPosterAndFanartImagesResult = await _posterAndFanartService.DetectPosterAndFanartImages(supportedImages.ElementAt(0), supportedImages.ElementAt(1), targetDirectory);
         if (detectPosterAndFanartImagesResult.IsFailure)
         {
