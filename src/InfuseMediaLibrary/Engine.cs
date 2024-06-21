@@ -1,4 +1,3 @@
-using CSharpFunctionalExtensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Kurmann.Videoschnitt.InfuseMediaLibrary.Services;

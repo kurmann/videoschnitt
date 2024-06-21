@@ -50,7 +50,7 @@ public class FileOperations : IFileOperations
     /// <param name="overwrite">Gibt an, ob die Zieldatei überschrieben werden soll, falls sie bereits existiert. Standardmäßig ist dies false.</param>
     /// <param name="inheritPermissions">Gibt an, ob die Berechtigungen von der Quelldatei auf die Zieldatei übernommen werden sollen. Standardmäßig ist dies true.</param>
     /// <returns>Ein <see cref="Task{Result}"/>, das die asynchrone Operation repräsentiert. Das Ergebnis der Aufgabe enthält ein <see cref="Result"/>, das den Erfolg oder Misserfolg der Operation angibt.</returns>
-    public async Task<Result> MoveFile(string sourcePath, string destinationPath, bool overwrite = false, bool inheritPermissions = true)
+    public async Task<Result> MoveFileAsync(string sourcePath, string destinationPath, bool overwrite = false, bool inheritPermissions = true)
     {
         try
         {
@@ -86,7 +86,7 @@ public class FileOperations : IFileOperations
     /// <param name="overwrite">Gibt an, ob eine vorhandene Datei überschrieben werden soll. Der Standardwert ist <c>false</c>.</param>
     /// <param name="inheritPermissions">Gibt an, ob die Berechtigungen der Ziel- datei von der Quelldatei geerbt werden sollen. Der Standardwert ist <c>true</c>.</param>
     /// <returns>Ein <see cref="Result"/>-Objekt, das den Erfolg oder Misserfolg des Kopiervorgangs darstellt.</returns>
-    public async Task<Result> CopyFile(string sourcePath, string destinationPath, bool overwrite = false, bool inheritPermissions = true)
+    public async Task<Result> CopyFileAsync(string sourcePath, string destinationPath, bool overwrite = false, bool inheritPermissions = true)
     {
         try
         {
@@ -132,7 +132,7 @@ public class FileOperations : IFileOperations
     /// <param name="path"></param>
     /// <param name="inheritPermissions"></param>
     /// <returns></returns>
-    public async Task<Result> CreateDirectory(string path, bool inheritPermissions = true)
+    public async Task<Result> CreateDirectoryAsync(string path, bool inheritPermissions = true)
     {
         try
         {

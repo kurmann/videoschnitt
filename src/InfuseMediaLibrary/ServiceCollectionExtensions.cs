@@ -1,4 +1,3 @@
-
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Kurmann.Videoschnitt.InfuseMediaLibrary.Services;
@@ -21,6 +20,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<InfuseMetadataXmlService>();
         services.AddScoped<MediaIntegratorService>();
         services.AddScoped<IFileOperations, FileOperations>();
+        services.AddScoped<PosterAndFanartService>();
 
         services.AddCommonServicesEngine();
 

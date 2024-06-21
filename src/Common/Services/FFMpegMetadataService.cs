@@ -1,7 +1,5 @@
 using CSharpFunctionalExtensions;
 using Microsoft.Extensions.Logging;
-using Kurmann.Videoschnitt.Common;
-using System.Text.Json;
 
 namespace Kurmann.Videoschnitt.Common.Services;
 
