@@ -3,7 +3,7 @@ using Kurmann.Videoschnitt.Common;
 using Microsoft.Extensions.Logging;
 using System.Text;
 
-namespace Kurmann.Videoschnitt.Common.FileSystem.Unix;
+namespace Kurmann.Videoschnitt.Common.Services.FileSystem.Unix;
 
 /// <summary>
 /// Service zum Kopieren, Verschieben und Lesen von Dateien.

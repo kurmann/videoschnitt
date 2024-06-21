@@ -1,7 +1,7 @@
 using System.Xml.Linq;
 using CSharpFunctionalExtensions;
 
-namespace Kurmann.Videoschnitt.Common.FileSystem.Unix;
+namespace Kurmann.Videoschnitt.Common.Services.FileSystem.Unix;
 
 /// <summary>
 /// Stellt Methoden zum Arbeiten mit Dateien auf Unix-Systemen bereit.

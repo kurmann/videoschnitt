@@ -1,9 +1,9 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using CSharpFunctionalExtensions;
-using Kurmann.Videoschnitt.Common.FileSystem;
 using Kurmann.Videoschnitt.Common.Models;
 using Kurmann.Videoschnitt.Common.Services;
+using Kurmann.Videoschnitt.Common.Services.FileSystem;
 using Kurmann.Videoschnitt.Common.Entities.MediaTypes;
 
 namespace Kurmann.Videoschnitt.InfuseMediaLibrary.Services;
