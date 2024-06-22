@@ -6,6 +6,7 @@ public class ModuleSettings
 
     public MediaSetSettings? MediaSet { get; set; } = new MediaSetSettings();
     public FileTypeSettings? FileTypes { get; set; } = new FileTypeSettings();
+    public ImagePreProcessingSettings? ImagePreProcessing { get; set; } = new ImagePreProcessingSettings();
 }
 
 public class MediaSetSettings
@@ -35,4 +36,12 @@ public class FileTypeSettings
 {
     public List<string>? SupportedVideoExtensions { get; set; } = new List<string> { ".mov", ".mp4", ".m4v" };
     public List<string>? SupportedImageExtensions { get; set; } = new List<string> { ".jpg", ".jpeg", ".png" };
+}
+
+public class ImagePreProcessingSettings
+{
+    /// <summary>
+    /// Der Name des Unterverzeichnisses, in dem die konvertierten Dateien gespeichert werden (relativ zum Verzeichnis der Originaldateien)
+    /// </summary>
+    public string? SubDirectoryNameForConvertedFiles = "Verarbeitete Bilddateien";
 }
