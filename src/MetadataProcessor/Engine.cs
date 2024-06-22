@@ -18,14 +18,12 @@ public class Engine
     private readonly ILogger<Engine> _logger;
     private readonly MediaSetService _mediaSetService;
     private readonly MediaPurposeOrganizer _mediaPurposeOrganizer;
-    private readonly ImagePreProcessorService _imagePreProcessorService;
 
     public Engine(ILogger<Engine> logger,
                   IOptions<ModuleSettings> moduleSettings,
                   IOptions<ApplicationSettings> applicationSettings,
                   FFmpegMetadataService ffmpegMetadataService,
                   MediaSetService mediaSetService,
-                  ImagePreProcessorService imagePreProcessorService,
                   MediaPurposeOrganizer mediaPurposeOrganizer)
     {
         _moduleSettings = moduleSettings.Value;
@@ -34,7 +32,6 @@ public class Engine
         _ffmpegMetadataService = ffmpegMetadataService;
         _mediaSetService = mediaSetService;
         _mediaPurposeOrganizer = mediaPurposeOrganizer;
-        _imagePreProcessorService = imagePreProcessorService;
     }
 
     public async Task<Result<List<MediaSet>>> Start(IProgress<string> progress)
