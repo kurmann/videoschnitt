@@ -18,9 +18,9 @@ echo "Das Admin-Passwort wird benötigt, um die Anwendung in ein systemweites Ve
 # Erstelle das Verzeichnis, falls es nicht existiert
 sudo mkdir -p $APP_DIR
 
-# Anwendung veröffentlichen
+# Anwendung veröffentlichen als Single-File ohne Debug-Dateien
 echo "Veröffentliche die .NET-Anwendung als Single-File..."
-sudo dotnet publish $PROJECT_PATH/src/Application/Application.csproj -c Release -o $APP_DIR
+sudo dotnet publish $PROJECT_PATH/src/Application/Application.csproj -c Release -r osx-x64 --self-contained -p:PublishSingleFile=true -p:DebugType=None -o $APP_DIR
 
 if [ $? -eq 0 ]; then
   echo "Veröffentlichung erfolgreich. Die Anwendung wurde nach $APP_DIR deployed."
