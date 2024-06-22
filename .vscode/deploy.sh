@@ -10,7 +10,7 @@ fi
 PROJECT_PATH=$1
 
 # Verzeichnis für die Anwendung
-APP_DIR="/usr/local/kurmann/videoschnitt/Application"
+APP_DIR="/usr/local/kurmann/videoschnitt"
 
 # Erklärung für das Admin-Passwort
 echo "Das Admin-Passwort wird benötigt, um die Anwendung in ein systemweites Verzeichnis zu installieren und den LaunchDaemon-Dienst neu zu starten."
