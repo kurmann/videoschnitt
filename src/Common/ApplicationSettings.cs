@@ -32,32 +32,37 @@ public class ExternalToolsSettings
     public FFMmpegSettings FFMpeg { get; set; } = new FFMmpegSettings();
 
     /// <summary>
+    /// Einstellungen für das FFProbe-Tool.
+    /// </summary>
+    /// <returns></returns>
+    public FFProbeSettings FFProbe { get; set; } = new FFProbeSettings();
+
+    /// <summary>
     /// Einstellungen für das SIPS-Tool auf MacOS.
     /// </summary>
     /// <returns></returns>
     public SipsSettings Sips { get; set; } = new SipsSettings();
 }
 
-/// <summary>
-/// Einstellungen für das FFmpeg-Tool.
-/// </summary>
 public class FFMmpegSettings
 {
     /// <summary>
     /// Der absolute Pfad zu FFMpeg.
     /// </summary>
     /// <value></value>
-    public string? Path { get; set; }
+    public string? Path { get; set; } = "/usr/local/bin/ffmpeg";
 }
 
-/// <summary>
-/// Einstellungen für das SIPS-Tool auf MacOS.
-/// </summary>
+public class FFProbeSettings
+{
+    public string? Path { get; set; } = "/opt/local/bin/ffprobe";
+}
+
 public class SipsSettings
 {
     /// <summary>
     /// Der absolute Pfad zu SIPS.
     /// </summary>
     /// <value></value>
-    public string? Path { get; set; }
+    public string? Path { get; set; } = "/usr/bin/sips";
 }
