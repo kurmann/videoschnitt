@@ -21,13 +21,9 @@ public class MacOSColorConversionService : IColorConversionService
 
         // Prüfe ob ein vollständiger Pfad von SIPS übergeben wurde, ansonsten nimm an, dass die Umgebungsvariable gesetzt ist. Gib eine Warnung aus, wenn die Umgebungsvariable nicht gesetzt ist.
         if (applicationSettings.Value.ExternalTools?.Sips?.Path == null)
-        {
             _logger.LogWarning("SIPS-Pfad nicht gesetzt. Es wird angenommen, dass SIPS in der Umgebungsvariable PATH gesetzt ist.");
-        }
         else
-        {
             _logger.LogInformation($"SIPS-Pfad: {applicationSettings.Value.ExternalTools?.Sips?.Path}");
-        }
 
         _sipsCommand = applicationSettings.Value.ExternalTools?.Sips?.Path ?? DefaultSipsCommand;
     }
