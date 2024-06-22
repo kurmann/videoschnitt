@@ -4,7 +4,7 @@ using CSharpFunctionalExtensions;
 using Kurmann.Videoschnitt.Common.Models;
 using Kurmann.Videoschnitt.Common.Services.FileSystem;
 using Kurmann.Videoschnitt.Common.Entities.MediaTypes;
-using Kurmann.Videoschnitt.LocalFileSystem.Services.Metadata;
+using Kurmann.Videoschnitt.Common.Services.Metadata;
 
 namespace Kurmann.Videoschnitt.InfuseMediaLibrary.Services;
 

@@ -2,7 +2,7 @@ using Microsoft.Extensions.Logging;
 using CSharpFunctionalExtensions;
 using Kurmann.Videoschnitt.Common;
 
-namespace Kurmann.Videoschnitt.LocalFileSystem.Services.ImageProcessing;
+namespace Kurmann.Videoschnitt.Common.Services.ImageProcessing;
 
 /// <summary>
 /// Implementiert die Konvertierung von Farbräumen mit Hilfe von FFmpeg.

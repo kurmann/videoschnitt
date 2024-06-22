@@ -1,8 +1,7 @@
 using CSharpFunctionalExtensions;
 using Microsoft.Extensions.Logging;
-using Kurmann.Videoschnitt.Common;
 
-namespace Kurmann.Videoschnitt.LocalFileSystem.Services.ImageProcessing.MacOS;
+namespace Kurmann.Videoschnitt.Common.Services.ImageProcessing.MacOS;
 
 public class MacOSColorConversionService : IColorConversionService
 {

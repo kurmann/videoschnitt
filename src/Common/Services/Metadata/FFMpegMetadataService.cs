@@ -2,7 +2,7 @@ using CSharpFunctionalExtensions;
 using Kurmann.Videoschnitt.Common;
 using Microsoft.Extensions.Logging;
 
-namespace Kurmann.Videoschnitt.LocalFileSystem.Services.Metadata;
+namespace Kurmann.Videoschnitt.Common.Services.Metadata;
 
 /// <summary>
 /// Verantwortlich für das Extrahieren von Metadaten aus Medien-Dateien mit FFmpeg.

@@ -1,6 +1,6 @@
 using CSharpFunctionalExtensions;
 
-namespace Kurmann.Videoschnitt.LocalFileSystem.Services.ImageProcessing;
+namespace Kurmann.Videoschnitt.Common.Services.ImageProcessing;
 
 public interface IColorConversionService
 {
