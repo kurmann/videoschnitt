@@ -29,14 +29,16 @@ public class FFmpegColorConversionService : IColorConversionService
     public async Task<Result> ConvertColorSpaceAsync(string inputFilePath, string outputFilePath, string inputColorSpace = "bt2020", string outputColorSpace = "adobe_rgb")
     {
         var arguments = $"-i \"{inputFilePath}\" -vf \"colorspace=all={inputColorSpace}:all={outputColorSpace}\" \"{outputFilePath}\"";
+        _logger.LogInformation($"Wandle Farbraum von {inputColorSpace} nach {outputColorSpace} um: {inputFilePath}");
+        _logger.LogInformation($"FFmpeg-Befehl: ffmpeg {arguments}");
         var result = await _executeCommandService.ExecuteCommandAsync("ffmpeg", arguments);
 
         if (result.IsSuccess)
         {
+            _logger.LogInformation($"Erfolgreiches Umwandeln des Farbraums von {inputColorSpace} nach {outputColorSpace}: {inputFilePath}");
             return Result.Success();
         }
 
-        _logger.LogError($"Error converting color space from {inputColorSpace} to {outputColorSpace}: {result.Error}");
-        return Result.Failure(result.Error);
+        return Result.Failure($"Fehler beim Umwandeln des Farbraums von {inputColorSpace} nach {outputColorSpace}: {result.Error}");
     }
 }
