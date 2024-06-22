@@ -29,10 +29,6 @@ else
   exit 1
 fi
 
-# Kopiere die appsettings.json und appsettings.Production.json ins Anwendungsverzeichnis
-sudo cp $PROJECT_PATH/src/Application/appsettings.json $APP_DIR/appsettings.json
-sudo cp $PROJECT_PATH/src/Application/appsettings.Production.json $APP_DIR/appsettings.Production.json
-
 # Kopiere die plist-Datei nach LaunchDaemons und setze die Berechtigungen
 echo "Kopiere und setze Berechtigungen für die plist-Datei..."
 sudo cp $PROJECT_PATH/.vscode/com.swiss.kurmann.videoschnitt.plist /Library/LaunchDaemons/
