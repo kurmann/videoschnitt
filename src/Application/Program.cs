@@ -17,15 +17,6 @@ public class Program
 
         var builder = WebApplication.CreateBuilder(args);
 
-        var directory = Directory.GetCurrentDirectory();
-
-        builder.Configuration
-            .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("src/Application/appsettings.json", optional: true, reloadOnChange: true)
-            .AddJsonFile($"src/Application/appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
-            .AddEnvironmentVariables()
-            .AddUserSecrets<Program>();
-
         builder.Services.AddMetadataProcessor(builder.Configuration);
         builder.Services.AddInfuseMediaLibrary(builder.Configuration);
 
@@ -51,11 +42,9 @@ public class Program
 
         if (!app.Environment.IsDevelopment())
         {
-            // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
             app.UseHsts();
         }
 
-        // app.UseHttpsRedirection(); // no certificate available for now
         app.UseStaticFiles();
         app.UseRouting();
         app.UseSwagger();
@@ -64,7 +53,6 @@ public class Program
         // Minimal API Endpunkte
         app.MapGet("/api/health", () => Results.Ok(new { status = "Healthy" }));
 
-        // Neuen POST-Endpunkt hinzufügen
         app.MapGet("/api/startprocess", async (FinalCutProWorkflow workflow) =>
         {
             var result = await workflow.ExecuteAsync(new Progress<string>(_ => { }));
@@ -81,10 +69,8 @@ public class Program
         app.MapBlazorHub();
         app.MapFallbackToPage("/_Host");
 
-        // SignalR Hub Endpunkt hinzufügen
         app.MapHub<LogHub>("/logHub");
 
-        // Health Check Endpunkt hinzufügen
         app.MapHealthChecks("/health");
 
         app.Run();
