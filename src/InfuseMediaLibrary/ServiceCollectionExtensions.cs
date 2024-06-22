@@ -4,6 +4,8 @@ using Kurmann.Videoschnitt.InfuseMediaLibrary.Services;
 using Kurmann.Videoschnitt.Common;
 using Kurmann.Videoschnitt.Common.Services.FileSystem;
 using Kurmann.Videoschnitt.Common.Services.FileSystem.Unix;
+using Kurmann.Videoschnitt.Common.Services.ImageProcessing;
+using Kurmann.Videoschnitt.Common.Services.ImageProcessing.MacOS;
 
 namespace Kurmann.Videoschnitt.InfuseMediaLibrary;
 
@@ -20,6 +22,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<InfuseMetadataXmlService>();
         services.AddScoped<MediaIntegratorService>();
         services.AddScoped<IFileOperations, FileOperations>();
+        services.AddScoped<IColorConversionService, MacOSColorConversionService>();
         services.AddScoped<PosterAndFanartService>();
 
         services.AddCommonServicesEngine();
