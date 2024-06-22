@@ -16,6 +16,14 @@ public class MacOSColorConversionService : IColorConversionService
 
     public async Task<Result> ConvertColorSpaceAsync(string inputFilePath, string outputFilePath, string inputColorSpace = "bt2020", string outputColorSpace = "adobe_rgb")
     {
+        _logger.LogInformation($"Konvertiere Farbraum von {inputColorSpace} nach {outputColorSpace} für: {inputFilePath}");
+        _logger.LogInformation("Hinweis: Der Eingangsfarbraum wird ignoriert, da sips diesen nicht benötigt um den Farbraum zu konvertieren.");
+
+        if (outputColorSpace != "adobe_rgb")
+        {
+            return Result.Failure("Der Ausgangsfarbraum muss 'adobe_rgb' sein, da sips der MacOSColorConversionService nur diese Umwandlung unterstützt.");
+        }
+
         if (string.IsNullOrWhiteSpace(inputFilePath))
         {
             return Result.Failure("Ein Eingabepfad muss angegeben werden.");
