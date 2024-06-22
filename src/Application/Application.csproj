@@ -6,7 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RootNamespace>Kurmann.Videoschnitt.Application</RootNamespace>
-    <AssemblyName>Kurmann.Videoschnitt.Application</AssemblyName>
+    <AssemblyName>Application</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>

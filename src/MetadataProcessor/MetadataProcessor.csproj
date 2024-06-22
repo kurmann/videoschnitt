@@ -6,7 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RootNamespace>Kurmann.Videoschnitt.MetadataProcessor</RootNamespace>
-    <AssemblyName>Kurmann.Videoschnitt.MetadataProcessor</AssemblyName>
+    <AssemblyName>MetadataProcessor</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>

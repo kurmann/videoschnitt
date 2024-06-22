@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <LangVersion>10</LangVersion>
     <AssemblyName>Kurmann.Videoschnitt.InfuseMediaLibrary</AssemblyName>
-    <RootNamespace>Kurmann.Videoschnitt.InfuseMediaLibrary</RootNamespace>
+    <RootNamespace>InfuseMediaLibrary</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
