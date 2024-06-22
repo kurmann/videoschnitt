@@ -29,7 +29,7 @@ public class PosterAndFanartService
     /// 2. Wenn beide Bilddateien das gleiche Seitenverhältnis haben, wird die jünge Bilddatei als Poster verwendet.
     /// Hinweis: Die Bildauflösungen werden über den FFMpegMetadataService ermittelt indem die Attribute "width" und "height" aus den Metadaten extrahiert werden.
     /// </summary>
-    public async Task<Result<DetectPosterAndFanartImagesResponse>> DetectPosterAndFanartImages(SupportedImage firstImage, SupportedImage secondImage)
+    public Result<DetectPosterAndFanartImagesResponse> DetectPosterAndFanartImages(SupportedImage firstImage, SupportedImage secondImage)
     {
         SupportedImage? posterImage = null;
         SupportedImage? fanartImage = null;
