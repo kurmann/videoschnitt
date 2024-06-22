@@ -3,6 +3,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Kurmann.Videoschnitt.Common;
 using Kurmann.Videoschnitt.Common.Services.Metadata;
+using Kurmann.Videoschnitt.Common.Services.ImageProcessing;
+using Kurmann.Videoschnitt.Common.Services.ImageProcessing.MacOS;
 
 namespace Kurmann.Videoschnitt.MetadataProcessor;
 
@@ -19,6 +21,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<FFmpegMetadataService>();
         services.AddScoped<MediaSetService>();
         services.AddScoped<MediaPurposeOrganizer>();
+        services.AddScoped<IColorConversionService, MacOSColorConversionService>();
 
         services.AddCommonServicesEngine();
 
