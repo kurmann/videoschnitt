@@ -17,7 +17,7 @@ echo "Das Admin-Passwort wird benötigt, um die Anwendung in ein systemweites Ve
 
 # Anwendung veröffentlichen
 echo "Veröffentliche die .NET-Anwendung als Single-File..."
-sudo dotnet publish $PROJECT_PATH/src/Application/Application.csproj -c Release -r osx-x64 --self-contained -p:PublishSingleFile=true -o /usr/local/bin
+sudo dotnet publish $PROJECT_PATH/src/Application/Application.csproj -c Release -r osx-x64 --self-contained -p:PublishSingleFile=true -p:DebugType=None -o /usr/local/bin
 
 if [ $? -eq 0 ]; then
   echo "Veröffentlichung erfolgreich. Die Anwendung wurde nach $APP_PATH deployed."
