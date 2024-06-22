@@ -15,6 +15,12 @@ public class ApplicationSettings
     /// Eingangsverzeichnis, in dem die zu verarbeitenden Dateien liegen.
     /// </summary>
     public string? InputDirectory { get; set; }
+
+    /// <summary>
+    /// Die Einstellungen für externe Tools wie FFmpeg oder SIPS.
+    /// </summary>
+    /// <returns></returns>
+    public ExternalToolsSettings ExternalTools { get; set; } = new ExternalToolsSettings();
 }
 
 public class ExternalToolsSettings
