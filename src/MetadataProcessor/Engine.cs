@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using CSharpFunctionalExtensions;
 using Kurmann.Videoschnitt.Common.Models;
-using Kurmann.Videoschnitt.Common.Services;
+using Kurmann.Videoschnitt.Common.Services.Metadata;
 
 namespace Kurmann.Videoschnitt.MetadataProcessor;
 
@@ -63,6 +63,10 @@ public class Engine
         }
         _logger.LogInformation("Medien erfolgreich nach ihrem Verwendungszweck organisiert.");
 
+        _logger.LogInformation("Wandle alle unterstützen Bilder von allen Mediensets in den Farbraum Adobe RGB um.");
+        // _imagePreProcessorService.ConvertColorSpaceAsyncToAdobeRGB(mediaSets.Value);
+
+        _logger.LogInformation("Steuereinheit für die Metadaten-Verarbeitung beendet.");
         return Result.Success(mediaSets.Value);
     }
 

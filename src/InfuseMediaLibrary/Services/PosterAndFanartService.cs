@@ -1,8 +1,7 @@
 using Microsoft.Extensions.Logging;
 using CSharpFunctionalExtensions;
-using Kurmann.Videoschnitt.Common.Services;
 using Kurmann.Videoschnitt.Common.Entities.MediaTypes;
-
+using Kurmann.Videoschnitt.Common.Services.Metadata;
 
 namespace Kurmann.Videoschnitt.InfuseMediaLibrary.Services;
 
@@ -29,7 +28,7 @@ public class PosterAndFanartService
     /// 2. Wenn beide Bilddateien das gleiche Seitenverhältnis haben, wird die jünge Bilddatei als Poster verwendet.
     /// Hinweis: Die Bildauflösungen werden über den FFMpegMetadataService ermittelt indem die Attribute "width" und "height" aus den Metadaten extrahiert werden.
     /// </summary>
-    public async Task<Result<DetectPosterAndFanartImagesResponse>> DetectPosterAndFanartImages(SupportedImage firstImage, SupportedImage secondImage)
+    public Result<DetectPosterAndFanartImagesResponse> DetectPosterAndFanartImages(SupportedImage firstImage, SupportedImage secondImage)
     {
         SupportedImage? posterImage = null;
         SupportedImage? fanartImage = null;

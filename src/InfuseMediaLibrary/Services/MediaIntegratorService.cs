@@ -2,9 +2,9 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using CSharpFunctionalExtensions;
 using Kurmann.Videoschnitt.Common.Models;
-using Kurmann.Videoschnitt.Common.Services;
 using Kurmann.Videoschnitt.Common.Services.FileSystem;
 using Kurmann.Videoschnitt.Common.Entities.MediaTypes;
+using Kurmann.Videoschnitt.Common.Services.Metadata;
 
 namespace Kurmann.Videoschnitt.InfuseMediaLibrary.Services;
 
@@ -16,11 +16,13 @@ public class MediaIntegratorService
     private readonly PosterAndFanartService _posterAndFanartService;
     private readonly ApplicationSettings _applicationSettings; 
     private readonly ModuleSettings _moduleSettings;
+    private readonly ImageProcessorService _imageProcessorService;
 
     public MediaIntegratorService(ILogger<MediaIntegratorService> logger,
                                   IFileOperations fileOperations,
                                   FFmpegMetadataService ffmpegMetadataService,
                                   PosterAndFanartService posterAndFanartService,
+                                  ImageProcessorService imageProcessorService,
                                   IOptions<ApplicationSettings> applicationSettings,
                                   IOptions<ModuleSettings> moduleSettings)
     {
@@ -28,6 +30,7 @@ public class MediaIntegratorService
         _fileOperations = fileOperations;
         _ffmpegMetadataService = ffmpegMetadataService;
         _posterAndFanartService = posterAndFanartService;
+        _imageProcessorService = imageProcessorService;
         _applicationSettings = applicationSettings.Value;
         _moduleSettings = moduleSettings.Value;
     }
@@ -112,8 +115,8 @@ public class MediaIntegratorService
         }
         _logger.LogInformation($"Video-Datei {mediaSet.LocalMediaServerFiles.Value.VideoFile.FileInfo.FullName} erfolgreich in das Infuse-Mediathek-Verzeichnis {targetDirectory.FullName} verschoben.");
 
-        // Verschiebe die Bild-Dateien in das Infuse-Mediathek-Verzeichnis. Diese haben den gleichen Namen und das gleiche Zielverzeichnis wie die Video-Datei.
-        var movedSupportedImagesResult = await MoveSupportedImagesToInfuseMediaLibrary(mediaSet.LocalMediaServerFiles.Value.ImageFiles, targetFilePathResult.Value);
+        // Integriere die Bild-Dateien in das Infuse-Mediathek-Verzeichnis. Diese haben den gleichen Namen und das gleiche Zielverzeichnis wie die Video-Datei.
+        var movedSupportedImagesResult = await IntegratedSupportedImagesToInfuseMediaLibrary(mediaSet.LocalMediaServerFiles.Value.ImageFiles, targetFilePathResult.Value);
         if (movedSupportedImagesResult.IsFailure)
         {
             _logger.LogWarning($"Die Bild-Dateien konnten nicht in das Infuse-Mediathek-Verzeichnis {targetDirectory.FullName} verschoben werden: {movedSupportedImagesResult.Error}");
@@ -132,12 +135,12 @@ public class MediaIntegratorService
     }
 
     /// <summary>
-    /// Verschiebt die unterstützten Bild-Dateien in das Infuse-Mediathek-Verzeichnis.
+    /// Verschiebt die unterstützten Bild-Dateien in das Infuse-Mediathek-Verzeichnis und konvertiert den Farbraum der Bilder in Adobe RGB.
     /// </summary>
     /// <param name="supportedImages"></param>
     /// <param name="videoFileTargetPath"></param>
     /// <returns></returns>
-    private async Task<Result> MoveSupportedImagesToInfuseMediaLibrary(IEnumerable<SupportedImage> supportedImages, FileInfo videoFileTargetPath)
+    private async Task<Result> IntegratedSupportedImagesToInfuseMediaLibrary(IEnumerable<SupportedImage> supportedImages, FileInfo videoFileTargetPath)
     {
         // Wenn kein Bild vorhanden sind, wird mit einer Info geloggt und die Methode beendet.
         if (supportedImages.Count() == 0)
@@ -146,6 +149,33 @@ public class MediaIntegratorService
             _logger.LogInformation("Es wird kein Bild in das Infuse-Mediathek-Verzeichnis verschoben.");
             return Result.Success();
         }
+
+        _logger.LogInformation($"Es sind {supportedImages.Count()} Bild-Dateien für das Medienset vorhanden.");
+        _logger.LogInformation("Versuche alle unterstützten Bilder in den Farbraum Adobe RGB umzuwandeln.");
+        var supportedConvertedImages = new List<SupportedImage>();
+        foreach (var supportedImage in supportedImages)
+        {
+            var convertColorSpaceResult = await _imageProcessorService.ConvertColorSpaceAsyncToAdobeRGB(supportedImage.FileInfo);
+            if (convertColorSpaceResult.IsFailure)
+            {
+                return Result.Failure($"Das Bild {supportedImage.FileInfo.FullName} konnte nicht in den Farbraum Adobe RGB konvertiert werden: {convertColorSpaceResult.Error}. Der Schritt ist wichtig damit die Bilder in der Infuse-Mediathek korrekt dargestellt werden.");
+            }
+            else
+            {
+                _logger.LogInformation($"Das Bild {supportedImage.FileInfo.FullName} wurde erfolgreich in den Farbraum Adobe RGB konvertiert.");
+
+                // Aktualisiere das FileInfo-Objekt des Bildes mit dem konvertierten Dateipfad
+                var convertedImageFileInfo = new FileInfo(convertColorSpaceResult.Value.FullName);
+                var supportedImageResult = SupportedImage.Create(convertedImageFileInfo);
+                if (supportedImageResult.IsFailure)
+                {
+                    return Result.Failure($"Das konvertierte Bild {convertedImageFileInfo.FullName} konnte nicht als SupportedImage-Objekt erstellt werden: {supportedImageResult.Error}");
+                }
+                supportedConvertedImages.Add(supportedImageResult.Value);
+            }
+        }
+        // Überschreibe die ursprünglichen Bild-Dateien mit den konvertierten Bild-Dateien
+        supportedImages = supportedConvertedImages;
 
         // Ermittle das Zielverzeichnis für die Bild-Datei. Dieses ist das gleiche wie das Zielverzeichnis der Video-Datei.
         var videoTargetDirectory = videoFileTargetPath.Directory;
@@ -170,7 +200,7 @@ public class MediaIntegratorService
         }
 
         // Wenn mehr als ein Bild vorhanden ist, dann werden die ersten zwei Bilder als Poster und Fanart verwendet und mit Hilfe des PosterAndFanartService die passenden Bilder ermittelt.
-        var detectPosterAndFanartImagesResult = await _posterAndFanartService.DetectPosterAndFanartImages(supportedImages.ElementAt(0), supportedImages.ElementAt(1));
+        var detectPosterAndFanartImagesResult = _posterAndFanartService.DetectPosterAndFanartImages(supportedImages.ElementAt(0), supportedImages.ElementAt(1));
         if (detectPosterAndFanartImagesResult.IsFailure)
         {
             return Result.Failure($"Das Poster und Fanart konnte nicht ermittelt werden: {detectPosterAndFanartImagesResult.Error}");

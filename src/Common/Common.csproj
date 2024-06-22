@@ -5,8 +5,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <LangVersion>10</LangVersion>
-    <RootNamespace>Kurmann.Videoschnitt.LocalFileSystem</RootNamespace>
-    <AssemblyName>Kurmann.Videoschnitt.LocalFileSystem</AssemblyName>
+    <RootNamespace>Kurmann.Videoschnitt.Common</RootNamespace>
+    <AssemblyName>Kurmann.Videoschnitt.Common</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
