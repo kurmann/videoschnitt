@@ -10,24 +10,34 @@ fi
 PROJECT_PATH=$1
 
 # Verzeichnis für die Anwendung
-APP_DIR="/usr/local/kurmann-videoschnitt"
+APP_DIR="/usr/local/kurmann/videoschnitt/Application"
 
 # Erklärung für das Admin-Passwort
 echo "Das Admin-Passwort wird benötigt, um die Anwendung in ein systemweites Verzeichnis zu installieren und den LaunchDaemon-Dienst neu zu starten."
 
 # Erstelle das Verzeichnis, falls es nicht existiert
-sudo mkdir -p $APP_DIR/Application
+sudo mkdir -p $APP_DIR
 
 # Anwendung veröffentlichen
 echo "Veröffentliche die .NET-Anwendung als Single-File..."
-sudo dotnet publish $PROJECT_PATH/src/Application/Application.csproj -c Release -o $APP_DIR/Application
+sudo dotnet publish $PROJECT_PATH/src/Application/Application.csproj -c Release -o $APP_DIR
 
 if [ $? -eq 0 ]; then
-  echo "Veröffentlichung erfolgreich. Die Anwendung wurde nach $APP_DIR/Application deployed."
+  echo "Veröffentlichung erfolgreich. Die Anwendung wurde nach $APP_DIR deployed."
 else
   echo "Fehler bei der Veröffentlichung."
   exit 1
 fi
+
+# Kopiere die appsettings.json und appsettings.Production.json ins Anwendungsverzeichnis
+sudo cp $PROJECT_PATH/src/Application/appsettings.json $APP_DIR/appsettings.json
+sudo cp $PROJECT_PATH/src/Application/appsettings.Production.json $APP_DIR/appsettings.Production.json
+
+# Kopiere die plist-Datei nach LaunchDaemons und setze die Berechtigungen
+echo "Kopiere und setze Berechtigungen für die plist-Datei..."
+sudo cp $PROJECT_PATH/.vscode/com.swiss.kurmann.videoschnitt.plist /Library/LaunchDaemons/
+sudo chown root:wheel /Library/LaunchDaemons/com.swiss.kurmann.videoschnitt.plist
+sudo chmod 644 /Library/LaunchDaemons/com.swiss.kurmann.videoschnitt.plist
 
 # launchd Dienst neu laden
 echo "Neuladen des LaunchDaemon-Dienstes..."
@@ -36,7 +46,7 @@ sudo launchctl load /Library/LaunchDaemons/com.swiss.kurmann.videoschnitt.plist
 
 if [ $? -eq 0 ]; then
   echo "LaunchDaemon-Dienst erfolgreich neu geladen."
-  echo "Die Anwendung läuft jetzt unter $APP_DIR/Application"
+  echo "Die Anwendung läuft jetzt unter $APP_DIR"
 else
   echo "Fehler beim Neuladen des LaunchDaemon-Dienstes."
   exit 1
