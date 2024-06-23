@@ -61,6 +61,7 @@ public class Engine
         {
             return Result.Failure<List<MediaSet>>($"Fehler beim Organisieren der Medien nach ihrem Verwendungszweck: {mediaSets.Error}");
         }
+        _logger.LogInformation($"Anzahl Mediensets: {mediaSets.Value.Count}");
         _logger.LogInformation("Medien erfolgreich nach ihrem Verwendungszweck organisiert.");
 
         _logger.LogInformation("Wandle alle unterstützen Bilder von allen Mediensets in den Farbraum Adobe RGB um.");
