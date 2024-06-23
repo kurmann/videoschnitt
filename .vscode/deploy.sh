@@ -13,7 +13,7 @@ PROJECT_PATH=$1
 USER_NAME=$USER
 
 # Verzeichnis für die Anwendung
-APP_DIR="/Users/${USER_NAME}/bin/kurmann/videoschnitt"
+APP_DIR="/Users/${USER_NAME}/bin/Kurmann/Videoschnitt"
 
 # Erklärung für das Admin-Passwort
 echo "Das Admin-Passwort wird benötigt, um die Anwendung in ein systemweites Verzeichnis zu installieren und den LaunchAgent-Dienst neu zu starten."
@@ -21,9 +21,9 @@ echo "Das Admin-Passwort wird benötigt, um die Anwendung in ein systemweites Ve
 # Erstelle das Verzeichnis, falls es nicht existiert
 mkdir -p "$APP_DIR"
 
-# Anwendung veröffentlichen als Single-File ohne Debug-Dateien
-echo "Veröffentliche die .NET-Anwendung als Single-File..."
-dotnet publish "$PROJECT_PATH/src/Application/Application.csproj" -c Release -r osx-x64 --self-contained -p:PublishSingleFile=true -p:DebugType=None -o "$APP_DIR"
+# Anwendung veröffentlichen ohne Single-File und Debug-Dateien
+echo "Veröffentliche die .NET-Anwendung..."
+dotnet publish "$PROJECT_PATH/src/Application/Application.csproj" -c Release -r osx-x64 --self-contained -p:DebugType=None -o "$APP_DIR"
 
 if [ $? -eq 0 ]; then
   echo "Veröffentlichung erfolgreich. Die Anwendung wurde nach $APP_DIR deployed."
