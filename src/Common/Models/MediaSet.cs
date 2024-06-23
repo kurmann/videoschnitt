@@ -7,7 +7,6 @@ namespace Kurmann.Videoschnitt.Common.Models;
 /// Die jeweiligen Dateien für einen Einsatzzweck können auch leer sein, da nicht alle Mediensets für beide Einsatzzwecke konfiguriert sind
 /// oder sich gewisse Dateien beim Verarbeitungsprozess noch nicht im Medienset-Verzeichnis befinden (bspw. während der Videokomprimierung).
 /// </summary>
-/// <param name="MediaSetDirectory"></param>
 /// <param name="Title"></param>
 /// <param name="LocalMediaServerFiles"></param>
 /// <param name="InternetStreaming"></param>
