@@ -15,9 +15,6 @@ USER_NAME=$USER
 # Verzeichnis für die Anwendung
 APP_DIR="/Users/${USER_NAME}/bin/Kurmann/Videoschnitt"
 
-# Erklärung für das Admin-Passwort
-echo "Das Admin-Passwort wird benötigt, um die Anwendung in ein systemweites Verzeichnis zu installieren und den LaunchAgent-Dienst neu zu starten."
-
 # Erstelle das Verzeichnis, falls es nicht existiert
 mkdir -p "$APP_DIR"
 
