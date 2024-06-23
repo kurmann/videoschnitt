@@ -3,6 +3,8 @@ using Microsoft.Extensions.Logging;
 using CSharpFunctionalExtensions;
 using Kurmann.Videoschnitt.Common.Entities.MediaTypes;
 using Kurmann.Videoschnitt.Common.Services.Metadata;
+using Kurmann.Videoschnitt.Common.Models;
+using Kurmann.Videoschnitt.Common.Services.FileSystem;
 
 namespace Kurmann.Videoschnitt.MetadataProcessor.Services;
 
@@ -14,12 +16,17 @@ public class MediaSetService
     private readonly ModuleSettings _moduleSettings;
     private readonly ILogger<MediaSetService> _logger;
     private readonly FFmpegMetadataService _fFmpegMetadataService;
+    private readonly IFileOperations _fileOperations;
 
-    public MediaSetService(FFmpegMetadataService fFmpegMetadataService, IOptions<ModuleSettings> moduleSettings, ILogger<MediaSetService> logger)
+    public MediaSetService(FFmpegMetadataService fFmpegMetadataService,
+                           IOptions<ModuleSettings> moduleSettings,
+                           ILogger<MediaSetService> logger,
+                           IFileOperations fileOperations)
     {
         _fFmpegMetadataService = fFmpegMetadataService;
         _moduleSettings = moduleSettings.Value;
         _logger = logger;
+        _fileOperations = fileOperations;
     }
 
     /// <summary>
@@ -57,6 +64,28 @@ public class MediaSetService
         if (files.Length == 0)
         {
             return Result.Failure<List<MediaFilesByMediaSet>>($"Das Verzeichnis {directoryInfo.FullName} enthält keine Dateien.");
+        }
+
+        _logger.LogInformation("Filtere alle Dateien, die derzeit in Verwendung sind. Dies kann geschehen wenn die Datei gerade geschrieben wird, bspw. bei der Videokomprimierung.");
+        var filesInUse = new List<IgnoredFile>();
+        foreach (var file in files)
+        {
+            var isFileInUseResult = await _fileOperations.IsFileInUseAsync(file.FullName);
+            {
+                // Warne, wenn nicht ermittelt werden kann, ob die Datei verwendet wird
+                if (isFileInUseResult.IsFailure)
+                {
+                    _logger.LogWarning($"Fehler beim Überprüfen der Datei {file.FullName}: {isFileInUseResult.Error} ob sie verwendet wird.");
+                }
+                if (isFileInUseResult.Value)
+                {
+                    _logger.LogInformation($"Die Datei {file.FullName} wird verwendet und wird daher zu der Liste der ignorierten Dateien hinzugefügt.");
+                    filesInUse.Add(new IgnoredFile(file, IgnoredFileReason.FileInUse));
+
+                    // Entferne die Datei aus der Liste der Dateien damit sie nicht weiter verarbeitet wird
+                    files = files.Where(f => f.FullName != file.FullName).ToArray();
+                }
+            }
         }
 
         _logger.LogInformation("Filtere nach unterstützten Medien-Dateien. Diese sind grundsätzlich QuickTime-Movie-Dateien oder MPEG4-Dateien.");
@@ -119,7 +148,7 @@ public class MediaSetService
                 }
             }
 
-            mediaFilesByMediaSet.Add(new MediaFilesByMediaSet(videos.Title, videos.VideoFiles, supportedImageFiles));
+            mediaFilesByMediaSet.Add(new MediaFilesByMediaSet(videos.Title, videos.VideoFiles, supportedImageFiles, filesInUse));
         }
         _logger.LogInformation("Gruppierung der Medien-Dateien in Mediensets erfolgreich.");
         _logger.LogInformation("Anzahl Mediensets: {Count}", mediaFilesByMediaSet.Count);
@@ -129,6 +158,7 @@ public class MediaSetService
             _logger.LogInformation("Medienset: {Title}", mediaFiles.Title);
             _logger.LogInformation("Anzahl Videos: {Count}", mediaFiles.VideoFiles.Count());
             _logger.LogInformation("Anzahl Bilder: {Count}", mediaFiles.ImageFiles.Count());
+            _logger.LogInformation("Anzahl ignorierte Dateien: {Count}", mediaFiles.IgnoredFiles.Count());
         }
 
         return Result.Success(mediaFilesByMediaSet);
@@ -149,5 +179,6 @@ public record VideosByMediaSet(string Title, IEnumerable<SupportedVideo> VideoFi
 /// <param name="Title"></param>
 /// <param name="VideoFiles"></param>
 /// <param name="ImageFiles"></param>
+/// <param name="IgnoredFiles"></param>
 /// <returns></returns>
-public record MediaFilesByMediaSet(string Title, IEnumerable<SupportedVideo> VideoFiles, IEnumerable<SupportedImage> ImageFiles);
+public record MediaFilesByMediaSet(string Title, IEnumerable<SupportedVideo> VideoFiles, IEnumerable<SupportedImage> ImageFiles, IEnumerable<IgnoredFile> IgnoredFiles);
