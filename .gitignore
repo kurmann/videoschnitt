@@ -3,8 +3,9 @@
 .env
 docker-environment.txt
 
-# Production appsettings.json
+# Production and Development appsettings.json
 appsettings.Production.json
+appsettings.Development.json
 
 # Created by https://www.toptal.com/developers/gitignore/api/visualstudio,blazor,azurefunctions
 # Edit at https://www.toptal.com/developers/gitignore?templates=visualstudio,blazor,azurefunctions
