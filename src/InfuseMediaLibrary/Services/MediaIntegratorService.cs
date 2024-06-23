@@ -108,7 +108,7 @@ public class MediaIntegratorService
             }
         }
         _logger.LogInformation($"Verschiebe Video-Datei {mediaSet.LocalMediaServerFiles.Value.VideoFile.FileInfo.FullName} in das Infuse-Mediathek-Verzeichnis {targetDirectory.FullName}");
-        var moveFileResult = await _fileOperations.MoveFileAsync(mediaSet.LocalMediaServerFiles.Value.VideoFile.FileInfo.FullName, targetFilePathResult.Value.FullName);
+        var moveFileResult = await _fileOperations.MoveFileAsync(mediaSet.LocalMediaServerFiles.Value.VideoFile.FileInfo.FullName, targetFilePathResult.Value.FullName, true);
         if (moveFileResult.IsFailure)
         {
             return Result.Failure<Maybe<LocalMediaServerFiles>>($"Die Video-Datei {mediaSet.LocalMediaServerFiles.Value.VideoFile.FileInfo.FullName} konnte nicht in das Infuse-Mediathek-Verzeichnis {targetDirectory.FullName} verschoben werden. Fehler: {moveFileResult.Error}");
