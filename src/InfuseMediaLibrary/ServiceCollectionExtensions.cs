@@ -23,7 +23,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<PosterAndFanartService>();
         services.AddScoped<ImageProcessorService>();
 
-        services.AddCommonServicesEngine();
+        services.AddCommonServicesEngine(configuration);
 
         return services;
     }

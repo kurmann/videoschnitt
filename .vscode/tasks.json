@@ -15,15 +15,18 @@
         },
         {
             "label": "publish",
-            "command": "dotnet",
+            "command": "bash",
             "type": "process",
             "args": [
-                "publish",
-                "${workspaceFolder}/src/Application/Application.csproj",
-                "/property:GenerateFullPaths=true",
-                "/consoleloggerparameters:NoSummary;ForceNoAlign"
+                "${workspaceFolder}/.vscode/deploy.sh",
+                "${workspaceFolder}"
             ],
-            "problemMatcher": "$msCompile"
+            "problemMatcher": []
+        },
+        {
+            "label": "deploy",
+            "dependsOn": ["publish"],
+            "dependsOrder": "sequence"
         },
         {
             "label": "watch",

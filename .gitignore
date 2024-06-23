@@ -3,6 +3,9 @@
 .env
 docker-environment.txt
 
+# Production appsettings.json
+appsettings.Production.json
+
 # Created by https://www.toptal.com/developers/gitignore/api/visualstudio,blazor,azurefunctions
 # Edit at https://www.toptal.com/developers/gitignore?templates=visualstudio,blazor,azurefunctions
 
@@ -397,6 +400,7 @@ FodyWeavers.xsd
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+!.vscode/deploy.sh
 *.code-workspace
 
 # Local History for Visual Studio Code

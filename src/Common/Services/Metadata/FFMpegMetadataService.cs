@@ -1,5 +1,5 @@
 using CSharpFunctionalExtensions;
-using Kurmann.Videoschnitt.Common;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Logging;
 
 namespace Kurmann.Videoschnitt.Common.Services.Metadata;
@@ -11,11 +11,33 @@ public class FFmpegMetadataService
 {
     private readonly ExecuteCommandService _executeCommandService;
     private readonly ILogger<FFmpegMetadataService> _logger;
+    private readonly string _ffmpegCommand;
+    private readonly string _ffprobeCommand;
 
-    public FFmpegMetadataService(ExecuteCommandService executeCommandService, ILogger<FFmpegMetadataService> logger)
+    private const string DefaultFFMpegCommand = "ffmpeg";
+    private const string DefaultFFProbeCommand = "ffprobe";
+
+
+    public FFmpegMetadataService(ExecuteCommandService executeCommandService, ILogger<FFmpegMetadataService> logger, IOptions<ApplicationSettings> applicationSettings)
     {
         _executeCommandService = executeCommandService;
         _logger = logger;
+
+        // Warne, wenn die Umgebungsvariablen für FFmpeg nicht gesetzt sind.
+        if (applicationSettings.Value.ExternalTools?.FFMpeg?.Path == null)
+            _logger.LogWarning("FFmpeg-Pfad nicht gesetzt. Es wird angenommen, dass FFmpeg in der Umgebungsvariable PATH gesetzt ist.");
+        else
+            _logger.LogInformation($"FFmpeg-Pfad: {applicationSettings.Value.ExternalTools.FFMpeg.Path}");
+
+        // Warne, wenn die Umgebungsvariablen für FFprobe nicht gesetzt sind.
+        if (applicationSettings.Value.ExternalTools?.FFProbe?.Path == null)
+            _logger.LogWarning("FFprobe-Pfad nicht gesetzt. Es wird angenommen, dass FFprobe in der Umgebungsvariable PATH gesetzt ist.");
+        else
+            _logger.LogInformation($"FFprobe-Pfad: {applicationSettings.Value.ExternalTools.FFProbe.Path}");
+
+        // Setze die Pfade zu FFmpeg und FFprobe aus den Einstellungen oder verwende die Standardwerte.
+        _ffmpegCommand = applicationSettings.Value.ExternalTools?.FFMpeg?.Path ?? DefaultFFMpegCommand;
+        _ffprobeCommand = applicationSettings.Value.ExternalTools?.FFProbe?.Path ?? DefaultFFProbeCommand;
     }
 
     /// <summary>
@@ -26,7 +48,7 @@ public class FFmpegMetadataService
     public async Task<Result<string>> GetRawMetadataAsync(string filePath)
     {
         var arguments = $"-i \"{filePath}\" -f ffmetadata -";
-        var result = await _executeCommandService.ExecuteCommandAsync("ffmpeg", arguments);
+        var result = await _executeCommandService.ExecuteCommandAsync(_ffmpegCommand, arguments);
 
         if (result.IsSuccess)
         {
@@ -46,7 +68,7 @@ public class FFmpegMetadataService
     public async Task<Result<string>> GetMetadataFieldAsync(string filePath, string field)
     {
         var arguments = $"-v quiet -show_entries format_tags={field} -of default=noprint_wrappers=1:nokey=1 \"{filePath}\"";
-        var result = await _executeCommandService.ExecuteCommandAsync("ffprobe", arguments);
+        var result = await _executeCommandService.ExecuteCommandAsync(_ffprobeCommand, arguments);
 
         if (result.IsSuccess)
         {

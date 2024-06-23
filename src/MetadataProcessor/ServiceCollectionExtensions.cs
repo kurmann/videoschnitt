@@ -23,7 +23,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<MediaPurposeOrganizer>();
         services.AddScoped<IColorConversionService, MacOSColorConversionService>();
 
-        services.AddCommonServicesEngine();
+        services.AddCommonServicesEngine(configuration);
 
         return services;
     }
