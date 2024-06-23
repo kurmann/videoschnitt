@@ -10,4 +10,5 @@ public interface IFileOperations
     Task<Result> CopyFileAsync(string sourcePath, string destinationPath, bool overwrite = false, bool inheritPermissions = true);
     Result<string> ReadFile(string path);
     Task<Result> CreateDirectoryAsync(string path, bool inheritPermissions = true);
+    Task<Result<bool>> IsFileInUse(string path);
 }
