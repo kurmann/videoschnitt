@@ -110,10 +110,12 @@ public class MediaPurposeOrganizer
                 videoFilesForInternet.Add(videoFile);
             }
         }
-        _logger.LogTrace($"Prüfe, ob mindestens eine Videodatei für das Internet vorhanden ist.");
+        
+        // Wenn keine Videodatei für das Internet gefunden wurde, dann wird ein leerer Maybe-Container zurückgegeben.
         if (videoFilesForInternet.Count == 0)
         {
-            return Result.Failure<Maybe<InternetStreamingFiles>>($"Es wurde keine Videodatei für das Internet im Medienset-Verzeichnis '{mediaFilesByMediaSets.Title}' gefunden.");
+            _logger.LogInformation($"Es wurden keine Videodateien für das Internet im Medienset-Verzeichnis '{mediaFilesByMediaSets.Title}' gefunden.");
+            return Maybe<InternetStreamingFiles>.None;
         }
 
         internetStreaming = new InternetStreamingFiles(mediaFilesByMediaSets.ImageFiles, videoFilesForInternet);
