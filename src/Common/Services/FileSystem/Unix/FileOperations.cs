@@ -154,6 +154,24 @@ public class FileOperations : IFileOperations
         }
     }
 
+    /// <summary>
+    /// Gibt an, ob eine Datei verwendet wird. Verwendet das lsof-Tool, um zu überprüfen, ob die Datei von einem Prozess verwendet wird.
+    /// </summary>
+    /// <param name="path"></param>
+    /// <returns></returns>
+    public async Task<Result<bool>> IsFileInUseAsync(string path)
+    {
+        try
+        {
+            var lsofResult = await _executeCommandService.ExecuteBooleanCommandAsync("lsof", $"\"{path}\"");
+            return Result.Success(lsofResult);
+        }
+        catch (Exception ex)
+        {
+            return Result.Failure<bool>($"Fehler beim Überprüfen der Datei: {ex.Message}");
+        }
+    }
+
     private async Task<Result> ResetPermissionsToInherit(string path)
     {
         if (string.IsNullOrWhiteSpace(path))

@@ -5,6 +5,8 @@ using Kurmann.Videoschnitt.Common;
 using Kurmann.Videoschnitt.Common.Services.Metadata;
 using Kurmann.Videoschnitt.Common.Services.ImageProcessing;
 using Kurmann.Videoschnitt.Common.Services.ImageProcessing.MacOS;
+using Kurmann.Videoschnitt.Common.Services.FileSystem;
+using Kurmann.Videoschnitt.Common.Services.FileSystem.Unix;
 
 namespace Kurmann.Videoschnitt.MetadataProcessor;
 
@@ -22,6 +24,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<MediaSetService>();
         services.AddScoped<MediaPurposeOrganizer>();
         services.AddScoped<IColorConversionService, MacOSColorConversionService>();
+        services.AddScoped<IFileOperations, FileOperations>();
 
         services.AddCommonServicesEngine(configuration);
 

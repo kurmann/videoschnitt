@@ -69,4 +69,25 @@ public class ExecuteCommandService
 
         return Result.Success(outputLines);
     }
+
+    /// <summary>
+    /// Führt den externen Process aus und retourniert das Ergebnis bei dem ein Exit-Code ungleich 0 als False interpretiert wird.
+    /// Dies ist bspw. bei lsof der Fall, wenn die Datei verwendet wird und ein Exit-Code von 0 zurückgegeben wird wenn kein Prozess die Datei verwendet.
+    /// </summary>
+    /// <param name="commandPath"></param>
+    /// <param name="arguments"></param>
+    /// <returns></returns>
+    public async Task<bool> ExecuteBooleanCommandAsync(string commandPath, string arguments)
+    {
+        _logger.LogInformation($"Executing command: {commandPath} {arguments}");
+
+        var commandResult = await ExecuteCommandAsync(commandPath, arguments);
+        if (commandResult.IsFailure)
+        {
+            _logger.LogInformation("Prozess hat Exit-Code ungleich 0. Wird als True interpretiert.");
+            return false;
+        }
+
+        return true;
+    }
 }
