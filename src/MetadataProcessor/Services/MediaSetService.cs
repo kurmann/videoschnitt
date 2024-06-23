@@ -90,6 +90,9 @@ public class MediaSetService
             return Result.Failure<List<MediaFilesByMediaSet>>($"Fehler beim Lesen der Metadaten: {metadataResults.First(x => x.TitleResult.IsFailure).TitleResult.Error}");
         }
 
+        _logger.LogInformation("Entferne alle Dateien die einen leeren Titel haben.");
+        metadataResults = metadataResults.Where(x => !string.IsNullOrWhiteSpace(x.TitleResult.Value)).ToArray();
+
         _logger.LogInformation("Gruppiere die Dateien nach Titel.");
         var videosByMediaSet = metadataResults
             .Where(x => x.TitleResult.IsSuccess)
