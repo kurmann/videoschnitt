@@ -6,7 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RootNamespace>Kurmann.Videoschnitt.TimerService</RootNamespace>
-    <AssemblyName>TimerService</AssemblyName>
+    <AssemblyName>Kurmann.Videoschnitt.TimerService</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>

@@ -9,18 +9,21 @@ fi
 # Pfad zum Projekt
 PROJECT_PATH=$1
 
+# Benutzername aus Umgebungsvariable lesen
+USER_NAME=$USER
+
 # Verzeichnis für die Anwendung
-APP_DIR="/usr/local/kurmann/videoschnitt"
+APP_DIR="/Users/${USER_NAME}/bin/Kurmann/Videoschnitt"
 
 # Erklärung für das Admin-Passwort
-echo "Das Admin-Passwort wird benötigt, um die Anwendung in ein systemweites Verzeichnis zu installieren und den LaunchDaemon-Dienst neu zu starten."
+echo "Das Admin-Passwort wird benötigt, um die Anwendung in ein systemweites Verzeichnis zu installieren und den LaunchAgent-Dienst neu zu starten."
 
 # Erstelle das Verzeichnis, falls es nicht existiert
-sudo mkdir -p $APP_DIR
+mkdir -p "$APP_DIR"
 
-# Anwendung veröffentlichen als Single-File ohne Debug-Dateien
-echo "Veröffentliche die .NET-Anwendung als Single-File..."
-sudo dotnet publish $PROJECT_PATH/src/Application/Application.csproj -c Release -r osx-x64 --self-contained -p:PublishSingleFile=true -p:DebugType=None -o $APP_DIR
+# Anwendung veröffentlichen ohne Single-File und Debug-Dateien
+echo "Veröffentliche die .NET-Anwendung..."
+dotnet publish "$PROJECT_PATH/src/Application/Application.csproj" -c Release -r osx-x64 --self-contained -p:DebugType=None -o "$APP_DIR"
 
 if [ $? -eq 0 ]; then
   echo "Veröffentlichung erfolgreich. Die Anwendung wurde nach $APP_DIR deployed."
@@ -29,21 +32,15 @@ else
   exit 1
 fi
 
-# Kopiere die plist-Datei nach LaunchDaemons und setze die Berechtigungen
-echo "Kopiere und setze Berechtigungen für die plist-Datei..."
-sudo cp $PROJECT_PATH/.vscode/com.swiss.kurmann.videoschnitt.plist /Library/LaunchDaemons/
-sudo chown root:wheel /Library/LaunchDaemons/com.swiss.kurmann.videoschnitt.plist
-sudo chmod 644 /Library/LaunchDaemons/com.swiss.kurmann.videoschnitt.plist
-
-# launchd Dienst neu laden
-echo "Neuladen des LaunchDaemon-Dienstes..."
-sudo launchctl unload /Library/LaunchDaemons/com.swiss.kurmann.videoschnitt.plist
-sudo launchctl load /Library/LaunchDaemons/com.swiss.kurmann.videoschnitt.plist
+# launchctl Dienst neu laden
+echo "Neuladen des LaunchAgent-Dienstes..."
+launchctl unload "$HOME/Library/LaunchAgents/com.swiss.kurmann.videoschnitt.plist"
+launchctl load "$HOME/Library/LaunchAgents/com.swiss.kurmann.videoschnitt.plist"
 
 if [ $? -eq 0 ]; then
-  echo "LaunchDaemon-Dienst erfolgreich neu geladen."
+  echo "LaunchAgent-Dienst erfolgreich neu geladen."
   echo "Die Anwendung läuft jetzt unter $APP_DIR"
 else
-  echo "Fehler beim Neuladen des LaunchDaemon-Dienstes."
+  echo "Fehler beim Neuladen des LaunchAgent-Dienstes."
   exit 1
 fi

@@ -6,7 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RootNamespace>Kurmann.Videoschnitt.Workflows</RootNamespace>
-    <AssemblyName>Workflows</AssemblyName>
+    <AssemblyName>Kurmann.Videoschnitt.Workflows</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
