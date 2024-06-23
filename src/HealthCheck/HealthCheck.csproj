@@ -6,7 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RootNamespace>Kurmann.Videoschnitt.HealthCheck</RootNamespace>
-    <AssemblyName>HealthCheck</AssemblyName>
+    <AssemblyName>Kurmann.Videoschnitt.HealthCheck</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
