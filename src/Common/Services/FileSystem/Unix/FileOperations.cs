@@ -159,19 +159,12 @@ public class FileOperations : IFileOperations
     /// </summary>
     /// <param name="path"></param>
     /// <returns></returns>
-    public async Task<Result<bool>> IsFileInUse(string path)
+    public async Task<Result<bool>> IsFileInUseAsync(string path)
     {
         try
         {
-            var lsofResult = await _executeCommandService.ExecuteCommandAsync("lsof", $"\"{path}\"");
-            if (lsofResult.IsFailure)
-            {
-                return Result.Failure<bool>($"Fehler beim Überprüfen der Datei: {lsofResult.Error}");
-            }
-
-            // Wenn die Ausgabe nicht leer ist, wird die Datei verwendet
-            var isFileInUse = !string.IsNullOrWhiteSpace(lsofResult.Value.FirstOrDefault());
-            return Result.Success(isFileInUse);
+            var lsofResult = await _executeCommandService.ExecuteBooleanCommandAsync("lsof", $"\"{path}\"");
+            return Result.Success(lsofResult);
         }
         catch (Exception ex)
         {
