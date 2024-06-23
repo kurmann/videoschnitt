@@ -401,7 +401,6 @@ FodyWeavers.xsd
 !.vscode/launch.json
 !.vscode/extensions.json
 !.vscode/deploy.sh
-!.vscode/com.swiss.kurmann.videoschnitt.plist
 *.code-workspace
 
 # Local History for Visual Studio Code
