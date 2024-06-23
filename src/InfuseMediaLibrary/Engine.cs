@@ -3,6 +3,7 @@ using Microsoft.Extensions.Options;
 using Kurmann.Videoschnitt.InfuseMediaLibrary.Services;
 using Kurmann.Videoschnitt.Common.Services.FileSystem;
 using Kurmann.Videoschnitt.Common.Models;
+using CSharpFunctionalExtensions;
 
 namespace Kurmann.Videoschnitt.InfuseMediaLibrary;
 
@@ -31,9 +32,18 @@ public class Engine
         _fileOperations = fileOperations;
     }
 
-    public async Task<List<LocalMediaServerFiles>> StartAsync(IProgress<string> progress, List<MediaSet> mediaSets)
+    public async Task<Result<List<LocalMediaServerFiles>>> StartAsync(IProgress<string> progress, List<MediaSet> mediaSets)
     {
         _logger.LogInformation("InfuseMediaLibrary-Feature gestartet.");
+
+        // Prüfe ob die Einstellungen korrekt geladen wurden
+        if (_applicationSettings.InputDirectory == null)
+        {
+            return Result.Failure<List<LocalMediaServerFiles>>("Eingabeverzeichnis wurde nicht korrekt aus den Einstellungen geladen.");
+        }
+
+        // Informiere über das Eingabeverzeichnis
+        progress.Report($"Eingangsverzeichnis: {_applicationSettings.InputDirectory}");
 
         _logger.LogInformation("Iteriere über alle Mediensets und versuche, die Medien-Dateien in die Infuse-Mediathek zu integrieren.");
         var integratedMediaServerFilesByMediaSet = new List<LocalMediaServerFiles>();
