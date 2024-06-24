@@ -17,7 +17,6 @@ public class FFmpegMetadataService
     private const string DefaultFFMpegCommand = "ffmpeg";
     private const string DefaultFFProbeCommand = "ffprobe";
 
-
     public FFmpegMetadataService(ExecuteCommandService executeCommandService, ILogger<FFmpegMetadataService> logger, IOptions<ApplicationSettings> applicationSettings)
     {
         _executeCommandService = executeCommandService;
@@ -67,7 +66,7 @@ public class FFmpegMetadataService
 
     public async Task<Result<string>> GetMetadataFieldAsync(string filePath, string field)
     {
-        var arguments = $"-v quiet -show_entries format_tags={field} -of default=noprint_wrappers=1:nokey=1 \"{filePath}\"";
+        var arguments = $"-v error -show_entries format_tags={field} -of default=noprint_wrappers=1:nokey=1 \"{filePath}\"";
         var result = await _executeCommandService.ExecuteCommandAsync(_ffprobeCommand, arguments);
 
         if (result.IsSuccess)
@@ -88,5 +87,35 @@ public class FFmpegMetadataService
     public async Task<Result<string>> GetDescriptionAsync(string filePath)
     {
         return await GetMetadataFieldAsync(filePath, "description");
+    }
+
+    public async Task<Result<string>> GetVideoCodecNameAsync(string filePath)
+    {
+        var arguments = $"-v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 \"{filePath}\"";
+        var result = await _executeCommandService.ExecuteCommandAsync(_ffprobeCommand, arguments);
+
+        if (result.IsSuccess)
+        {
+            var codecName = string.Join("\n", result.Value).Trim();
+            return Result.Success(codecName);
+        }
+
+        _logger.LogError($"Error retrieving video codec for file '{filePath}': {result.Error}");
+        return Result.Failure<string>(result.Error);
+    }
+
+    public async Task<Result<string>> GetVideoCodecProfileAsync(string filePath)
+    {
+        var arguments = $"-v error -select_streams v:0 -show_entries stream=profile -of default=noprint_wrappers=1:nokey=1 \"{filePath}\"";
+        var result = await _executeCommandService.ExecuteCommandAsync(_ffprobeCommand, arguments);
+
+        if (result.IsSuccess)
+        {
+            var codecProfile = string.Join("\n", result.Value).Trim();
+            return Result.Success(codecProfile);
+        }
+
+        _logger.LogError($"Error retrieving video codec profile for file '{filePath}': {result.Error}");
+        return Result.Failure<string>(result.Error);
     }
 }

@@ -18,13 +18,15 @@ public class Engine
     private readonly ILogger<Engine> _logger;
     private readonly MediaSetService _mediaSetService;
     private readonly MediaPurposeOrganizer _mediaPurposeOrganizer;
+    private readonly InputDirectoryReaderService _inputDirectoryReaderService;
 
     public Engine(ILogger<Engine> logger,
                   IOptions<ModuleSettings> moduleSettings,
                   IOptions<ApplicationSettings> applicationSettings,
                   FFmpegMetadataService ffmpegMetadataService,
                   MediaSetService mediaSetService,
-                  MediaPurposeOrganizer mediaPurposeOrganizer)
+                  MediaPurposeOrganizer mediaPurposeOrganizer,
+                  InputDirectoryReaderService inputDirectoryReaderService)
     {
         _moduleSettings = moduleSettings.Value;
         _applicationSettings = applicationSettings.Value;
@@ -32,6 +34,7 @@ public class Engine
         _ffmpegMetadataService = ffmpegMetadataService;
         _mediaSetService = mediaSetService;
         _mediaPurposeOrganizer = mediaPurposeOrganizer;
+        _inputDirectoryReaderService = inputDirectoryReaderService;
     }
 
     public async Task<Result<List<MediaSet>>> Start(IProgress<string> progress)
@@ -47,9 +50,10 @@ public class Engine
         // Informiere über das Eingabeverzeichnis
         progress.Report($"Eingangsverzeichnis: {_applicationSettings.InputDirectory}");
 
-        _logger.LogInformation("Suche alle Masterdateien im Eingangsverzeichnis. Diese sollen nicht für die Metadaten-Verarbeitung verwendet werden.");
+        progress.Report("Versuche die Dateien im Eingangsverzeichnis in Mediensets zu organisisieren.");
+        var readerServiceResult = await _inputDirectoryReaderService.ReadInputDirectoryAsync(_applicationSettings.InputDirectory);
 
-        _logger.LogInformation("Versuche die Dateien im Eingangsverzeichnis in Medienset zu organisiseren.");
+
         var mediaFilesByMediaSets = await _mediaSetService.GroupToMediaSets(_applicationSettings.InputDirectory);
         if (mediaFilesByMediaSets.IsFailure)
         {

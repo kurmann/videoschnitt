@@ -135,7 +135,7 @@ public class InputDirectoryReaderService
 
         // Wenn die Datei eine Quicktime-Datei ist, prüfe ob sie den Codec Apple ProRes hat
         string? codecName = null;
-        var metadataResult = await _ffmpegMetadataService.GetMetadataFieldAsync(file, "codec_name");
+        var metadataResult = await _ffmpegMetadataService.GetVideoCodecNameAsync(file.FullName);
         if (metadataResult.IsFailure)
         {
             return Result.Failure<Maybe<Masterfile>> ($"Fehler beim Extrahieren des Metadaten-Feldes 'codec_name' aus der Datei {file.FullName}: {metadataResult.Error}");
@@ -150,7 +150,7 @@ public class InputDirectoryReaderService
 
             // Rufe noch zur Vollständigkeit das Codec-Profil ab
             string? codecProfile = null;
-            var codecProfileResult = await _ffmpegMetadataService.GetMetadataFieldAsync(file, "profile");
+            var codecProfileResult = await _ffmpegMetadataService.GetVideoCodecProfileAsync(file.FullName);
             if (codecProfileResult.IsFailure)
             {
                 _logger.LogWarning($"Fehler beim Extrahieren des Metadaten-Feldes 'profile' aus der Datei {file.FullName}: {codecProfileResult.Error}");
