@@ -15,6 +15,7 @@ public static class ServiceCollectionExtensions
         // Register Engine
         services.AddScoped<ExecuteCommandService>();
         services.AddScoped<IFileOperations, FileOperations>();
+        services.AddScoped<IFileSearchService, FileSearchService>();
 
         return services;
     }

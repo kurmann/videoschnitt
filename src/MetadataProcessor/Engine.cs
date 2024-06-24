@@ -47,6 +47,8 @@ public class Engine
         // Informiere über das Eingabeverzeichnis
         progress.Report($"Eingangsverzeichnis: {_applicationSettings.InputDirectory}");
 
+        _logger.LogInformation("Suche alle Masterdateien im Eingangsverzeichnis. Diese sollen nicht für die Metadaten-Verarbeitung verwendet werden.");
+
         _logger.LogInformation("Versuche die Dateien im Eingangsverzeichnis in Medienset zu organisiseren.");
         var mediaFilesByMediaSets = await _mediaSetService.GroupToMediaSets(_applicationSettings.InputDirectory);
         if (mediaFilesByMediaSets.IsFailure)
@@ -63,9 +65,6 @@ public class Engine
         }
         _logger.LogInformation($"Anzahl Mediensets: {mediaSets.Value.Count}");
         _logger.LogInformation("Medien erfolgreich nach ihrem Verwendungszweck organisiert.");
-
-        _logger.LogInformation("Wandle alle unterstützen Bilder von allen Mediensets in den Farbraum Adobe RGB um.");
-        // _imagePreProcessorService.ConvertColorSpaceAsyncToAdobeRGB(mediaSets.Value);
 
         _logger.LogInformation("Steuereinheit für die Metadaten-Verarbeitung beendet.");
         return Result.Success(mediaSets.Value);
