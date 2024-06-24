@@ -31,7 +31,8 @@ public class InputDirectoryReaderService
 
     public async Task<Result<InputDirectoryContent>> ReadInputDirectoryAsync(string inputDirectory)
     {
-        var mediaSets = new List<MediaSet>();
+        var supportedImages = new List<SupportedImage>();
+        var supportedVideos = new List<SupportedVideo>();
         var masterfiles = new List<Masterfile>();
         var ignoredFiles = new List<IgnoredFile>();
 
@@ -105,13 +106,38 @@ public class InputDirectoryReaderService
                 continue;
             }
 
-            // todo: Alle unterstützten Medien-Dateien in Mediensets gruppieren
+            // Prüfe ob die Datei zu einer unterstützten Bild-Datei gehört
+            if (SupportedImage.IsSupportedImageExtension(file))
+            {
+                var supportedImageResult = SupportedImage.Create(file);
+                if (supportedImageResult.IsFailure)
+                {
+                    _logger.LogWarning($"Fehler beim Erstellen des SupportedImage-Objekts für die Datei {file.FullName}: {supportedImageResult.Error}");
+                    _logger.LogInformation("Die Datei wird ignoriert mit Vermerk 'IgnoredFileReason.NotDefined'.");
+                    ignoredFiles.Add(new IgnoredFile(file, IgnoredFileReason.NotDefined));
+                    continue;
+                }
+                supportedImages.Add(supportedImageResult.Value);
+                continue;
+            }
 
-            // die anderen dateine als IgnoredFileReason.NotSupported festlegen
+            // Prüfe ob die Datei zu einer unterstützten Video-Datei gehört
+            if (SupportedVideo.IsSupportedVideoExtension(file))
+            {
+                var supportedVideoResult = SupportedVideo.Create(file);
+                if (supportedVideoResult.IsFailure)
+                {
+                    _logger.LogWarning($"Fehler beim Erstellen des SupportedVideo-Objekts für die Datei {file.FullName}: {supportedVideoResult.Error}");
+                    _logger.LogInformation("Die Datei wird ignoriert mit Vermerk 'IgnoredFileReason.NotDefined'.");
+                    ignoredFiles.Add(new IgnoredFile(file, IgnoredFileReason.NotDefined));
+                    continue;
+                }
+                supportedVideos.Add(supportedVideoResult.Value);
+                continue;
+            }
         }
 
-
-        return new InputDirectoryContent(mediaSets, masterfiles, ignoredFiles);
+        return new InputDirectoryContent(supportedImages, supportedVideos, masterfiles, ignoredFiles);
     }
 
     /// <summary>
@@ -169,4 +195,7 @@ public class InputDirectoryReaderService
     }
 }
 
-public record InputDirectoryContent(List<MediaSet> MediaSets, List<Masterfile> Masterfiles, List<IgnoredFile> IgnoredFiles);
+public record InputDirectoryContent(List<SupportedImage> SupportedImages,
+                                    List<SupportedVideo> SupportedVideos,
+                                    List<Masterfile> Masterfiles,
+                                    List<IgnoredFile> IgnoredFiles);
