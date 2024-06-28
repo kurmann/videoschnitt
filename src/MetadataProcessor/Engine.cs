@@ -51,10 +51,13 @@ public class Engine
         progress.Report($"Eingangsverzeichnis: {_applicationSettings.InputDirectory}");
 
         progress.Report("Versuche die Dateien im Eingangsverzeichnis in Mediensets zu organisisieren.");
-        var readerServiceResult = await _inputDirectoryReaderService.ReadInputDirectoryAsync(_applicationSettings.InputDirectory);
+        var inputDirectoryContent = await _inputDirectoryReaderService.ReadInputDirectoryAsync(_applicationSettings.InputDirectory);
+        if (inputDirectoryContent.IsFailure)
+        {
+            return Result.Failure<List<MediaSet>>($"Fehler beim Lesen des Eingangsverzeichnisses: {inputDirectoryContent.Error}");
+        }
 
-
-        var mediaFilesByMediaSets = await _mediaSetService.GroupToMediaSets(_applicationSettings.InputDirectory);
+        var mediaFilesByMediaSets = await _mediaSetService.GroupToMediaSets(inputDirectoryContent.Value);
         if (mediaFilesByMediaSets.IsFailure)
         {
             return Result.Failure<List<MediaSet>>($"Fehler beim Gruppieren der Medien-Dateien in Mediensets: {mediaFilesByMediaSets.Error}");
