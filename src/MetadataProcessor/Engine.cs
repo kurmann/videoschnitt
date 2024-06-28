@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using CSharpFunctionalExtensions;
 using Kurmann.Videoschnitt.Common.Models;
-using Kurmann.Videoschnitt.Common.Services.Metadata;
+
 
 namespace Kurmann.Videoschnitt.MetadataProcessor;
 
@@ -12,26 +12,20 @@ namespace Kurmann.Videoschnitt.MetadataProcessor;
 /// </summary>
 public class Engine
 {
-    private readonly ModuleSettings _moduleSettings;
     private readonly ApplicationSettings _applicationSettings;
-    private readonly FFmpegMetadataService _ffmpegMetadataService;
     private readonly ILogger<Engine> _logger;
     private readonly MediaSetService _mediaSetService;
     private readonly MediaPurposeOrganizer _mediaPurposeOrganizer;
     private readonly InputDirectoryReaderService _inputDirectoryReaderService;
 
     public Engine(ILogger<Engine> logger,
-                  IOptions<ModuleSettings> moduleSettings,
                   IOptions<ApplicationSettings> applicationSettings,
-                  FFmpegMetadataService ffmpegMetadataService,
                   MediaSetService mediaSetService,
                   MediaPurposeOrganizer mediaPurposeOrganizer,
                   InputDirectoryReaderService inputDirectoryReaderService)
     {
-        _moduleSettings = moduleSettings.Value;
         _applicationSettings = applicationSettings.Value;
         _logger = logger;
-        _ffmpegMetadataService = ffmpegMetadataService;
         _mediaSetService = mediaSetService;
         _mediaPurposeOrganizer = mediaPurposeOrganizer;
         _inputDirectoryReaderService = inputDirectoryReaderService;
