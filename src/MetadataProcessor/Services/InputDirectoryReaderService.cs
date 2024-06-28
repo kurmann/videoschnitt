@@ -135,6 +135,10 @@ public class InputDirectoryReaderService
                 supportedVideos.Add(supportedVideoResult.Value);
                 continue;
             }
+
+            // Wenn die Datei keine unterstützte Bild- oder Video-Datei ist, wird sie ignoriert
+            _logger.LogInformation($"Die Datei {file.FullName} ist keine unterstützte Bild- oder Video-Datei und wird ignoriert.");
+            ignoredFiles.Add(new IgnoredFile(file, IgnoredFileReason.NotSupported));
         }
 
         return new InputDirectoryContent(supportedImages, supportedVideos, masterfiles, ignoredFiles);
