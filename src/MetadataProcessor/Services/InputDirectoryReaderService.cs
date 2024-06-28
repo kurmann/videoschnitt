@@ -54,7 +54,7 @@ public class InputDirectoryReaderService
             // Wenn die Datei versteckt ist, füge sie zu den ignorierten Dateien hinzu
             if ((file.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden)
             {
-                _logger.LogInformation($"Die Datei {file.FullName} ist versteckt und wird ignoriert.");
+                _logger.LogInformation("Die Datei {FullName} ist versteckt und wird ignoriert.", file.FullName);
                 ignoredFiles.Add(new IgnoredFile(file, IgnoredFileReason.Hidden));
                 continue;
             }
@@ -62,7 +62,7 @@ public class InputDirectoryReaderService
             // Unterverzeichnisse werden ignoriert, also füge alle Unterverzeichnisse zu den ignorierten Dateien hinzu
             if (file.Attributes.HasFlag(FileAttributes.Directory))
             {
-                _logger.LogInformation($"Das Verzeichnis {file.FullName} wird ignoriert.");
+                _logger.LogInformation("Das Verzeichnis {FullName} wird ignoriert.", file.FullName);
                 ignoredFiles.Add(new IgnoredFile(file, IgnoredFileReason.Directory));
                 continue;
             }
@@ -70,7 +70,7 @@ public class InputDirectoryReaderService
             // Dateien, die sich in einem Unterverzeichnis befinden, werden ignoriert
             if (file.DirectoryName != inputDirectory)
             {
-                _logger.LogInformation($"Die Datei {file.FullName} befindet sich in einem Unterverzeichnis und wird ignoriert.");
+                _logger.LogInformation("Die Datei {FullName} befindet sich in einem Unterverzeichnis und wird ignoriert.", file.FullName);
                 ignoredFiles.Add(new IgnoredFile(file, IgnoredFileReason.LocatedInSubDirectory));
                 continue;
             }
@@ -199,7 +199,4 @@ public class InputDirectoryReaderService
     }
 }
 
-public record InputDirectoryContent(List<SupportedImage> SupportedImages,
-                                    List<SupportedVideo> SupportedVideos,
-                                    List<Masterfile> Masterfiles,
-                                    List<IgnoredFile> IgnoredFiles);
+public record InputDirectoryContent(List<SupportedImage> SupportedImages, List<SupportedVideo> SupportedVideos, List<Masterfile> Masterfiles, List<IgnoredFile> IgnoredFiles);
