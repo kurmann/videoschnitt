@@ -24,7 +24,6 @@ public class Program
         builder.Services.AddServerSideBlazor();
         builder.Services.AddHealthChecks();    
         builder.Services.AddControllers();
-        builder.Services.AddSignalR();
 
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(c =>
@@ -32,7 +31,6 @@ public class Program
             c.SwaggerDoc("v1", new OpenApiInfo { Title = "Kurmann Videoschnitt API", Version = "v1" });
         });
 
-        builder.Services.AddSingleton<LogHub>();
         builder.Services.AddScoped<FinalCutProWorkflow>();
         builder.Services.AddScoped<HealthCheckWorkflow>();
         builder.Services.AddScoped<HealthCheckFeature>();
@@ -55,7 +53,7 @@ public class Program
 
         app.MapGet("/api/startprocess", async (FinalCutProWorkflow workflow) =>
         {
-            var result = await workflow.ExecuteAsync(new Progress<string>(_ => { }));
+            var result = await workflow.ExecuteAsync();
             if (result.IsSuccess)
             {
                 return Results.Ok(new { status = "Process started successfully" });
@@ -68,9 +66,6 @@ public class Program
 
         app.MapBlazorHub();
         app.MapFallbackToPage("/_Host");
-
-        app.MapHub<LogHub>("/logHub");
-
         app.MapHealthChecks("/health");
 
         app.Run();

@@ -7,5 +7,5 @@ namespace Kurmann.Videoschnitt.Workflows;
 /// </summary>
 public interface IAsyncWorkflow
 {
-    Task<Result> ExecuteAsync(IProgress<string> progress);
+    Task<Result> ExecuteAsync();
 }

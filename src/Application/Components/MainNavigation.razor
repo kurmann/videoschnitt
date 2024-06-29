@@ -1,45 +1,31 @@
 @namespace Kurmann.Videoschnitt.Application.Components
 
-@inject NavigationManager Navigation
-@inject Kurmann.Videoschnitt.Workflows.FinalCutProWorkflow FinalCutProWorkflow
-@inject Kurmann.Videoschnitt.Workflows.HealthCheckWorkflow HealthCheckWorkflow
-
 <nav>
-    <a @onclick="ExecuteMetadataProcessing">Metadaten-Verarbeitung</a>
-    <a @onclick="ExecuteHealthCheck">Status</a>
+    <a @onclick="NotifyMetadataProcessing">Metadaten-Verarbeitung</a>
+    <a @onclick="NotifyHealthCheck">Status</a>
     <a href="/swagger">API-Dokumentation</a>
 </nav>
 
 @code {
     [Parameter]
-    public EventCallback<string> OnLogAdded { get; set; }
+    public EventCallback OnMetadataProcessing { get; set; }
+    
+    [Parameter]
+    public EventCallback OnHealthCheck { get; set; }
 
-    private async Task ExecuteMetadataProcessing()
+    private async Task NotifyMetadataProcessing()
     {
-        var progress = new Progress<string>(async statusUpdate =>
+        if (OnMetadataProcessing.HasDelegate)
         {
-            await OnLogAdded.InvokeAsync(statusUpdate);
-        });
-
-        var result = await FinalCutProWorkflow.ExecuteAsync(progress);
-        if (result.IsFailure)
-        {
-            Console.WriteLine($"Fehler während der Ausführung des Final Cut Pro Workflows: {result.Error}");
-            await OnLogAdded.InvokeAsync(result.Error);
+            await OnMetadataProcessing.InvokeAsync(null);
         }
     }
 
-    private void ExecuteHealthCheck()
+    private async Task NotifyHealthCheck()
     {
-        var progress = new Progress<string>(async statusUpdate =>
+        if (OnHealthCheck.HasDelegate)
         {
-            await OnLogAdded.InvokeAsync(statusUpdate);
-        });
-
-        var result = HealthCheckWorkflow.Execute(progress);
-        if (result.IsFailure)
-        {
-            OnLogAdded.InvokeAsync(result.Error);
+            await OnHealthCheck.InvokeAsync(null);
         }
     }
 }

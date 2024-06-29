@@ -16,34 +16,33 @@ public class FinalCutProWorkflow : IAsyncWorkflow
         _infuseMediaLibraryEngine = infuseMediaLibraryEngine;
     }
 
-    public async Task<Result> ExecuteAsync(IProgress<string> progress)
+    public async Task<Result> ExecuteAsync()
     {
-        progress.Report("Final Cut Pro Workflow gestartet.");
+        _logger.LogInformation("Final Cut Pro Workflow gestartet.");
 
-        progress.Report(Environment.NewLine);
-        progress.Report("Starte Metadaten-Verarbeitung");
-        var metadataProcessorResult = await _metadataProcessorEngine.Start(progress);
+
+        _logger.LogInformation("Starte Metadaten-Verarbeitung");
+        var metadataProcessorResult = await _metadataProcessorEngine.StartAsync();
         if (metadataProcessorResult.IsFailure)
         {
             return Result.Failure($"Fehler beim Ausführen des Final Cut Pro Workflows: {metadataProcessorResult.Error}");
         }
 
-        progress.Report(Environment.NewLine);
-        progress.Report("Starte Integration in die Infuse-Mediathek");
+        _logger.LogInformation("Starte Integration in die Infuse-Mediathek");
 
-        var integratedMediaServerFilesByMediaSet = await _infuseMediaLibraryEngine.StartAsync(progress, metadataProcessorResult.Value);
+        var integratedMediaServerFilesByMediaSet = await _infuseMediaLibraryEngine.StartAsync(metadataProcessorResult.Value);
         if (integratedMediaServerFilesByMediaSet.IsFailure)
         {
             return Result.Failure($"Fehler beim Ausführen des Final Cut Pro Workflows: {integratedMediaServerFilesByMediaSet.Error}");
         }
         if (integratedMediaServerFilesByMediaSet.Value.Count == 0)
         {
-            progress.Report("Keine Medien-Dateien für die Integration in die Infuse-Mediathek gefunden.");
+            _logger.LogInformation("Keine Medien-Dateien für die Integration in die Infuse-Mediathek gefunden.");
             return Result.Success();
         }
-        progress.Report("Integration in die Infuse-Mediathek abgeschlossen.");
+        _logger.LogInformation("Integration in die Infuse-Mediathek abgeschlossen.");
 
-        progress.Report("Final Cut Pro Workflow beendet.");
+        _logger.LogInformation("Final Cut Pro Workflow beendet.");
         return Result.Success();
     }
 }

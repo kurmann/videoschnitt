@@ -31,20 +31,18 @@ public class Engine
         _inputDirectoryReaderService = inputDirectoryReaderService;
     }
 
-    public async Task<Result<List<MediaSet>>> Start(IProgress<string> progress)
+    public async Task<Result<List<MediaSet>>> StartAsync()
     {
-        progress.Report("Steuereinheit für die Metadaten-Verarbeitung gestartet.");
+        _logger.LogInformation("Steuereinheit für die Metadaten-Verarbeitung gestartet.");
 
-        // Prüfe ob die Einstellungen korrekt geladen wurden
         if (_applicationSettings.InputDirectory == null)
         {
             return Result.Failure<List<MediaSet>>("Eingabeverzeichnis wurde nicht korrekt aus den Einstellungen geladen.");
         }
 
-        // Informiere über das Eingabeverzeichnis
-        progress.Report($"Eingangsverzeichnis: {_applicationSettings.InputDirectory}");
+        _logger.LogInformation("Eingangsverzeichnis: {_applicationSettings.InputDirectory}", _applicationSettings.InputDirectory);
 
-        progress.Report("Versuche die Dateien im Eingangsverzeichnis in Mediensets zu organisisieren.");
+        _logger.LogInformation("Versuche die Dateien im Eingangsverzeichnis in Mediensets zu organisisieren.");
         var inputDirectoryContent = await _inputDirectoryReaderService.ReadInputDirectoryAsync(_applicationSettings.InputDirectory);
         if (inputDirectoryContent.IsFailure)
         {
