@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using Kurmann.Videoschnitt.HealthCheck.Services;
 using CSharpFunctionalExtensions;
 
@@ -6,24 +7,25 @@ namespace Kurmann.Videoschnitt.HealthCheck;
 public class HealthCheckFeature
 {
     private readonly ToolsVersionService _toolsVersionService;
+    private readonly ILogger<HealthCheckFeature> _logger;
 
-    public HealthCheckFeature(ToolsVersionService toolsVersionService)
+    public HealthCheckFeature(ToolsVersionService toolsVersionService, ILogger<HealthCheckFeature> logger)
     {
         _toolsVersionService = toolsVersionService;
+        _logger = logger;
     }
 
-    public Result RunHealthCheck(IProgress<string> progress)
+    public Result RunHealthCheck()
     {
         // Ermitteln der FFmpeg-Version
-        progress.Report("Checking FFmpeg version...");
+        _logger.LogInformation("Checking FFmpeg version...");
         var version = _toolsVersionService.GetFFmpegVersion();
         if (version.IsFailure)
         {
-            progress.Report("Failed to check FFmpeg version.");
             return Result.Failure(version.Error);
         }
         
-        progress.Report(version.Value);
+        _logger.LogInformation("FFmpeg version: {version}", version.Value);
         return Result.Success();
     }
 }

@@ -1,45 +1,49 @@
 ﻿@page "/"
-@using Microsoft.AspNetCore.SignalR.Client
-@inject NavigationManager Navigation
+@namespace Kurmann.Videoschnitt.Application.Pages
+@inject Kurmann.Videoschnitt.Workflows.FinalCutProWorkflow FinalCutProWorkflow
+@inject Kurmann.Videoschnitt.Workflows.HealthCheckWorkflow HealthCheckWorkflow
 
 <h1>Willkommen bei Kurmann Videoschnitt</h1>
 
-<MainNavigation OnLogAdded="HandleLogAdded" />
-
+<MainNavigation OnMetadataProcessing="ExecuteMetadataProcessing" OnHealthCheck="ExecuteHealthCheck" />
 <LogContainer Logs="logs" />
 
 @code {
     private List<string> logs = new List<string>();
-    private HubConnection? hubConnection;
-
-    protected override async Task OnInitializedAsync()
-    {
-        hubConnection = new HubConnectionBuilder()
-            .WithUrl(Navigation.ToAbsoluteUri("/logHub"))
-            .Build();
-
-        logs.Add("Logs werden hier angezeigt.");
-
-        hubConnection.On<string>("ReceiveLogMessage", async (message) =>
-        {
-            logs.Add(message);
-            await InvokeAsync(StateHasChanged);
-        });
-
-        await hubConnection.StartAsync();
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        if (hubConnection is not null)
-        {
-            await hubConnection.DisposeAsync();
-        }
-    }
 
     private async Task HandleLogAdded(string log)
     {
         logs.Add(log);
         await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task ExecuteMetadataProcessing()
+    {
+        var result = await FinalCutProWorkflow.ExecuteAsync();
+        if (result.IsFailure)
+        {
+            logs.Add($"Fehler während der Ausführung des Final Cut Pro Workflows: {result.Error}");
+        }
+        else
+        {
+            logs.Add("Final Cut Pro Workflow erfolgreich abgeschlossen.");
+        }
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void ExecuteHealthCheck()
+    {
+        var result = HealthCheckWorkflow.Execute();
+        if (result.IsFailure)
+        {
+            logs.Add($"Fehler während der Ausführung des Health Checks: {result.Error}");
+        }
+        else
+        {
+            logs.Add("Health Check erfolgreich abgeschlossen.");
+        }
+
+        InvokeAsync(StateHasChanged);
     }
 }

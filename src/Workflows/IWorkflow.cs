@@ -4,5 +4,5 @@ namespace Kurmann.Videoschnitt.Workflows;
 
 public interface IWorkflow
 {
-    Result Execute(IProgress<string> progress);
+    Result Execute();
 }
