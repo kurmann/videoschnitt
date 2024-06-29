@@ -15,12 +15,13 @@ USER_NAME=$USER
 # Verzeichnis für die Anwendung
 APP_DIR="/Users/${USER_NAME}/bin/Kurmann/Videoschnitt"
 
-# Erstelle das Verzeichnis, falls es nicht existiert
+# Lösche und erstelle das Verzeichnis neu für die Anwendung
+rm -rf "$APP_DIR"
 mkdir -p "$APP_DIR"
 
 # Anwendung veröffentlichen ohne Single-File und Debug-Dateien
 echo "Veröffentliche die .NET-Anwendung..."
-dotnet publish "$PROJECT_PATH/src/Application/Application.csproj" -c Release -r osx-x64 --self-contained -p:DebugType=None -o "$APP_DIR"
+dotnet publish "$PROJECT_PATH/src/Application/Application.csproj" -c Release --self-contained -p:DebugType=None -o "$APP_DIR"
 
 if [ $? -eq 0 ]; then
   echo "Veröffentlichung erfolgreich. Die Anwendung wurde nach $APP_DIR deployed."
