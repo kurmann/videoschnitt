@@ -24,6 +24,7 @@
         var result = await FinalCutProWorkflow.ExecuteAsync(progress);
         if (result.IsFailure)
         {
+            Console.WriteLine($"Fehler während der Ausführung des Final Cut Pro Workflows: {result.Error}");
             await OnLogAdded.InvokeAsync(result.Error);
         }
     }
