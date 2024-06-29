@@ -26,5 +26,20 @@ public enum IgnoredFileReason
     /// <summary>
     /// Die Datei wird ignoriert, weil sie aktuell in Verwendung ist.
     /// </summary>
-    FileInUse
+    FileInUse,
+
+    /// <summary>
+    /// Die Datei wird ignoriert, weil sie sich in einem Unterverzeichnis befindet.
+    /// </summary>
+    LocatedInSubDirectory,
+
+    /// <summary>
+    /// Die Datei wird ignoriert, weil sie versteckt ist.
+    /// </summary>
+    Hidden,
+
+    /// <summary>
+    /// Die Datei wird ignoriert, weil sie ein Verzeichnis ist.
+    /// </summary>
+    Directory
 }

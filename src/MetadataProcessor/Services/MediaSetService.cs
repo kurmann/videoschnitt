@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Logging;
 using CSharpFunctionalExtensions;
 using Kurmann.Videoschnitt.Common.Entities.MediaTypes;
@@ -13,45 +12,26 @@ namespace Kurmann.Videoschnitt.MetadataProcessor.Services;
 /// </summary>
 public class MediaSetService
 {
-    private readonly ModuleSettings _moduleSettings;
     private readonly ILogger<MediaSetService> _logger;
     private readonly FFmpegMetadataService _fFmpegMetadataService;
     private readonly IFileOperations _fileOperations;
 
-    public MediaSetService(FFmpegMetadataService fFmpegMetadataService,
-                           IOptions<ModuleSettings> moduleSettings,
-                           ILogger<MediaSetService> logger,
-                           IFileOperations fileOperations)
+    public MediaSetService(FFmpegMetadataService fFmpegMetadataService, ILogger<MediaSetService> logger)
     {
         _fFmpegMetadataService = fFmpegMetadataService;
-        _moduleSettings = moduleSettings.Value;
         _logger = logger;
         _fileOperations = fileOperations;
     }
 
     /// <summary>
-    /// Analysiert das Verzeichnis und gruppiert die Medien-Dateien in Mediensets.
-    public async Task<Result<List<MediaFilesByMediaSet>>> GroupToMediaSets(string directory)
-    {
-        // Prüfe ob ein Verzeichnis angegeben wurde
-        if (string.IsNullOrWhiteSpace(directory))
-        {
-            return Result.Failure<List<MediaFilesByMediaSet>>("Das Verzeichnis darf nicht leer sein.");
-        }
-
-        try
-        {
-            return await GroupToMediaSets(new DirectoryInfo(directory));
-        }
-        catch (Exception ex)
-        {
-            return Result.Failure<List<MediaFilesByMediaSet>>($"Fehler beim Gruppieren der Medien-Dateien in Mediensets: {ex.Message}");
-        }
-    }
-
-    public async Task<Result<List<MediaFilesByMediaSet>>> GroupToMediaSets(DirectoryInfo directoryInfo)
+    /// Gib den Inhalt des Verzeichnisses als gruppierte Mediensets zurück.
+    /// </summary>
+    /// <param name="inputDirectoryContent"></param>
+    /// <returns></returns>
+    public async Task<Result<List<MediaFilesByMediaSet>>> GroupToMediaSets(InputDirectoryContent inputDirectoryContent)
     {
         _logger.LogInformation("Versuche die Dateien im Verzeichnis in Medienset zu organisieren.");
+
         _logger.LogInformation("Prüfe ob das Verzeichnis existiert.");
         if (!directoryInfo.Exists)
         {
@@ -105,7 +85,7 @@ public class MediaSetService
         }
 
         _logger.LogInformation("Lies aus allen unterstützen Videodateien mit FFMPeg den Titel-Tag aus den Metadaten und gruppiere alle Dateien mit dem gleichen Titel.");
-        var metadataTasks = supportedVideoFiles
+        var metadataTasks = inputDirectoryContent.SupportedVideos
             .Select(async f => new
             {
                 File = f,
@@ -119,6 +99,7 @@ public class MediaSetService
             return Result.Failure<List<MediaFilesByMediaSet>>($"Fehler beim Lesen der Metadaten: {metadataResults.First(x => x.TitleResult.IsFailure).TitleResult.Error}");
         }
 
+        // todo: sollte nicht entfernt sein sondern gesondert ausgewise werden
         _logger.LogInformation("Entferne alle Dateien die einen leeren Titel haben.");
         metadataResults = metadataResults.Where(x => !string.IsNullOrWhiteSpace(x.TitleResult.Value)).ToArray();
 
@@ -133,7 +114,9 @@ public class MediaSetService
         var mediaFilesByMediaSet = new List<MediaFilesByMediaSet>();
         foreach (var videos in videosByMediaSet)
         {
-            var imageFileInfos = files.Where(f => SupportedImage.IsSupportedImageExtension(f) && f.Name.StartsWith(videos.Title, StringComparison.InvariantCultureIgnoreCase)).ToList();
+            // Suche nach allen unterstützten Bild-Dateien die das gleiche Basis-Datei-Name haben wie die Videodatei
+            var supportedImageFileInfos = inputDirectoryContent.SupportedImages.Select(f => f.FileInfo);
+            var imageFileInfos = supportedImageFileInfos.Where(i => i.Name.StartsWith(videos.Title)).ToArray();
             var supportedImageFiles = new List<SupportedImage>();
             foreach (var imageFileInfo in imageFileInfos)
             {
@@ -144,7 +127,7 @@ public class MediaSetService
                 }
                 else
                 {
-                    _logger.LogWarning($"Die Datei {imageFileInfo.FullName} ist keine unterstützte Bilddatei: {supportedImageResult.Error}");
+                    _logger.LogWarning("Die Datei {FullName} ist keine unterstützte Bilddatei: {Error}", imageFileInfo.FullName, supportedImageResult.Error);
                 }
             }
 
@@ -163,6 +146,7 @@ public class MediaSetService
 
         return Result.Success(mediaFilesByMediaSet);
     }
+
 }
 
 /// <summary>

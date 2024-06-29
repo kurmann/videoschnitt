@@ -1,6 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
 using Kurmann.Videoschnitt.TimerService.Services;
-using Microsoft.Extensions.Logging;
 
 namespace Kurmann.Videoschnitt.TimerService;
 
