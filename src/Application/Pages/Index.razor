@@ -6,7 +6,14 @@
 
 <MainNavigation OnLogAdded="HandleLogAdded" />
 
-<LogContainer Logs="logs" />
+<ErrorBoundary>
+    <ChildContent>
+        <LogContainer Logs="logs" />
+    </ChildContent>
+    <ErrorContent>
+        <p>Ein Fehler ist aufgetreten.</p>
+    </ErrorContent>
+</ErrorBoundary>
 
 @code {
     private List<string> logs = new List<string>();
