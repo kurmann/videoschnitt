@@ -6,7 +6,7 @@
         "type": "coreclr",
         "request": "launch",
         "preLaunchTask": "build",
-        "program": "${workspaceFolder}/src/Application/bin/Debug/net9.0/Kurmann.Videoschnitt.Application.dll",
+        "program": "${workspaceFolder}/src/Application/bin/Debug/net9.0/osx-arm64/Kurmann.Videoschnitt.Application.dll",
         "args": [],
         "cwd": "${workspaceFolder}/src/Application",
         "stopAtEntry": false,
@@ -16,7 +16,7 @@
         },
         "env": {
           "ASPNETCORE_ENVIRONMENT": "Development",
-          "ASPNETCORE_URLS": "http://localhost:5001"
+          "ASPNETCORE_URLS": "http://localhost:5023"
         },
         "sourceFileMap": {
           "/Views": "${workspaceFolder}/Views"

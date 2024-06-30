@@ -19,7 +19,7 @@ public class FinalCutProWorkflow : IAsyncWorkflow
     public async Task<Result> ExecuteAsync()
     {
         _logger.LogInformation("Final Cut Pro Workflow gestartet.");
-
+        
 
         _logger.LogInformation("Starte Metadaten-Verarbeitung");
         var metadataProcessorResult = await _metadataProcessorEngine.StartAsync();
@@ -43,6 +43,7 @@ public class FinalCutProWorkflow : IAsyncWorkflow
         _logger.LogInformation("Integration in die Infuse-Mediathek abgeschlossen.");
 
         _logger.LogInformation("Final Cut Pro Workflow beendet.");
+        _logger.LogInformation("--------------------------------------------------");
         return Result.Success();
     }
 }

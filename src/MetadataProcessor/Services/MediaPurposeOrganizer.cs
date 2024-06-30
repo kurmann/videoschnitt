@@ -32,7 +32,7 @@ public class MediaPurposeOrganizer
         var mediaSetDirectoriesWithMediaPurpose = new List<MediaSet>();
         foreach (var mediaFilesByMediaSet in mediaFilesByMediaSets)
         {
-            _logger.LogTrace($"Organisiere Medienset-Verzeichnis '{mediaFilesByMediaSet.Title}' nach Einsatzzweck.");
+            _logger.LogTrace("Organisiere Medienset-Verzeichnis '{Title}' nach Einsatzzweck.", mediaFilesByMediaSet.Title);
 
             var localMediaServerFiles = GetFilesForLocalMediaServer(mediaFilesByMediaSet);
             if (localMediaServerFiles.IsFailure)
@@ -46,7 +46,7 @@ public class MediaPurposeOrganizer
                 return Result.Failure<List<MediaSet>>(internetStreamingFiles.Error);
             }
 
-            _logger.LogInformation($"Medienset-Verzeichnis '{mediaFilesByMediaSet.Title}' wurde erfolgreich nach Einsatzzweck organisiert.");
+            _logger.LogInformation("Medienset-Verzeichnis '{Title}' wurde erfolgreich nach Einsatzzweck organisiert.", mediaFilesByMediaSet.Title);
             mediaSetDirectoriesWithMediaPurpose.Add(new MediaSet(mediaFilesByMediaSet.Title, localMediaServerFiles.Value, internetStreamingFiles.Value));
         }
 

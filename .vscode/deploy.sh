@@ -19,6 +19,16 @@ APP_DIR="/Users/${USER_NAME}/bin/Kurmann/Videoschnitt"
 rm -rf "$APP_DIR"
 mkdir -p "$APP_DIR"
 
+# Prozess finden, der Port 5024 verwendet und ihn beenden
+PID=$(lsof -t -i:5024)
+if [ -n "$PID" ]; then
+  echo "Beende den Prozess, der Port 5024 verwendet (PID: $PID)..."
+  kill -9 $PID
+  echo "Prozess beendet."
+else
+  echo "Kein Prozess verwendet Port 5024."
+fi
+
 # Anwendung veröffentlichen ohne Single-File und Debug-Dateien
 echo "Veröffentliche die .NET-Anwendung..."
 dotnet publish "$PROJECT_PATH/src/Application/Application.csproj" -c Release --self-contained -p:DebugType=None -o "$APP_DIR"
