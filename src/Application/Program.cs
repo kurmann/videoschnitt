@@ -11,7 +11,7 @@ namespace Kurmann.Videoschnitt.Application;
 public class Program
 {
     public static void Main(string[] args)
-    {
+    { 
         CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
         CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
 
@@ -68,6 +68,13 @@ public class Program
         app.MapFallbackToPage("/_Host");
         app.MapHealthChecks("/health");
 
-        app.Run();
+        try
+        {
+            app.Run();
+        }
+        catch (Exception ex)
+        {
+            app.Logger.LogError(ex, "An error occurred while starting the application.");
+        }
     }
 }
