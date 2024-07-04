@@ -1,80 +1,50 @@
-using Microsoft.OpenApi.Models;
+using System;
 using System.Globalization;
-using Kurmann.Videoschnitt.MetadataProcessor;
-using Kurmann.Videoschnitt.Workflows;
-using Kurmann.Videoschnitt.HealthCheck;
-using Kurmann.Videoschnitt.HealthCheck.Services;
-using Kurmann.Videoschnitt.InfuseMediaLibrary;
+using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
-namespace Kurmann.Videoschnitt.Application;
-
-public class Program
+namespace Kurmann.Videoschnitt.Application
 {
-    public static void Main(string[] args)
-    { 
-        CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
-        CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
-
-        var builder = WebApplication.CreateBuilder(args);
-
-        builder.Services.AddMetadataProcessor(builder.Configuration);
-        builder.Services.AddInfuseMediaLibrary(builder.Configuration);
-
-        builder.Services.AddRazorPages();
-        builder.Services.AddServerSideBlazor();
-        builder.Services.AddHealthChecks();    
-        builder.Services.AddControllers();
-
-        builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddSwaggerGen(c =>
+    public class Program
+    {
+        public static async Task Main(string[] args)
         {
-            c.SwaggerDoc("v1", new OpenApiInfo { Title = "Kurmann Videoschnitt API", Version = "v1" });
-        });
+            var host = CreateHostBuilder(args).Build();
+            var logger = host.Services.GetRequiredService<ILogger<Program>>();
 
-        builder.Services.AddScoped<FinalCutProWorkflow>();
-        builder.Services.AddScoped<HealthCheckWorkflow>();
-        builder.Services.AddScoped<HealthCheckFeature>();
-        builder.Services.AddScoped<ToolsVersionService>();
-
-        var app = builder.Build();
-
-        if (!app.Environment.IsDevelopment())
-        {
-            app.UseHsts();
-        }
-
-        app.UseStaticFiles();
-        app.UseRouting();
-        app.UseSwagger();
-        app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Kurmann Videoschnitt API v1"));
-
-        // Minimal API Endpunkte
-        app.MapGet("/api/health", () => Results.Ok(new { status = "Healthy" }));
-
-        app.MapGet("/api/startprocess", async (FinalCutProWorkflow workflow) =>
-        {
-            var result = await workflow.ExecuteAsync();
-            if (result.IsSuccess)
+            try
             {
-                return Results.Ok(new { status = "Process started successfully" });
+                CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
+                CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
+
+                if (args.Length > 0 && args[0] == "FinalCutPro")
+                {
+                    logger.LogInformation("Starting FinalCutPro workflow.");
+                    // Hier kannst du den eigentlichen Workflow starten
+                }
+                else
+                {
+                    logger.LogInformation("No valid workflow specified.");
+                }
+
+                // Beenden, da keine langfristige Aufgabe erforderlich ist
+                await host.StopAsync();
             }
-            else
+            catch (Exception ex)
             {
-                return Results.BadRequest(new { status = "Process failed", error = result.Error });
+                logger.LogError(ex, "An error occurred while starting the application.");
+                throw;
             }
-        });
-
-        app.MapBlazorHub();
-        app.MapFallbackToPage("/_Host");
-        app.MapHealthChecks("/health");
-
-        try
-        {
-            app.Run();
         }
-        catch (Exception ex)
-        {
-            app.Logger.LogError(ex, "An error occurred while starting the application.");
-        }
+
+        public static IHostBuilder CreateHostBuilder(string[] args) =>
+            Host.CreateDefaultBuilder(args)
+                .ConfigureServices((hostContext, services) =>
+                {
+                    services.AddLogging(configure => configure.AddConsole());
+                    // Hier kannst du weitere Services hinzufügen, falls erforderlich
+                });
     }
 }
