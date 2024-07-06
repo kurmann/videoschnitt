@@ -4,7 +4,7 @@ using Kurmann.Videoschnitt.HealthCheck;
 
 namespace Kurmann.Videoschnitt.Workflows;
 
-public class HealthCheckWorkflow : IWorkflow
+public class HealthCheckWorkflow : ISyncWorkflow
 {
     private readonly HealthCheckFeature _healthCheckFeature;
     private ILogger<HealthCheckWorkflow> _logger;
