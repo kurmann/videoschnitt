@@ -33,7 +33,7 @@ public class Program
 
         builder.Services.AddScoped<FinalCutProWorkflow>();
         builder.Services.AddScoped<HealthCheckWorkflow>();
-        builder.Services.AddScoped<HealthCheckFeature>();
+        builder.Services.AddScoped<HealthCheck.Engine>();
         builder.Services.AddScoped<ToolsVersionService>();
 
         var app = builder.Build();

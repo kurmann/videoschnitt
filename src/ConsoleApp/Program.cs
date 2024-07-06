@@ -76,7 +76,8 @@ public class Program
             .ConfigureServices((hostContext, services) =>
             {
                 services.AddLogging(configure => configure.AddConsole());
-                services.AddScoped<HealthCheckWorkflow>();
+
+                services.AddWorkflows();
             });
 }
 
