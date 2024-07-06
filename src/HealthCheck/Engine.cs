@@ -4,12 +4,12 @@ using CSharpFunctionalExtensions;
 
 namespace Kurmann.Videoschnitt.HealthCheck;
 
-public class HealthCheckFeature
+public class Engine
 {
     private readonly ToolsVersionService _toolsVersionService;
-    private readonly ILogger<HealthCheckFeature> _logger;
+    private readonly ILogger<Engine> _logger;
 
-    public HealthCheckFeature(ToolsVersionService toolsVersionService, ILogger<HealthCheckFeature> logger)
+    public Engine(ToolsVersionService toolsVersionService, ILogger<Engine> logger)
     {
         _toolsVersionService = toolsVersionService;
         _logger = logger;

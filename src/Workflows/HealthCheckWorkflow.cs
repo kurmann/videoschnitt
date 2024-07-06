@@ -9,10 +9,10 @@ public class HealthCheckWorkflow : ISyncWorkflow
 {
     public const string WorkflowName = "HealthCheck";
 
-    private readonly HealthCheckFeature _healthCheckFeature;
+    private readonly Engine _healthCheckFeature;
     private readonly ILogger<HealthCheckWorkflow> _logger;
 
-    public HealthCheckWorkflow(HealthCheckFeature healthCheckFeature, ILogger<HealthCheckWorkflow> logger)
+    public HealthCheckWorkflow(Engine healthCheckFeature, ILogger<HealthCheckWorkflow> logger)
     {
         _healthCheckFeature = healthCheckFeature;
         _logger = logger;

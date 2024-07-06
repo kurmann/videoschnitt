@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Kurmann.Videoschnitt.HealthCheck;
 
 namespace Kurmann.Videoschnitt.Workflows;
 
@@ -8,6 +9,8 @@ public static class ServiceCollectionExtensions
     {   
         services.AddScoped<HealthCheckWorkflow>();
         services.AddScoped<FinalCutProWorkflow>();
+
+        services.AddScoped<Engine>();
 
         return services;
     }

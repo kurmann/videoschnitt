@@ -7,7 +7,7 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddHealthCheck(this IServiceCollection services)
     {   
-        services.AddScoped<HealthCheckFeature>();
+        services.AddScoped<Engine>();
         services.AddScoped<ToolsVersionService>();
 
         return services;
