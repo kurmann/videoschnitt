@@ -42,6 +42,16 @@
                 "${workspaceFolder}/src/ConsoleApp/ConsoleApp.csproj"
             ],
             "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "deploy-console",
+            "command": "bash",
+            "type": "process",
+            "args": [
+                "${workspaceFolder}/.vscode/deploy-console.sh",
+                "${workspaceFolder}"
+            ],
+            "problemMatcher": []
         }
     ]
 }
