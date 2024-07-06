@@ -6,8 +6,10 @@ namespace Kurmann.Videoschnitt.Workflows;
 
 public class HealthCheckWorkflow : ISyncWorkflow
 {
+    public const string WorkflowName = "HealthCheck";
+
     private readonly HealthCheckFeature _healthCheckFeature;
-    private ILogger<HealthCheckWorkflow> _logger;
+    private readonly ILogger<HealthCheckWorkflow> _logger;
 
     public HealthCheckWorkflow(HealthCheckFeature healthCheckFeature, ILogger<HealthCheckWorkflow> logger)
     {
@@ -15,9 +17,9 @@ public class HealthCheckWorkflow : ISyncWorkflow
         _logger = logger;
     }
 
+
     public Result Execute()
     {
-
         _logger.LogInformation("Health check started.");
 
         _healthCheckFeature.RunHealthCheck();
