@@ -15,17 +15,17 @@ public class Engine
         _logger = logger;
     }
 
-    public Result RunHealthCheck()
+    public Result<string> RunHealthCheck()
     {
         // Ermitteln der FFmpeg-Version
         _logger.LogInformation("Checking FFmpeg version...");
         var version = _toolsVersionService.GetFFmpegVersion();
         if (version.IsFailure)
         {
-            return Result.Failure(version.Error);
+            return Result.Failure<string>(version.Error);
         }
         
         _logger.LogInformation("FFmpeg version: {version}", version.Value);
-        return Result.Success();
+        return Result.Success(version.Value);
     }
 }
