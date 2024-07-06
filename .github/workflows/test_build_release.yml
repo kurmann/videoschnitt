@@ -16,7 +16,7 @@ jobs:
     runs-on: macos-latest
 
     env:
-      CSPROJ_FILE: src/Application/Application.csproj
+      CSPROJ_FILE: src/ConsoleApp/ConsoleApp.csproj
       DOTNET_VERSION: '9.0.x'
 
     steps:

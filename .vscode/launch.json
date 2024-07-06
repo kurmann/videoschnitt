@@ -6,9 +6,9 @@
         "type": "coreclr",
         "request": "launch",
         "preLaunchTask": "build",
-        "program": "${workspaceFolder}/src/Application/bin/Debug/net9.0/osx-arm64/Kurmann.Videoschnitt.Application.dll",
+        "program": "${workspaceFolder}/src/ConsoleApp/bin/Debug/net9.0/osx-arm64/Kurmann.Videoschnitt.ConsoleApp.dll",
         "args": [],
-        "cwd": "${workspaceFolder}/src/Application",
+        "cwd": "${workspaceFolder}/src/ConsoleApp",
         "stopAtEntry": false,
         "serverReadyAction": {
           "action": "openExternally",
