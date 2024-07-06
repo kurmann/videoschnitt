@@ -13,4 +13,8 @@
     <UserSecretsId>3d00685d-fd67-4e0f-b32c-9355bec43a44</UserSecretsId>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="CommandLineParser" Version="2.9.1" />
+  </ItemGroup>
+
 </Project>
