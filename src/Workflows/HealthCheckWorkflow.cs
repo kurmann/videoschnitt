@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using CSharpFunctionalExtensions;
 using Kurmann.Videoschnitt.HealthCheck;
+using Kurmann.Videoschnitt.Workflows.Abstractions;
 
 namespace Kurmann.Videoschnitt.Workflows;
 

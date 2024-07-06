@@ -1,6 +1,6 @@
 using CSharpFunctionalExtensions;
 
-namespace Kurmann.Videoschnitt.Workflows;
+namespace Kurmann.Videoschnitt.Workflows.Abstractions;
 
 /// <summary>
 /// Repräsentiert einen asynchronen Workflow, der keinen Wert zurückgibt.
