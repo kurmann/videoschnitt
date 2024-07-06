@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Workflows", "Workflows\Work
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InfuseMediaLibrary", "InfuseMediaLibrary\InfuseMediaLibrary.csproj", "{6C090849-3D6D-4A6C-BC2E-DCB435BD3EC2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleApp", "ConsoleApp\ConsoleApp.csproj", "{7854B67B-498E-43D7-85AB-AD0C38236757}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -48,5 +50,9 @@ Global
 		{6C090849-3D6D-4A6C-BC2E-DCB435BD3EC2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6C090849-3D6D-4A6C-BC2E-DCB435BD3EC2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6C090849-3D6D-4A6C-BC2E-DCB435BD3EC2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7854B67B-498E-43D7-85AB-AD0C38236757}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7854B67B-498E-43D7-85AB-AD0C38236757}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7854B67B-498E-43D7-85AB-AD0C38236757}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7854B67B-498E-43D7-85AB-AD0C38236757}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
