@@ -15,19 +15,37 @@ public class Engine
         _logger = logger;
     }
 
-    public Result<List<string>> RunHealthCheck()
+    public Result<HealthCheckResonse> RunHealthCheck()
     {
         // Ermitteln der FFmpeg-Version
         _logger.LogInformation("Checking FFmpeg version...");
         var version = _toolsVersionService.GetFFmpegVersion();
         if (version.IsFailure)
         {
-            _logger.LogError("Error checking FFmpeg version: {Error}", version.Error);
-            return Result.Failure<List<string>>(version.Error);
+            return Result.Failure<HealthCheckResonse>($"Error checking FFmpeg version: {version.Error}");
         }
+        if (string.IsNullOrWhiteSpace(version.Value))
+        {
+            return Result.Failure<HealthCheckResonse>($"Checking FFMpeg version returned empty result.");
+        }
+        var ffmpegVersion = version.Value;
 
-        // Split result by line
-        var lines = version.Value.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
-        return Result.Success(lines.ToList());
+        // Ermitteln der SIPS-Version
+        _logger.LogInformation("Checking SIPS version...");
+        version = _toolsVersionService.GetSipsVersion();
+        if (version.IsFailure)
+        {
+            return Result.Failure<HealthCheckResonse>($"Error checking SIPS version: {version.Error}");
+        }
+        if (string.IsNullOrWhiteSpace(version.Value))
+        {
+            return Result.Failure<HealthCheckResonse>($"Checking SIPS version returned empty result.");
+        }
+        var sipsVersion = version.Value;
+
+        // Rückgabe der Versionen
+        return Result.Success(new HealthCheckResonse(ffmpegVersion, sipsVersion));
     }
 }
+
+public record HealthCheckResonse(string FFmpegVersion, string SipsVersion);
