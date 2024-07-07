@@ -77,6 +77,16 @@ namespace Kurmann.Videoschnitt.ConsoleApp
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
+                .ConfigureLogging(logging =>
+                {
+                    logging.ClearProviders();
+                    logging.AddSimpleConsole(options =>
+                    {
+                        options.IncludeScopes = true;
+                        options.TimestampFormat = "yyyy-MM-dd HH:mm:ss.fff ";
+                        options.SingleLine = true;
+                    });
+                })
                 .ConfigureServices((hostContext, services) =>
                 {
                     services.AddLogging(configure => configure.AddConsole());

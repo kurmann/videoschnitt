@@ -15,17 +15,19 @@ public class Engine
         _logger = logger;
     }
 
-    public Result<string> RunHealthCheck()
+    public Result<List<string>> RunHealthCheck()
     {
         // Ermitteln der FFmpeg-Version
         _logger.LogInformation("Checking FFmpeg version...");
         var version = _toolsVersionService.GetFFmpegVersion();
         if (version.IsFailure)
         {
-            return Result.Failure<string>(version.Error);
+            _logger.LogError("Error checking FFmpeg version: {Error}", version.Error);
+            return Result.Failure<List<string>>(version.Error);
         }
-        
-        _logger.LogInformation("FFmpeg version: {version}", version.Value);
-        return Result.Success(version.Value);
+
+        // Split result by line
+        var lines = version.Value.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+        return Result.Success(lines.ToList());
     }
 }

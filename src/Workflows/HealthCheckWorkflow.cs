@@ -23,7 +23,18 @@ public class HealthCheckWorkflow : ISyncWorkflow
     {
         _logger.LogInformation("Health check started.");
 
-        _healthCheckFeature.RunHealthCheck();
+        var healthCheckResult = _healthCheckFeature.RunHealthCheck();
+        if (healthCheckResult.Value.Count == 0)
+        {
+            _logger.LogError("Health check result is empty.");
+            return Result.Failure("Health check failed.");
+        }
+
+        // log all lines
+        foreach (var line in healthCheckResult.Value)
+        {
+            _logger.LogInformation(line);
+        }
 
         _logger.LogInformation("Health check finished.");
         return Result.Success();
