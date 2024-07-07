@@ -3,7 +3,7 @@ using CSharpFunctionalExtensions;
 using Kurmann.Videoschnitt.Common.Entities.MediaTypes;
 using Kurmann.Videoschnitt.Common.Services.Metadata;
 
-namespace Kurmann.Videoschnitt.MetadataProcessor.Services;
+namespace Kurmann.Videoschnitt.MediaSetOrganizer.Services;
 
 /// <summary>
 /// Verantwortlich für das Erkennen des Mediensets.

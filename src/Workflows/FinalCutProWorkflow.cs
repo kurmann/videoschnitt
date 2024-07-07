@@ -1,20 +1,19 @@
 using Microsoft.Extensions.Logging;
 using CSharpFunctionalExtensions;
 using Kurmann.Videoschnitt.Workflows.Abstractions;
-using Kurmann.Videoschnitt.ConfigurationModule.Services;
 
 namespace Kurmann.Videoschnitt.Workflows;
 
 public class FinalCutProWorkflow : IAsyncWorkflow
 {
     private readonly ILogger<FinalCutProWorkflow> _logger;
-    private readonly MetadataProcessor.Engine _metadataProcessorEngine;
+    private readonly MediaSetOrganizer.Engine _mediaSetOrganizerEngine;
     private readonly InfuseMediaLibrary.Engine _infuseMediaLibraryEngine;
 
-    public FinalCutProWorkflow(ILogger<FinalCutProWorkflow> logger, MetadataProcessor.Engine metadataProcessorEngine, InfuseMediaLibrary.Engine infuseMediaLibraryEngine)
+    public FinalCutProWorkflow(ILogger<FinalCutProWorkflow> logger, MediaSetOrganizer.Engine mediaSetOrganizerEngine, InfuseMediaLibrary.Engine infuseMediaLibraryEngine)
     {
         _logger = logger;
-        _metadataProcessorEngine = metadataProcessorEngine;
+        _mediaSetOrganizerEngine = mediaSetOrganizerEngine;
         _infuseMediaLibraryEngine = infuseMediaLibraryEngine;
     }
 
@@ -22,16 +21,16 @@ public class FinalCutProWorkflow : IAsyncWorkflow
     {
         _logger.LogInformation("Final Cut Pro Workflow gestartet.");
 
-        _logger.LogInformation("Starte Metadaten-Verarbeitung");
-        var metadataProcessorResult = await _metadataProcessorEngine.StartAsync();
-        if (metadataProcessorResult.IsFailure)
+        _logger.LogInformation("Starte Medienset-Organisator");
+        var mediaSetOrganizerResult = await _mediaSetOrganizerEngine.StartAsync();
+        if (mediaSetOrganizerResult.IsFailure)
         {
-            return Result.Failure($"Fehler beim Ausführen des Final Cut Pro Workflows: {metadataProcessorResult.Error}");
+            return Result.Failure($"Fehler beim Ausführen des Final Cut Pro Workflows: {mediaSetOrganizerResult.Error}");
         }
 
         _logger.LogInformation("Starte Integration in die Infuse-Mediathek");
 
-        var integratedMediaServerFilesByMediaSet = await _infuseMediaLibraryEngine.StartAsync(metadataProcessorResult.Value);
+        var integratedMediaServerFilesByMediaSet = await _infuseMediaLibraryEngine.StartAsync(mediaSetOrganizerResult.Value);
         if (integratedMediaServerFilesByMediaSet.IsFailure)
         {
             return Result.Failure($"Fehler beim Ausführen des Final Cut Pro Workflows: {integratedMediaServerFilesByMediaSet.Error}");

@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MetadataProcessor\MetadataProcessor.csproj" />
+    <ProjectReference Include="..\MediaSetOrganizer\MediaSetOrganizer.csproj" />
     <ProjectReference Include="..\HealthCheck\HealthCheck.csproj" />
     <ProjectReference Include="..\InfuseMediaLibrary\InfuseMediaLibrary.csproj" />
     <ProjectReference Include="..\Common\Common.csproj" />

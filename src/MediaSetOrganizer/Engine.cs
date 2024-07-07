@@ -1,11 +1,11 @@
-using Kurmann.Videoschnitt.MetadataProcessor.Services;
+using Kurmann.Videoschnitt.MediaSetOrganizer.Services;
 using Microsoft.Extensions.Logging;
 using CSharpFunctionalExtensions;
 using Kurmann.Videoschnitt.Common.Models;
 using Kurmann.Videoschnitt.ConfigurationModule.Services;
 using Kurmann.Videoschnitt.ConfigurationModule.Settings;
 
-namespace Kurmann.Videoschnitt.MetadataProcessor;
+namespace Kurmann.Videoschnitt.MediaSetOrganizer;
 
 /// <summary>
 /// Zentrale Steuereinheit für die Metadaten-Verarbeitung.

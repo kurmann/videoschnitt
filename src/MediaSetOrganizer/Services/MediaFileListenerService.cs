@@ -3,7 +3,7 @@ using CSharpFunctionalExtensions;
 using Kurmann.Videoschnitt.ConfigurationModule.Services;
 using Kurmann.Videoschnitt.ConfigurationModule.Settings;
 
-namespace Kurmann.Videoschnitt.MetadataProcessor.Services;
+namespace Kurmann.Videoschnitt.MediaSetOrganizer.Services;
 
 /// <summary>
 /// Verantwortlich für das Auflisten von unterstützten Medien-Dateien eines Verzeichnisses.

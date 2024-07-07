@@ -1,4 +1,4 @@
-using Kurmann.Videoschnitt.MetadataProcessor.Services;
+using Kurmann.Videoschnitt.MediaSetOrganizer.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Kurmann.Videoschnitt.Common;
@@ -9,11 +9,11 @@ using Kurmann.Videoschnitt.Common.Services.FileSystem;
 using Kurmann.Videoschnitt.Common.Services.FileSystem.Unix;
 using Kurmann.Videoschnitt.ConfigurationModule;
 
-namespace Kurmann.Videoschnitt.MetadataProcessor;
+namespace Kurmann.Videoschnitt.MediaSetOrganizer;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddMetadataProcessor(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddMediaSetOrganizer(this IServiceCollection services, IConfiguration configuration)
     {   
         // Register MetadataProcessingService
         services.AddScoped<Engine>();

@@ -1,7 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Kurmann.Videoschnitt.HealthCheck;
 using Microsoft.Extensions.Configuration;
-using Kurmann.Videoschnitt.MetadataProcessor;
+using Kurmann.Videoschnitt.MediaSetOrganizer;
 using Kurmann.Videoschnitt.InfuseMediaLibrary;
 using Kurmann.Videoschnitt.ConfigurationModule;
 
@@ -15,7 +15,7 @@ public static class ServiceCollectionExtensions
         services.AddConfigurationModule(configuration);
 
         // Add feature modules
-        services.AddMetadataProcessor(configuration);
+        services.AddMediaSetOrganizer(configuration);
         services.AddInfuseMediaLibrary(configuration);
         services.AddHealthCheck();
 

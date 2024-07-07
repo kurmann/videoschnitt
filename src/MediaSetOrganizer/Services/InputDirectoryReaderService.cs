@@ -5,7 +5,7 @@ using Kurmann.Videoschnitt.Common.Services.Metadata;
 using Kurmann.Videoschnitt.Common.Entities.MediaTypes;
 using CSharpFunctionalExtensions;
 
-namespace Kurmann.Videoschnitt.MetadataProcessor.Services;
+namespace Kurmann.Videoschnitt.MediaSetOrganizer.Services;
 
 /// <summary>
 /// Verantwortlich für das Lesen des Eingabeverzeichnisses mit allen Medien-Dateien und weiteren Dateien.
