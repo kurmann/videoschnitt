@@ -11,17 +11,33 @@ public class ApplicationSettings
     /// Der Pfad zur Infuse-Mediathek.
     /// </summary>
     public string InfuseMediaLibraryPath { get; set; } = DefaultInfuseMediaLibraryPath;
-
+    public const string InfuseMediaLibraryPathConfigKey = $"{SectionName}:InfuseMediaLibraryPath";
     public const string DefaultInfuseMediaLibraryPath = "~/Movies/Infuse Media Library";
     public bool IsDefaultInfuseMediaLibraryPath => InfuseMediaLibraryPath == DefaultInfuseMediaLibraryPath;
 
     /// <summary>
     /// Eingangsverzeichnis, in dem die zu verarbeitenden Dateien liegen.
     /// </summary>
-    public string? InputDirectory { get; set; }
-
+    public string InputDirectory { get; set; } = DefaultInputDirectory;
+    public const string InputDirectoryConfigKey = $"{SectionName}:InputDirectory";
     public const string DefaultInputDirectory = "~/Movies/Final Cut Export";
     public bool IsDefaultInputDirectory => InputDirectory == DefaultInputDirectory;
+
+    /// <summary>
+    /// Der Pfad zum lokalen Medienset-Verzeichnis.
+    /// </summary>
+    /// <value></value>
+    public string MediaSetPathLocal { get; set; } = DefaultMediaSetPathLocal;
+    public const string MediaSetPathLocalConfigKey = $"{SectionName}:MediaSetPathLocal";
+    public const string DefaultMediaSetPathLocal = "~/Movies/MediaSets";
+    public bool IsDefaultMediaSetPathLocal => MediaSetPathLocal == DefaultMediaSetPathLocal;
+
+    /// <summary>
+    /// Der Pfad zum Medienset-Verzeichnis auf dem externen Archiv oder Medienserver.
+    /// </summary>
+    /// <value></value>
+    public string? MediaSetPathRemote { get; set; }
+    public const string MediaSetPathRemoteConfigKey = $"{SectionName}:MediaSetPathRemote";
 
     /// <summary>
     /// Die Einstellungen für externe Tools wie FFmpeg oder SIPS.
