@@ -21,7 +21,11 @@ public record SupportedImage : ISupportedMediaType
 
     public static bool IsSupportedImageExtension(FileInfo fileInfo)
     {
-        return fileInfo.Extension.Equals(".jpg", StringComparison.InvariantCultureIgnoreCase) || fileInfo.Extension.Equals(".jpeg", StringComparison.InvariantCultureIgnoreCase) || fileInfo.Extension.Equals(".png", StringComparison.InvariantCultureIgnoreCase);
+        return fileInfo.Extension.Equals(".jpg", StringComparison.InvariantCultureIgnoreCase) ||
+            fileInfo.Extension.Equals(".jpeg", StringComparison.InvariantCultureIgnoreCase) ||
+            fileInfo.Extension.Equals(".png", StringComparison.InvariantCultureIgnoreCase) ||
+            fileInfo.Extension.Equals(".tiff", StringComparison.InvariantCultureIgnoreCase) ||
+            fileInfo.Extension.Equals(".tif", StringComparison.InvariantCultureIgnoreCase);
     }
 
     public override string ToString() => FileInfo.Name;
