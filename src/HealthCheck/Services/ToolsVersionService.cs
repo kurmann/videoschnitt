@@ -2,16 +2,19 @@ using System.Diagnostics;
 using System.Text;
 using CSharpFunctionalExtensions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Kurmann.Videoschnitt.HealthCheck.Services;
 
 public class ToolsVersionService
 {
     private readonly ILogger<ToolsVersionService> _logger;
+    private readonly ApplicationSettings _applicationSettings;
 
-    public ToolsVersionService(ILogger<ToolsVersionService> logger)
+    public ToolsVersionService(ILogger<ToolsVersionService> logger, IOptions<ApplicationSettings> applicationSettings)
     {
         _logger = logger;
+        _applicationSettings = applicationSettings.Value;
     }
 
     /// <summary>
@@ -22,7 +25,8 @@ public class ToolsVersionService
     {
         try
         {
-            var ffmpegPath = "/usr/local/bin/ffmpeg"; // Vollständiger Pfad zu ffmpeg
+            var ffmpegPath = _applicationSettings.ExternalTools.FFMpeg.Path;
+            _logger.LogInformation("Verwende ffmpeg unter {ffmpegPath}", ffmpegPath);
 
             var process = new Process()
             {
@@ -59,12 +63,15 @@ public class ToolsVersionService
     {
         try
         {
+            var sipsPath = _applicationSettings.ExternalTools.Sips.Path;
+            _logger.LogInformation("Verwende sips unter {sipsPath}", sipsPath);
+
             var process = new Process()
             {
                 StartInfo = new ProcessStartInfo
                 {
                     FileName = "/bin/bash",
-                    Arguments = $"-c \"sips --version\"",
+                    Arguments = $"-c \"{sipsPath} --version\"",
                     RedirectStandardOutput = true,
                     StandardOutputEncoding = Encoding.UTF8,
                     UseShellExecute = false,

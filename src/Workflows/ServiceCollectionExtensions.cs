@@ -18,7 +18,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<HealthCheckWorkflow>();
         services.AddScoped<FinalCutProWorkflow>();
 
-        services.AddHealthCheck();
+        services.AddHealthCheck(configuration);
 
         return services;
     }
