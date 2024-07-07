@@ -39,6 +39,7 @@ public class ConfigurationInfoService
         if (_applicationSettings.IsDefaultInfuseMediaLibraryPath)
         {
             _logger.LogInformation("Kein Infuse Media Library Pfad konfiguriert. Verwende Standardwert: {path}", _applicationSettings.InfuseMediaLibraryPath);
+            _logger.LogInformation("Sie können den Infuse Media Library Pfad in der appsettings.json-Datei unter dem Schlüssel: {key} konfigurieren", ApplicationSettings.InfuseMediaLibraryPathConfigKey);
         }
         else
         {
@@ -48,10 +49,28 @@ public class ConfigurationInfoService
         if (_applicationSettings.IsDefaultInputDirectory)
         {
             _logger.LogInformation("Kein Eingangsverzeichnis konfiguriert. Verwende Standardwert: {path}", _applicationSettings.InputDirectory);
+            _logger.LogInformation("Sie können das Eingangsverzeichnis in der appsettings.json-Datei unter dem Schlüssel: {key} konfigurieren", ApplicationSettings.InputDirectoryConfigKey);
         }
         else
         {
             _logger.LogInformation("Verwende Eingangsverzeichnis aus der Konfiguration: {path}", _applicationSettings.InputDirectory);
+        }
+
+        if (_applicationSettings.IsDefaultMediaSetPathLocal)
+        {
+            _logger.LogInformation("Kein lokales Medienset-Verzeichnis konfiguriert. Verwende Standardwert: {path}", _applicationSettings.MediaSetPathLocal);
+            _logger.LogInformation("Sie können das lokale Medienset-Verzeichnis in der appsettings.json-Datei unter dem Schlüssel: {key} konfigurieren", ApplicationSettings.MediaSetPathLocalConfigKey);
+        }
+        else
+        {
+            _logger.LogInformation("Verwende lokales Medienset-Verzeichnis aus der Konfiguration: {path}", _applicationSettings.MediaSetPathLocal);
+        }
+
+        if (_applicationSettings.MediaSetPathRemote == null)
+        {
+            _logger.LogInformation("Kein externes Medienset-Verzeichnis konfiguriert.");
+            _logger.LogInformation("Ein exterbnes Medienset-Verzeichnis ist optional und wird nur benötigt, wenn Mediensets auf einem externen Archiv oder Medienserver abgelegt werden.");
+            _logger.LogInformation("Konfigurieren Sie das externe Medienset-Verzeichnis in der appsettings.json-Datei unter dem Schlüssel: {key}", ApplicationSettings.MediaSetPathRemoteConfigKey);
         }
     }
 
