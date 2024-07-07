@@ -5,7 +5,7 @@ using Kurmann.Videoschnitt.Common.Entities.MediaTypes;
 using Kurmann.Videoschnitt.ConfigurationModule.Services;
 using Kurmann.Videoschnitt.ConfigurationModule.Settings;
 
-namespace Kurmann.Videoschnitt.MetadataProcessor.Services;
+namespace Kurmann.Videoschnitt.MediaSetOrganizer.Services;
 
 /// <summary>
 /// Organisiert die Mediendatien in einem Medienset nach Einsatzzweck (Medienserver oder Internet) 

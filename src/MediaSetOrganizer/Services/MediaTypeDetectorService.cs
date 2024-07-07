@@ -2,7 +2,7 @@ using Microsoft.Extensions.Logging;
 using CSharpFunctionalExtensions;
 using Kurmann.Videoschnitt.Common.Entities.MediaTypes;
 
-namespace Kurmann.Videoschnitt.MetadataProcessor.Services;
+namespace Kurmann.Videoschnitt.MediaSetOrganizer.Services;
 
 /// <summary>
 /// Verantwortlich für das Erkennen des Medientyps.
@@ -14,7 +14,7 @@ public class MediaTypeDetectorService
 
     public Result<ISupportedMediaType> DetectMediaType(FileInfo fileInfo)
     {
-        _logger.LogInformation($"Detecting media type for file {fileInfo.FullName}");
+        _logger.LogInformation("Detecting media type for file {FullName}", fileInfo.FullName);
 
         var mpeg4Video = Mpeg4Video.Create(fileInfo);
         if (mpeg4Video.IsSuccess)

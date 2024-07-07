@@ -3,7 +3,7 @@ using CSharpFunctionalExtensions;
 using Kurmann.Videoschnitt.Common.Entities.MediaTypes;
 using Kurmann.Videoschnitt.Common.Services.Metadata;
 
-namespace Kurmann.Videoschnitt.MetadataProcessor.Services;
+namespace Kurmann.Videoschnitt.MediaSetOrganizer.Services;
 
 /// <summary>
 /// Verantwortlich für das Erkennen des Mediensets.
@@ -27,7 +27,6 @@ public class MediaSetService
     public async Task<Result<List<MediaFilesByMediaSet>>> GroupToMediaSets(InputDirectoryContent inputDirectoryContent)
     {
         _logger.LogInformation("Versuche die Dateien im Verzeichnis in Medienset zu organisieren.");
-
 
         _logger.LogInformation("Lies aus allen unterstützen Videodateien mit FFMPeg den Titel-Tag aus den Metadaten und gruppiere alle Dateien mit dem gleichen Titel.");
         var metadataTasks = inputDirectoryContent.SupportedVideos
