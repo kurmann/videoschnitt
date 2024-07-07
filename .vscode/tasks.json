@@ -24,14 +24,6 @@
             "problemMatcher": []
         },
         {
-            "label": "deploy",
-            "dependsOn": [
-                "publish"
-            ],
-            "dependsOrder": "sequence",
-            "problemMatcher": []
-        },
-        {
             "label": "watch",
             "command": "dotnet",
             "type": "process",
@@ -44,7 +36,7 @@
             "problemMatcher": "$msCompile"
         },
         {
-            "label": "deploy-console",
+            "label": "deploy",
             "command": "bash",
             "type": "process",
             "args": [
