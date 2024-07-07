@@ -34,6 +34,24 @@ namespace Kurmann.Videoschnitt.ConsoleApp
             Environment.Exit(await exitCode);
         }
 
+        public static IHostBuilder CreateHostBuilder(string[] args) =>
+            Host.CreateDefaultBuilder(args)
+                .ConfigureLogging(logging =>
+                {
+                    logging.ClearProviders();
+                    logging.AddSimpleConsole(options =>
+                    {
+                        options.IncludeScopes = true;
+                        options.TimestampFormat = "yyyy-MM-dd HH:mm:ss.fff ";
+                        options.SingleLine = true;
+                    });
+                })
+                .ConfigureServices((hostContext, services) =>
+                {
+                    services.AddLogging(configure => configure.AddConsole());
+                    services.AddWorkflows();
+                });
+
         private static async Task<int> RunOptions(Options opts, IServiceProvider services, ILogger logger)
         {
             if (opts.Workflow == HealthCheckWorkflow.WorkflowName)
@@ -74,24 +92,6 @@ namespace Kurmann.Videoschnitt.ConsoleApp
                 return 1; // invalid workflow
             }
         }
-
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                .ConfigureLogging(logging =>
-                {
-                    logging.ClearProviders();
-                    logging.AddSimpleConsole(options =>
-                    {
-                        options.IncludeScopes = true;
-                        options.TimestampFormat = "yyyy-MM-dd HH:mm:ss.fff ";
-                        options.SingleLine = true;
-                    });
-                })
-                .ConfigureServices((hostContext, services) =>
-                {
-                    services.AddLogging(configure => configure.AddConsole());
-                    services.AddWorkflows();
-                });
     }
 
     public class Options
