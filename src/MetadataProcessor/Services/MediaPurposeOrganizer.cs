@@ -82,12 +82,12 @@ public class MediaPurposeOrganizer
         {
             var videoFile = videoFilesForMediaServer.First();
             localMediaServerFiles = new LocalMediaServerFiles(mediaFilesByMediaSets.ImageFiles, videoFile);
-            _logger.LogInformation($"Es wurde die Videodatei '{videoFile}' für den Medienserver im Medienset-Verzeichnis '{mediaFilesByMediaSets.Title}' gefunden.");
+            _logger.LogInformation("Es wurde die Videodatei '{videoFile}' für den Medienserver im Medienset-Verzeichnis '{Title}' gefunden.", videoFile.FileInfo.Name, mediaFilesByMediaSets.Title);
         }
 
         if (localMediaServerFiles.HasNoValue)
         {
-            _logger.LogInformation($"Es wurde keine Videodatei für den Medienserver im Medienset-Verzeichnis '{mediaFilesByMediaSets.Title}' gefunden.");
+            _logger.LogInformation("Es wurde keine Videodatei für den Medienserver im Medienset-Verzeichnis '{mediaFilesByMediaSets.Title}' gefunden.", mediaFilesByMediaSets.Title);
         }
 
         return localMediaServerFiles;
@@ -115,12 +115,13 @@ public class MediaPurposeOrganizer
         // Wenn keine Videodatei für das Internet gefunden wurde, dann wird ein leerer Maybe-Container zurückgegeben.
         if (videoFilesForInternet.Count == 0)
         {
-            _logger.LogInformation($"Es wurden keine Videodateien für das Internet im Medienset-Verzeichnis '{mediaFilesByMediaSets.Title}' gefunden.");
+            _logger.LogInformation("Es wurden keine Videodateien für das Internet im Medienset-Verzeichnis '{Title}' gefunden.", mediaFilesByMediaSets.Title);
             return Maybe<InternetStreamingFiles>.None;
         }
 
         internetStreaming = new InternetStreamingFiles(mediaFilesByMediaSets.ImageFiles, videoFilesForInternet);
-        _logger.LogInformation($"Es wurden die Videodateien '{string.Join(", ", videoFilesForInternet.Select(v => v.FileInfo.Name))}' für das Internet im Medienset-Verzeichnis '{mediaFilesByMediaSets.Title}' gefunden.");
+        var videoFileNames = string.Join(", ", videoFilesForInternet.Select(videoFile => videoFile.FileInfo.Name));
+        _logger.LogInformation("Es wurden die Videodateien '{videoFileNames}' für das Internet im Medienset-Verzeichnis '{Title}' gefunden.", videoFileNames, mediaFilesByMediaSets.Title);
 
         return internetStreaming;
     }
