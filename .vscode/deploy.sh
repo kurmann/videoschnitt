@@ -13,24 +13,16 @@ PROJECT_PATH=$1
 USER_NAME=$USER
 
 # Verzeichnis für die Anwendung
-APP_DIR="/Users/${USER_NAME}/bin/Kurmann/Videoschnitt"
+APP_DIR="/Users/${USER_NAME}/bin/Kurmann/VideoschnittConsole"
 
-# Lösche und erstelle das Verzeichnis neu für die Anwendung
-rm -rf "$APP_DIR"
-mkdir -p "$APP_DIR"
+# Verzeichnisse für Logs
+LOG_DIR="/Users/${USER_NAME}/Library/Logs"
 
-# Prozess finden, der Port 5024 verwendet und ihn beenden
-PID=$(lsof -t -i:5024)
-if [ -n "$PID" ]; then
-  echo "Beende den Prozess, der Port 5024 verwendet (PID: $PID)..."
-  kill -9 $PID
-  echo "Prozess beendet."
-else
-  echo "Kein Prozess verwendet Port 5024."
-fi
+# Sicherstellen, dass die Log-Verzeichnisse existieren
+mkdir -p "$LOG_DIR"
 
 # Anwendung veröffentlichen ohne Single-File und Debug-Dateien
-echo "Veröffentliche die .NET-Anwendung..."
+echo "Veröffentliche die .NET-Konsolenanwendung..."
 dotnet publish "$PROJECT_PATH/src/ConsoleApp/ConsoleApp.csproj" -c Release --self-contained -p:DebugType=None -o "$APP_DIR"
 
 if [ $? -eq 0 ]; then
@@ -42,8 +34,8 @@ fi
 
 # launchctl Dienst neu laden
 echo "Neuladen des LaunchAgent-Dienstes..."
-launchctl unload "$HOME/Library/LaunchAgents/com.swiss.kurmann.videoschnitt.plist"
-launchctl load "$HOME/Library/LaunchAgents/com.swiss.kurmann.videoschnitt.plist"
+launchctl unload "$HOME/Library/LaunchAgents/com.swiss.kurmann.videoschnitt.console.plist"
+launchctl load "$HOME/Library/LaunchAgents/com.swiss.kurmann.videoschnitt.console.plist"
 
 if [ $? -eq 0 ]; then
   echo "LaunchAgent-Dienst erfolgreich neu geladen."

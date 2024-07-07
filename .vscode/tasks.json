@@ -48,7 +48,7 @@
             "command": "bash",
             "type": "process",
             "args": [
-                "${workspaceFolder}/.vscode/deploy-console.sh",
+                "${workspaceFolder}/.vscode/deploy.sh",
                 "${workspaceFolder}"
             ],
             "problemMatcher": []

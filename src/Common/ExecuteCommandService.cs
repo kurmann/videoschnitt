@@ -20,7 +20,7 @@ public class ExecuteCommandService
     /// <returns>Ein Result-Objekt, das den Erfolg oder Fehler enthält.</returns>
     public async Task<Result<List<string>>> ExecuteCommandAsync(string commandPath, string arguments)
     {
-        _logger.LogInformation($"Executing command: {commandPath} {arguments}");
+        _logger.LogInformation("Executing command: {commandPath} {arguments}", commandPath, arguments);
 
         var psi = new ProcessStartInfo(commandPath, arguments)
         {
@@ -41,7 +41,7 @@ public class ExecuteCommandService
             {
                 if (e.Data != null)
                 {
-                    _logger.LogInformation(e.Data);
+                    _logger.LogInformation("{data}", e.Data);
                     outputLines.Add(e.Data);
                 }
             };
@@ -50,7 +50,7 @@ public class ExecuteCommandService
             {
                 if (e.Data != null)
                 {
-                    _logger.LogError(e.Data);
+                    _logger.LogError("{data}", e.Data);
                     errorLines.Add(e.Data);
                 }
             };
@@ -79,7 +79,7 @@ public class ExecuteCommandService
     /// <returns></returns>
     public async Task<bool> ExecuteBooleanCommandAsync(string commandPath, string arguments)
     {
-        _logger.LogInformation($"Executing command: {commandPath} {arguments}");
+        _logger.LogInformation("Executing command: {commandPath} {arguments}", commandPath, arguments);
 
         var commandResult = await ExecuteCommandAsync(commandPath, arguments);
         if (commandResult.IsFailure)
