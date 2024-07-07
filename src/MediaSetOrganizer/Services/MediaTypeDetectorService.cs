@@ -14,7 +14,7 @@ public class MediaTypeDetectorService
 
     public Result<ISupportedMediaType> DetectMediaType(FileInfo fileInfo)
     {
-        _logger.LogInformation($"Detecting media type for file {fileInfo.FullName}");
+        _logger.LogInformation("Detecting media type for file {FullName}", fileInfo.FullName);
 
         var mpeg4Video = Mpeg4Video.Create(fileInfo);
         if (mpeg4Video.IsSuccess)

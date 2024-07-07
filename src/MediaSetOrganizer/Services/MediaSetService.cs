@@ -28,7 +28,6 @@ public class MediaSetService
     {
         _logger.LogInformation("Versuche die Dateien im Verzeichnis in Medienset zu organisieren.");
 
-
         _logger.LogInformation("Lies aus allen unterstützen Videodateien mit FFMPeg den Titel-Tag aus den Metadaten und gruppiere alle Dateien mit dem gleichen Titel.");
         var metadataTasks = inputDirectoryContent.SupportedVideos
             .Select(async f => new
