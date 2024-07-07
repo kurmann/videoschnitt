@@ -1,6 +1,7 @@
 using CSharpFunctionalExtensions;
-using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Logging;
+using Kurmann.Videoschnitt.ConfigurationModule.Services;
+using Kurmann.Videoschnitt.ConfigurationModule.Settings;
 
 namespace Kurmann.Videoschnitt.Common.Services.Metadata;
 
@@ -13,30 +14,32 @@ public class FFmpegMetadataService
     private readonly ILogger<FFmpegMetadataService> _logger;
     private readonly string _ffmpegCommand;
     private readonly string _ffprobeCommand;
+    private readonly ApplicationSettings _applicationSettings;
 
     private const string DefaultFFMpegCommand = "ffmpeg";
     private const string DefaultFFProbeCommand = "ffprobe";
 
-    public FFmpegMetadataService(ExecuteCommandService executeCommandService, ILogger<FFmpegMetadataService> logger, IOptions<ApplicationSettings> applicationSettings)
+    public FFmpegMetadataService(ExecuteCommandService executeCommandService, ILogger<FFmpegMetadataService> logger, IConfigurationService configurationService)
     {
         _executeCommandService = executeCommandService;
         _logger = logger;
+        _applicationSettings = configurationService.GetSettings<ApplicationSettings>();
 
         // Warne, wenn die Umgebungsvariablen für FFmpeg nicht gesetzt sind.
-        if (applicationSettings.Value.ExternalTools?.FFMpeg?.Path == null)
+        if (_applicationSettings.ExternalTools?.FFMpeg?.Path == null)
             _logger.LogWarning("FFmpeg-Pfad nicht gesetzt. Es wird angenommen, dass FFmpeg in der Umgebungsvariable PATH gesetzt ist.");
         else
-            _logger.LogInformation($"FFmpeg-Pfad: {applicationSettings.Value.ExternalTools.FFMpeg.Path}");
+            _logger.LogInformation("FFmpeg-Pfad: {Path}", _applicationSettings.ExternalTools.FFMpeg.Path);
 
         // Warne, wenn die Umgebungsvariablen für FFprobe nicht gesetzt sind.
-        if (applicationSettings.Value.ExternalTools?.FFProbe?.Path == null)
+        if (_applicationSettings.ExternalTools?.FFProbe?.Path == null)
             _logger.LogWarning("FFprobe-Pfad nicht gesetzt. Es wird angenommen, dass FFprobe in der Umgebungsvariable PATH gesetzt ist.");
         else
-            _logger.LogInformation($"FFprobe-Pfad: {applicationSettings.Value.ExternalTools.FFProbe.Path}");
+            _logger.LogInformation("FFprobe-Pfad: {Path}", _applicationSettings.ExternalTools.FFProbe.Path);
 
         // Setze die Pfade zu FFmpeg und FFprobe aus den Einstellungen oder verwende die Standardwerte.
-        _ffmpegCommand = applicationSettings.Value.ExternalTools?.FFMpeg?.Path ?? DefaultFFMpegCommand;
-        _ffprobeCommand = applicationSettings.Value.ExternalTools?.FFProbe?.Path ?? DefaultFFProbeCommand;
+        _ffmpegCommand = _applicationSettings.ExternalTools?.FFMpeg?.Path ?? DefaultFFMpegCommand;
+        _ffprobeCommand = _applicationSettings.ExternalTools?.FFProbe?.Path ?? DefaultFFProbeCommand;
     }
 
     /// <summary>
@@ -55,7 +58,7 @@ public class FFmpegMetadataService
             return Result.Success(rawMetadata);
         }
 
-        _logger.LogError($"Error retrieving FFmpeg metadata: {result.Error}");
+        _logger.LogError("Error retrieving FFmpeg metadata: {Error}", result.Error);
         return Result.Failure<string>(result.Error);
     }
 
@@ -75,7 +78,7 @@ public class FFmpegMetadataService
             return Result.Success(metadataValue);
         }
 
-        _logger.LogError($"Error retrieving FFprobe metadata field '{field}': {result.Error}");
+        _logger.LogError("Error retrieving FFprobe metadata field '{field}': {Error}", field, result.Error);
         return Result.Failure<string>(result.Error);
     }
 
@@ -100,7 +103,7 @@ public class FFmpegMetadataService
             return Result.Success(codecName);
         }
 
-        _logger.LogError($"Error retrieving video codec for file '{filePath}': {result.Error}");
+        _logger.LogError("Error retrieving video codec for file '{filePath}': {Error}", filePath, result.Error);
         return Result.Failure<string>(result.Error);
     }
 
@@ -115,7 +118,7 @@ public class FFmpegMetadataService
             return Result.Success(codecProfile);
         }
 
-        _logger.LogError($"Error retrieving video codec profile for file '{filePath}': {result.Error}");
+        _logger.LogError("Error retrieving video codec profile for file '{filePath}': {Error}", filePath, result.Error);
         return Result.Failure<string>(result.Error);
     }
 }

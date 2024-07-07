@@ -6,6 +6,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Kurmann.Videoschnitt.Workflows;
+using Kurmann.Videoschnitt.ConfigurationModule;
+using Kurmann.Videoschnitt.ConfigurationModule.Services;
 
 namespace Kurmann.Videoschnitt.ConsoleApp
 {
@@ -20,6 +22,9 @@ namespace Kurmann.Videoschnitt.ConsoleApp
 
             CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
             CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
+
+            var configurationInfoService = host.Services.GetRequiredService<ConfigurationInfoService>();
+            configurationInfoService.LogConfigurationInfo();
 
             var exitCode = Parser.Default.ParseArguments<Options>(args)
                 .MapResult(
@@ -37,25 +42,26 @@ namespace Kurmann.Videoschnitt.ConsoleApp
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
-            .ConfigureAppConfiguration((hostContext, config) =>
-            {
-                config.AddUserSecrets<Program>();
-            })
-            .ConfigureLogging(logging =>
-            {
-                logging.ClearProviders();
-                logging.AddSimpleConsole(options =>
+                .ConfigureAppConfiguration((hostContext, config) =>
                 {
-                options.IncludeScopes = true;
-                options.TimestampFormat = "yyyy-MM-dd HH:mm:ss.fff ";
-                options.SingleLine = true;
+                    config.AddUserSecrets<Program>();
+                })
+                .ConfigureLogging(logging =>
+                {
+                    logging.ClearProviders();
+                    logging.AddSimpleConsole(options =>
+                    {
+                        options.IncludeScopes = true;
+                        options.TimestampFormat = "yyyy-MM-dd HH:mm:ss.fff ";
+                        options.SingleLine = true;
+                    });
+                })
+                .ConfigureServices((hostContext, services) =>
+                {
+                    services.AddLogging(configure => configure.AddConsole());
+                    services.AddConfigurationModule(hostContext.Configuration);
+                    services.AddWorkflows(hostContext.Configuration);
                 });
-            })
-            .ConfigureServices((hostContext, services) =>
-            {
-                services.AddLogging(configure => configure.AddConsole());
-                services.AddWorkflows(hostContext.Configuration);
-            });
 
         private static async Task<int> RunOptions(Options opts, IServiceProvider services, ILogger logger)
         {

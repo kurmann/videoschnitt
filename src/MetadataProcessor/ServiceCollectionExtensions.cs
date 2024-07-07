@@ -7,6 +7,7 @@ using Kurmann.Videoschnitt.Common.Services.ImageProcessing;
 using Kurmann.Videoschnitt.Common.Services.ImageProcessing.MacOS;
 using Kurmann.Videoschnitt.Common.Services.FileSystem;
 using Kurmann.Videoschnitt.Common.Services.FileSystem.Unix;
+using Kurmann.Videoschnitt.ConfigurationModule;
 
 namespace Kurmann.Videoschnitt.MetadataProcessor;
 
@@ -14,10 +15,6 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddMetadataProcessor(this IServiceCollection services, IConfiguration configuration)
     {   
-        // Add configuration sources
-        services.Configure<ModuleSettings>(options => configuration.GetSection(ModuleSettings.SectionName).Bind(options));
-        services.Configure<ApplicationSettings>(options => configuration.GetSection(ApplicationSettings.SectionName).Bind(options));
-
         // Register MetadataProcessingService
         services.AddScoped<Engine>();
         services.AddScoped<FFmpegMetadataService>();
@@ -28,6 +25,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<InputDirectoryReaderService>();
 
         services.AddCommonServicesEngine(configuration);
+        services.AddConfigurationModule(configuration);
 
         return services;
     }

@@ -19,6 +19,7 @@
     <ProjectReference Include="..\HealthCheck\HealthCheck.csproj" />
     <ProjectReference Include="..\InfuseMediaLibrary\InfuseMediaLibrary.csproj" />
     <ProjectReference Include="..\Common\Common.csproj" />
+    <ProjectReference Include="..\ConfigurationModule\ConfigurationModule.csproj" />
   </ItemGroup>
 
 </Project>

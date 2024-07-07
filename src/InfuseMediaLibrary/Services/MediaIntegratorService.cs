@@ -1,10 +1,11 @@
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using CSharpFunctionalExtensions;
 using Kurmann.Videoschnitt.Common.Models;
 using Kurmann.Videoschnitt.Common.Services.FileSystem;
 using Kurmann.Videoschnitt.Common.Entities.MediaTypes;
 using Kurmann.Videoschnitt.Common.Services.Metadata;
+using Kurmann.Videoschnitt.ConfigurationModule.Services;
+using Kurmann.Videoschnitt.ConfigurationModule.Settings;
 
 namespace Kurmann.Videoschnitt.InfuseMediaLibrary.Services;
 
@@ -15,7 +16,7 @@ public class MediaIntegratorService
     private readonly FFmpegMetadataService _ffmpegMetadataService;
     private readonly PosterAndFanartService _posterAndFanartService;
     private readonly ApplicationSettings _applicationSettings; 
-    private readonly ModuleSettings _moduleSettings;
+    private readonly InfuseMediaLibrarySettings _infuseMediaLibrarySettings;
     private readonly ImageProcessorService _imageProcessorService;
 
     public MediaIntegratorService(ILogger<MediaIntegratorService> logger,
@@ -23,16 +24,15 @@ public class MediaIntegratorService
                                   FFmpegMetadataService ffmpegMetadataService,
                                   PosterAndFanartService posterAndFanartService,
                                   ImageProcessorService imageProcessorService,
-                                  IOptions<ApplicationSettings> applicationSettings,
-                                  IOptions<ModuleSettings> moduleSettings)
+                                  IConfigurationService configurationService)
     {
         _logger = logger;
         _fileOperations = fileOperations;
         _ffmpegMetadataService = ffmpegMetadataService;
         _posterAndFanartService = posterAndFanartService;
         _imageProcessorService = imageProcessorService;
-        _applicationSettings = applicationSettings.Value;
-        _moduleSettings = moduleSettings.Value;
+        _applicationSettings = configurationService.GetSettings<ApplicationSettings>();
+        _infuseMediaLibrarySettings = configurationService.GetSettings<InfuseMediaLibrarySettings>();
     }
 
     public async Task<Result<Maybe<LocalMediaServerFiles>>> IntegrateMediaSetToInfuseMediaLibrary(MediaSet mediaSet)
@@ -220,7 +220,7 @@ public class MediaIntegratorService
         _logger.LogInformation($"Posterbild {posterImage.FileInfo.FullName} erfolgreich in das Infuse-Mediathek-Verzeichnis {videoTargetDirectory.FullName} verschoben.");
 
         // Das Fanartbild hat den gleichen Dateinamen wie die Videodatei und zusätzlich dem Postfix definiert aus den Einstellungen.
-        var bannerFilePostfix = _moduleSettings.BannerFilePostfix;
+        var bannerFilePostfix = _infuseMediaLibrarySettings.BannerFilePostfix;
         if (string.IsNullOrWhiteSpace(bannerFilePostfix))
         {
             return Result.Failure("Das Suffix des Dateinamens, das für die Banner-Datei verwendet wird für die Infuse-Mediathek als Titelbild, ist nicht definiert.");

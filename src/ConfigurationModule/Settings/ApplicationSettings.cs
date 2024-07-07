@@ -1,7 +1,8 @@
-namespace Kurmann.Videoschnitt.Common;
+namespace Kurmann.Videoschnitt.ConfigurationModule.Settings;
 
 /// <summary>
 /// Einstellungen, die für die ganze Anwendung gelten.
+/// </summary>
 public class ApplicationSettings
 {
     public const string SectionName = "Application";
@@ -9,12 +10,18 @@ public class ApplicationSettings
     /// <summary>
     /// Der Pfad zur Infuse-Mediathek.
     /// </summary>
-    public string? InfuseMediaLibraryPath { get; set; }
+    public string InfuseMediaLibraryPath { get; set; } = DefaultInfuseMediaLibraryPath;
+
+    public const string DefaultInfuseMediaLibraryPath = "~/Movies/Infuse Media Library";
+    public bool IsDefaultInfuseMediaLibraryPath => InfuseMediaLibraryPath == DefaultInfuseMediaLibraryPath;
 
     /// <summary>
     /// Eingangsverzeichnis, in dem die zu verarbeitenden Dateien liegen.
     /// </summary>
     public string? InputDirectory { get; set; }
+
+    public const string DefaultInputDirectory = "~/Movies/Final Cut Export";
+    public bool IsDefaultInputDirectory => InputDirectory == DefaultInputDirectory;
 
     /// <summary>
     /// Die Einstellungen für externe Tools wie FFmpeg oder SIPS.

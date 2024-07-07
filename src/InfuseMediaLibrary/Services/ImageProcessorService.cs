@@ -1,8 +1,8 @@
 using CSharpFunctionalExtensions;
 using Microsoft.Extensions.Logging;
 using Kurmann.Videoschnitt.Common.Services.ImageProcessing;
-using Kurmann.Videoschnitt.Common.Services.FileSystem;
-using Microsoft.Extensions.Options;
+using Kurmann.Videoschnitt.ConfigurationModule.Services;
+using Kurmann.Videoschnitt.ConfigurationModule.Settings;
 
 namespace Kurmann.Videoschnitt.InfuseMediaLibrary.Services;
 
@@ -13,15 +13,13 @@ public class ImageProcessorService
 {
     private readonly IColorConversionService _colorConversionService;
     private readonly ILogger<ImageProcessorService> _logger;
-    private readonly IFileOperations _fileOperations;
-    private readonly ModuleSettings _moduleSettings;
+    private readonly InfuseMediaLibrarySettings _settings;
 
-    public ImageProcessorService(ILogger<ImageProcessorService> logger, IColorConversionService colorConversionService, IFileOperations fileOperations, IOptions<ModuleSettings> moduleSettings)
+    public ImageProcessorService(ILogger<ImageProcessorService> logger, IColorConversionService colorConversionService, IConfigurationService configurationService)
     {
         _logger = logger;
         _colorConversionService = colorConversionService;
-        _fileOperations = fileOperations;
-        _moduleSettings = moduleSettings.Value;
+        _settings = configurationService.GetSettings<InfuseMediaLibrarySettings>();
     }
 
     /// <summary>
@@ -54,14 +52,14 @@ public class ImageProcessorService
         }
 
         var convertedFilePath = Path.Combine(directoryPath.FullName, convertedFileNameResult.Value);
-        _logger.LogInformation($"Dateiname für konvertierte Datei: {convertedFilePath}");
+        _logger.LogInformation("Dateiname für konvertierte Datei: {convertedFilePath}", convertedFilePath);
 
         var colorConversationResult = await _colorConversionService.ConvertColorSpaceAsync(filePath.FullName, convertedFilePath, "bt2020", "adobe_rgb");
         if (colorConversationResult.IsFailure)
         {
             return Result.Failure<FileInfo>($"Fehler beim Konvertieren des Farbraums von BT.2020 nach Adobe RGB: {colorConversationResult.Error}");
         }
-        _logger.LogInformation($"Erfolgreiches Konvertieren des Farbraums von BT.2020 nach Adobe RGB: {filePath.FullName}");
+        _logger.LogInformation("Erfolgreiches Konvertieren des Farbraums von BT.2020 nach Adobe RGB: {filePath.FullName}", filePath.FullName);
         return new FileInfo(convertedFilePath);
     }
 
@@ -72,12 +70,12 @@ public class ImageProcessorService
             return Result.Failure<string>("Der Dateipfad darf nicht null sein.");
         }
 
-        if (_moduleSettings.SuffixForConvertedTempImage == null)
+        if (_settings.SuffixForConvertedTempImage == null)
         {
             return Result.Failure<string>("Das Suffx für konvertierte temporäre Dateien ist nicht konfiguriert.");
         }
 
-        return $"{Path.GetFileNameWithoutExtension(filePath.Name)}{_moduleSettings.SuffixForConvertedTempImage}{filePath.Extension}";
+        return $"{Path.GetFileNameWithoutExtension(filePath.Name)}{_settings.SuffixForConvertedTempImage}{filePath.Extension}";
     }
 
     public Result<string> GetFileNameWithoutConvertedSuffix(FileInfo filePath)
@@ -87,7 +85,7 @@ public class ImageProcessorService
             return Result.Failure<string>("Der Dateipfad darf nicht null sein.");
         }
 
-        if (_moduleSettings.SuffixForConvertedTempImage == null)
+        if (_settings.SuffixForConvertedTempImage == null)
         {
             return Result.Failure<string>("Das Suffx für konvertierte temporäre Dateien ist nicht konfiguriert.");
         }

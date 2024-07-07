@@ -1,9 +1,9 @@
 using Kurmann.Videoschnitt.MetadataProcessor.Services;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using CSharpFunctionalExtensions;
 using Kurmann.Videoschnitt.Common.Models;
-
+using Kurmann.Videoschnitt.ConfigurationModule.Services;
+using Kurmann.Videoschnitt.ConfigurationModule.Settings;
 
 namespace Kurmann.Videoschnitt.MetadataProcessor;
 
@@ -12,20 +12,20 @@ namespace Kurmann.Videoschnitt.MetadataProcessor;
 /// </summary>
 public class Engine
 {
-    private readonly ApplicationSettings _applicationSettings;
     private readonly ILogger<Engine> _logger;
     private readonly MediaSetService _mediaSetService;
     private readonly MediaPurposeOrganizer _mediaPurposeOrganizer;
     private readonly InputDirectoryReaderService _inputDirectoryReaderService;
+    private readonly ApplicationSettings _applicationSettings;
 
     public Engine(ILogger<Engine> logger,
-                  IOptions<ApplicationSettings> applicationSettings,
+                  IConfigurationService configurationService,
                   MediaSetService mediaSetService,
                   MediaPurposeOrganizer mediaPurposeOrganizer,
                   InputDirectoryReaderService inputDirectoryReaderService)
     {
-        _applicationSettings = applicationSettings.Value;
         _logger = logger;
+        _applicationSettings = configurationService.GetSettings<ApplicationSettings>();
         _mediaSetService = mediaSetService;
         _mediaPurposeOrganizer = mediaPurposeOrganizer;
         _inputDirectoryReaderService = inputDirectoryReaderService;
@@ -62,7 +62,7 @@ public class Engine
         {
             return Result.Failure<List<MediaSet>>($"Fehler beim Organisieren der Medien nach ihrem Verwendungszweck: {mediaSets.Error}");
         }
-        _logger.LogInformation($"Anzahl Mediensets: {mediaSets.Value.Count}");
+        _logger.LogInformation("Anzahl Mediensets: {Count}", mediaSets.Value.Count);
         _logger.LogInformation("Medien erfolgreich nach ihrem Verwendungszweck organisiert.");
 
         _logger.LogInformation("Steuereinheit für die Metadaten-Verarbeitung beendet.");

@@ -1,0 +1,21 @@
+namespace Kurmann.Videoschnitt.ConfigurationModule.Settings;
+
+public class MetadataProcessingSettings
+{
+    public const string SectionName = "MetadataProcessing";
+
+    public MediaSetSettings MediaSet { get; set; } = new MediaSetSettings();
+}
+
+public class MediaSetSettings
+{
+    /// <summary>
+    /// Liste der Varianten-Suffixe, die in den Dateinamen von Videos vorkommen können, einschließlich des Trennzeichens, die für den Medienserver bestimmt sind.
+    /// </summary>
+    public List<string> VideoVersionSuffixesForMediaServer { get; set; } = new List<string> { "-4K60-Medienserver", "-4K30-Medienserver", "-1080p-Medienserver" };
+
+    /// <summary>
+    /// Liste der Varianten-Suffixe, die in den Dateinamen von Videos vorkommen können, einschließlich des Trennzeichens, die für das Internet bestimmt sind.
+    /// </summary>
+    public List<string> VideoVersionSuffixesForInternet { get; set; } = new List<string> { "-4K-Internet", "-1080p-Internet" };
+}

@@ -5,19 +5,15 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <LangVersion>10</LangVersion>
-    <RootNamespace>Kurmann.Videoschnitt.Common</RootNamespace>
-    <AssemblyName>Kurmann.Videoschnitt.Common</AssemblyName>
+    <AssemblyName>Kurmann.Videoschnitt.ConfigurationModule</AssemblyName>
+    <RootNamespace>Kurmann.Videoschnitt.ConfigurationModule</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CSharpFunctionalExtensions" Version="2.42.5" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.0-preview.5.24306.7" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="9.0.0-preview.5.24306.7" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0-preview.5.24306.7" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.0-preview.5.24306.7" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\ConfigurationModule\ConfigurationModule.csproj" />
   </ItemGroup>
 
 </Project>
