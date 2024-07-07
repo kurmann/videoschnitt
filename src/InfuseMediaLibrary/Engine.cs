@@ -23,13 +23,7 @@ public class Engine
     public async Task<Result<List<LocalMediaServerFiles>>> StartAsync(List<MediaSet> mediaSets)
     {
         _logger.LogInformation("InfuseMediaLibrary-Feature gestartet.");
-
-        if (_applicationSettings.InputDirectory == null)
-        {
-            return Result.Failure<List<LocalMediaServerFiles>>("Eingabeverzeichnis wurde nicht korrekt aus den Einstellungen geladen.");
-        }
-
-        _logger.LogInformation("Eingangsverzeichnis: {_applicationSettings.InputDirectory}", _applicationSettings.InputDirectory);
+        LogRelevantConfiguration();
 
         _logger.LogInformation("Iteriere über alle Mediensets und versuche, die Medien-Dateien in die Infuse-Mediathek zu integrieren.");
         var integratedMediaServerFilesByMediaSet = new List<LocalMediaServerFiles>();
@@ -55,5 +49,38 @@ public class Engine
         }
 
         return integratedMediaServerFilesByMediaSet;
+    }
+
+    private Result LogRelevantConfiguration()
+    {
+        // Prüfe ob das Infuse-Mediathek-Verzeichnis konfiguriert ist
+        if (_applicationSettings.IsDefaultInfuseMediaLibraryPath)
+        {
+            _logger.LogInformation("Das Infuse-Mediathek-Verzeichnis wurde nicht konfiguriert, verwende den Standardpfad {path}", _applicationSettings.InfuseMediaLibraryPath);
+        }
+        else if (_applicationSettings.InfuseMediaLibraryPath == null)
+        {
+            return Result.Failure("Das Infuse-Mediathek-Verzeichnis wurde nicht korrekt aus den Einstellungen geladen.");
+        }
+        else 
+        {
+            _logger.LogInformation("Das Infuse-Mediathek-Verzeichnis wurde aus den Einstellungen geladen: {path}", _applicationSettings.InfuseMediaLibraryPath);
+        }
+
+        // Prüfe das Eingangsverzeichnis
+        if (_applicationSettings.IsDefaultInputDirectory)
+        {
+            _logger.LogInformation("Das Eingangsverzeichnis wurde nicht konfiguriert, verwende den Standardpfad {path}", _applicationSettings.InputDirectory);
+        }
+        else if (_applicationSettings.InputDirectory == null)
+        {
+            return Result.Failure("Das Eingangsverzeichnis wurde nicht korrekt aus den Einstellungen geladen.");
+        }
+        else
+        {
+            _logger.LogInformation("Das Eingangsverzeichnis wurde aus den Einstellungen geladen: {path}", _applicationSettings.InputDirectory);
+        }
+
+        return Result.Success();
     }
 }

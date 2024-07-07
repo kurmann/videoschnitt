@@ -150,7 +150,7 @@ public class MediaIntegratorService
             return Result.Success();
         }
 
-        _logger.LogInformation("Es sind {supportedImages.Count()} Bild-Dateien für das Medienset vorhanden.", supportedImages.Count();
+        _logger.LogInformation("Es sind {supportedImages.Count()} Bild-Dateien für das Medienset vorhanden.", supportedImages.Count());
         _logger.LogInformation("Versuche alle unterstützten Bilder in den Farbraum Adobe RGB umzuwandeln.");
         var supportedConvertedImages = new List<SupportedImage>();
         foreach (var supportedImage in supportedImages)
