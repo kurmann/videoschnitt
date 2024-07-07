@@ -7,7 +7,7 @@
           "request": "launch",
           "preLaunchTask": "build",
           "program": "${workspaceFolder}/src/ConsoleApp/bin/Debug/net9.0/osx-arm64/Kurmann.Videoschnitt.ConsoleApp.dll",
-          "args": ["--workflow", "HealthCheck"],
+          "args": ["--workflow", "FinalCutPro"],
           "cwd": "${workspaceFolder}/src/ConsoleApp",
           "stopAtEntry": false,
           "env": {
