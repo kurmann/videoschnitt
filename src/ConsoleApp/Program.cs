@@ -2,6 +2,7 @@
 using System.Globalization;
 using CommandLine;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Kurmann.Videoschnitt.Workflows;
@@ -36,21 +37,25 @@ namespace Kurmann.Videoschnitt.ConsoleApp
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
-                .ConfigureLogging(logging =>
+            .ConfigureAppConfiguration((hostContext, config) =>
+            {
+                config.AddUserSecrets<Program>();
+            })
+            .ConfigureLogging(logging =>
+            {
+                logging.ClearProviders();
+                logging.AddSimpleConsole(options =>
                 {
-                    logging.ClearProviders();
-                    logging.AddSimpleConsole(options =>
-                    {
-                        options.IncludeScopes = true;
-                        options.TimestampFormat = "yyyy-MM-dd HH:mm:ss.fff ";
-                        options.SingleLine = true;
-                    });
-                })
-                .ConfigureServices((hostContext, services) =>
-                {
-                    services.AddLogging(configure => configure.AddConsole());
-                    services.AddWorkflows();
+                options.IncludeScopes = true;
+                options.TimestampFormat = "yyyy-MM-dd HH:mm:ss.fff ";
+                options.SingleLine = true;
                 });
+            })
+            .ConfigureServices((hostContext, services) =>
+            {
+                services.AddLogging(configure => configure.AddConsole());
+                services.AddWorkflows(hostContext.Configuration);
+            });
 
         private static async Task<int> RunOptions(Options opts, IServiceProvider services, ILogger logger)
         {
