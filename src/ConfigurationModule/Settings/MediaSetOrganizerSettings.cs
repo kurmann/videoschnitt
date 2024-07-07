@@ -1,8 +1,8 @@
 namespace Kurmann.Videoschnitt.ConfigurationModule.Settings;
 
-public class MetadataProcessingSettings
+public class MediaSetOrganizerSettings
 {
-    public const string SectionName = "MetadataProcessing";
+    public const string SectionName = "MediaSetOrganizer";
 
     public MediaSetSettings MediaSet { get; set; } = new MediaSetSettings();
 }

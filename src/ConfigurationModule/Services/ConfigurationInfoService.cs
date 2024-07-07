@@ -12,13 +12,13 @@ public class ConfigurationInfoService
     private readonly ILogger<ConfigurationInfoService> _logger;
     private readonly ApplicationSettings _applicationSettings;
     private readonly InfuseMediaLibrarySettings _infuseMediaLibrarySettings;
-    private readonly MetadataProcessingSettings _metadataProcessingSettings;
+    private readonly MediaSetOrganizerSettings _metadataProcessingSettings;
 
     public ConfigurationInfoService(
         ILogger<ConfigurationInfoService> logger,
         IOptions<ApplicationSettings> applicationSettings,
         IOptions<InfuseMediaLibrarySettings> infuseMediaLibrarySettings,
-        IOptions<MetadataProcessingSettings> metadataProcessingSettings)
+        IOptions<MediaSetOrganizerSettings> metadataProcessingSettings)
     {
         _logger = logger;
         _applicationSettings = applicationSettings.Value;
