@@ -1,4 +1,5 @@
 using Kurmann.Videoschnitt.ConfigurationModule.Settings;
+using Microsoft.Extensions.Options;
 
 namespace Kurmann.Videoschnitt.ConfigurationModule.Services;
 
@@ -6,13 +7,15 @@ public class ConfigurationService : IConfigurationService
 {
     private readonly Dictionary<Type, object> _settings;
 
-    public ConfigurationService(ApplicationSettings applicationSettings, InfuseMediaLibrarySettings infuseMediaLibrarySettings, MetadataProcessingSettings metadataProcessingSettings)
+    public ConfigurationService(IOptions<ApplicationSettings> applicationSettings,
+                                IOptions<InfuseMediaLibrarySettings> infuseMediaLibrarySettings,
+                                IOptions<MetadataProcessingSettings> metadataProcessingSettings)
     {
         _settings = new Dictionary<Type, object>
         {
-            { typeof(ApplicationSettings), applicationSettings },
-            { typeof(InfuseMediaLibrarySettings), infuseMediaLibrarySettings },
-            { typeof(MetadataProcessingSettings), metadataProcessingSettings }
+            { typeof(ApplicationSettings), applicationSettings.Value },
+            { typeof(InfuseMediaLibrarySettings), infuseMediaLibrarySettings.Value },
+            { typeof(MetadataProcessingSettings), metadataProcessingSettings.Value }
         };
     }
 
