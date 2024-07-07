@@ -16,6 +16,7 @@ namespace Kurmann.Videoschnitt.ConfigurationModule
 
             // Register Services
             services.AddSingleton<IConfigurationService, ConfigurationService>();
+            services.AddSingleton<ConfigurationInfoService>();
 
             return services;
         }

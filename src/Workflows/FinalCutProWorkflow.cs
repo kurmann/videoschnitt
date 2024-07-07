@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using CSharpFunctionalExtensions;
 using Kurmann.Videoschnitt.Workflows.Abstractions;
+using Kurmann.Videoschnitt.ConfigurationModule.Services;
 
 namespace Kurmann.Videoschnitt.Workflows;
 
@@ -20,7 +21,6 @@ public class FinalCutProWorkflow : IAsyncWorkflow
     public async Task<Result> ExecuteAsync()
     {
         _logger.LogInformation("Final Cut Pro Workflow gestartet.");
-        
 
         _logger.LogInformation("Starte Metadaten-Verarbeitung");
         var metadataProcessorResult = await _metadataProcessorEngine.StartAsync();

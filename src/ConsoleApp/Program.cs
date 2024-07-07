@@ -7,6 +7,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Kurmann.Videoschnitt.Workflows;
 using Kurmann.Videoschnitt.ConfigurationModule;
+using Kurmann.Videoschnitt.ConfigurationModule.Services;
 
 namespace Kurmann.Videoschnitt.ConsoleApp
 {
@@ -21,6 +22,9 @@ namespace Kurmann.Videoschnitt.ConsoleApp
 
             CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
             CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
+
+            var configurationInfoService = host.Services.GetRequiredService<ConfigurationInfoService>();
+            configurationInfoService.LogConfigurationInfo();
 
             var exitCode = Parser.Default.ParseArguments<Options>(args)
                 .MapResult(
