@@ -1,8 +1,9 @@
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using CSharpFunctionalExtensions;
 using Kurmann.Videoschnitt.Common.Models;
 using Kurmann.Videoschnitt.Common.Entities.MediaTypes;
+using Kurmann.Videoschnitt.ConfigurationModule.Services;
+using Kurmann.Videoschnitt.ConfigurationModule.Settings;
 
 namespace Kurmann.Videoschnitt.MetadataProcessor.Services;
 
@@ -13,12 +14,12 @@ namespace Kurmann.Videoschnitt.MetadataProcessor.Services;
 public class MediaPurposeOrganizer
 {
     private readonly ILogger<MediaPurposeOrganizer> _logger;
-    private readonly ModuleSettings _moduleSettings;
+    private readonly MetadataProcessingSettings _metadataProcessingSettings;
 
-    public MediaPurposeOrganizer(ILogger<MediaPurposeOrganizer> logger, IOptions<ModuleSettings> moduleSettings)
+    public MediaPurposeOrganizer(ILogger<MediaPurposeOrganizer> logger, IConfigurationService configurationService)
     {
         _logger = logger;
-        _moduleSettings = moduleSettings.Value;
+        _metadataProcessingSettings = configurationService.GetSettings<MetadataProcessingSettings>();
     }
 
     /// <summary>
@@ -58,7 +59,7 @@ public class MediaPurposeOrganizer
     {
         _logger.LogTrace($"Filtere alle Videodateien, die mit einem der Suffixe für den Medienserver enden.");
 
-        if (_moduleSettings.MediaSet?.VideoVersionSuffixesForMediaServer == null)
+        if (_metadataProcessingSettings.MediaSet?.VideoVersionSuffixesForMediaServer == null)
         {
             return Result.Failure<Maybe<LocalMediaServerFiles>>("Medienset-Einstellungen wurden nicht korrekt geladen. Es kann keine Unterteilung in Medienserver-Daten durchgeführt werden.");
         }
@@ -67,7 +68,7 @@ public class MediaPurposeOrganizer
         var videoFilesForMediaServer = new List<SupportedVideo>();
         foreach (var videoFile in mediaFilesByMediaSets.VideoFiles)
         {
-            if (_moduleSettings.MediaSet.VideoVersionSuffixesForMediaServer.Any(suffix => videoFile.FileInfo.Name.Contains(suffix)))
+            if (_metadataProcessingSettings.MediaSet.VideoVersionSuffixesForMediaServer.Any(suffix => videoFile.FileInfo.Name.Contains(suffix)))
             {
                 videoFilesForMediaServer.Add(videoFile);
             }
@@ -96,7 +97,7 @@ public class MediaPurposeOrganizer
     {
         _logger.LogTrace($"Filtere alle Videodateien, die mit einem der Suffixe für das Internet enden.");
 
-        if (_moduleSettings.MediaSet?.VideoVersionSuffixesForInternet == null)
+        if (_metadataProcessingSettings.MediaSet?.VideoVersionSuffixesForInternet == null)
         {
             return Result.Failure<Maybe<InternetStreamingFiles>>("Medienset-Einstellungen wurden nicht korrekt geladen. Es kann keine Unterteilung in Internet-Daten durchgeführt werden.");
         }
@@ -105,7 +106,7 @@ public class MediaPurposeOrganizer
         var videoFilesForInternet = new List<SupportedVideo>();
         foreach (var videoFile in mediaFilesByMediaSets.VideoFiles)
         {
-            if (_moduleSettings.MediaSet.VideoVersionSuffixesForInternet.Any(suffix => videoFile.FileInfo.Name.Contains(suffix)))
+            if (_metadataProcessingSettings.MediaSet.VideoVersionSuffixesForInternet.Any(suffix => videoFile.FileInfo.Name.Contains(suffix)))
             {
                 videoFilesForInternet.Add(videoFile);
             }

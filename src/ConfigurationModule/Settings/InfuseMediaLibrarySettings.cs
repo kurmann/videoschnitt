@@ -1,6 +1,6 @@
-namespace Kurmann.Videoschnitt.InfuseMediaLibrary;
+namespace Kurmann.Videoschnitt.ConfigurationModule.Settings;
 
-public class ModuleSettings
+public class InfuseMediaLibrarySettings
 {
     public const string SectionName = "InfuseMediaLibrary";
 

@@ -1,7 +1,8 @@
-namespace Kurmann.Videoschnitt.Common;
+namespace Kurmann.Videoschnitt.ConfigurationModule.Settings;
 
 /// <summary>
 /// Einstellungen, die für die ganze Anwendung gelten.
+/// </summary>
 public class ApplicationSettings
 {
     public const string SectionName = "Application";

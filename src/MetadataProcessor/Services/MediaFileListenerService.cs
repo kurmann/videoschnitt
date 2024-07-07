@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using CSharpFunctionalExtensions;
+using Kurmann.Videoschnitt.ConfigurationModule.Services;
+using Kurmann.Videoschnitt.ConfigurationModule.Settings;
 
 namespace Kurmann.Videoschnitt.MetadataProcessor.Services;
 
@@ -12,10 +13,10 @@ public class MediaFileListenerService
     private readonly ILogger<MediaFileListenerService> _logger;
     private readonly ApplicationSettings _settings;
 
-    public MediaFileListenerService(ILogger<MediaFileListenerService> logger, IOptions<ApplicationSettings> settings)
+    public MediaFileListenerService(ILogger<MediaFileListenerService> logger, IConfigurationService configurationService)
     {
         _logger = logger;
-        _settings = settings.Value;
+        _settings = configurationService.GetSettings<ApplicationSettings>();
     }
 
     internal Result<List<FileInfo>> GetSupportedMediaFiles()

@@ -3,6 +3,7 @@ using Microsoft.Extensions.Options;
 using Kurmann.Videoschnitt.InfuseMediaLibrary.Services;
 using Kurmann.Videoschnitt.Common.Models;
 using CSharpFunctionalExtensions;
+using Kurmann.Videoschnitt.ConfigurationModule.Settings;
 
 namespace Kurmann.Videoschnitt.InfuseMediaLibrary;
 
@@ -11,7 +12,6 @@ public class Engine
     private readonly ApplicationSettings _applicationSettings;
     private readonly ILogger<Engine> _logger;
     private readonly MediaIntegratorService _mediaIntegratorService;
-
 
     public Engine(IOptions<ApplicationSettings> applicationSettings, ILogger<Engine> logger, MediaIntegratorService mediaIntegratorService)
     {

@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Kurmann.Videoschnitt.Workflows;
+using Kurmann.Videoschnitt.ConfigurationModule;
 
 namespace Kurmann.Videoschnitt.ConsoleApp
 {
@@ -54,6 +55,7 @@ namespace Kurmann.Videoschnitt.ConsoleApp
             .ConfigureServices((hostContext, services) =>
             {
                 services.AddLogging(configure => configure.AddConsole());
+                services.AddConfigurationModule(hostContext.Configuration);
                 services.AddWorkflows(hostContext.Configuration);
             });
 
