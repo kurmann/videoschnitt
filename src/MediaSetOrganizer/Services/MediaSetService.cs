@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using CSharpFunctionalExtensions;
 using Kurmann.Videoschnitt.Common.Entities.MediaTypes;
 using Kurmann.Videoschnitt.Common.Services.Metadata;
+using Kurmann.Videoschnitt.Common.Models;
 
 namespace Kurmann.Videoschnitt.MediaSetOrganizer.Services;
 
@@ -76,7 +77,7 @@ public class MediaSetService
         var mediaFilesByMediaSet = new List<MediaFilesByMediaSet>();
         foreach (var videos in videosByMediaSet)
         {
-            // Suche nach allen unterstützten Bild-Dateien die das gleiche Basis-Datei-Name haben wie die Videodatei
+            _logger.LogInformation("Suche nach allen unterstützten Bild-Dateien die das gleiche Basis-Datei-Name haben wie die Videodatei");
             var supportedImageFileInfos = inputDirectoryContent.SupportedImages.Select(f => f.FileInfo);
             var imageFileInfos = supportedImageFileInfos.Where(i => i.Name.StartsWith(videos.Title)).ToArray();
             var supportedImageFiles = new List<SupportedImage>();
@@ -93,8 +94,16 @@ public class MediaSetService
                 }
             }
 
-            mediaFilesByMediaSet.Add(new MediaFilesByMediaSet(videos.Title, videos.VideoFiles, supportedImageFiles, filesWithEmptyTitleTags));
+            _logger.LogInformation("Suche für jedes Medienset nach einer Masterdatei.");
+            var masterfile = inputDirectoryContent.Masterfiles.FirstOrDefault(m => m.FileInfo.Name.StartsWith(videos.Title));
+
+            mediaFilesByMediaSet.Add(new MediaFilesByMediaSet(videos.Title,
+                                                              videos.VideoFiles,
+                                                              supportedImageFiles,
+                                                              masterfile ?? Maybe<Masterfile>.None,
+                                                              filesWithEmptyTitleTags));
         }
+
         _logger.LogInformation("Gruppierung der Medien-Dateien in Mediensets erfolgreich.");
         _logger.LogInformation("Anzahl Mediensets: {Count}", mediaFilesByMediaSet.Count);
 
@@ -127,4 +136,8 @@ public record VideosByMediaSet(string Title, IEnumerable<SupportedVideo> VideoFi
 /// <param name="ImageFiles"></param>
 /// <param name="EmptyTitleTags"></param>
 /// <returns></returns>
-public record MediaFilesByMediaSet(string Title, IEnumerable<SupportedVideo> VideoFiles, IEnumerable<SupportedImage> ImageFiles, IEnumerable<FileInfo> EmptyTitleTags);
+public record MediaFilesByMediaSet(string Title,
+                                   IEnumerable<SupportedVideo> VideoFiles,
+                                   IEnumerable<SupportedImage> ImageFiles,
+                                   Maybe<Masterfile> Masterfile,
+                                   IEnumerable<FileInfo> EmptyTitleTags);
