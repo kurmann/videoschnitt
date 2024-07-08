@@ -55,7 +55,8 @@ public class MediaPurposeOrganizer
                 Title = mediaFilesByMediaSet.Title, 
                 LocalMediaServerVideoFile = localMediaServerFiles.Value, 
                 InternetStreamingVideoFiles = internetStreamingFiles.Value, 
-                ImageFiles = imageFiles};
+                ImageFiles = imageFiles,
+                Masterfile = mediaFilesByMediaSet.Masterfile};
             _logger.LogInformation("Das Medienset mt dem Titel '{Title}' enthält folgende Dateien nach Einsatzzweck", mediaFilesByMediaSet.Title);
             _logger.LogInformation("Lokaler Medienserver: {LocalMediaServerVideoFile}", localMediaServerFiles.Value.HasValue ? localMediaServerFiles.Value.Value.FileInfo.Name : "Keine Datei");
             _logger.LogInformation("Internet-Streaming: {InternetStreamingVideoFiles}", internetStreamingFiles.Value.HasValue ? string.Join(", ", internetStreamingFiles.Value.Value.Select(videoFile => videoFile.FileInfo.Name)) : "Keine Datei");
