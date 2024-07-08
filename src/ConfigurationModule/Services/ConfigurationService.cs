@@ -9,13 +9,13 @@ public class ConfigurationService : IConfigurationService
 
     public ConfigurationService(IOptions<ApplicationSettings> applicationSettings,
                                 IOptions<InfuseMediaLibrarySettings> infuseMediaLibrarySettings,
-                                IOptions<MetadataProcessingSettings> metadataProcessingSettings)
+                                IOptions<MediaSetOrganizerSettings> metadataProcessingSettings)
     {
         _settings = new Dictionary<Type, object>
         {
             { typeof(ApplicationSettings), applicationSettings.Value },
             { typeof(InfuseMediaLibrarySettings), infuseMediaLibrarySettings.Value },
-            { typeof(MetadataProcessingSettings), metadataProcessingSettings.Value }
+            { typeof(MediaSetOrganizerSettings), metadataProcessingSettings.Value }
         };
     }
 

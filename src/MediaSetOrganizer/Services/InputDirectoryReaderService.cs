@@ -79,14 +79,14 @@ public class InputDirectoryReaderService
             var isFileInUse = await _fileOperations.IsFileInUseAsync(file.FullName);
             if (isFileInUse.IsFailure)
             {
-                _logger.LogWarning($"Fehler beim Prüfen ob die Datei {file.FullName} gerade in Verwendung ist: {isFileInUse.Error}");
+                _logger.LogWarning("Fehler beim Prüfen ob die Datei {FullName} gerade in Verwendung ist: {Error}", file.FullName, isFileInUse.Error);
                 _logger.LogInformation("Die Datei wird ignoriert mit Vermerk 'IgnoredFileReason.NotDefined'.");
                 ignoredFiles.Add(new IgnoredFile(file, IgnoredFileReason.NotDefined));
                 continue;
             }
             else if (isFileInUse.Value)
             {
-                _logger.LogInformation($"Die Datei {file.FullName} wird ignoriert, weil sie gerade in Verwendung ist.");
+                _logger.LogInformation("Die Datei {FullName} wird ignoriert, weil sie gerade in Verwendung ist.", file.FullName);
                 ignoredFiles.Add(new IgnoredFile(file, IgnoredFileReason.FileInUse));
                 continue;
             }
@@ -95,7 +95,7 @@ public class InputDirectoryReaderService
             var isMasterfileResult = await IsMasterfile(file);
             if (isMasterfileResult.IsFailure)
             {
-                _logger.LogWarning($"Fehler beim Prüfen ob die Datei {file.FullName} eine Masterdatei ist: {isMasterfileResult.Error}");
+                _logger.LogWarning("Fehler beim Prüfen ob die Datei {FullName} eine Masterdatei ist: {Error}", file.FullName, isMasterfileResult.Error);
                 _logger.LogInformation("Die Datei wird ignoriert mit Vermerk 'IgnoredFileReason.NotDefined'.");
                 ignoredFiles.Add(new IgnoredFile(file, IgnoredFileReason.NotDefined));
                 continue;
@@ -112,7 +112,7 @@ public class InputDirectoryReaderService
                 var supportedImageResult = SupportedImage.Create(file);
                 if (supportedImageResult.IsFailure)
                 {
-                    _logger.LogWarning($"Fehler beim Erstellen des SupportedImage-Objekts für die Datei {file.FullName}: {supportedImageResult.Error}");
+                    _logger.LogWarning("Fehler beim Erstellen des SupportedImage-Objekts für die Datei {FullName}: {Error}", file.FullName, supportedImageResult.Error);
                     _logger.LogInformation("Die Datei wird ignoriert mit Vermerk 'IgnoredFileReason.NotDefined'.");
                     ignoredFiles.Add(new IgnoredFile(file, IgnoredFileReason.NotDefined));
                     continue;
@@ -127,7 +127,7 @@ public class InputDirectoryReaderService
                 var supportedVideoResult = SupportedVideo.Create(file);
                 if (supportedVideoResult.IsFailure)
                 {
-                    _logger.LogWarning($"Fehler beim Erstellen des SupportedVideo-Objekts für die Datei {file.FullName}: {supportedVideoResult.Error}");
+                    _logger.LogWarning("Fehler beim Erstellen des SupportedVideo-Objekts für die Datei {FullName}: {Error}", file.FullName, supportedVideoResult.Error);
                     _logger.LogInformation("Die Datei wird ignoriert mit Vermerk 'IgnoredFileReason.NotDefined'.");
                     ignoredFiles.Add(new IgnoredFile(file, IgnoredFileReason.NotDefined));
                     continue;
@@ -137,7 +137,7 @@ public class InputDirectoryReaderService
             }
 
             // Wenn die Datei keine unterstützte Bild- oder Video-Datei ist, wird sie ignoriert
-            _logger.LogInformation($"Die Datei {file.FullName} ist keine unterstützte Bild- oder Video-Datei und wird ignoriert.");
+            _logger.LogInformation("Die Datei {FullName} ist keine unterstützte Bild- oder Video-Datei und wird ignoriert.", file.FullName);
             ignoredFiles.Add(new IgnoredFile(file, IgnoredFileReason.NotSupported));
         }
 
@@ -153,25 +153,24 @@ public class InputDirectoryReaderService
     /// <returns></returns>
     private async Task<Result<Maybe<Masterfile>>> IsMasterfile(FileInfo file)
     {
-        _logger.LogInformation($"Prüfe ob die Datei {file.FullName} eine Masterdatei ist.");
+        _logger.LogInformation("Prüfe ob die Datei {FullName} eine Masterdatei ist.", file.FullName);
         var isQuickTimeFileExtension = QuickTimeMovie.IsQuickTimeMovieExtension(file);
 
         // Wenn die Datei keine Quicktime-Datei ist, ist sie keine Masterdatei
         if (!isQuickTimeFileExtension)
         {
-            _logger.LogInformation($"Die Datei {file.FullName} ist keine Quicktime-Datei und wird nicht als Masterdatei betrachtet.");
-            return Result.Success<Maybe<Masterfile>>(Maybe<Masterfile>.None);
+            _logger.LogInformation("Die Datei {Name} ist keine Quicktime-Datei und wird nicht als Masterdatei betrachtet.", file.FullName);
+            return Result.Success(Maybe<Masterfile>.None);
         }
 
-        // Wenn die Datei eine Quicktime-Datei ist, prüfe ob sie den Codec Apple ProRes hat
-        string? codecName = null;
         var metadataResult = await _ffmpegMetadataService.GetVideoCodecNameAsync(file.FullName);
         if (metadataResult.IsFailure)
         {
             return Result.Failure<Maybe<Masterfile>> ($"Fehler beim Extrahieren des Metadaten-Feldes 'codec_name' aus der Datei {file.FullName}: {metadataResult.Error}");
         }
-        codecName = metadataResult.Value;
-        _logger.LogInformation($"Der Codec der Datei {file.FullName} ist {codecName}.");
+        // Wenn die Datei eine Quicktime-Datei ist, prüfe ob sie den Codec Apple ProRes hat
+        string? codecName = metadataResult.Value;
+        _logger.LogInformation("Der Codec der Datei {FullName} ist {codecName}.", file.FullName, codecName);
 
         // Wenn der Codec Apple ProRes ist, ist die Datei eine Masterdatei
         if (codecName == "prores")
@@ -183,7 +182,7 @@ public class InputDirectoryReaderService
             var codecProfileResult = await _ffmpegMetadataService.GetVideoCodecProfileAsync(file.FullName);
             if (codecProfileResult.IsFailure)
             {
-                _logger.LogWarning($"Fehler beim Extrahieren des Metadaten-Feldes 'profile' aus der Datei {file.FullName}: {codecProfileResult.Error}");
+                _logger.LogWarning("Fehler beim Extrahieren des Metadaten-Feldes 'profile' aus der Datei {FullName}: {Error}", file.FullName, codecProfileResult.Error);
                 _logger.LogInformation("Das Feld 'profile' wird nicht weiter berücksichtigt.");
             }
             else
@@ -194,8 +193,8 @@ public class InputDirectoryReaderService
             return Result.Success<Maybe<Masterfile>>(new Masterfile(file, codecName, codecProfile));
         }
 
-        _logger.LogInformation($"Die Datei {file.FullName} ist keine Masterdatei, weil der Codec nicht Apple ProRes ist.");
-        return Result.Success<Maybe<Masterfile>>(Maybe<Masterfile>.None);
+        _logger.LogInformation("Die Datei {file.FullName} ist keine Masterdatei, weil der Codec nicht Apple ProRes ist.", file.FullName);
+        return Result.Success(Maybe<Masterfile>.None);
     }
 }
 

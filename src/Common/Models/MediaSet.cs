@@ -1,4 +1,6 @@
+using System.Security.Cryptography.X509Certificates;
 using CSharpFunctionalExtensions;
+using Kurmann.Videoschnitt.Common.Entities.MediaTypes;
 
 namespace Kurmann.Videoschnitt.Common.Models;
 
@@ -7,8 +9,19 @@ namespace Kurmann.Videoschnitt.Common.Models;
 /// Die jeweiligen Dateien für einen Einsatzzweck können auch leer sein, da nicht alle Mediensets für beide Einsatzzwecke konfiguriert sind
 /// oder sich gewisse Dateien beim Verarbeitungsprozess noch nicht im Medienset-Verzeichnis befinden (bspw. während der Videokomprimierung).
 /// </summary>
-/// <param name="Title"></param>
-/// <param name="LocalMediaServerFiles"></param>
-/// <param name="InternetStreaming"></param>
 /// <returns></returns>
-public record MediaSet(string Title, Maybe<LocalMediaServerFiles> LocalMediaServerFiles, Maybe<InternetStreamingFiles> InternetStreaming);
+public record MediaSet
+{
+    public string? Title { get; init; }
+
+    /// <summary>
+    /// Videodateien
+    /// </summary>
+    /// <value></value>
+    public Maybe<SupportedVideo> LocalMediaServerVideoFile { get; init;}
+
+    public Maybe<List<SupportedVideo>> InternetStreamingVideoFiles { get; init; }
+
+    public Maybe<List<SupportedImage>> ImageFiles { get; init; }
+}
+

@@ -43,7 +43,7 @@ public class MediaIntegratorService
             return Result.Failure<Maybe<LocalMediaServerFiles>>("Das Medienset ist null.");
 
         _logger.LogInformation($"Prüfe ob im Medienset {mediaSet.Title} Medien für lokale Medienserver vorhanden sind.");
-        if (mediaSet.LocalMediaServerFiles.HasNoValue)
+        if (mediaSet.LocalMediaServerVideoFile.HasNoValue)
         {
             _logger.LogInformation($"Keine Videos für lokale Medienserver im Medienset {mediaSet.Title} vorhanden.");
             _logger.LogInformation("Überspringe Integration in die Infuse-Mediathek für dieses Medienset.");
@@ -51,20 +51,20 @@ public class MediaIntegratorService
         }
 
         // Ermittle das Album aus den Metadaten der Video-Datei
-        var albumResult = await _ffmpegMetadataService.GetMetadataFieldAsync(mediaSet.LocalMediaServerFiles.Value.VideoFile.FileInfo, "album");
+        var albumResult = await _ffmpegMetadataService.GetMetadataFieldAsync(mediaSet.LocalMediaServerVideoFile.Value.FileInfo, "album");
         if (albumResult.IsFailure)
         {
-            return Result.Failure<Maybe<LocalMediaServerFiles>>($"Das Album konnte nicht aus den Metadaten der Video-Datei {mediaSet.LocalMediaServerFiles.Value.VideoFile.FileInfo.Name} ermittelt werden: {albumResult.Error}");
+            return Result.Failure<Maybe<LocalMediaServerFiles>>($"Das Album konnte nicht aus den Metadaten der Video-Datei {mediaSet.LocalMediaServerVideoFile.Value.FileInfo.Name} ermittelt werden: {albumResult.Error}");
         }
         Maybe<string> album = string.IsNullOrWhiteSpace(albumResult.Value) ? Maybe<string>.None : albumResult.Value;
         if (album.HasNoValue)
         {
-            _logger.LogTrace($"Album-Tag ist nicht in den Metadaten der Video-Datei {mediaSet.LocalMediaServerFiles.Value.VideoFile.FileInfo.Name} vorhanden.");
+            _logger.LogTrace($"Album-Tag ist nicht in den Metadaten der Video-Datei {mediaSet.LocalMediaServerVideoFile.Value.FileInfo.Name} vorhanden.");
             _logger.LogTrace("Das Album wird für die Integration in die Infuse-Mediathek nicht verwendet.");
         }
         else
         {
-            _logger.LogTrace($"Album-Tag aus den Metadaten der Video-Datei {mediaSet.LocalMediaServerFiles.Value.VideoFile.FileInfo.Name} ermittelt: {album.Value}");
+            _logger.LogTrace($"Album-Tag aus den Metadaten der Video-Datei {mediaSet.LocalMediaServerVideoFile.Value.FileInfo.Name} ermittelt: {album.Value}");
             _logger.LogTrace($"Das Album wird für die Integration in die Infuse-Mediathek als erste Verzeichnisebene verwendet.");
         }
 
@@ -72,12 +72,12 @@ public class MediaIntegratorService
         var recordingDate = GetRecordingDateFromTitle(mediaSet.Title);
         if (recordingDate.HasNoValue)
         {
-            _logger.LogTrace($"Das Aufnahmedatum konnte nicht aus dem Titel der Video-Datei {mediaSet.LocalMediaServerFiles.Value.VideoFile.FileInfo.Name} ermittelt werden.");
+            _logger.LogTrace($"Das Aufnahmedatum konnte nicht aus dem Titel der Video-Datei {mediaSet.LocalMediaServerVideoFile.Value.FileInfo.Name} ermittelt werden.");
             _logger.LogTrace("Das Aufnahmedatum wird für die Integration in die Infuse-Mediathek nicht verwendet.");
         }
         else
         {
-            _logger.LogTrace($"Aufnahmedatum aus dem Titel der Video-Datei {mediaSet.LocalMediaServerFiles.Value.VideoFile.FileInfo.Name} ermittelt: {recordingDate.Value}");
+            _logger.LogTrace($"Aufnahmedatum aus dem Titel der Video-Datei {mediaSet.LocalMediaServerVideoFile.Value.FileInfo.Name} ermittelt: {recordingDate.Value}");
             _logger.LogTrace($"Das Aufnahmedatum wird für die Integration in die Infuse-Mediathek als zweite Verzeichnisebene verwendet.");
         }
 
@@ -85,7 +85,7 @@ public class MediaIntegratorService
         _logger.LogInformation($"Album: {album}");
         _logger.LogInformation($"Aufnahmedatum: {recordingDate}");
 
-        var targetFilePathResult = GetTargetFilePath(mediaSet.LocalMediaServerFiles.Value.VideoFile, album.Value, mediaSet.Title, recordingDate.Value);
+        var targetFilePathResult = GetTargetFilePath(mediaSet.LocalMediaServerVideoFile.Value, album.Value, mediaSet.Title, recordingDate.Value);
         if (targetFilePathResult.IsFailure)
         {
             return Result.Failure<Maybe<LocalMediaServerFiles>>($"Das Zielverzeichnis für die Integration in die Infuse-Mediathek konnte nicht ermittelt werden: {targetFilePathResult.Error}");
@@ -107,16 +107,16 @@ public class MediaIntegratorService
                 return Result.Failure<Maybe<LocalMediaServerFiles>>($"Das Zielverzeichnis für die Integration in die Infuse-Mediathek konnte nicht erstellt werden: {targetDirectory.FullName}. Fehler: {createDirectoryResult.Error}");
             }
         }
-        _logger.LogInformation($"Verschiebe Video-Datei {mediaSet.LocalMediaServerFiles.Value.VideoFile.FileInfo.FullName} in das Infuse-Mediathek-Verzeichnis {targetDirectory.FullName}");
-        var moveFileResult = await _fileOperations.MoveFileAsync(mediaSet.LocalMediaServerFiles.Value.VideoFile.FileInfo.FullName, targetFilePathResult.Value.FullName, true);
+        _logger.LogInformation($"Verschiebe Video-Datei {mediaSet.LocalMediaServerVideoFile.Value.FileInfo.FullName} in das Infuse-Mediathek-Verzeichnis {targetDirectory.FullName}");
+        var moveFileResult = await _fileOperations.MoveFileAsync(mediaSet.LocalMediaServerVideoFile.Value.FileInfo.FullName, targetFilePathResult.Value.FullName, true);
         if (moveFileResult.IsFailure)
         {
-            return Result.Failure<Maybe<LocalMediaServerFiles>>($"Die Video-Datei {mediaSet.LocalMediaServerFiles.Value.VideoFile.FileInfo.FullName} konnte nicht in das Infuse-Mediathek-Verzeichnis {targetDirectory.FullName} verschoben werden. Fehler: {moveFileResult.Error}");
+            return Result.Failure<Maybe<LocalMediaServerFiles>>($"Die Video-Datei {mediaSet.LocalMediaServerVideoFile.Value.FileInfo.FullName} konnte nicht in das Infuse-Mediathek-Verzeichnis {targetDirectory.FullName} verschoben werden. Fehler: {moveFileResult.Error}");
         }
-        _logger.LogInformation($"Video-Datei {mediaSet.LocalMediaServerFiles.Value.VideoFile.FileInfo.FullName} erfolgreich in das Infuse-Mediathek-Verzeichnis {targetDirectory.FullName} verschoben.");
+        _logger.LogInformation($"Video-Datei {mediaSet.LocalMediaServerVideoFile.Value.FileInfo.FullName} erfolgreich in das Infuse-Mediathek-Verzeichnis {targetDirectory.FullName} verschoben.");
 
         // Integriere die Bild-Dateien in das Infuse-Mediathek-Verzeichnis. Diese haben den gleichen Namen und das gleiche Zielverzeichnis wie die Video-Datei.
-        var movedSupportedImagesResult = await IntegratedSupportedImagesToInfuseMediaLibrary(mediaSet.LocalMediaServerFiles.Value.ImageFiles, targetFilePathResult.Value);
+        var movedSupportedImagesResult = await IntegratedSupportedImagesToInfuseMediaLibrary(mediaSet.ImageFiles.Value, targetFilePathResult.Value);
         if (movedSupportedImagesResult.IsFailure)
         {
             _logger.LogWarning($"Die Bild-Dateien konnten nicht in das Infuse-Mediathek-Verzeichnis {targetDirectory.FullName} verschoben werden: {movedSupportedImagesResult.Error}");
@@ -130,7 +130,7 @@ public class MediaIntegratorService
             return Result.Failure<Maybe<LocalMediaServerFiles>>($"Die verschobene Video-Datei {targetFilePathResult.Value.FullName} konnte nicht als SupportedVideo-Objekt erstellt werden: {movedSupportedVideo.Error}");
         }
 
-        var localMediaServerFiles = new LocalMediaServerFiles(mediaSet.LocalMediaServerFiles.Value.ImageFiles, movedSupportedVideo.Value);
+        var localMediaServerFiles = new LocalMediaServerFiles(mediaSet.ImageFiles.Value, movedSupportedVideo.Value);
         return Maybe<LocalMediaServerFiles>.From(localMediaServerFiles);
     }
 
@@ -243,7 +243,7 @@ public class MediaIntegratorService
     /// </summary>
     /// <param name="videoFile"></param>
     /// <returns></returns>
-    private Maybe<DateOnly> GetRecordingDateFromTitle(string titleFromMetadata)
+    private Maybe<DateOnly> GetRecordingDateFromTitle(string? titleFromMetadata)
     {
         if (string.IsNullOrWhiteSpace(titleFromMetadata))
             return Maybe<DateOnly>.None;
@@ -266,8 +266,14 @@ public class MediaIntegratorService
     /// <param name="album"></param>
     /// <param name="recordingDate"></param>
     /// <returns></returns>
-    private Result<FileInfo> GetTargetFilePath(SupportedVideo supportedVideo, string album, string title, DateOnly recordingDate)
+    private Result<FileInfo> GetTargetFilePath(SupportedVideo supportedVideo, string? album, string? title, DateOnly recordingDate)
     {
+        if (string.IsNullOrWhiteSpace(album))
+            return Result.Failure<FileInfo>("Das Album ist leer.");
+        
+        if (string.IsNullOrWhiteSpace(title))
+
+
         if (_applicationSettings.InfuseMediaLibraryPath == null)
             return Result.Failure<FileInfo>("Das Infuse-Mediathek-Verzeichnis wurde nicht korrekt aus den Einstellungen geladen.");
 

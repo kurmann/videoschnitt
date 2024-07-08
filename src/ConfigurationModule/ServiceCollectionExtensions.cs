@@ -12,7 +12,7 @@ namespace Kurmann.Videoschnitt.ConfigurationModule
             // Bind Settings
             services.Configure<ApplicationSettings>(options => configuration.GetSection(ApplicationSettings.SectionName).Bind(options));
             services.Configure<InfuseMediaLibrarySettings>(options => configuration.GetSection(InfuseMediaLibrarySettings.SectionName).Bind(options));
-            services.Configure<MetadataProcessingSettings>(options => configuration.GetSection(MetadataProcessingSettings.SectionName).Bind(options));
+            services.Configure<MediaSetOrganizerSettings>(options => configuration.GetSection(MediaSetOrganizerSettings.SectionName).Bind(options));
 
             // Register Services
             services.AddSingleton<IConfigurationService, ConfigurationService>();

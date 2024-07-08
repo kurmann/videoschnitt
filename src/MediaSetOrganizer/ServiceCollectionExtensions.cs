@@ -23,6 +23,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IColorConversionService, MacOSColorConversionService>();
         services.AddScoped<IFileOperations, FileOperations>();
         services.AddScoped<InputDirectoryReaderService>();
+        services.AddScoped<MediaSetDirectoryIntegrator>();
 
         services.AddCommonServicesEngine(configuration);
         services.AddConfigurationModule(configuration);

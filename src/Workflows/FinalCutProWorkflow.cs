@@ -30,17 +30,17 @@ public class FinalCutProWorkflow : IAsyncWorkflow
 
         _logger.LogInformation("Starte Integration in die Infuse-Mediathek");
 
-        var integratedMediaServerFilesByMediaSet = await _infuseMediaLibraryEngine.StartAsync(mediaSetOrganizerResult.Value);
-        if (integratedMediaServerFilesByMediaSet.IsFailure)
-        {
-            return Result.Failure($"Fehler beim Ausführen des Final Cut Pro Workflows: {integratedMediaServerFilesByMediaSet.Error}");
-        }
-        if (integratedMediaServerFilesByMediaSet.Value.Count == 0)
-        {
-            _logger.LogInformation("Keine Medien-Dateien für die Integration in die Infuse-Mediathek gefunden.");
-            return Result.Success();
-        }
-        _logger.LogInformation("Integration in die Infuse-Mediathek abgeschlossen.");
+        // var integratedMediaServerFilesByMediaSet = await _infuseMediaLibraryEngine.StartAsync(mediaSetOrganizerResult.Value);
+        // if (integratedMediaServerFilesByMediaSet.IsFailure)
+        // {
+        //     return Result.Failure($"Fehler beim Ausführen des Final Cut Pro Workflows: {integratedMediaServerFilesByMediaSet.Error}");
+        // }
+        // if (integratedMediaServerFilesByMediaSet.Value.Count == 0)
+        // {
+        //     _logger.LogInformation("Keine Medien-Dateien für die Integration in die Infuse-Mediathek gefunden.");
+        //     return Result.Success();
+        // }
+        // _logger.LogInformation("Integration in die Infuse-Mediathek abgeschlossen.");
 
         _logger.LogInformation("Final Cut Pro Workflow beendet.");
         _logger.LogInformation("--------------------------------------------------");
