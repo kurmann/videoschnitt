@@ -82,6 +82,16 @@ public class ConfigurationInfoService
         {
             _logger.LogInformation("Verwende Verzeichnis für exportierte Final Cut Pro-Dateien aus der Konfiguration: {path}", _applicationSettings.FinalCutExportDirectory);
         }
+
+        if (_applicationSettings.IsDefaultInfuseMediaLibraryPathLocal)
+        {
+            _logger.LogInformation("Kein lokales Infuse Media Library-Verzeichnis konfiguriert. Verwende Standardwert: {path}", _applicationSettings.InfuseMediaLibraryPathLocal);
+            _logger.LogInformation("Sie können das lokale Infuse Media Library-Verzeichnis in der appsettings.json-Datei unter dem Schlüssel: {key} konfigurieren", ApplicationSettings.InfuseMediaLibraryPathLocalConfigKey);
+        }
+        else
+        {
+            _logger.LogInformation("Verwende lokales Infuse Media Library-Verzeichnis aus der Konfiguration: {path}", _applicationSettings.InfuseMediaLibraryPathLocal);
+        }
     }
 
     private void LogInfuseMediaLibrarySettings()
