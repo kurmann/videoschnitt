@@ -198,4 +198,12 @@ public class InputDirectoryReaderService
     }
 }
 
-public record InputDirectoryContent(List<SupportedImage> SupportedImages, List<SupportedVideo> SupportedVideos, List<Masterfile> Masterfiles, List<IgnoredFile> IgnoredFiles);
+public record InputDirectoryContent(List<SupportedImage> SupportedImages, List<SupportedVideo> SupportedVideos, List<Masterfile> Masterfiles, List<IgnoredFile> IgnoredFiles)
+{
+    public bool HasSupportedImages => SupportedImages.Count > 0;
+    public bool HasSupportedVideos => SupportedVideos.Count > 0;
+    public bool HasMasterfiles => Masterfiles.Count > 0;
+    public bool HasIgnoredFiles => IgnoredFiles.Count > 0;
+    public bool HasAnySupportedFiles => HasSupportedImages || HasSupportedVideos || HasMasterfiles;
+    public bool IsEmpty => !HasAnySupportedFiles && !HasIgnoredFiles;
+}
