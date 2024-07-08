@@ -23,19 +23,19 @@ public class MediaSetDirectoryIntegrator
         _fileOperations = fileOperations;
     }
 
-    public async Task<Result<List<DirectoryInfo>>> IntegrateInLocalMediaSetDirectory(List<MediaSet> mediaSets)
+    public async Task<Result<List<DirectoryInfo>>> IntegrateInLocalMediaSetDirectory(List<MediaFilesByMediaSet> mediaFilesByMediaSets)
     {
         _logger.LogInformation("Integriere Mediensets in lokales Medienset-Verzeichnis.");
         var mediaSetDirectories = new List<DirectoryInfo>();
 
-        foreach (var mediaSet in mediaSets)
+        foreach (var mediaFilesByMediaSet in mediaFilesByMediaSets)
         {
-            if (mediaSet.Title == null)
+            if (mediaFilesByMediaSet.Title == null)
             {
                 return Result.Failure<List<DirectoryInfo>>("Medienset-Titel ist null.");
             }
 
-            var mediaSetTargetDirectory = new DirectoryInfo(Path.Combine(_applicationSettings.MediaSetPathLocal, mediaSet.Title));
+            var mediaSetTargetDirectory = new DirectoryInfo(Path.Combine(_applicationSettings.MediaSetPathLocal, mediaFilesByMediaSet.Title));
             if (!mediaSetTargetDirectory.Exists)
             {
                 _logger.LogInformation("Erstelle Medienset-Verzeichnis: {mediaSetDirectory}", mediaSetTargetDirectory.FullName);
@@ -47,10 +47,13 @@ public class MediaSetDirectoryIntegrator
             }
 
             _logger.LogInformation("Verschiebe Medien-Dateien in das Medienset-Verzeichnis: {mediaSetDirectory}", mediaSetTargetDirectory.FullName);
-            foreach (var fileInfo in mediaSet.SupportedFiles)
+            var filesToMoveByMediaSet = mediaFilesByMediaSet.VideoFiles.Select(item => item.FileInfo)
+                .Concat(mediaFilesByMediaSet.ImageFiles.Select(item => item.FileInfo))
+                .ToList();
+            foreach (var fileInfo in filesToMoveByMediaSet)
             {
                 var destinationFile = new FileInfo(Path.Combine(mediaSetTargetDirectory.FullName, fileInfo.Name));
-                var moveResult = await _fileOperations.MoveFileAsync(fileInfo.FullName, destinationFile.FullName);
+                var moveResult = await _fileOperations.MoveFileAsync(fileInfo.FullName, destinationFile.FullName, true);
                 if (moveResult.IsFailure)
                 {
                     return Result.Failure<List<DirectoryInfo>>($"Fehler beim Verschieben der Medien-Datei: {moveResult.Error}");
