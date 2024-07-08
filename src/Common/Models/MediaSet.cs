@@ -24,24 +24,5 @@ public record MediaSet
     public string? Title { get; init; }
     public Maybe<LocalMediaServerFiles> LocalMediaServerFiles { get; init; }
     public Maybe<InternetStreamingFiles> InternetStreaming { get; init; }
-    public List<FileInfo> SupportedFiles => GetSupportedFiles();
-
-    private List<FileInfo> GetSupportedFiles()
-    {
-        var files = new List<FileInfo>();
-        if (LocalMediaServerFiles.HasValue)
-        {
-            files.AddRange(LocalMediaServerFiles.Value.ImageFiles.Select(x => x.FileInfo));
-            files.Add(LocalMediaServerFiles.Value.VideoFile.FileInfo);
-        }
-
-        if (InternetStreaming.HasValue)
-        {
-            files.AddRange(InternetStreaming.Value.VideoFiles.Select(x => x.FileInfo));
-            files.AddRange(InternetStreaming.Value.ImageFiles.Select(x => x.FileInfo));
-        }
-
-        return files;
-    }
 }
 

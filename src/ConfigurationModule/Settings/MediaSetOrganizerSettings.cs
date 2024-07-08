@@ -18,4 +18,16 @@ public class MediaSetSettings
     /// Liste der Varianten-Suffixe, die in den Dateinamen von Videos vorkommen können, einschließlich des Trennzeichens, die für das Internet bestimmt sind.
     /// </summary>
     public List<string> VideoVersionSuffixesForInternet { get; set; } = new List<string> { "-4K-Internet", "-1080p-Internet" };
+
+    /// <summary>
+    /// In welches Unterverzeichnis des Medienset-Verzeichnisses sollen die Dateien für den Medienserver kopiert oder verschoben werden.
+    /// </summary>
+    /// <value></value>
+    public string MediaServerFilesSubDirectoryName { get; set; } = "Medienserver";
+
+    /// <summary>
+    /// In welches Unterverzeichnis des Medienset-Verzeichnisses sollen die Dateien für das Internet kopiert oder verschoben werden.
+    /// </summary>
+    /// <value></value>
+    public string InternetFilesSubDirectoryName { get; set; } = "Internet";
 }
