@@ -44,7 +44,10 @@ namespace Kurmann.Videoschnitt.ConsoleApp
             Host.CreateDefaultBuilder(args)
                 .ConfigureAppConfiguration((hostContext, config) =>
                 {
-                    config.AddUserSecrets<Program>();
+                    if (hostContext.HostingEnvironment.IsDevelopment())
+                    {
+                        config.AddUserSecrets<Program>();
+                    }
                 })
                 .ConfigureLogging(logging =>
                 {
