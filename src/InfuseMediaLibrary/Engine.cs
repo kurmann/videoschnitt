@@ -29,13 +29,13 @@ public class Engine
             return Result.Failure<List<LocalMediaServerFiles>>("Eingabeverzeichnis wurde nicht korrekt aus den Einstellungen geladen.");
         }
 
-        _logger.LogInformation("Eingangsverzeichnis: {_applicationSettings.InputDirectory}", _applicationSettings.InputDirectory);
+        _logger.LogInformation("Verzeichnis der lokalen Mediensets, das als Ausgangspunkt für die Integration in die Infuse-Mediathek dient: {Directory}", _applicationSettings.MediaSetPathLocal);
 
         _logger.LogInformation("Iteriere über alle Mediensets und versuche, die Medien-Dateien in die Infuse-Mediathek zu integrieren.");
         var integratedMediaServerFilesByMediaSet = new List<LocalMediaServerFiles>();
         foreach (var mediaSet in mediaSets)
         {
-            var integrateMediaSetResult = await _mediaIntegratorService.IntegrateMediaSetToInfuseMediaLibrary(mediaSet);
+            var integrateMediaSetResult = await _mediaIntegratorService.IntegrateMediaSetToLocalInfuseMediaLibrary(mediaSet);
             if (integrateMediaSetResult.IsFailure)
             {
                 _logger.LogWarning("Fehler beim Integrieren des Mediensets {Title} in die Infuse-Mediathek: {Error}", mediaSet.Title, integrateMediaSetResult.Error);

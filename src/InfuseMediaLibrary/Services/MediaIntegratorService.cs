@@ -4,8 +4,8 @@ using Kurmann.Videoschnitt.Common.Models;
 using Kurmann.Videoschnitt.Common.Services.FileSystem;
 using Kurmann.Videoschnitt.Common.Entities.MediaTypes;
 using Kurmann.Videoschnitt.Common.Services.Metadata;
-using Kurmann.Videoschnitt.ConfigurationModule.Services;
 using Kurmann.Videoschnitt.ConfigurationModule.Settings;
+using Microsoft.Extensions.Options;
 
 namespace Kurmann.Videoschnitt.InfuseMediaLibrary.Services;
 
@@ -24,28 +24,41 @@ public class MediaIntegratorService
                                   FFmpegMetadataService ffmpegMetadataService,
                                   PosterAndFanartService posterAndFanartService,
                                   ImageProcessorService imageProcessorService,
-                                  IConfigurationService configurationService)
+                                  IOptions<InfuseMediaLibrarySettings> infuseMediaLibrarySettings,
+                                  IOptions<ApplicationSettings> applicationSettings)
     {
         _logger = logger;
         _fileOperations = fileOperations;
         _ffmpegMetadataService = ffmpegMetadataService;
         _posterAndFanartService = posterAndFanartService;
         _imageProcessorService = imageProcessorService;
-        _applicationSettings = configurationService.GetSettings<ApplicationSettings>();
-        _infuseMediaLibrarySettings = configurationService.GetSettings<InfuseMediaLibrarySettings>();
+        _applicationSettings = applicationSettings.Value;
+        _infuseMediaLibrarySettings = infuseMediaLibrarySettings.Value;
     }
 
-    public async Task<Result<Maybe<LocalMediaServerFiles>>> IntegrateMediaSetToInfuseMediaLibrary(MediaSet mediaSet)
+    public async Task<Result<Maybe<LocalMediaServerFiles>>> IntegrateMediaSetToLocalInfuseMediaLibrary(MediaSet mediaSet)
     {
+        // Prüfe ob das Infuse-Mediathek-Verzeichnis existiert und erstelle es falls es nicht existiert
+        if (!Directory.Exists(_applicationSettings.InfuseMediaLibraryPathLocal))
+        {
+            _logger.LogInformation("Das Infuse-Mediathek-Verzeichnis {infuseMediaLibraryPathLocal} existiert nicht. Erstelle Verzeichnis.", _applicationSettings.InfuseMediaLibraryPathLocal);
+            var createDirectoryResult = await _fileOperations.CreateDirectoryAsync(_applicationSettings.InfuseMediaLibraryPathLocal);
+            if (createDirectoryResult.IsFailure)
+            {
+                return Result.Failure<Maybe<LocalMediaServerFiles>>($"Das Infuse-Mediathek-Verzeichnis {createDirectoryResult.Error} konnte nicht erstellt werden.");
+            }
+            _logger.LogInformation("Infuse-Mediathek-Verzeichnis {infuseMediaLibraryPathLocal} erfolgreich erstellt.", _applicationSettings.InfuseMediaLibraryPathLocal);
+        }
+
         _logger.LogInformation("Integriere Medienset in die Infuse-Mediathek.");
 
         if (mediaSet == null)
             return Result.Failure<Maybe<LocalMediaServerFiles>>("Das Medienset ist null.");
 
-        _logger.LogInformation($"Prüfe ob im Medienset {mediaSet.Title} Medien für lokale Medienserver vorhanden sind.");
+        _logger.LogInformation("Prüfe ob im Medienset {mediaSet.Title} Medien für lokale Medienserver vorhanden sind.", mediaSet.Title);
         if (mediaSet.LocalMediaServerVideoFile.HasNoValue)
         {
-            _logger.LogInformation($"Keine Videos für lokale Medienserver im Medienset {mediaSet.Title} vorhanden.");
+            _logger.LogInformation("Keine Videos für lokale Medienserver im Medienset {mediaSet.Title} vorhanden.", mediaSet.Title);
             _logger.LogInformation("Überspringe Integration in die Infuse-Mediathek für dieses Medienset.");
             return Maybe<LocalMediaServerFiles>.None;
         }
@@ -108,7 +121,7 @@ public class MediaIntegratorService
             }
         }
         _logger.LogInformation($"Verschiebe Video-Datei {mediaSet.LocalMediaServerVideoFile.Value.FileInfo.FullName} in das Infuse-Mediathek-Verzeichnis {targetDirectory.FullName}");
-        var moveFileResult = await _fileOperations.MoveFileAsync(mediaSet.LocalMediaServerVideoFile.Value.FileInfo.FullName, targetFilePathResult.Value.FullName, true);
+        var moveFileResult = await _fileOperations.CopyFileAsync(mediaSet.LocalMediaServerVideoFile.Value.FileInfo.FullName, targetFilePathResult.Value.FullName, true);
         if (moveFileResult.IsFailure)
         {
             return Result.Failure<Maybe<LocalMediaServerFiles>>($"Die Video-Datei {mediaSet.LocalMediaServerVideoFile.Value.FileInfo.FullName} konnte nicht in das Infuse-Mediathek-Verzeichnis {targetDirectory.FullName} verschoben werden. Fehler: {moveFileResult.Error}");
@@ -190,7 +203,7 @@ public class MediaIntegratorService
             var supportedImage = supportedImages.First();
 
             var targetFilePath = Path.Combine(videoTargetDirectory.FullName, videoFileTargetPath.Name.Replace(videoFileTargetPath.Extension, supportedImage.FileInfo.Extension));
-            var moveFileResult = await _fileOperations.MoveFileAsync(supportedImage.FileInfo.FullName, targetFilePath);
+            var moveFileResult = await _fileOperations.CopyFileAsync(supportedImage.FileInfo.FullName, targetFilePath);
             if (moveFileResult.IsFailure)
             {
                 return Result.Failure($"Die Bild-Datei {supportedImage.FileInfo.FullName} konnte nicht in das Infuse-Mediathek-Verzeichnis {videoTargetDirectory.FullName} verschoben werden. Fehler: {moveFileResult.Error}");
@@ -212,7 +225,7 @@ public class MediaIntegratorService
         // Das Posterbild hat den gleichen Dateinamen die Videodatei.
         var posterImage = detectPosterAndFanartImagesResult.Value.PosterImage;
         var targetPosterFilePath = Path.Combine(videoTargetDirectory.FullName, videoFileTargetPath.Name.Replace(videoFileTargetPath.Extension, posterImage.FileInfo.Extension));
-        var movePosterFileResult = await _fileOperations.MoveFileAsync(posterImage.FileInfo.FullName, targetPosterFilePath);
+        var movePosterFileResult = await _fileOperations.CopyFileAsync(posterImage.FileInfo.FullName, targetPosterFilePath);
         if (movePosterFileResult.IsFailure)
         {
             return Result.Failure($"Das Posterbild {posterImage.FileInfo.FullName} konnte nicht in das Infuse-Mediathek-Verzeichnis {videoTargetDirectory.FullName} verschoben werden. Fehler: {movePosterFileResult.Error}");
@@ -227,7 +240,7 @@ public class MediaIntegratorService
         }
         var fanartImage = detectPosterAndFanartImagesResult.Value.FanartImage;
         var targetFanartFilePath = Path.Combine(videoTargetDirectory.FullName, videoFileTargetPath.Name.Replace(videoFileTargetPath.Extension, $"{bannerFilePostfix}{fanartImage.FileInfo.Extension}"));
-        var moveFanartFileResult = await _fileOperations.MoveFileAsync(fanartImage.FileInfo.FullName, targetFanartFilePath);
+        var moveFanartFileResult = await _fileOperations.CopyFileAsync(fanartImage.FileInfo.FullName, targetFanartFilePath);
         if (moveFanartFileResult.IsFailure)
         {
             return Result.Failure($"Das Fanartbild {fanartImage.FileInfo.FullName} konnte nicht in das Infuse-Mediathek-Verzeichnis {videoTargetDirectory.FullName} verschoben werden. Fehler: {moveFanartFileResult.Error}");
@@ -243,7 +256,7 @@ public class MediaIntegratorService
     /// </summary>
     /// <param name="videoFile"></param>
     /// <returns></returns>
-    private Maybe<DateOnly> GetRecordingDateFromTitle(string? titleFromMetadata)
+    private static Maybe<DateOnly> GetRecordingDateFromTitle(string? titleFromMetadata)
     {
         if (string.IsNullOrWhiteSpace(titleFromMetadata))
             return Maybe<DateOnly>.None;
@@ -274,13 +287,10 @@ public class MediaIntegratorService
         if (string.IsNullOrWhiteSpace(title))
             return Result.Failure<FileInfo>("Der Titel ist leer.");
 
-        if (_applicationSettings.InfuseMediaLibraryPath == null)
-            return Result.Failure<FileInfo>("Das Infuse-Mediathek-Verzeichnis wurde nicht korrekt aus den Einstellungen geladen.");
-
         if (supportedVideo.FileInfo == null)
             return Result.Failure<FileInfo>("Die Quelldatei des SupportedVideo-Objekts ist null.");
 
-        var targetDirectory = Path.Combine(_applicationSettings.InfuseMediaLibraryPath, album, recordingDate.Year.ToString(), recordingDate.ToString("yyyy-MM-dd"));
+        var targetDirectory = Path.Combine(_applicationSettings.InfuseMediaLibraryPathLocal, album, recordingDate.Year.ToString(), recordingDate.ToString("yyyy-MM-dd"));
 
         // Der Ziel-Dateiname ist ohne vorangestelltes ISO-Datum. Dieses muss also aus dem Titel entfernt werden.
         var titleWithoutLeadingRecordingDate = title.Replace($"{recordingDate:yyyy-MM-dd} ", string.Empty);

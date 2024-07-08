@@ -42,6 +42,15 @@ public class ApplicationSettings
     public bool IsDefaultFinalCutExportDirectory => FinalCutExportDirectory == DefaultFinalCutExportDirectory;
 
     /// <summary>
+    /// Der Pfad zum lokalen Infuse-Mediathek-Verzeichnis.
+    /// </summary>
+    /// <value></value>
+    public string InfuseMediaLibraryPathLocal { get; set; } = DefaultInfuseMediaLibraryPathLocal;
+    public const string InfuseMediaLibraryPathLocalConfigKey = $"{SectionName}:InfuseMediaLibraryPathLocal";
+    public const string DefaultInfuseMediaLibraryPathLocal = "~/Movies/Infuse Media Library";
+    public bool IsDefaultInfuseMediaLibraryPathLocal => InfuseMediaLibraryPathLocal == DefaultInfuseMediaLibraryPathLocal;
+
+    /// <summary>
     /// Der Pfad zum Medienset-Verzeichnis auf dem externen Archiv oder Medienserver.
     /// </summary>
     /// <value></value>

@@ -1,3 +1,4 @@
+using System.Security;
 using CSharpFunctionalExtensions;
 
 namespace Kurmann.Videoschnitt.Common.Entities.MediaTypes;
@@ -44,6 +45,18 @@ public class SupportedVideo
         }
 
         return new SupportedVideo(fileInfo);
+    }
+
+    public static Result<SupportedVideo> Create(string directory, string fileName)
+    {
+        try
+        {
+            return Create(new FileInfo(Path.Combine(directory, fileName)));
+        }
+        catch (Exception ex)
+        {
+            return Result.Failure<SupportedVideo>($"Error creating SupportedVideo from directory {directory} and file name {fileName}: {ex.Message}");
+        }
     }
 
     public static bool IsSupportedVideoExtension(FileInfo fileInfo)

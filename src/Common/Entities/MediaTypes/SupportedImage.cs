@@ -19,6 +19,30 @@ public record SupportedImage : ISupportedMediaType
         return Result.Failure<SupportedImage>($"File {fileInfo.FullName} is not a supported cover art image.");
     }
 
+    public static Result<SupportedImage> Create(string filePath)
+    {
+        try
+        {
+            return Create(new FileInfo(filePath));
+        }
+        catch (Exception ex)
+        {
+            return Result.Failure<SupportedImage>($"Error creating SupportedImage from file path {filePath}: {ex.Message}");
+        }
+    }
+
+    public static Result<SupportedImage> Create(string directory, string fileName)
+    {
+        try
+        {
+            return Create(new FileInfo(Path.Combine(directory, fileName)));
+        }
+        catch (Exception ex)
+        {
+            return Result.Failure<SupportedImage>($"Error creating SupportedImage from directory {directory} and file name {fileName}: {ex.Message}");
+        }
+    }
+
     public static bool IsSupportedImageExtension(FileInfo fileInfo)
     {
         return fileInfo.Extension.Equals(".jpg", StringComparison.InvariantCultureIgnoreCase) ||
