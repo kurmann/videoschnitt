@@ -1,3 +1,4 @@
+using System.Reflection.Metadata;
 using CSharpFunctionalExtensions;
 using Kurmann.Videoschnitt.Common.Models;
 using Kurmann.Videoschnitt.Common.Services.FileSystem;
@@ -60,10 +61,52 @@ public class MediaSetDirectoryIntegrator
                 return Result.Failure<List<DirectoryInfo>>($"Fehler beim Integrieren der Medienserver-Dateien: {integrateMediaServerFilesResult.Error}");
             }
 
+            var integrateInternetFilesResult = await IntegrateInternetFiles(mediaSet, mediaSetTargetDirectory);
+            if (integrateInternetFilesResult.IsFailure)
+            {
+                return Result.Failure<List<DirectoryInfo>>($"Fehler beim Integrieren der Internet-Dateien: {integrateInternetFilesResult.Error}");
+            }
+
             mediaSetDirectories.Add(mediaSetTargetDirectory);
         }
 
         return Result.Success(mediaSetDirectories);
+    }
+
+    private async Task<Result<Maybe<DirectoryInfo>>> IntegrateInternetFiles(MediaSet mediaSet, DirectoryInfo mediaSetTargetDirectory)
+    {
+        _logger.LogInformation("Verschiebe Internet-Dateien in das Medienset-Verzeichnis: {mediaSetDirectory}", mediaSetTargetDirectory.FullName);
+        if (mediaSet.InternetStreamingVideoFiles.HasNoValue)
+        {
+            _logger.LogInformation("Keine Internet-Dateien für den Medienserver vorhanden.");
+            return Result.Success(Maybe<DirectoryInfo>.None);
+        }
+        else
+        {
+            var internetFilesSubDirectory = new DirectoryInfo(Path.Combine(mediaSetTargetDirectory.FullName, _mediaSetOrganizerSettings.MediaSet.InternetFilesSubDirectoryName));
+            if (!internetFilesSubDirectory.Exists)
+            {
+                _logger.LogInformation("Erstelle Unterverzeichnis für Internet-Dateien: {internetFilesSubDirectory}", internetFilesSubDirectory.FullName);
+                var internetFilesSubDirectoryCreateResult = await _fileOperations.CreateDirectoryAsync(internetFilesSubDirectory.FullName);
+                if (internetFilesSubDirectoryCreateResult.IsFailure)
+                {
+                    return Result.Failure<Maybe<DirectoryInfo>>($"Fehler beim Erstellen des Unterverzeichnisses für Internet-Dateien: {internetFilesSubDirectoryCreateResult.Error}");
+                }
+            }
+
+            foreach (var internetStreamingVideoFile in mediaSet.InternetStreamingVideoFiles.Value)
+            {
+                var internetStreamingVideoFileTargetPath = Path.Combine(internetFilesSubDirectory.FullName, internetStreamingVideoFile.FileInfo.Name);
+                _logger.LogInformation("Verschiebe Internet-Datei: {internetStreamingVideoFileTargetPath}", internetStreamingVideoFileTargetPath);
+                var internetStreamingVideoFileMoveResult = await _fileOperations.MoveFileAsync(internetStreamingVideoFile.FileInfo.FullName, internetStreamingVideoFileTargetPath, true);
+                if (internetStreamingVideoFileMoveResult.IsFailure)
+                {
+                    return Result.Failure<Maybe<DirectoryInfo>>($"Fehler beim Verschieben der Internet-Datei: {internetStreamingVideoFileMoveResult.Error}");
+                }
+            }
+
+            return Maybe<DirectoryInfo>.From(internetFilesSubDirectory);
+        }
     }
 
     private async Task<Result<Maybe<DirectoryInfo>>> IntegrateMediaServerFiles(MediaSet mediaSet, DirectoryInfo mediaSetTargetDirectory)
