@@ -87,7 +87,7 @@ public class ImageProcessorService
             {
                 return Result.Failure<string>("Der Dateipfad der zu konvertierenden Datei konnte nicht ermittelt werden.");
             }
-            var jpegFilePath = Path.Combine(directoryName, Path.GetFileNameWithoutExtension(filePath.Name) + ".jpg");
+            var jpegFilePath = Path.Combine(directoryName, Path.GetFileNameWithoutExtension(filePath.Name) + _settings.PreferredJpgExtension);
 
             var psi = new ProcessStartInfo
             {

@@ -13,4 +13,10 @@ public class InfuseMediaLibrarySettings
     /// </summary>
     /// <value></value>
     public string? SuffixForConvertedTempImage { get; set; } = "-adobe_rgb";
+
+    /// <summary>
+    /// Die bevorzugte Dateiendung für JPEG-Dateien.
+    /// </summary>
+    /// <value></value>
+    public string? PreferredJpgExtension { get; set; } = ".jpg";
 }
