@@ -66,6 +66,19 @@ public class MediaSetDirectoryIntegrator
                                                                      _mediaSetOrganizerSettings.MediaSet.MediaServerFilesSubDirectoryName,
                                                                      videoFileForMediaServer.FileInfo.Name);
                 _logger.LogInformation("Verschiebe Video-Datei für Medienserver: {videoFileForMediaServerTargetPath}", videoFileForMediaServerTargetPath);
+
+                // Prüfe ob das Unterzielverzeichnis für die Medienserver-Dateien existiert
+                var mediaServerFilesSubDirectory = new DirectoryInfo(Path.Combine(mediaSetTargetDirectory.FullName, _mediaSetOrganizerSettings.MediaSet.MediaServerFilesSubDirectoryName));
+                if (!mediaServerFilesSubDirectory.Exists)
+                {
+                    _logger.LogInformation("Erstelle Unterverzeichnis für Medienserver-Dateien: {mediaServerFilesSubDirectory}", mediaServerFilesSubDirectory.FullName);
+                    var mediaServerFilesSubDirectoryCreateResult = await _fileOperations.CreateDirectoryAsync(mediaServerFilesSubDirectory.FullName);
+                    if (mediaServerFilesSubDirectoryCreateResult.IsFailure)
+                    {
+                        return Result.Failure<List<DirectoryInfo>>($"Fehler beim Erstellen des Unterverzeichnisses für Medienserver-Dateien: {mediaServerFilesSubDirectoryCreateResult.Error}");
+                    }
+                }
+
                 var videoFileForMediaServerMoveResult = await _fileOperations.MoveFileAsync(videoFileForMediaServer.FileInfo.FullName, videoFileForMediaServerTargetPath, true);
                 if (videoFileForMediaServerMoveResult.IsFailure)
                 {
