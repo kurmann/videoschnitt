@@ -18,7 +18,7 @@
             "command": "bash",
             "type": "process",
             "args": [
-                "${workspaceFolder}/.vscode/deploy.sh",
+                "${workspaceFolder}/.vscode/publish.sh",
                 "${workspaceFolder}"
             ],
             "problemMatcher": []
@@ -34,16 +34,6 @@
                 "${workspaceFolder}/src/ConsoleApp/ConsoleApp.csproj"
             ],
             "problemMatcher": "$msCompile"
-        },
-        {
-            "label": "deploy",
-            "command": "bash",
-            "type": "process",
-            "args": [
-                "${workspaceFolder}/.vscode/deploy.sh",
-                "${workspaceFolder}"
-            ],
-            "problemMatcher": []
         }
     ]
 }
