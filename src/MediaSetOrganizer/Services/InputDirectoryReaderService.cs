@@ -29,7 +29,7 @@ public class InputDirectoryReaderService
         _ffmpegMetadataService = ffmpegMetadataService;
     }
 
-    public async Task<Result<InputDirectoryContent>> ReadInputDirectoryAsync(string inputDirectory)
+    public async Task<Result<InputDirectoryContent>> ReadInputDirectoryAsync(string inputDirectory, bool includeSubdirectories = true)
     {
         var supportedImages = new List<SupportedImage>();
         var supportedVideos = new List<SupportedVideo>();
@@ -49,7 +49,7 @@ public class InputDirectoryReaderService
         var inputDirectoryInfo = new DirectoryInfo(inputDirectory);
 
         // Suche alle Dateien im Eingabeverzeichnis einschliesslich aller Unterverzeichnisse und separiere diese
-        await foreach (var file in _fileSearchService.GetFilesAsync(inputDirectoryInfo, SearchOption.AllDirectories))
+        await foreach (var file in _fileSearchService.GetFilesAsync(inputDirectoryInfo, includeSubdirectories ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly))
         {
             // Wenn die Datei versteckt ist, füge sie zu den ignorierten Dateien hinzu
             if ((file.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden)
@@ -67,8 +67,8 @@ public class InputDirectoryReaderService
                 continue;
             }
 
-            // Dateien, die sich in einem Unterverzeichnis befinden, werden ignoriert
-            if (file.DirectoryName != inputDirectory)
+            // Dateien, die sich in einem Unterverzeichnis befinden, werden ignoriert (sofern nicht explizit angegeben, dass auch Unterverzeichnisse durchsucht werden sollen)
+            if (file.DirectoryName != inputDirectory && !includeSubdirectories)
             {
                 _logger.LogInformation("Die Datei {FullName} befindet sich in einem Unterverzeichnis und wird ignoriert.", file.FullName);
                 ignoredFiles.Add(new IgnoredFile(file, IgnoredFileReason.LocatedInSubDirectory));
