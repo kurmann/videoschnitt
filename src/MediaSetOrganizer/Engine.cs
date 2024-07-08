@@ -78,15 +78,15 @@ public class Engine
         _logger.LogInformation("Medien erfolgreich nach ihrem Verwendungszweck organisiert.");
 
         _logger.LogInformation("Verschiebe die Medien in die lokalen Medienset-Verzeichnisse.");
-        var mediaSetDirectories = await _mediaSetDirectoryIntegrator.IntegrateInLocalMediaSetDirectory(mediaSets.Value);
-        if (mediaSetDirectories.IsFailure)
+        var integratedMediaSets = await _mediaSetDirectoryIntegrator.IntegrateInLocalMediaSetDirectory(mediaSets.Value);
+        if (integratedMediaSets.IsFailure)
         {
-            return Result.Failure<List<MediaSet>>($"Fehler beim Integrieren der Mediensets in die lokalen Medienset-Verzeichnisse: {mediaSetDirectories.Error}");
+            return Result.Failure<List<MediaSet>>($"Fehler beim Integrieren der Mediensets in die lokalen Medienset-Verzeichnisse: {integratedMediaSets.Error}");
         }
         _logger.LogInformation("Medien erfolgreich in die lokalen Medienset-Verzeichnisse verschoben.");
 
         _logger.LogInformation("Steuereinheit für die Metadaten-Verarbeitung beendet.");
-        return Result.Success(mediaSets.Value);
+        return Result.Success(integratedMediaSets.Value);
     }
 
 }
