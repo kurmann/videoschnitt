@@ -4,6 +4,7 @@ using Kurmann.Videoschnitt.Common.Models;
 using Kurmann.Videoschnitt.Common.Entities.MediaTypes;
 using Kurmann.Videoschnitt.ConfigurationModule.Services;
 using Kurmann.Videoschnitt.ConfigurationModule.Settings;
+using System.Runtime.CompilerServices;
 
 namespace Kurmann.Videoschnitt.MediaSetOrganizer.Services;
 
@@ -35,8 +36,6 @@ public class MediaPurposeOrganizer
         {
             _logger.LogTrace("Organisiere Medienset-Verzeichnis '{Title}' nach Einsatzzweck.", mediaFilesByMediaSet.Title);
 
-            var imageFiles = mediaFilesByMediaSet.ImageFiles.Any() ? Maybe<List<SupportedImage>>.From(mediaFilesByMediaSet.ImageFiles.ToList()) : Maybe<List<SupportedImage>>.None;
-
             var localMediaServerFiles = GetVideoForLocalMediaServer(mediaFilesByMediaSet);
             if (localMediaServerFiles.IsFailure)
             {
@@ -48,6 +47,8 @@ public class MediaPurposeOrganizer
             {
                 return Result.Failure<List<MediaSet>>(internetStreamingFiles.Error);
             }
+
+            var imageFiles = mediaFilesByMediaSet.ImageFiles.Any() ? Maybe<List<SupportedImage>>.From(mediaFilesByMediaSet.ImageFiles.ToList()) : Maybe<List<SupportedImage>>.None;
 
             _logger.LogInformation("Medienset-Verzeichnis '{Title}' wurde erfolgreich nach Einsatzzweck organisiert.", mediaFilesByMediaSet.Title);
             var mediaSet = new MediaSet{

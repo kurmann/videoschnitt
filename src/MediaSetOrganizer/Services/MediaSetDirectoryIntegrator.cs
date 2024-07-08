@@ -1,4 +1,3 @@
-using System.Reflection.Metadata;
 using CSharpFunctionalExtensions;
 using Kurmann.Videoschnitt.Common.Models;
 using Kurmann.Videoschnitt.Common.Services.FileSystem;
@@ -68,9 +67,51 @@ public class MediaSetDirectoryIntegrator
             }
 
             mediaSetDirectories.Add(mediaSetTargetDirectory);
+
+            var inteagrateImageFilesResult = await IntegrateImageFiles(mediaSet, mediaSetTargetDirectory);
+            if (inteagrateImageFilesResult.IsFailure)
+            {
+                return Result.Failure<List<DirectoryInfo>>($"Fehler beim Integrieren der Bild-Dateien: {inteagrateImageFilesResult.Error}");
+            }
         }
 
         return Result.Success(mediaSetDirectories);
+    }
+
+    private async Task<Result<Maybe<DirectoryInfo>>> IntegrateImageFiles(MediaSet mediaSet, DirectoryInfo mediaSetTargetDirectory)
+    {
+        _logger.LogInformation("Verschiebe Bild-Dateien in das Medienset-Verzeichnis: {mediaSetDirectory}", mediaSetTargetDirectory.FullName);
+        if (mediaSet.ImageFiles.HasNoValue)
+        {
+            _logger.LogInformation("Keine Bild-Dateien für den Medienserver vorhanden.");
+            return Result.Success(Maybe<DirectoryInfo>.None);
+        }
+        else
+        {
+            var imageFilesSubDirectory = new DirectoryInfo(Path.Combine(mediaSetTargetDirectory.FullName, _mediaSetOrganizerSettings.MediaSet.ImageFilesSubDirectoryName));
+            if (!imageFilesSubDirectory.Exists)
+            {
+                _logger.LogInformation("Erstelle Unterverzeichnis für Bild-Dateien: {imageFilesSubDirectory}", imageFilesSubDirectory.FullName);
+                var imageFilesSubDirectoryCreateResult = await _fileOperations.CreateDirectoryAsync(imageFilesSubDirectory.FullName);
+                if (imageFilesSubDirectoryCreateResult.IsFailure)
+                {
+                    return Result.Failure<Maybe<DirectoryInfo>>($"Fehler beim Erstellen des Unterverzeichnisses für Bild-Dateien: {imageFilesSubDirectoryCreateResult.Error}");
+                }
+            }
+
+            foreach (var imageFile in mediaSet.ImageFiles.Value)
+            {
+                var imageFileTargetPath = Path.Combine(imageFilesSubDirectory.FullName, imageFile.FileInfo.Name);
+                _logger.LogInformation("Verschiebe Bild-Datei: {imageFileTargetPath}", imageFileTargetPath);
+                var imageFileMoveResult = await _fileOperations.MoveFileAsync(imageFile.FileInfo.FullName, imageFileTargetPath, true);
+                if (imageFileMoveResult.IsFailure)
+                {
+                    return Result.Failure<Maybe<DirectoryInfo>>($"Fehler beim Verschieben der Bild-Datei: {imageFileMoveResult.Error}");
+                }
+            }
+
+            return Maybe<DirectoryInfo>.From(imageFilesSubDirectory);
+        }
     }
 
     private async Task<Result<Maybe<DirectoryInfo>>> IntegrateInternetFiles(MediaSet mediaSet, DirectoryInfo mediaSetTargetDirectory)
