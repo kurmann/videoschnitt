@@ -30,4 +30,9 @@ public class MediaSetSettings
     /// </summary>
     /// <value></value>
     public string InternetFilesSubDirectoryName { get; set; } = "Internet";
+
+    /// <summary>
+    /// In welches Unterverzeichnis des Medienset-Verzeichnisses sollen die Titelbilder kopiert oder verschoben werden.
+    /// </summary>
+    public string ImageFilesSubDirectoryName { get; set; } = "Titelbilder";
 }
