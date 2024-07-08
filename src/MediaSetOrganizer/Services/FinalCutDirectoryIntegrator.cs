@@ -4,6 +4,7 @@ using CSharpFunctionalExtensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Kurmann.Videoschnitt.ConfigurationModule.Settings;
+using Kurmann.Videoschnitt.Common.Models;
 
 namespace Kurmann.Videoschnitt.MediaSetOrganizer.Services;
 
@@ -56,6 +57,7 @@ public class FinalCutDirectoryIntegrator
         _logger.LogInformation("Anzahl der unterstützten Videos: {count}", inputDirectoryContent.Value.SupportedVideos.Count);
         _logger.LogInformation("Anzahl der unterstützten Bilder: {count}", inputDirectoryContent.Value.SupportedImages.Count);
         
+        var supportedVideos = new List<SupportedVideo>();
         if (inputDirectoryContent.Value.HasSupportedVideos)
         {
             _logger.LogInformation("Verschiebe unterstützte Videos aus dem Final Cut Export-Verzeichnis nach {inputdirectory}", inputDirectory);
@@ -67,9 +69,28 @@ public class FinalCutDirectoryIntegrator
                 {
                     return Result.Failure<IntegratedFinalCutExportFiles>($"Fehler beim Verschieben der Datei {video.FileInfo.FullName} nach {targetPath}: {result.Error}");
                 }
+                supportedVideos.Add(video);
             }
         }
 
+        // Hinweis: Masterdateien werden nicht zu den unterstützten Videodateien gezählt, da sie nicht an den Medienserver oder über das Internet gestreamt werden.
+        var masterfiles = new List<Masterfile>();
+        if (inputDirectoryContent.Value.HasMasterfiles)
+        {
+            _logger.LogInformation("Verschiebe Masterdateien aus dem Final Cut Export-Verzeichnis nach {inputdirectory}", inputDirectory);
+            foreach (var masterfile in inputDirectoryContent.Value.Masterfiles)
+            {
+                var targetPath = Path.Combine(inputDirectory, masterfile.FileInfo.Name);
+                var result = await _fileOperations.MoveFileAsync(masterfile.FileInfo.FullName, targetPath);
+                if (result.IsFailure)
+                {
+                    return Result.Failure<IntegratedFinalCutExportFiles>($"Fehler beim Verschieben der Datei {masterfile.FileInfo.FullName} nach {targetPath}: {result.Error}");
+                }
+                masterfiles.Add(masterfile);
+            }
+        }
+
+        var supportedImages = new List<SupportedImage>();
         if (inputDirectoryContent.Value.HasSupportedImages)
         {
             _logger.LogInformation("Verschiebe unterstützte Bilder aus dem Final Cut Export-Verzeichnis nach {inputdirectory}", inputDirectory);
@@ -81,13 +102,18 @@ public class FinalCutDirectoryIntegrator
                 {
                     return Result.Failure<IntegratedFinalCutExportFiles>($"Fehler beim Verschieben der Datei {image.FileInfo.FullName} nach {targetPath}: {result.Error}");
                 }
+                supportedImages.Add(image);
             }
         }
 
         _logger.LogInformation("Dateien aus dem Final Cut Export-Verzeichnis erfolgreich integriert.");
 
-
-        return new IntegratedFinalCutExportFiles();
+        return new IntegratedFinalCutExportFiles
+        {
+            Videos = supportedVideos,
+            Images = supportedImages,
+            Masterfiles = masterfiles
+        };
     }
 }
 
@@ -95,4 +121,5 @@ public record IntegratedFinalCutExportFiles
 {
     public List<SupportedVideo> Videos { get; init; } = new();
     public List<SupportedImage> Images { get; init; } = new();
+    public List<Masterfile> Masterfiles { get; init; } = new();
 }

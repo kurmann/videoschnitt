@@ -1,4 +1,3 @@
-using System.Security.Cryptography.X509Certificates;
 using CSharpFunctionalExtensions;
 using Kurmann.Videoschnitt.Common.Entities.MediaTypes;
 
