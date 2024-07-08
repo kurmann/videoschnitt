@@ -243,7 +243,7 @@ public class MediaIntegratorService
     /// </summary>
     /// <param name="videoFile"></param>
     /// <returns></returns>
-    private Maybe<DateOnly> GetRecordingDateFromTitle(string titleFromMetadata)
+    private Maybe<DateOnly> GetRecordingDateFromTitle(string? titleFromMetadata)
     {
         if (string.IsNullOrWhiteSpace(titleFromMetadata))
             return Maybe<DateOnly>.None;
@@ -266,8 +266,14 @@ public class MediaIntegratorService
     /// <param name="album"></param>
     /// <param name="recordingDate"></param>
     /// <returns></returns>
-    private Result<FileInfo> GetTargetFilePath(SupportedVideo supportedVideo, string album, string title, DateOnly recordingDate)
+    private Result<FileInfo> GetTargetFilePath(SupportedVideo supportedVideo, string? album, string? title, DateOnly recordingDate)
     {
+        if (string.IsNullOrWhiteSpace(album))
+            return Result.Failure<FileInfo>("Das Album ist leer.");
+        
+        if (string.IsNullOrWhiteSpace(title))
+
+
         if (_applicationSettings.InfuseMediaLibraryPath == null)
             return Result.Failure<FileInfo>("Das Infuse-Mediathek-Verzeichnis wurde nicht korrekt aus den Einstellungen geladen.");
 
