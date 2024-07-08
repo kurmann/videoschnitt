@@ -156,26 +156,27 @@ public class MediaIntegratorService
     private async Task<Result> IntegratedSupportedImagesToInfuseMediaLibrary(IEnumerable<SupportedImage> supportedImages, FileInfo videoFileTargetPath)
     {
         // Wenn kein Bild vorhanden sind, wird mit einer Info geloggt und die Methode beendet.
-        if (supportedImages.Count() == 0)
+        if (!supportedImages.Any())
         {
             _logger.LogInformation($"Keine Bild-Dateien für das Medienset vorhanden.");
             _logger.LogInformation("Es wird kein Bild in das Infuse-Mediathek-Verzeichnis verschoben.");
             return Result.Success();
         }
 
-        _logger.LogInformation($"Es sind {supportedImages.Count()} Bild-Dateien für das Medienset vorhanden.");
+        _logger.LogInformation("Es sind {supportedImages.Count()} Bild-Dateien für das Medienset vorhanden.", supportedImages.Count());
         _logger.LogInformation("Versuche alle unterstützten Bilder in den Farbraum Adobe RGB umzuwandeln.");
         var supportedConvertedImages = new List<SupportedImage>();
         foreach (var supportedImage in supportedImages)
         {
-            var convertColorSpaceResult = await _imageProcessorService.ConvertColorSpaceAsyncToAdobeRGB(supportedImage.FileInfo);
+            _logger.LogInformation("Versuche das Bild {supportedImage.FileInfo.FullName} in den Farbraum Adobe RGB umzuwandeln und als JPEG zu speichern.", supportedImage.FileInfo.FullName);
+            var convertColorSpaceResult = await _imageProcessorService.ConvertColorSpaceAndFormatAsync(supportedImage.FileInfo);
             if (convertColorSpaceResult.IsFailure)
             {
                 return Result.Failure($"Das Bild {supportedImage.FileInfo.FullName} konnte nicht in den Farbraum Adobe RGB konvertiert werden: {convertColorSpaceResult.Error}. Der Schritt ist wichtig damit die Bilder in der Infuse-Mediathek korrekt dargestellt werden.");
             }
             else
             {
-                _logger.LogInformation($"Das Bild {supportedImage.FileInfo.FullName} wurde erfolgreich in den Farbraum Adobe RGB konvertiert.");
+                _logger.LogInformation("Das Bild {supportedImage.FileInfo.FullName} wurde erfolgreich in den Farbraum Adobe RGB konvertiert.", supportedImage.FileInfo.FullName);
 
                 // Aktualisiere das FileInfo-Objekt des Bildes mit dem konvertierten Dateipfad
                 var convertedImageFileInfo = new FileInfo(convertColorSpaceResult.Value.FullName);

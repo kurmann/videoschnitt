@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Kurmann.Videoschnitt.Common.Services.ImageProcessing;
 using Kurmann.Videoschnitt.ConfigurationModule.Services;
 using Kurmann.Videoschnitt.ConfigurationModule.Settings;
+using System.Diagnostics;
 
 namespace Kurmann.Videoschnitt.InfuseMediaLibrary.Services;
 
@@ -23,11 +24,11 @@ public class ImageProcessorService
     }
 
     /// <summary>
-    /// Wandelt den Farbraum einer Bilddatei von BT.2020 in Adobe RGB um. Die konvertierte Datei hat das Suffix "-adobe_rgb".
+    /// Wandelt den Farbraum einer Bilddatei von BT.2020 in Adobe RGB um und konvertiert sie bei Bedarf nach JPEG. Die konvertierte Datei hat das Suffix "-adobe_rgb".
     /// </summary>
     /// <param name="filePath"></param>
     /// <returns></returns>
-    public async Task<Result<FileInfo>> ConvertColorSpaceAsyncToAdobeRGB(FileInfo filePath)
+    public async Task<Result<FileInfo>> ConvertColorSpaceAndFormatAsync(FileInfo filePath)
     {
         if (filePath == null)
         {
@@ -37,6 +38,19 @@ public class ImageProcessorService
         if (!filePath.Exists)
         {
             return Result.Failure<FileInfo>($"Die Bilddatei {filePath.FullName} existiert nicht.");
+        }
+
+        // Konvertiere TIFF oder PNG Dateien nach JPEG
+        if (filePath.Extension.Equals(".tiff", StringComparison.OrdinalIgnoreCase) ||
+            filePath.Extension.Equals(".tif", StringComparison.OrdinalIgnoreCase) ||
+            filePath.Extension.Equals(".png", StringComparison.OrdinalIgnoreCase))
+        {
+            var jpegConversionResult = ConvertToJpegUsingSips(filePath);
+            if (jpegConversionResult.IsFailure)
+            {
+                return Result.Failure<FileInfo>($"Fehler beim Konvertieren der Datei {filePath.FullName} nach JPEG: {jpegConversionResult.Error}");
+            }
+            filePath = new FileInfo(jpegConversionResult.Value);
         }
 
         // Ermittle den Dateinamen für die konvertierte Datei mit dem Suffix, z.B. "-adobe_rgb"
@@ -54,13 +68,49 @@ public class ImageProcessorService
         var convertedFilePath = Path.Combine(directoryPath.FullName, convertedFileNameResult.Value);
         _logger.LogInformation("Dateiname für konvertierte Datei: {convertedFilePath}", convertedFilePath);
 
-        var colorConversationResult = await _colorConversionService.ConvertColorSpaceAsync(filePath.FullName, convertedFilePath, "bt2020", "adobe_rgb");
-        if (colorConversationResult.IsFailure)
+        // Führe die Farbraumkonvertierung durch
+        var colorConversionResult = await _colorConversionService.ConvertColorSpaceAsync(filePath.FullName, convertedFilePath, "bt2020", "adobe_rgb");
+        if (colorConversionResult.IsFailure)
         {
-            return Result.Failure<FileInfo>($"Fehler beim Konvertieren des Farbraums von BT.2020 nach Adobe RGB: {colorConversationResult.Error}");
+            return Result.Failure<FileInfo>($"Fehler beim Konvertieren des Farbraums von BT.2020 nach Adobe RGB: {colorConversionResult.Error}");
         }
         _logger.LogInformation("Erfolgreiches Konvertieren des Farbraums von BT.2020 nach Adobe RGB: {filePath.FullName}", filePath.FullName);
         return new FileInfo(convertedFilePath);
+    }
+
+    private Result<string> ConvertToJpegUsingSips(FileInfo filePath)
+    {
+        try
+        {
+            var jpegFilePath = Path.Combine(filePath.DirectoryName, Path.GetFileNameWithoutExtension(filePath.Name) + ".jpeg");
+
+            var psi = new ProcessStartInfo
+            {
+                FileName = "sips",
+                Arguments = $"-s format jpeg \"{filePath.FullName}\" --out \"{jpegFilePath}\"",
+                RedirectStandardOutput = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+
+            using (var process = Process.Start(psi))
+            {
+                process.WaitForExit();
+                if (process.ExitCode == 0)
+                {
+                    return Result.Success(jpegFilePath);
+                }
+                else
+                {
+                    return Result.Failure<string>($"SIPS Konvertierung fehlgeschlagen mit Exit Code {process.ExitCode}");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Fehler beim Konvertieren der Datei {filePath.FullName} nach JPEG mit SIPS: {ex.Message}", filePath.FullName, ex.Message);
+            return Result.Failure<string>(ex.Message);
+        }
     }
 
     public Result<string> GetFileNameWithConvertedSuffix(FileInfo filePath)
@@ -72,10 +122,10 @@ public class ImageProcessorService
 
         if (_settings.SuffixForConvertedTempImage == null)
         {
-            return Result.Failure<string>("Das Suffx für konvertierte temporäre Dateien ist nicht konfiguriert.");
+            return Result.Failure<string>("Das Suffix für konvertierte temporäre Dateien ist nicht konfiguriert.");
         }
 
-        return $"{Path.GetFileNameWithoutExtension(filePath.Name)}{_settings.SuffixForConvertedTempImage}{filePath.Extension}";
+        return $"{Path.GetFileNameWithoutExtension(filePath.Name)}{_settings.SuffixForConvertedTempImage}{Path.GetExtension(filePath.Name)}";
     }
 
     public Result<string> GetFileNameWithoutConvertedSuffix(FileInfo filePath)
@@ -87,7 +137,7 @@ public class ImageProcessorService
 
         if (_settings.SuffixForConvertedTempImage == null)
         {
-            return Result.Failure<string>("Das Suffx für konvertierte temporäre Dateien ist nicht konfiguriert.");
+            return Result.Failure<string>("Das Suffix für konvertierte temporäre Dateien ist nicht konfiguriert.");
         }
 
         return $"{Path.GetFileNameWithoutExtension(filePath.Name)}{filePath.Extension}";
