@@ -91,12 +91,12 @@ public class FFMmpegSettings
     /// Der absolute Pfad zu FFMpeg.
     /// </summary>
     /// <value></value>
-    public string? Path { get; set; } = "/usr/local/bin/ffmpeg";
+    public string Path { get; set; } = "/usr/local/bin/ffmpeg";
 }
 
 public class FFProbeSettings
 {
-    public string? Path { get; set; } = "/opt/local/bin/ffprobe";
+    public string Path { get; set; } = "/opt/local/bin/ffprobe";
 }
 
 public class SipsSettings
@@ -105,5 +105,5 @@ public class SipsSettings
     /// Der absolute Pfad zu SIPS.
     /// </summary>
     /// <value></value>
-    public string? Path { get; set; } = "/usr/bin/sips";
+    public string Path { get; set; } = "/usr/bin/sips";
 }
