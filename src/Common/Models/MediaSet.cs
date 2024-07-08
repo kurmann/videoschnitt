@@ -14,12 +14,12 @@ public record MediaSet
 {
     public string? Title { get; init; }
 
-    [Obsolete("Use LocalMediaServerVideoFile instead")]
-    public Maybe<LocalMediaServerFiles> LocalMediaServerFiles { get; init; }
+    /// <summary>
+    /// Videodateien
+    /// </summary>
+    /// <value></value>
     public Maybe<SupportedVideo> LocalMediaServerVideoFile { get; init;}
 
-    [Obsolete("Use InternetStreamingVideoFiles instead")]
-    public Maybe<InternetStreamingFiles> InternetStreaming { get; init; }
     public Maybe<List<SupportedVideo>> InternetStreamingVideoFiles { get; init; }
 
     public Maybe<List<SupportedImage>> ImageFiles { get; init; }

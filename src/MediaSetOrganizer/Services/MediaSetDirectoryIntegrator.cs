@@ -55,14 +55,13 @@ public class MediaSetDirectoryIntegrator
             }
 
             _logger.LogInformation("Verschiebe Medien-Dateien in das Medienset-Verzeichnis: {mediaSetDirectory}", mediaSetTargetDirectory.FullName);
-
-            if (mediaSet.LocalMediaServerFiles.HasNoValue)
+            if (mediaSet.LocalMediaServerVideoFile.HasNoValue)
             {
                 _logger.LogInformation("Keine Medien-Dateien für den Medienserver vorhanden.");
             }
             else
             {
-                var videoFileForMediaServer = mediaSet.LocalMediaServerFiles.Value.VideoFile;
+                var videoFileForMediaServer = mediaSet.LocalMediaServerVideoFile.Value;
                 var videoFileForMediaServerTargetPath = Path.Combine(mediaSetTargetDirectory.FullName,
                                                                      _mediaSetOrganizerSettings.MediaSet.MediaServerFilesSubDirectoryName,
                                                                      videoFileForMediaServer.FileInfo.Name);
@@ -73,8 +72,6 @@ public class MediaSetDirectoryIntegrator
                     return Result.Failure<List<DirectoryInfo>>($"Fehler beim Verschieben der Video-Datei für den Medienserver: {videoFileForMediaServerMoveResult.Error}");
                 }
                 _logger.LogInformation("Video-Datei für Medienserver erfolgreich verschoben.");
-
-                // todo: Bilddateien verschieben sobald diese eine eigne Kategorie erhalten haben
             }
 
             mediaSetDirectories.Add(mediaSetTargetDirectory);
