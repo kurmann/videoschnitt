@@ -188,8 +188,6 @@ public class MediaIntegratorService
                 supportedConvertedImages.Add(supportedImageResult.Value);
             }
         }
-        // Überschreibe die ursprünglichen Bild-Dateien mit den konvertierten Bild-Dateien
-        supportedImages = supportedConvertedImages;
 
         // Ermittle das Zielverzeichnis für die Bild-Datei. Dieses ist das gleiche wie das Zielverzeichnis der Video-Datei.
         var videoTargetDirectory = videoFileTargetPath.Directory;
@@ -197,6 +195,9 @@ public class MediaIntegratorService
         {
             return Result.Failure($"Das Verzeichnis der Video-Datei {videoFileTargetPath.FullName} konnte nicht ermittelt werden. Das Verzeichnis wird benötigt, um die Bild-Dateien in das Infuse-Mediathek-Verzeichnis zu verschieben.");
         }
+
+        // Entnehme die konvertierten JPG-Dateien als Ausgangslage für die Ermittlung des Posters und Fanarts.
+        supportedImages = supportedConvertedImages;
 
         // Wenn nur ein Bild vorhanden ist, wird dieses als Poster verwendet. Der Name des Bildes entspricht dem Namen der Video-Datei.
         if (supportedImages.Count() == 1)
