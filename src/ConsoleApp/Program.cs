@@ -68,10 +68,12 @@ namespace Kurmann.Videoschnitt.ConsoleApp
 
         private static async Task<int> RunOptions(Options opts, IServiceProvider services, ILogger logger)
         {
+            using var scope = services.CreateScope();
+            var scopedServices = scope.ServiceProvider;
             if (opts.Workflow == HealthCheckWorkflow.WorkflowName)
             {
                 logger.LogInformation("Starting HealthCheck workflow.");
-                var workflow = services.GetRequiredService<HealthCheckWorkflow>();
+                var workflow = scopedServices.GetRequiredService<HealthCheckWorkflow>();
                 var result = workflow.Execute();
                 if (result.IsSuccess)
                 {
@@ -87,7 +89,7 @@ namespace Kurmann.Videoschnitt.ConsoleApp
             else if (opts.Workflow == "FinalCutPro")
             {
                 logger.LogInformation("Starting FinalCutPro workflow.");
-                var workflow = services.GetRequiredService<FinalCutProWorkflow>();
+                var workflow = scopedServices.GetRequiredService<FinalCutProWorkflow>();
                 var result = await workflow.ExecuteAsync();
                 if (result.IsSuccess)
                 {
@@ -112,5 +114,8 @@ namespace Kurmann.Videoschnitt.ConsoleApp
     {
         [Option('w', "workflow", Required = true, HelpText = "Name of the workflow to execute.")]
         public string? Workflow { get; set; }
+
+        [Option('e', "environment", Required = false, HelpText = "Environment to run.")]
+        public string? Environment { get; set; }
     }
 }

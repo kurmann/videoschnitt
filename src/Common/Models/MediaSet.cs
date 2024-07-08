@@ -1,4 +1,3 @@
-using System.Security.Cryptography.X509Certificates;
 using CSharpFunctionalExtensions;
 using Kurmann.Videoschnitt.Common.Entities.MediaTypes;
 
@@ -14,14 +13,12 @@ public record MediaSet
 {
     public string? Title { get; init; }
 
-    /// <summary>
-    /// Videodateien
-    /// </summary>
-    /// <value></value>
     public Maybe<SupportedVideo> LocalMediaServerVideoFile { get; init;}
 
     public Maybe<List<SupportedVideo>> InternetStreamingVideoFiles { get; init; }
 
     public Maybe<List<SupportedImage>> ImageFiles { get; init; }
+
+    public Maybe<Masterfile> Masterfile { get; set; }
 }
 

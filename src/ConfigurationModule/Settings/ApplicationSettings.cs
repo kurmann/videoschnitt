@@ -33,6 +33,15 @@ public class ApplicationSettings
     public bool IsDefaultMediaSetPathLocal => MediaSetPathLocal == DefaultMediaSetPathLocal;
 
     /// <summary>
+    /// Der Pfad zum Verzeichnis, in dem die exportierten Final Cut Pro-Dateien liegen.
+    /// </summary>
+    /// <value></value>
+    public string FinalCutExportDirectory { get; set; } = DefaultFinalCutExportDirectory;
+    public const string FinalCutExportDirectoryConfigKey = $"{SectionName}:FinalCutExportDirectory";
+    public const string DefaultFinalCutExportDirectory = "~/Movies/Final Cut Export";
+    public bool IsDefaultFinalCutExportDirectory => FinalCutExportDirectory == DefaultFinalCutExportDirectory;
+
+    /// <summary>
     /// Der Pfad zum Medienset-Verzeichnis auf dem externen Archiv oder Medienserver.
     /// </summary>
     /// <value></value>

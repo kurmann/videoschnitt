@@ -35,4 +35,9 @@ public class MediaSetSettings
     /// In welches Unterverzeichnis des Medienset-Verzeichnisses sollen die Titelbilder kopiert oder verschoben werden.
     /// </summary>
     public string ImageFilesSubDirectoryName { get; set; } = "Titelbilder";
+
+    /// <summary>
+    /// In welches Unterverzeichnis des Medienset-Verzeichnisses sollen die Masterdateien kopiert oder verschoben werden.
+    /// </summary>
+    public string MasterfileSubDirectoryName { get; set; } = "Masterdatei";
 }
