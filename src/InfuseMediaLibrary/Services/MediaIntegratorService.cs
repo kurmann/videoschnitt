@@ -272,7 +272,7 @@ public class MediaIntegratorService
             return Result.Failure<FileInfo>("Das Album ist leer.");
         
         if (string.IsNullOrWhiteSpace(title))
-
+            return Result.Failure<FileInfo>("Der Titel ist leer.");
 
         if (_applicationSettings.InfuseMediaLibraryPath == null)
             return Result.Failure<FileInfo>("Das Infuse-Mediathek-Verzeichnis wurde nicht korrekt aus den Einstellungen geladen.");
@@ -283,7 +283,7 @@ public class MediaIntegratorService
         var targetDirectory = Path.Combine(_applicationSettings.InfuseMediaLibraryPath, album, recordingDate.Year.ToString(), recordingDate.ToString("yyyy-MM-dd"));
 
         // Der Ziel-Dateiname ist ohne vorangestelltes ISO-Datum. Dieses muss also aus dem Titel entfernt werden.
-        var titleWithoutLeadingRecordingDate = title.Replace($"{recordingDate.ToString("yyyy-MM-dd")} ", string.Empty);
+        var titleWithoutLeadingRecordingDate = title.Replace($"{recordingDate:yyyy-MM-dd} ", string.Empty);
 
         var targetFileName = $"{titleWithoutLeadingRecordingDate}{supportedVideo.FileInfo.Extension}";
         var targetFilePath = Path.Combine(targetDirectory, targetFileName);
