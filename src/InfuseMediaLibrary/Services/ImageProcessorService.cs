@@ -82,7 +82,12 @@ public class ImageProcessorService
     {
         try
         {
-            var jpegFilePath = Path.Combine(filePath.DirectoryName, Path.GetFileNameWithoutExtension(filePath.Name) + ".jpeg");
+            var directoryName = filePath.DirectoryName;
+            if (string.IsNullOrWhiteSpace(directoryName))
+            {
+                return Result.Failure<string>("Der Dateipfad der zu konvertierenden Datei konnte nicht ermittelt werden.");
+            }
+            var jpegFilePath = Path.Combine(directoryName, Path.GetFileNameWithoutExtension(filePath.Name) + ".jpg");
 
             var psi = new ProcessStartInfo
             {
@@ -93,17 +98,21 @@ public class ImageProcessorService
                 CreateNoWindow = true
             };
 
-            using (var process = Process.Start(psi))
+            using var process = Process.Start(psi);
+
+            if (process == null)
             {
-                process.WaitForExit();
-                if (process.ExitCode == 0)
-                {
-                    return Result.Success(jpegFilePath);
-                }
-                else
-                {
-                    return Result.Failure<string>($"SIPS Konvertierung fehlgeschlagen mit Exit Code {process.ExitCode}");
-                }
+                return Result.Failure<string>("Fehler beim Starten des SIPS-Prozesses.");
+            }
+
+            process.WaitForExit();
+            if (process.ExitCode == 0)
+            {
+                return Result.Success(jpegFilePath);
+            }
+            else
+            {
+                return Result.Failure<string>($"SIPS Konvertierung fehlgeschlagen mit Exit Code {process.ExitCode}");
             }
         }
         catch (Exception ex)
