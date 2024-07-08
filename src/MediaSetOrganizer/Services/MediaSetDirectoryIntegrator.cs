@@ -68,16 +68,55 @@ public class MediaSetDirectoryIntegrator
                 return Result.Failure<List<DirectoryInfo>>($"Fehler beim Integrieren der Internet-Dateien: {integrateInternetFilesResult.Error}");
             }
 
-            mediaSetDirectories.Add(mediaSetTargetDirectory);
-
             var inteagrateImageFilesResult = await IntegrateImageFiles(mediaSet, mediaSetTargetDirectory);
             if (inteagrateImageFilesResult.IsFailure)
             {
                 return Result.Failure<List<DirectoryInfo>>($"Fehler beim Integrieren der Bild-Dateien: {inteagrateImageFilesResult.Error}");
             }
+
+            var integratedMaseterfileResult = await IntegrateMasterfile(mediaSet, mediaSetTargetDirectory);
+            if (integratedMaseterfileResult.IsFailure)
+            {
+                return Result.Failure<List<DirectoryInfo>>($"Fehler beim Integrieren der Masterdatei: {integratedMaseterfileResult.Error}");
+            }
+
+            mediaSetDirectories.Add(mediaSetTargetDirectory);
         }
 
         return Result.Success(mediaSetDirectories);
+    }
+
+    private async Task<Result<DirectoryInfo>> IntegrateMasterfile(MediaSet mediaSet, DirectoryInfo mediaSetTargetDirectory)
+    {
+        _logger.LogInformation("Verschiebe Masterdatei in das Medienset-Verzeichnis: {mediaSetDirectory}", mediaSetTargetDirectory.FullName);
+        if (mediaSet.Masterfile.HasNoValue)
+        {
+            _logger.LogInformation("Keine Masterdatei für den Medienserver vorhanden.");
+            return Result.Success(mediaSetTargetDirectory);
+        }
+        else
+        {
+            var masterfileSubDirectory = new DirectoryInfo(Path.Combine(mediaSetTargetDirectory.FullName, _mediaSetOrganizerSettings.MediaSet.MasterfileSubDirectoryName));
+            if (!masterfileSubDirectory.Exists)
+            {
+                _logger.LogInformation("Erstelle Unterverzeichnis für Masterdatei: {masterfileSubDirectory}", masterfileSubDirectory.FullName);
+                var masterfileSubDirectoryCreateResult = await _fileOperations.CreateDirectoryAsync(masterfileSubDirectory.FullName);
+                if (masterfileSubDirectoryCreateResult.IsFailure)
+                {
+                    return Result.Failure<DirectoryInfo>($"Fehler beim Erstellen des Unterverzeichnisses für die Masterdatei: {masterfileSubDirectoryCreateResult.Error}");
+                }
+            }
+
+            var masterfileTargetPath = Path.Combine(masterfileSubDirectory.FullName, mediaSet.Masterfile.Value.FileInfo.Name);
+            _logger.LogInformation("Verschiebe Masterdatei: {masterfileTargetPath}", masterfileTargetPath);
+            var masterfileMoveResult = await _fileOperations.MoveFileAsync(mediaSet.Masterfile.Value.FileInfo.FullName, masterfileTargetPath, true);
+            if (masterfileMoveResult.IsFailure)
+            {
+                return Result.Failure<DirectoryInfo>($"Fehler beim Verschieben der Masterdatei: {masterfileMoveResult.Error}");
+            }
+
+            return masterfileSubDirectory;
+        }
     }
 
     private async Task<Result<Maybe<DirectoryInfo>>> IntegrateImageFiles(MediaSet mediaSet, DirectoryInfo mediaSetTargetDirectory)
