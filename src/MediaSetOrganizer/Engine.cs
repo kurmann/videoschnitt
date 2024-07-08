@@ -18,9 +18,11 @@ public class Engine
     private readonly InputDirectoryReaderService _inputDirectoryReaderService;
     private readonly ApplicationSettings _applicationSettings;
     private readonly MediaSetDirectoryIntegrator _mediaSetDirectoryIntegrator;
+    private readonly FinalCutDirectoryIntegrator _finalCutDirectoryIntegrator;
 
     public Engine(ILogger<Engine> logger, IConfigurationService configurationService, MediaSetService mediaSetService,
-        MediaPurposeOrganizer mediaPurposeOrganizer, InputDirectoryReaderService inputDirectoryReaderService, MediaSetDirectoryIntegrator mediaSetDirectoryIntegrator)
+        MediaPurposeOrganizer mediaPurposeOrganizer, InputDirectoryReaderService inputDirectoryReaderService,
+        MediaSetDirectoryIntegrator mediaSetDirectoryIntegrator, FinalCutDirectoryIntegrator finalCutDirectoryIntegrator)
     {
         _logger = logger;
         _applicationSettings = configurationService.GetSettings<ApplicationSettings>();
@@ -28,6 +30,7 @@ public class Engine
         _mediaPurposeOrganizer = mediaPurposeOrganizer;
         _inputDirectoryReaderService = inputDirectoryReaderService;
         _mediaSetDirectoryIntegrator = mediaSetDirectoryIntegrator;
+        _finalCutDirectoryIntegrator = finalCutDirectoryIntegrator;
     }
 
     public async Task<Result<List<MediaSet>>> StartAsync()
@@ -39,7 +42,12 @@ public class Engine
             return Result.Failure<List<MediaSet>>("Eingabeverzeichnis wurde nicht korrekt aus den Einstellungen geladen.");
         }
 
-        _logger.LogInformation("Eingangsverzeichnis: {_applicationSettings.InputDirectory}", _applicationSettings.InputDirectory);
+        _logger.LogInformation("Verschiebe unterstützte Dateien aus dem Final Cut Pro-Export-Verzeichnis in das Eingangsverzeichnis.");
+        var integratedFinalCutFilesResult = await _finalCutDirectoryIntegrator.IntegrateFinalCutExportFilesAsync();
+        if (integratedFinalCutFilesResult.IsFailure)
+        {
+            return Result.Failure<List<MediaSet>>($"Fehler beim Integrieren der Dateien aus dem Final Cut Pro-Export-Verzeichnis: {integratedFinalCutFilesResult.Error}");
+        }
 
         _logger.LogInformation("Versuche die Dateien im Eingangsverzeichnis in Mediensets zu organisisieren.");
         var inputDirectoryContent = await _inputDirectoryReaderService.ReadInputDirectoryAsync(_applicationSettings.InputDirectory);
@@ -69,7 +77,6 @@ public class Engine
         _logger.LogInformation("Anzahl Mediensets: {Count}", mediaSets.Value.Count);
         _logger.LogInformation("Medien erfolgreich nach ihrem Verwendungszweck organisiert.");
 
-        // todo: die Integration in die lokalen Medienset-Verzeichnisse muss erfolgen nachdem die Dateien bereits organisiert wurden
         _logger.LogInformation("Verschiebe die Medien in die lokalen Medienset-Verzeichnisse.");
         var mediaSetDirectories = await _mediaSetDirectoryIntegrator.IntegrateInLocalMediaSetDirectory(mediaSets.Value);
         if (mediaSetDirectories.IsFailure)

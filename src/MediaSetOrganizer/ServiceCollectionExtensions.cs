@@ -24,6 +24,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IFileOperations, FileOperations>();
         services.AddScoped<InputDirectoryReaderService>();
         services.AddScoped<MediaSetDirectoryIntegrator>();
+        services.AddScoped<FinalCutDirectoryIntegrator>();
 
         services.AddCommonServicesEngine(configuration);
         services.AddConfigurationModule(configuration);
