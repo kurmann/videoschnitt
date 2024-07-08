@@ -36,17 +36,17 @@ public class MediaIntegratorService
         _infuseMediaLibrarySettings = infuseMediaLibrarySettings.Value;
     }
 
-    public async Task<Result<Maybe<LocalMediaServerFiles>>> IntegrateMediaSetToInfuseMediaLibrary(MediaSet mediaSet)
+    public async Task<Result<Maybe<LocalMediaServerFiles>>> IntegrateMediaSetToLocalInfuseMediaLibrary(MediaSet mediaSet)
     {
         _logger.LogInformation("Integriere Medienset in die Infuse-Mediathek.");
 
         if (mediaSet == null)
             return Result.Failure<Maybe<LocalMediaServerFiles>>("Das Medienset ist null.");
 
-        _logger.LogInformation($"Prüfe ob im Medienset {mediaSet.Title} Medien für lokale Medienserver vorhanden sind.");
+        _logger.LogInformation("Prüfe ob im Medienset {mediaSet.Title} Medien für lokale Medienserver vorhanden sind.", mediaSet.Title);
         if (mediaSet.LocalMediaServerVideoFile.HasNoValue)
         {
-            _logger.LogInformation($"Keine Videos für lokale Medienserver im Medienset {mediaSet.Title} vorhanden.");
+            _logger.LogInformation("Keine Videos für lokale Medienserver im Medienset {mediaSet.Title} vorhanden.", mediaSet.Title);
             _logger.LogInformation("Überspringe Integration in die Infuse-Mediathek für dieses Medienset.");
             return Maybe<LocalMediaServerFiles>.None;
         }
@@ -275,13 +275,10 @@ public class MediaIntegratorService
         if (string.IsNullOrWhiteSpace(title))
             return Result.Failure<FileInfo>("Der Titel ist leer.");
 
-        if (_applicationSettings.InfuseMediaLibraryPath == null)
-            return Result.Failure<FileInfo>("Das Infuse-Mediathek-Verzeichnis wurde nicht korrekt aus den Einstellungen geladen.");
-
         if (supportedVideo.FileInfo == null)
             return Result.Failure<FileInfo>("Die Quelldatei des SupportedVideo-Objekts ist null.");
 
-        var targetDirectory = Path.Combine(_applicationSettings.InfuseMediaLibraryPath, album, recordingDate.Year.ToString(), recordingDate.ToString("yyyy-MM-dd"));
+        var targetDirectory = Path.Combine(_applicationSettings.InfuseMediaLibraryPathLocal, album, recordingDate.Year.ToString(), recordingDate.ToString("yyyy-MM-dd"));
 
         // Der Ziel-Dateiname ist ohne vorangestelltes ISO-Datum. Dieses muss also aus dem Titel entfernt werden.
         var titleWithoutLeadingRecordingDate = title.Replace($"{recordingDate:yyyy-MM-dd} ", string.Empty);

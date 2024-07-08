@@ -35,7 +35,7 @@ public class Engine
         var integratedMediaServerFilesByMediaSet = new List<LocalMediaServerFiles>();
         foreach (var mediaSet in mediaSets)
         {
-            var integrateMediaSetResult = await _mediaIntegratorService.IntegrateMediaSetToInfuseMediaLibrary(mediaSet);
+            var integrateMediaSetResult = await _mediaIntegratorService.IntegrateMediaSetToLocalInfuseMediaLibrary(mediaSet);
             if (integrateMediaSetResult.IsFailure)
             {
                 _logger.LogWarning("Fehler beim Integrieren des Mediensets {Title} in die Infuse-Mediathek: {Error}", mediaSet.Title, integrateMediaSetResult.Error);
