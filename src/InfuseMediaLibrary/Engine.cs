@@ -29,7 +29,7 @@ public class Engine
             return Result.Failure<List<LocalMediaServerFiles>>("Eingabeverzeichnis wurde nicht korrekt aus den Einstellungen geladen.");
         }
 
-        _logger.LogInformation("Eingangsverzeichnis: {_applicationSettings.InputDirectory}", _applicationSettings.InputDirectory);
+        _logger.LogInformation("Verzeichnis der lokalen Mediensets, das als Ausgangspunkt für die Integration in die Infuse-Mediathek dient: {Directory}", _applicationSettings.MediaSetPathLocal);
 
         _logger.LogInformation("Iteriere über alle Mediensets und versuche, die Medien-Dateien in die Infuse-Mediathek zu integrieren.");
         var integratedMediaServerFilesByMediaSet = new List<LocalMediaServerFiles>();

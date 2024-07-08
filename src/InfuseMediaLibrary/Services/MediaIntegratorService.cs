@@ -4,8 +4,8 @@ using Kurmann.Videoschnitt.Common.Models;
 using Kurmann.Videoschnitt.Common.Services.FileSystem;
 using Kurmann.Videoschnitt.Common.Entities.MediaTypes;
 using Kurmann.Videoschnitt.Common.Services.Metadata;
-using Kurmann.Videoschnitt.ConfigurationModule.Services;
 using Kurmann.Videoschnitt.ConfigurationModule.Settings;
+using Microsoft.Extensions.Options;
 
 namespace Kurmann.Videoschnitt.InfuseMediaLibrary.Services;
 
@@ -24,15 +24,16 @@ public class MediaIntegratorService
                                   FFmpegMetadataService ffmpegMetadataService,
                                   PosterAndFanartService posterAndFanartService,
                                   ImageProcessorService imageProcessorService,
-                                  IConfigurationService configurationService)
+                                  IOptions<InfuseMediaLibrarySettings> infuseMediaLibrarySettings,
+                                  IOptions<ApplicationSettings> applicationSettings)
     {
         _logger = logger;
         _fileOperations = fileOperations;
         _ffmpegMetadataService = ffmpegMetadataService;
         _posterAndFanartService = posterAndFanartService;
         _imageProcessorService = imageProcessorService;
-        _applicationSettings = configurationService.GetSettings<ApplicationSettings>();
-        _infuseMediaLibrarySettings = configurationService.GetSettings<InfuseMediaLibrarySettings>();
+        _applicationSettings = applicationSettings.Value;
+        _infuseMediaLibrarySettings = infuseMediaLibrarySettings.Value;
     }
 
     public async Task<Result<Maybe<LocalMediaServerFiles>>> IntegrateMediaSetToInfuseMediaLibrary(MediaSet mediaSet)
