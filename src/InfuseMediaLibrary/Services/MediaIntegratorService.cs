@@ -38,6 +38,18 @@ public class MediaIntegratorService
 
     public async Task<Result<Maybe<LocalMediaServerFiles>>> IntegrateMediaSetToLocalInfuseMediaLibrary(MediaSet mediaSet)
     {
+        // Prüfe ob das Infuse-Mediathek-Verzeichnis existiert und erstelle es falls es nicht existiert
+        if (!Directory.Exists(_applicationSettings.InfuseMediaLibraryPathLocal))
+        {
+            _logger.LogInformation("Das Infuse-Mediathek-Verzeichnis {infuseMediaLibraryPathLocal} existiert nicht. Erstelle Verzeichnis.", _applicationSettings.InfuseMediaLibraryPathLocal);
+            var createDirectoryResult = await _fileOperations.CreateDirectoryAsync(_applicationSettings.InfuseMediaLibraryPathLocal);
+            if (createDirectoryResult.IsFailure)
+            {
+                return Result.Failure<Maybe<LocalMediaServerFiles>>($"Das Infuse-Mediathek-Verzeichnis {createDirectoryResult.Error} konnte nicht erstellt werden.");
+            }
+            _logger.LogInformation("Infuse-Mediathek-Verzeichnis {infuseMediaLibraryPathLocal} erfolgreich erstellt.", _applicationSettings.InfuseMediaLibraryPathLocal);
+        }
+
         _logger.LogInformation("Integriere Medienset in die Infuse-Mediathek.");
 
         if (mediaSet == null)
@@ -244,7 +256,7 @@ public class MediaIntegratorService
     /// </summary>
     /// <param name="videoFile"></param>
     /// <returns></returns>
-    private Maybe<DateOnly> GetRecordingDateFromTitle(string? titleFromMetadata)
+    private static Maybe<DateOnly> GetRecordingDateFromTitle(string? titleFromMetadata)
     {
         if (string.IsNullOrWhiteSpace(titleFromMetadata))
             return Maybe<DateOnly>.None;
