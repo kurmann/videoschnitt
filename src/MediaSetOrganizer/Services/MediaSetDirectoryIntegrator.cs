@@ -13,29 +13,37 @@ namespace Kurmann.Videoschnitt.MediaSetOrganizer.Services;
 public class MediaSetDirectoryIntegrator
 {
     public readonly ApplicationSettings _applicationSettings;
+    public readonly MediaSetOrganizerSettings _mediaSetOrganizerSettings;
     private readonly ILogger<MediaSetDirectoryIntegrator> _logger;
     private readonly IFileOperations _fileOperations;
 
-    public MediaSetDirectoryIntegrator(IOptions<ApplicationSettings> applicationSettings, ILogger<MediaSetDirectoryIntegrator> logger, IFileOperations fileOperations)
+    public MediaSetDirectoryIntegrator(IOptions<ApplicationSettings> applicationSettings,
+                                       IOptions<MediaSetOrganizerSettings> mediaSetOrganizerSettings,
+                                       ILogger<MediaSetDirectoryIntegrator> logger,
+                                       IFileOperations fileOperations)
     {
         _applicationSettings = applicationSettings.Value;
+        _mediaSetOrganizerSettings = mediaSetOrganizerSettings.Value;
         _logger = logger;
         _fileOperations = fileOperations;
     }
 
-    public async Task<Result<List<DirectoryInfo>>> IntegrateInLocalMediaSetDirectory(List<MediaFilesByMediaSet> mediaFilesByMediaSets)
+    public async Task<Result<List<DirectoryInfo>>> IntegrateInLocalMediaSetDirectory(IEnumerable<MediaSet> mediaSets)
     {
         _logger.LogInformation("Integriere Mediensets in lokales Medienset-Verzeichnis.");
+        _logger.LogInformation("Berücksichtige den Einsatzzweck der Medien indem diese in ein vordefiniertes Unterverzeichnis verschoben werden.");
+        _logger.LogInformation("Unterverzeichnis für Medienserver: {mediaServerFilesSubDirectoryName}", _mediaSetOrganizerSettings.MediaSet.MediaServerFilesSubDirectoryName);
+        _logger.LogInformation("Unterverzeichnis für Internet: {internetFilesSubDirectoryName}", _mediaSetOrganizerSettings.MediaSet.InternetFilesSubDirectoryName);
         var mediaSetDirectories = new List<DirectoryInfo>();
 
-        foreach (var mediaFilesByMediaSet in mediaFilesByMediaSets)
+        foreach (var mediaSet in mediaSets)
         {
-            if (mediaFilesByMediaSet.Title == null)
+            if (mediaSet.Title == null)
             {
                 return Result.Failure<List<DirectoryInfo>>("Medienset-Titel ist null.");
             }
 
-            var mediaSetTargetDirectory = new DirectoryInfo(Path.Combine(_applicationSettings.MediaSetPathLocal, mediaFilesByMediaSet.Title));
+            var mediaSetTargetDirectory = new DirectoryInfo(Path.Combine(_applicationSettings.MediaSetPathLocal, mediaSet.Title));
             if (!mediaSetTargetDirectory.Exists)
             {
                 _logger.LogInformation("Erstelle Medienset-Verzeichnis: {mediaSetDirectory}", mediaSetTargetDirectory.FullName);
@@ -47,18 +55,26 @@ public class MediaSetDirectoryIntegrator
             }
 
             _logger.LogInformation("Verschiebe Medien-Dateien in das Medienset-Verzeichnis: {mediaSetDirectory}", mediaSetTargetDirectory.FullName);
-            var filesToMoveByMediaSet = mediaFilesByMediaSet.VideoFiles.Select(item => item.FileInfo)
-                .Concat(mediaFilesByMediaSet.ImageFiles.Select(item => item.FileInfo))
-                .ToList();
-            foreach (var fileInfo in filesToMoveByMediaSet)
+
+            if (mediaSet.LocalMediaServerFiles.HasNoValue)
             {
-                var destinationFile = new FileInfo(Path.Combine(mediaSetTargetDirectory.FullName, fileInfo.Name));
-                var moveResult = await _fileOperations.MoveFileAsync(fileInfo.FullName, destinationFile.FullName, true);
-                if (moveResult.IsFailure)
+                _logger.LogInformation("Keine Medien-Dateien für den Medienserver vorhanden.");
+            }
+            else
+            {
+                var videoFileForMediaServer = mediaSet.LocalMediaServerFiles.Value.VideoFile;
+                var videoFileForMediaServerTargetPath = Path.Combine(mediaSetTargetDirectory.FullName,
+                                                                     _mediaSetOrganizerSettings.MediaSet.MediaServerFilesSubDirectoryName,
+                                                                     videoFileForMediaServer.FileInfo.Name);
+                _logger.LogInformation("Verschiebe Video-Datei für Medienserver: {videoFileForMediaServerTargetPath}", videoFileForMediaServerTargetPath);
+                var videoFileForMediaServerMoveResult = await _fileOperations.MoveFileAsync(videoFileForMediaServer.FileInfo.FullName, videoFileForMediaServerTargetPath, true);
+                if (videoFileForMediaServerMoveResult.IsFailure)
                 {
-                    return Result.Failure<List<DirectoryInfo>>($"Fehler beim Verschieben der Medien-Datei: {moveResult.Error}");
+                    return Result.Failure<List<DirectoryInfo>>($"Fehler beim Verschieben der Video-Datei für den Medienserver: {videoFileForMediaServerMoveResult.Error}");
                 }
-                _logger.LogInformation("Medien-Datei verschoben: {destinationFile}", destinationFile.FullName);
+                _logger.LogInformation("Video-Datei für Medienserver erfolgreich verschoben.");
+
+                // todo: Bilddateien verschieben sobald diese eine eigne Kategorie erhalten haben
             }
 
             mediaSetDirectories.Add(mediaSetTargetDirectory);

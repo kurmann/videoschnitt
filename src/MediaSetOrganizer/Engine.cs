@@ -55,15 +55,6 @@ public class Engine
         }
         _logger.LogInformation("Mediensets erfolgreich gruppiert.");
 
-        _logger.LogInformation("Verschiebe die Medien in die lokalen Medienset-Verzeichnisse.");
-        var mediaSetDirectories = await _mediaSetDirectoryIntegrator.IntegrateInLocalMediaSetDirectory(mediaFilesByMediaSets.Value);
-        if (mediaSetDirectories.IsFailure)
-        {
-            return Result.Failure<List<MediaSet>>($"Fehler beim Integrieren der Mediensets in die lokalen Medienset-Verzeichnisse: {mediaSetDirectories.Error}");
-        }
-        _logger.LogInformation("Medien erfolgreich in die lokalen Medienset-Verzeichnisse verschoben.");
-
-        // todo: die Gruppierung nach Einsatzzweck muss erfolgen nachdem die Dateien bereits verschoben wurden
         _logger.LogInformation("Organisiere die Medien nach ihrem Verwendungszweck.");
         var mediaSets = _mediaPurposeOrganizer.OrganizeMediaByPurpose(mediaFilesByMediaSets.Value);
         if (mediaSets.IsFailure)
@@ -72,6 +63,15 @@ public class Engine
         }
         _logger.LogInformation("Anzahl Mediensets: {Count}", mediaSets.Value.Count);
         _logger.LogInformation("Medien erfolgreich nach ihrem Verwendungszweck organisiert.");
+
+        // todo: die Integration in die lokalen Medienset-Verzeichnisse muss erfolgen nachdem die Dateien bereits organisiert wurden
+        _logger.LogInformation("Verschiebe die Medien in die lokalen Medienset-Verzeichnisse.");
+        var mediaSetDirectories = await _mediaSetDirectoryIntegrator.IntegrateInLocalMediaSetDirectory(mediaSets.Value);
+        if (mediaSetDirectories.IsFailure)
+        {
+            return Result.Failure<List<MediaSet>>($"Fehler beim Integrieren der Mediensets in die lokalen Medienset-Verzeichnisse: {mediaSetDirectories.Error}");
+        }
+        _logger.LogInformation("Medien erfolgreich in die lokalen Medienset-Verzeichnisse verschoben.");
 
         _logger.LogInformation("Steuereinheit für die Metadaten-Verarbeitung beendet.");
         return Result.Success(mediaSets.Value);

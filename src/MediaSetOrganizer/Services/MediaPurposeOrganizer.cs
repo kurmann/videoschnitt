@@ -35,7 +35,9 @@ public class MediaPurposeOrganizer
         {
             _logger.LogTrace("Organisiere Medienset-Verzeichnis '{Title}' nach Einsatzzweck.", mediaFilesByMediaSet.Title);
 
-            var localMediaServerFiles = GetFilesForLocalMediaServer(mediaFilesByMediaSet);
+            var imageFiles = mediaFilesByMediaSet.ImageFiles.Any() ? Maybe<List<SupportedImage>>.From(mediaFilesByMediaSet.ImageFiles.ToList()) : Maybe<List<SupportedImage>>.None;
+
+            var localMediaServerFiles = GetVideoForLocalMediaServer(mediaFilesByMediaSet);
             if (localMediaServerFiles.IsFailure)
             {
                 return Result.Failure<List<MediaSet>>(localMediaServerFiles.Error);
@@ -48,23 +50,31 @@ public class MediaPurposeOrganizer
             }
 
             _logger.LogInformation("Medienset-Verzeichnis '{Title}' wurde erfolgreich nach Einsatzzweck organisiert.", mediaFilesByMediaSet.Title);
-            mediaSetDirectoriesWithMediaPurpose.Add(new MediaSet(mediaFilesByMediaSet.Title, localMediaServerFiles.Value, internetStreamingFiles.Value));
+            var mediaSet = new MediaSet{
+                Title = mediaFilesByMediaSet.Title, 
+                LocalMediaServerVideoFile = localMediaServerFiles.Value, 
+                InternetStreamingVideoFiles = internetStreamingFiles.Value, 
+                ImageFiles = imageFiles};
+            _logger.LogInformation("Das Medienset mt dem Titel '{Title}' enthält folgende Dateien nach Einsatzzweck", mediaFilesByMediaSet.Title);
+            _logger.LogInformation("Lokaler Medienserver: {LocalMediaServerVideoFile}", localMediaServerFiles.Value.HasValue ? localMediaServerFiles.Value.Value.FileInfo.Name : "Keine Datei");
+            _logger.LogInformation("Internet-Streaming: {InternetStreamingVideoFiles}", internetStreamingFiles.Value.HasValue ? string.Join(", ", internetStreamingFiles.Value.Value.Select(videoFile => videoFile.FileInfo.Name)) : "Keine Datei");
+            _logger.LogInformation("Bilder: {ImageFiles}", imageFiles.HasValue ? string.Join(", ", imageFiles.Value.Select(imageFile => imageFile.FileInfo.Name)) : "Keine Datei");
+            mediaSetDirectoriesWithMediaPurpose.Add(mediaSet);
         }
 
         _logger.LogInformation("Medienset-Verzeichnisse wurden erfolgreich nach Einsatzzweck organisiert.");
         return mediaSetDirectoriesWithMediaPurpose;
     }
 
-    private Result<Maybe<LocalMediaServerFiles>> GetFilesForLocalMediaServer(MediaFilesByMediaSet mediaFilesByMediaSets)
+    private Result<Maybe<SupportedVideo>> GetVideoForLocalMediaServer(MediaFilesByMediaSet mediaFilesByMediaSets)
     {
         _logger.LogTrace($"Filtere alle Videodateien, die mit einem der Suffixe für den Medienserver enden.");
 
         if (_mediaSetOrganizerSettings.MediaSet?.VideoVersionSuffixesForMediaServer == null)
         {
-            return Result.Failure<Maybe<LocalMediaServerFiles>>("Medienset-Einstellungen wurden nicht korrekt geladen. Es kann keine Unterteilung in Medienserver-Daten durchgeführt werden.");
+            return Result.Failure<Maybe<SupportedVideo>>("Medienset-Einstellungen wurden nicht korrekt geladen. Es kann keine Unterteilung in lokale Medienserver-Daten durchgeführt werden.");
         }
 
-        var localMediaServerFiles = Maybe<LocalMediaServerFiles>.None;
         var videoFilesForMediaServer = new List<SupportedVideo>();
         foreach (var videoFile in mediaFilesByMediaSets.VideoFiles)
         {
@@ -76,33 +86,25 @@ public class MediaPurposeOrganizer
         _logger.LogTrace($"Prüfe, ob maximal ein Videodatei für den Medienserver vorhanden ist.");
         if (videoFilesForMediaServer.Count > 1)
         {
-            return Result.Failure<Maybe<LocalMediaServerFiles>>($"Es sind mehr als eine Videodatei für den Medienserver im Medienset-Verzeichnis '{mediaFilesByMediaSets.Title}' vorhanden.");
+            return Result.Failure<Maybe<SupportedVideo>>("Es wurde mehr als eine Videodatei für den Medienserver gefunden. Es darf maximal eine Videodatei für den Medienserver vorhanden sein.");
         }
         if (videoFilesForMediaServer.Count == 1)
         {
             var videoFile = videoFilesForMediaServer.First();
-            localMediaServerFiles = new LocalMediaServerFiles(mediaFilesByMediaSets.ImageFiles, videoFile);
             _logger.LogInformation("Es wurde die Videodatei '{videoFile}' für den Medienserver im Medienset-Verzeichnis '{Title}' gefunden.", videoFile.FileInfo.Name, mediaFilesByMediaSets.Title);
+            return Maybe<SupportedVideo>.From(videoFile);
         }
-
-        if (localMediaServerFiles.HasNoValue)
-        {
-            _logger.LogInformation("Es wurde keine Videodatei für den Medienserver im Medienset-Verzeichnis '{mediaFilesByMediaSets.Title}' gefunden.", mediaFilesByMediaSets.Title);
-        }
-
-        return localMediaServerFiles;
+        return Maybe<SupportedVideo>.None;
     }
 
-    private Result<Maybe<InternetStreamingFiles>> GetFilesForInternetStreaming(MediaFilesByMediaSet mediaFilesByMediaSets)
+    private Result<Maybe<List<SupportedVideo>>> GetFilesForInternetStreaming(MediaFilesByMediaSet mediaFilesByMediaSets)
     {
         _logger.LogTrace($"Filtere alle Videodateien, die mit einem der Suffixe für das Internet enden.");
-
         if (_mediaSetOrganizerSettings.MediaSet?.VideoVersionSuffixesForInternet == null)
         {
-            return Result.Failure<Maybe<InternetStreamingFiles>>("Medienset-Einstellungen wurden nicht korrekt geladen. Es kann keine Unterteilung in Internet-Daten durchgeführt werden.");
+            return Result.Failure<Maybe<List<SupportedVideo>>>("Medienset-Einstellungen wurden nicht korrekt geladen. Es kann keine Unterteilung in Internet-Streaming-Daten durchgeführt werden.");
         }
 
-        var internetStreaming = Maybe<InternetStreamingFiles>.None;
         var videoFilesForInternet = new List<SupportedVideo>();
         foreach (var videoFile in mediaFilesByMediaSets.VideoFiles)
         {
@@ -112,17 +114,15 @@ public class MediaPurposeOrganizer
             }
         }
         
-        // Wenn keine Videodatei für das Internet gefunden wurde, dann wird ein leerer Maybe-Container zurückgegeben.
         if (videoFilesForInternet.Count == 0)
         {
             _logger.LogInformation("Es wurden keine Videodateien für das Internet im Medienset-Verzeichnis '{Title}' gefunden.", mediaFilesByMediaSets.Title);
-            return Maybe<InternetStreamingFiles>.None;
+            return Maybe<List<SupportedVideo>>.None;
         }
 
-        internetStreaming = new InternetStreamingFiles(mediaFilesByMediaSets.ImageFiles, videoFilesForInternet);
         var videoFileNames = string.Join(", ", videoFilesForInternet.Select(videoFile => videoFile.FileInfo.Name));
         _logger.LogInformation("Es wurden die Videodateien '{videoFileNames}' für das Internet im Medienset-Verzeichnis '{Title}' gefunden.", videoFileNames, mediaFilesByMediaSets.Title);
 
-        return internetStreaming;
+        return Maybe<List<SupportedVideo>>.From(videoFilesForInternet);
     }
 }

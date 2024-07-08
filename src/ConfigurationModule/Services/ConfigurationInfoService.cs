@@ -69,7 +69,7 @@ public class ConfigurationInfoService
         if (_applicationSettings.MediaSetPathRemote == null)
         {
             _logger.LogInformation("Kein externes Medienset-Verzeichnis konfiguriert.");
-            _logger.LogInformation("Ein exterbnes Medienset-Verzeichnis ist optional und wird nur benötigt, wenn Mediensets auf einem externen Archiv oder Medienserver abgelegt werden.");
+            _logger.LogInformation("Ein externes Medienset-Verzeichnis ist optional und wird nur benötigt, wenn Mediensets auf einem externen Archiv oder Medienserver abgelegt werden.");
             _logger.LogInformation("Konfigurieren Sie das externe Medienset-Verzeichnis in der appsettings.json-Datei unter dem Schlüssel: {key}", ApplicationSettings.MediaSetPathRemoteConfigKey);
         }
     }
