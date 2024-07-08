@@ -72,6 +72,16 @@ public class ConfigurationInfoService
             _logger.LogInformation("Ein externes Medienset-Verzeichnis ist optional und wird nur benötigt, wenn Mediensets auf einem externen Archiv oder Medienserver abgelegt werden.");
             _logger.LogInformation("Konfigurieren Sie das externe Medienset-Verzeichnis in der appsettings.json-Datei unter dem Schlüssel: {key}", ApplicationSettings.MediaSetPathRemoteConfigKey);
         }
+
+        if (_applicationSettings.IsDefaultFinalCutExportDirectory)
+        {
+            _logger.LogInformation("Kein Verzeichnis für exportierte Final Cut Pro-Dateien konfiguriert. Verwende Standardwert: {path}", _applicationSettings.FinalCutExportDirectory);
+            _logger.LogInformation("Sie können das Verzeichnis für exportierte Final Cut Pro-Dateien in der appsettings.json-Datei unter dem Schlüssel: {key} konfigurieren", ApplicationSettings.FinalCutExportDirectoryConfigKey);
+        }
+        else
+        {
+            _logger.LogInformation("Verwende Verzeichnis für exportierte Final Cut Pro-Dateien aus der Konfiguration: {path}", _applicationSettings.FinalCutExportDirectory);
+        }
     }
 
     private void LogInfuseMediaLibrarySettings()
