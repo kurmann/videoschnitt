@@ -53,6 +53,11 @@ public class Engine
         {
             return Result.Failure<List<MediaSet>>($"Fehler beim Gruppieren der Medien-Dateien in Mediensets: {mediaFilesByMediaSets.Error}");
         }
+        if (mediaFilesByMediaSets.Value.Count == 0)
+        {
+            _logger.LogInformation("Keine unterstützten Dateien im Verzeichnis gefunden oder keine Dateien gefunden, die nicht in Verarbeitung sind.");
+            return Result.Success(new List<MediaSet>());
+        }
         _logger.LogInformation("Mediensets erfolgreich gruppiert.");
 
         _logger.LogInformation("Organisiere die Medien nach ihrem Verwendungszweck.");

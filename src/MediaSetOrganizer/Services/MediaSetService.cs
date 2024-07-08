@@ -26,6 +26,13 @@ public class MediaSetService
     /// <returns></returns>
     public async Task<Result<List<MediaFilesByMediaSet>>> GroupToMediaSets(InputDirectoryContent inputDirectoryContent)
     {
+        // Prüfe ob überhaupt unterstützte Dateien im Verzeichnis sind
+        if (inputDirectoryContent.SupportedImages.Count == 0 && inputDirectoryContent.SupportedVideos.Count == 0)
+        {
+            _logger.LogWarning("Keine unterstützten Dateien im Verzeichnis gefunden oder keine Dateien gefunden, die nicht in Verarbeitung sind.");
+            return Result.Success(new List<MediaFilesByMediaSet>());
+        }
+
         _logger.LogInformation("Versuche die Dateien im Verzeichnis in Medienset zu organisieren.");
 
         _logger.LogInformation("Lies aus allen unterstützen Videodateien mit FFMPeg den Titel-Tag aus den Metadaten und gruppiere alle Dateien mit dem gleichen Titel.");
