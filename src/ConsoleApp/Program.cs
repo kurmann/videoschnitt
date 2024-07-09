@@ -10,6 +10,7 @@ using Kurmann.Videoschnitt.ConfigurationModule.Services;
 using Kurmann.Videoschnitt.HealthCheck;
 using Kurmann.Videoschnitt.InfuseMediaLibrary;
 using Kurmann.Videoschnitt.Common;
+using Kurmann.Videoschnitt.MediaSetOrganizer;
 
 namespace Kurmann.Videoschnitt.ConsoleApp
 {
@@ -66,6 +67,7 @@ namespace Kurmann.Videoschnitt.ConsoleApp
                     services.AddLogging(configure => configure.AddConsole());
                     services.AddConfigurationModule(hostContext.Configuration);
                     services.AddCommonServicesEngine(hostContext.Configuration);
+                    services.AddMediaSetOrganizer(hostContext.Configuration);
                     services.AddInfuseMediaLibrary(hostContext.Configuration);
                     services.AddHealthCheck();
                 });
@@ -96,7 +98,7 @@ namespace Kurmann.Videoschnitt.ConsoleApp
                 case "FinalCutPro":
                     {
                         logger.LogInformation("Starting FinalCutPro workflow.");
-                        var workflow = scopedServices.GetRequiredService<InfuseMediaLibrary.Workflow>();
+                        var workflow = scopedServices.GetRequiredService<MediaSetOrganizer.Workflow>();
                         var result = await workflow.ExecuteAsync();
                         if (result.IsSuccess)
                         {
