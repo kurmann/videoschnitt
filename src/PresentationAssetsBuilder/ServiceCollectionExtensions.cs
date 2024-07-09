@@ -1,20 +1,16 @@
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Kurmann.Videoschnitt.Common;
-using Kurmann.Videoschnitt.ConfigurationModule;
+using Kurmann.Videoschnitt.PresentationAssetsBuilder.Services;
 
 namespace Kurmann.Videoschnitt.PresentationAssetsBuilder;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddPresentationAssetsBuilder(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddPresentationAssetsBuilder(this IServiceCollection services)
     {   
         // Register MetadataProcessingService
         services.AddScoped<GenerateMediaSetIndexWorkflow>();
         services.AddScoped<MetadataXmlWorkflow>();
-
-        services.AddCommonServicesEngine(configuration);
-        services.AddConfigurationModule(configuration);
+        services.AddScoped<InfuseXmlFileGenarator>();
 
         return services;
     }
