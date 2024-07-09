@@ -1,8 +1,15 @@
+using System.Xml;
 using System.Xml.Linq;
 using Kurmann.Videoschnitt.Common.Services.Metadata;
 
 namespace Kurmann.Videoschnitt.PresentationAssetsBuilder.Entities;
 
+/// <summary>
+/// Verantwortlich für das Erstellen von XML-Metadaten, die insbesonder von Infusse gelesen werden können und gleichzeitig auch allgemeine Metadaten enthalten.
+/// Custom Production ist die Produktion von Videos, die nicht von einem Filmstudio stammen, bspw. private Videos.
+/// Diese haben den Typ "Other".
+/// Siehe auch: https://support.firecore.com/hc/en-us/articles/4405042929559-Overriding-Artwork-and-Metadata
+/// </summary>
 public class CustomProductionInfuseMetadata
 {
     public string Type { get; }
@@ -58,6 +65,14 @@ public class CustomProductionInfuseMetadata
         var directors = new List<string>();
 
         return new CustomProductionInfuseMetadata(type, title, description, artist, copyright, published, releaseDate, studio, keywords, album, producers, directors);
+    }
+
+    public XmlDocument ToXmlDocument()
+    {
+        var xml = ToXml();
+        var xmldoc = new XmlDocument();
+        xmldoc.LoadXml(xml.ToString());
+        return xmldoc;
     }
 
     public XElement ToXml()

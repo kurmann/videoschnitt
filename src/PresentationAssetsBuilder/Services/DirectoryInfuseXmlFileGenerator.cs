@@ -1,6 +1,8 @@
+using System.Xml;
 using CSharpFunctionalExtensions;
 using Kurmann.Videoschnitt.Common.Services.Metadata;
 using Kurmann.Videoschnitt.ConfigurationModule.Settings;
+using Kurmann.Videoschnitt.PresentationAssetsBuilder.Entities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -59,6 +61,18 @@ public class DirectoryInfuseXmlFileGenerator
                 }
 
                 generatedMetadataFilesByMediaSetList.Add(new GeneratedMetadataFilesByMediaSet(createRawMetadataFileResult.Value.MetadataFile, createRawMetadataFileResult.Value.Metadata));
+
+                // Wenn die betreffende Datei eine QuickTime-Datei ist, dann erstelle im Wurzelverzeichnis des Mediensets eine Infuse-XML-Datei
+                // Die QuickTime-Datei hat mehr Metadaten als die MPEG-4-Dateien, deshalb dient sie als Referenz für die Infuse-XML-Datei
+                if (mediaFile.Extension.ToLower() == ".mov")
+                {
+                    var customProductionInfuseMetadata = CustomProductionInfuseMetadata.CreateFromFfmpegMetadata(createRawMetadataFileResult.Value.Metadata);
+                    var customProductionInfuseMetadataXmlDoc = customProductionInfuseMetadata.ToXmlDocument();
+
+                    // Schreibe den Inhalt der XML-Datei in das Wurzelverzeichnis des Mediensets mit dem gleichen Dateinamen wie das Medienset
+                    customProductionInfuseMetadataXmlDoc.Save(Path.Combine(mediaSetDirectoryInfo.FullName, $"{mediaSetTitle}.xml"));
+                    
+                }
             }
         }
 
