@@ -13,7 +13,6 @@ public static class ServiceCollectionExtensions
     {   
         // Register Engine
         services.AddScoped<Workflow>();
-        services.AddScoped<InfuseMetadataXmlService>();
         services.AddScoped<MediaIntegratorService>();
         services.AddScoped<IFileOperations, FileOperations>();
         services.AddScoped<PosterAndFanartService>();
