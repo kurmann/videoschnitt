@@ -109,6 +109,36 @@ public class FileOperations : IFileOperations
     }
 
     /// <summary>
+    /// Prüft ob eine Datei mit identischem Namen und identischem Änderungsdatum bereits am Zielort existiert.
+    /// </summary>
+    /// <param name="sourceFilePath"></param>
+    /// <param name="targetFilePath"></param>
+    /// <returns></returns>
+    public static bool ExistAtTarget(string sourceFilePath, string targetFilePath)
+    {
+        if (!File.Exists(sourceFilePath) && !File.Exists(targetFilePath))
+        {
+            return false;
+        }
+
+        if (!File.Exists(sourceFilePath))
+        {
+            return false;
+        }
+
+        if (File.Exists(targetFilePath))
+        {
+            var existingFile = new FileInfo(targetFilePath);
+            var sourceFile = new FileInfo(sourceFilePath);
+            if (existingFile.LastWriteTime == sourceFile.LastWriteTime)
+            {
+                return true;
+            }        
+        }
+        return false;
+    }
+
+    /// <summary>
     /// Liest den Inhalt einer Datei.
     /// </summary>
     /// <param name="path">Der Pfad zur Datei.</param>

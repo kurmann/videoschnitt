@@ -5,6 +5,7 @@ using Kurmann.Videoschnitt.Common.Services.FileSystem;
 using Kurmann.Videoschnitt.Common.Services.Metadata;
 using Kurmann.Videoschnitt.ConfigurationModule.Settings;
 using Microsoft.Extensions.Options;
+using Kurmann.Videoschnitt.Common.Services.FileSystem.Unix;
 
 namespace Kurmann.Videoschnitt.InfuseMediaLibrary.Services;
 
@@ -96,12 +97,22 @@ public class MediaIntegratorService
                 return Result.Failure<Maybe<LocalMediaServerFiles>>($"Das Zielverzeichnis für die Integration in die Infuse-Mediathek konnte nicht erstellt werden: {targetDirectory.FullName}. Fehler: {createDirectoryResult.Error}");
             }
         }
-        var moveFileResult = await _fileOperations.CopyFileAsync(videoFile.FullName, targetFilePathResult.Value.FullName, true);
-        if (moveFileResult.IsFailure)
+
+        // Prüfe ob bereits eine Datei am Zielort existiert mit gleichem Namen und gleichem Änderungsdatum
+        if (FileOperations.ExistAtTarget(videoFile.FullName, targetFilePathResult.Value.FullName))
         {
-            return Result.Failure<Maybe<LocalMediaServerFiles>>($"Die Video-Datei {videoFile.Name} konnte nicht in das Infuse-Mediathek-Verzeichnis {targetDirectory.FullName} verschoben werden. Fehler: {moveFileResult.Error}");
+            _logger.LogTrace("Die Video existiert bereits im Infuse-Mediathek-Verzeichnis {targetDirectory.FullName}. Die Datei wird nicht verschoben.", targetDirectory.FullName);
         }
-        _logger.LogInformation("Video-Datei {Filename} erfolgreich in das Infuse-Mediathek-Verzeichnis {targetDirectory} verschoben.", videoFile.Name, targetDirectory.FullName);
+        else
+        {
+            // Kopiere die Video-Datei in das Infuse-Mediathek-Verzeichnis
+            var moveFileResult = await _fileOperations.CopyFileAsync(videoFile.FullName, targetFilePathResult.Value.FullName, true);
+            if (moveFileResult.IsFailure)
+            {
+                return Result.Failure<Maybe<LocalMediaServerFiles>>($"Die Video-Datei {videoFile.Name} konnte nicht in das Infuse-Mediathek-Verzeichnis {targetDirectory.FullName} verschoben werden. Fehler: {moveFileResult.Error}");
+            }
+            _logger.LogInformation("Video-Datei {Filename} erfolgreich in das Infuse-Mediathek-Verzeichnis {targetDirectory} verschoben.", videoFile.Name, targetDirectory.FullName);
+        }
 
         // Integriere die Bild-Dateien in das Infuse-Mediathek-Verzeichnis. Diese haben den gleichen Namen und das gleiche Zielverzeichnis wie die Video-Datei.
         var movedSupportedImagesResult = await IntegratedSupportedImagesToInfuseMediaLibrary(imageFiles.ToList(), targetFilePathResult.Value);
@@ -166,12 +177,22 @@ public class MediaIntegratorService
         // Das Posterbild hat den gleichen Dateinamen die Videodatei.
         var posterImage = detectPosterAndFanartImagesResult.Value.PosterImage;
         var targetPosterFilePath = Path.Combine(videoTargetDirectory.FullName, videoFileTargetPath.Name.Replace(videoFileTargetPath.Extension, posterImage.Extension));
-        var movePosterFileResult = await _fileOperations.CopyFileAsync(posterImage.FullName, targetPosterFilePath);
-        if (movePosterFileResult.IsFailure)
+
+        // Prüfe ob bereits eine Datei am Zielort existiert mit gleichem Namen und gleichem Änderungsdatum
+        if (FileOperations.ExistAtTarget(posterImage.FullName, targetPosterFilePath))
         {
-            return Result.Failure($"Das Posterbild {posterImage.FullName} konnte nicht in das Infuse-Mediathek-Verzeichnis {videoTargetDirectory.FullName} verschoben werden. Fehler: {movePosterFileResult.Error}");
+            _logger.LogTrace("Die Poster-Datei {posterImage.FileInfo.FullName} existiert bereits im Infuse-Mediathek-Verzeichnis {videoTargetDirectory.FullName}. Die Datei wird nicht verschoben.", posterImage.FullName, videoTargetDirectory.FullName);
         }
-        _logger.LogInformation("Posterbild {FileName} erfolgreich in das Infuse-Mediathek-Verzeichnis {videoTargetDirectory.FullName} verschoben.", posterImage.Name, videoTargetDirectory.FullName);
+        else 
+        {
+            // Kopiere das Posterbild in das Infuse-Mediathek-Verzeichnis
+            var movePosterFileResult = await _fileOperations.CopyFileAsync(posterImage.FullName, targetPosterFilePath);
+            if (movePosterFileResult.IsFailure)
+            {
+                return Result.Failure($"Das Posterbild {posterImage.FullName} konnte nicht in das Infuse-Mediathek-Verzeichnis {videoTargetDirectory.FullName} verschoben werden. Fehler: {movePosterFileResult.Error}");
+            }
+            _logger.LogInformation("Posterbild {FileName} erfolgreich in das Infuse-Mediathek-Verzeichnis {videoTargetDirectory.FullName} verschoben.", posterImage.Name, videoTargetDirectory.FullName);
+        }
 
         // Das Fanartbild hat den gleichen Dateinamen wie die Videodatei und zusätzlich dem Postfix definiert aus den Einstellungen.
         var bannerFilePostfix = _infuseMediaLibrarySettings.BannerFilePostfix;
@@ -181,12 +202,22 @@ public class MediaIntegratorService
         }
         var fanartImage = detectPosterAndFanartImagesResult.Value.FanartImage;
         var targetFanartFilePath = Path.Combine(videoTargetDirectory.FullName, videoFileTargetPath.Name.Replace(videoFileTargetPath.Extension, $"{bannerFilePostfix}{fanartImage.Extension}"));
-        var moveFanartFileResult = await _fileOperations.CopyFileAsync(fanartImage.FullName, targetFanartFilePath);
-        if (moveFanartFileResult.IsFailure)
+
+        // Prüfe ob bereits eine Datei am Zielort existiert mit gleichem Namen und gleichem Änderungsdatum
+        if (FileOperations.ExistAtTarget(fanartImage.FullName, targetFanartFilePath))
         {
-            return Result.Failure($"Das Fanartbild {fanartImage.FullName} konnte nicht in das Infuse-Mediathek-Verzeichnis {videoTargetDirectory.FullName} verschoben werden. Fehler: {moveFanartFileResult.Error}");
+            _logger.LogTrace("Die Fanart-Datei {fanartImage.FileInfo.FullName} existiert bereits im Infuse-Mediathek-Verzeichnis {videoTargetDirectory.FullName}. Die Datei wird nicht verschoben.", fanartImage.FullName, videoTargetDirectory.FullName);
         }
-        _logger.LogInformation("Fanartbild {fanartImage.FileInfo.FullName} erfolgreich in das Infuse-Mediathek-Verzeichnis {videoTargetDirectory.FullName} verschoben.", fanartImage.FullName, videoTargetDirectory.FullName);
+        else
+        {
+            // Kopiere das Fanartbild in das Infuse-Mediathek-Verzeichnis
+            var moveFanartFileResult = await _fileOperations.CopyFileAsync(fanartImage.FullName, targetFanartFilePath);
+            if (moveFanartFileResult.IsFailure)
+            {
+                return Result.Failure($"Das Fanartbild {fanartImage.FullName} konnte nicht in das Infuse-Mediathek-Verzeichnis {videoTargetDirectory.FullName} verschoben werden. Fehler: {moveFanartFileResult.Error}");
+            }
+            _logger.LogInformation("Fanartbild {fanartImage.FileInfo.FullName} erfolgreich in das Infuse-Mediathek-Verzeichnis {videoTargetDirectory.FullName} verschoben.", fanartImage.FullName, videoTargetDirectory.FullName);
+        }
 
         return Result.Success();
     }
