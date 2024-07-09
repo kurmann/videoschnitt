@@ -9,6 +9,7 @@ namespace Kurmann.Videoschnitt.InfuseMediaLibrary;
 
 public class Engine
 {
+    public const string WorkflowName = "LocalInfuseMediaLibraryIntegration";
     private readonly ApplicationSettings _applicationSettings;
     private readonly ILogger<Engine> _logger;
     private readonly MediaIntegratorService _mediaIntegratorService;
