@@ -1,5 +1,6 @@
 using System.Xml;
 using CSharpFunctionalExtensions;
+using Kurmann.Videoschnitt.Common.Models;
 using Kurmann.Videoschnitt.Common.Services.Metadata;
 using Kurmann.Videoschnitt.ConfigurationModule.Settings;
 using Kurmann.Videoschnitt.PresentationAssetsBuilder.Entities;
@@ -66,7 +67,16 @@ public class DirectoryInfuseXmlFileGenerator
                 // Die QuickTime-Datei hat mehr Metadaten als die MPEG-4-Dateien, deshalb dient sie als Referenz für die Infuse-XML-Datei
                 if (mediaFile.Extension.ToLower() == ".mov")
                 {
-                    var customProductionInfuseMetadata = CustomProductionInfuseMetadata.CreateFromFfmpegMetadata(createRawMetadataFileResult.Value.Metadata);
+                    // Lies das Aufnahmedatum aus dem Medienset-Namen
+                    var mediaSetNameResult = MediaSetName.Create(mediaSetTitle);
+                    if (mediaSetNameResult.IsFailure)
+                    {
+                        _logger.LogWarning("Fehler beim Parsen des Medienset-Namens {mediaSetTitle}: {mediaSetNameResult.Error}", mediaSetTitle, mediaSetNameResult.Error);
+                        _logger.LogInformation("Überspringe die Videodatei {mediaFile.Name}", mediaFile.Name);
+                        continue;
+                    }
+
+                    var customProductionInfuseMetadata = CustomProductionInfuseMetadata.CreateFromFfmpegMetadata(createRawMetadataFileResult.Value.Metadata, mediaSetNameResult.Value.Date);
                     var customProductionInfuseMetadataXmlDoc = customProductionInfuseMetadata.ToXmlDocument();
 
                     // Schreibe den Inhalt der XML-Datei in das Wurzelverzeichnis des Mediensets mit dem gleichen Dateinamen wie das Medienset

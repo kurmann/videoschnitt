@@ -43,7 +43,14 @@ public class CustomProductionInfuseMetadata
         Directors = directors;
     }
 
-    public static CustomProductionInfuseMetadata CreateFromFfmpegMetadata(FFmpegMetadata ffmpegMetadata)
+    /// <summary>
+    /// Erstellt ein CustomProductionInfuseMetadata-Objekt aus den Metadaten eines Videos, die von FFmpeg extrahiert wurden.
+    /// Das Aufnahmedatum wird als Parameter übergeben, da es nicht in den Metadaten enthalten ist. Es wird zum XML-Tag "published" hinzugefügt.
+    /// </summary>
+    /// <param name="ffmpegMetadata"></param>
+    /// <param name="recordingDate"></param>
+    /// <returns></returns>
+    public static CustomProductionInfuseMetadata CreateFromFfmpegMetadata(FFmpegMetadata ffmpegMetadata, DateOnly recordingDate)
     {
         var lines = ffmpegMetadata.Metadata
             .Where(line => !line.StartsWith(';'))
@@ -55,7 +62,7 @@ public class CustomProductionInfuseMetadata
         string artist = lines.GetValueOrDefault("artist", string.Empty);
         string copyright = lines.GetValueOrDefault("copyright", string.Empty);
 
-        DateOnly? published = DateOnly.TryParse(lines.GetValueOrDefault("date"), out DateOnly publishedDate) ? publishedDate : null;
+        DateOnly? published = recordingDate;
         DateOnly? releaseDate = DateOnly.TryParse(lines.GetValueOrDefault("com.apple.quicktime.creationdate"), out DateOnly releaseDateValue) ? releaseDateValue : null;
         string studio = lines.GetValueOrDefault("com.apple.quicktime.studio", string.Empty);
         string keywords = lines.GetValueOrDefault("keywords", string.Empty);
