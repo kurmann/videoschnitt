@@ -8,6 +8,8 @@ using Microsoft.Extensions.Logging;
 using Kurmann.Videoschnitt.ConfigurationModule;
 using Kurmann.Videoschnitt.ConfigurationModule.Services;
 using Kurmann.Videoschnitt.HealthCheck;
+using Kurmann.Videoschnitt.InfuseMediaLibrary;
+using Kurmann.Videoschnitt.Common;
 
 namespace Kurmann.Videoschnitt.ConsoleApp
 {
@@ -63,6 +65,8 @@ namespace Kurmann.Videoschnitt.ConsoleApp
                 {
                     services.AddLogging(configure => configure.AddConsole());
                     services.AddConfigurationModule(hostContext.Configuration);
+                    services.AddCommonServicesEngine(hostContext.Configuration);
+                    services.AddInfuseMediaLibrary(hostContext.Configuration);
                     services.AddHealthCheck();
                 });
 
