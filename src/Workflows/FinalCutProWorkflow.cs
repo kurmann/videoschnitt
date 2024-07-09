@@ -8,9 +8,9 @@ public class FinalCutProWorkflow : IAsyncWorkflow
 {
     private readonly ILogger<FinalCutProWorkflow> _logger;
     private readonly MediaSetOrganizer.Engine _mediaSetOrganizerEngine;
-    private readonly InfuseMediaLibrary.Engine _infuseMediaLibraryEngine;
+    private readonly InfuseMediaLibrary.Workflow _infuseMediaLibraryEngine;
 
-    public FinalCutProWorkflow(ILogger<FinalCutProWorkflow> logger, MediaSetOrganizer.Engine mediaSetOrganizerEngine, InfuseMediaLibrary.Engine infuseMediaLibraryEngine)
+    public FinalCutProWorkflow(ILogger<FinalCutProWorkflow> logger, MediaSetOrganizer.Engine mediaSetOrganizerEngine, InfuseMediaLibrary.Workflow infuseMediaLibraryEngine)
     {
         _logger = logger;
         _mediaSetOrganizerEngine = mediaSetOrganizerEngine;

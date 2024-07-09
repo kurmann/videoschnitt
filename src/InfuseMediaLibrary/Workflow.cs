@@ -7,16 +7,16 @@ using Kurmann.Videoschnitt.ConfigurationModule.Settings;
 
 namespace Kurmann.Videoschnitt.InfuseMediaLibrary;
 
-public class Engine
+public class Workflow
 {
     public const string WorkflowName = "LocalInfuseMediaLibraryIntegration";
     private readonly ApplicationSettings _applicationSettings;
-    private readonly ILogger<Engine> _logger;
+    private readonly ILogger<Workflow> _logger;
     private readonly MediaIntegratorService _mediaIntegratorService;
     private readonly MediaSetOrganizerSettings _mediaSetOrganizerSettings;
 
-    public Engine(IOptions<ApplicationSettings> applicationSettings, IOptions<MediaSetOrganizerSettings> mediaSetOrganizerSettings,
-        ILogger<Engine> logger, MediaIntegratorService mediaIntegratorService)
+    public Workflow(IOptions<ApplicationSettings> applicationSettings, IOptions<MediaSetOrganizerSettings> mediaSetOrganizerSettings,
+        ILogger<Workflow> logger, MediaIntegratorService mediaIntegratorService)
     {
         _applicationSettings = applicationSettings.Value;
         _mediaSetOrganizerSettings = mediaSetOrganizerSettings.Value;
