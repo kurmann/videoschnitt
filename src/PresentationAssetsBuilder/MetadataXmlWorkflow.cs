@@ -12,9 +12,9 @@ public class MetadataXmlWorkflow
 
     private readonly ILogger<MetadataXmlWorkflow> _logger;
     private readonly ApplicationSettings _applicationSettings;
-    private readonly InfuseXmlFileGenarator _infuseXmlFileGenarator;
+    private readonly DirectoryInfuseXmlFileGenerator _infuseXmlFileGenarator;
 
-    public MetadataXmlWorkflow(ILogger<MetadataXmlWorkflow> logger, IOptions<ApplicationSettings> applicationSettings, InfuseXmlFileGenarator infuseXmlFileGenarator)
+    public MetadataXmlWorkflow(ILogger<MetadataXmlWorkflow> logger, IOptions<ApplicationSettings> applicationSettings, DirectoryInfuseXmlFileGenerator infuseXmlFileGenarator)
     {
         _logger = logger;
         _applicationSettings = applicationSettings.Value;
@@ -24,7 +24,7 @@ public class MetadataXmlWorkflow
     {
         _logger.LogInformation("Starting MetadataXmlWorkflow...");
 
-        var generateInfuseXmlFilesResult = await _infuseXmlFileGenarator.GenerateInfuseXmlFiles(_applicationSettings.MediaSetPathLocal);
+        var generateInfuseXmlFilesResult = await _infuseXmlFileGenarator.Generate(_applicationSettings.MediaSetPathLocal);
         if (generateInfuseXmlFilesResult.IsFailure)
         {
             return Result.Failure($"Fehler beim Erstellen der Infuse-XML-Dateien: {generateInfuseXmlFilesResult.Error}");

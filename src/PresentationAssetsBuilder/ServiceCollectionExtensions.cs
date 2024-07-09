@@ -10,7 +10,7 @@ public static class ServiceCollectionExtensions
         // Register MetadataProcessingService
         services.AddScoped<GenerateMediaSetIndexWorkflow>();
         services.AddScoped<MetadataXmlWorkflow>();
-        services.AddScoped<InfuseXmlFileGenarator>();
+        services.AddScoped<DirectoryInfuseXmlFileGenerator>();
 
         return services;
     }

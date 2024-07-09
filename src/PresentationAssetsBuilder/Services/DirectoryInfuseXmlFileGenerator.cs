@@ -8,20 +8,20 @@ namespace Kurmann.Videoschnitt.PresentationAssetsBuilder.Services;
 /// <summary>
 /// Verantwortlich für das Erstellen von Infuse-XML-Dateien aus allen Videodateien eines Verzeichnisses.
 /// </summary>
-public class InfuseXmlFileGenarator
+public class DirectoryInfuseXmlFileGenerator
 {
-    private readonly ILogger<InfuseXmlFileGenarator> _logger;
+    private readonly ILogger<DirectoryInfuseXmlFileGenerator> _logger;
     private readonly MediaSetOrganizerSettings _mediaSetOrganizerSettings;
     private readonly InfuseXmlService _infuseXmlService;
 
-    public InfuseXmlFileGenarator(ILogger<InfuseXmlFileGenarator> logger, IOptions<MediaSetOrganizerSettings> applicationSettings, InfuseXmlService infuseXmlService)
+    public DirectoryInfuseXmlFileGenerator(ILogger<DirectoryInfuseXmlFileGenerator> logger, IOptions<MediaSetOrganizerSettings> applicationSettings, InfuseXmlService infuseXmlService)
     {
         _logger = logger;
         _mediaSetOrganizerSettings = applicationSettings.Value;
         _infuseXmlService = infuseXmlService;
     }
 
-    public async Task<Result<List<FileInfo>>> GenerateInfuseXmlFiles(string inputDirectory)
+    public async Task<Result<List<FileInfo>>> Generate(string inputDirectory)
     {
         // Lese alle Verzeichnisse im Eingabeverzeichnis und nimm an, dass es sich um Mediensets handelt
         var mediaSetDirectoryInfos = new DirectoryInfo(inputDirectory).GetDirectories().ToList();
