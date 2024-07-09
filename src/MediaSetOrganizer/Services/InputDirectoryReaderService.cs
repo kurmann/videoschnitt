@@ -95,7 +95,6 @@ public class InputDirectoryReaderService
             var isMasterfileResult = await IsMasterfile(file);
             if (isMasterfileResult.IsFailure)
             {
-                _logger.LogWarning("Fehler beim Prüfen ob die Datei {FullName} eine Masterdatei ist: {Error}", file.FullName, isMasterfileResult.Error);
                 _logger.LogInformation("Die Datei wird ignoriert mit Vermerk 'IgnoredFileReason.NotDefined'.");
                 ignoredFiles.Add(new IgnoredFile(file, IgnoredFileReason.NotDefined));
                 continue;
