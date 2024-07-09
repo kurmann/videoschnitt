@@ -2,7 +2,7 @@ using System.Globalization;
 using System.Xml.Linq;
 using CSharpFunctionalExtensions;
 
-namespace Kurmann.Videoschnitt.Common.Entities.Metadata;
+namespace Kurmann.Videoschnitt.PresentationAssetsBuilder.Entities;
 
 public class FFmpegMetadata
 {

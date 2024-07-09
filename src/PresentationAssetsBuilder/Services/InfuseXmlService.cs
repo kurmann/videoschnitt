@@ -1,11 +1,11 @@
 using Microsoft.Extensions.Logging;
 using CSharpFunctionalExtensions;
 using System.Xml.Linq;
-using Kurmann.Videoschnitt.Common.Entities.Metadata;
 using Kurmann.Videoschnitt.Common.Entities.MediaTypes;
 using Kurmann.Videoschnitt.Common.Services.Metadata;
+using Kurmann.Videoschnitt.PresentationAssetsBuilder.Entities;
 
-namespace Kurmann.Videoschnitt.InfuseMediaLibrary.Services;
+namespace Kurmann.Videoschnitt.PresentationAssetsBuilder.Services;
 
 /// <summary>
 /// Verantwortlich für das Erstellen von Infuse-XML-Dateien.
@@ -19,6 +19,42 @@ public class InfuseXmlService
     {
         _logger = logger;
         _ffmpegMetadataService = ffmpegMetadataService;
+    }
+
+    public async Task<Result<string>> GetRawMetadataAsync(string filePath)
+    {
+        var metadataResult = await _ffmpegMetadataService.GetRawMetadataAsync(filePath);
+        if (metadataResult.IsFailure)
+        {
+            return Result.Failure<string>($"Fehler beim Extrahieren der Metadaten aus {filePath}: {metadataResult.Error}");
+        }
+
+        return metadataResult.Value;
+    }
+
+    public async Task<Result<FileInfo>> CreateMetadataFile(string filePath)
+    {
+        var metadataResult = await _ffmpegMetadataService.GetRawMetadataAsync(filePath);
+        if (metadataResult.IsFailure)
+        {
+            return Result.Failure<FileInfo>($"Fehler beim Extrahieren der Metadaten aus {filePath}: {metadataResult.Error}");
+        }
+
+        // Parse die FFMpeg-Metadaten
+        var ffmpegMetadata = FFmpegMetadata.Create(metadataResult.Value);
+        if (ffmpegMetadata.IsFailure)
+        {
+            return Result.Failure<FileInfo>($"Fehler beim Parsen der extrahierten Metadaten aus {filePath}: {ffmpegMetadata.Error}");
+        }
+
+        // Erstelle ein Infuse-XML-Objekt aus den Metadaten
+        var infuseXml = ffmpegMetadata.Value.ToInfuseXml();
+
+        // Schreibe die Infuse-XML-Datei (mit dem gleichen Namen wie die Videodatei)
+        var metadataFilePath = Path.ChangeExtension(filePath, ".xml");
+        infuseXml.Save(metadataFilePath);
+
+        return new FileInfo(metadataFilePath);
     }
 
     public async Task<Result<XDocument>> ReadMetdataFromQuickTimeMovie(QuickTimeMovie quickTimeMovie, IProgress<string> progress)

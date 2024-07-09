@@ -1,7 +1,7 @@
 using System.Xml.Linq;
 using CSharpFunctionalExtensions;
 
-namespace Kurmann.Videoschnitt.InfuseMediaLibrary.Entities;
+namespace Kurmann.Videoschnitt.PresentationAssetsBuilder.Entities;
 
 public class CustomProductionInfuseMetadata
 {
