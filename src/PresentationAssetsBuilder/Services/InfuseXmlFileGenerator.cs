@@ -1,7 +1,6 @@
 using Microsoft.Extensions.Logging;
 using CSharpFunctionalExtensions;
 using Kurmann.Videoschnitt.Common.Services.Metadata;
-using Kurmann.Videoschnitt.PresentationAssetsBuilder.Entities;
 
 namespace Kurmann.Videoschnitt.PresentationAssetsBuilder.Services;
 
@@ -24,49 +23,22 @@ public class InfuseXmlFileGenerator
     /// </summary>
     /// <param name="filePath"></param>
     /// <returns></returns>
-    public async Task<Result<FileInfo>> GenerateRawFile(string filePath)
+    public async Task<Result<GenerateRawFileResponse>> GenerateRawFile(string filePath)
     {
         var metadataResult = await _ffmpegMetadataService.GetRawMetadataAsync(filePath);
         if (metadataResult.IsFailure)
         {
-            return Result.Failure<FileInfo>($"Fehler beim Extrahieren der Metadaten aus {filePath}: {metadataResult.Error}");
+            return Result.Failure<GenerateRawFileResponse>($"Fehler beim Extrahieren der Metadaten aus {filePath}: {metadataResult.Error}");
         }
 
         // Schreibe die RAW-Metadatei (mit dem gleichen Namen wie die Videodatei) als Textdatei
         var metadataFilePath = Path.ChangeExtension(filePath, ".txt");
         await File.WriteAllTextAsync(metadataFilePath, metadataResult.Value);
+        _logger.LogInformation("RAW-Metadaten-Datei für {filePath} erstellt: {metadataFilePath}", filePath, metadataFilePath);
 
-        return new FileInfo(metadataFilePath);
-    }
-
-    /// <summary>
-    /// Erstellt eine Infuse-XML-Datei für eine Videodatei.
-    /// </summary>
-    /// <param name="filePath"></param>
-    /// <returns></returns>
-    public async Task<Result<FileInfo>> Generate(string filePath)
-    {
-        var metadataResult = await _ffmpegMetadataService.GetRawMetadataAsync(filePath);
-        if (metadataResult.IsFailure)
-        {
-            return Result.Failure<FileInfo>($"Fehler beim Extrahieren der Metadaten aus {filePath}: {metadataResult.Error}");
-        }
-
-        // Parse die FFMpeg-Metadaten
-        var ffmpegMetadata = FFmpegMetadata.Create(metadataResult.Value);
-        if (ffmpegMetadata.IsFailure)
-        {
-            return Result.Failure<FileInfo>($"Fehler beim Parsen der extrahierten Metadaten aus {filePath}: {ffmpegMetadata.Error}");
-        }
-
-        // Erstelle ein Infuse-XML-Objekt aus den Metadaten
-        var infuseXml = ffmpegMetadata.Value.ToInfuseXml();
-
-        // Schreibe die Infuse-XML-Datei (mit dem gleichen Namen wie die Videodatei)
-        var metadataFilePath = Path.ChangeExtension(filePath, ".xml");
-        infuseXml.Save(metadataFilePath);
-
-        return new FileInfo(metadataFilePath);
+        return new GenerateRawFileResponse(new FileInfo(metadataFilePath), metadataResult.Value);
     }
 
 }
+
+public record GenerateRawFileResponse(FileInfo MetadataFile, FFmpegMetadata Metadata);

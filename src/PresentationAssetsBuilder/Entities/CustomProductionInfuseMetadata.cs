@@ -1,8 +1,15 @@
+using System.Xml;
 using System.Xml.Linq;
-using CSharpFunctionalExtensions;
+using Kurmann.Videoschnitt.Common.Services.Metadata;
 
 namespace Kurmann.Videoschnitt.PresentationAssetsBuilder.Entities;
 
+/// <summary>
+/// Verantwortlich für das Erstellen von XML-Metadaten, die insbesonder von Infusse gelesen werden können und gleichzeitig auch allgemeine Metadaten enthalten.
+/// Custom Production ist die Produktion von Videos, die nicht von einem Filmstudio stammen, bspw. private Videos.
+/// Diese haben den Typ "Other".
+/// Siehe auch: https://support.firecore.com/hc/en-us/articles/4405042929559-Overriding-Artwork-and-Metadata
+/// </summary>
 public class CustomProductionInfuseMetadata
 {
     public string Type { get; }
@@ -10,15 +17,7 @@ public class CustomProductionInfuseMetadata
     public string? Description { get; }
     public string? Artist { get; }
     public string? Copyright { get; }
-
-    /// <summary>
-    /// Veröffentlichungsdatum. Entspricht bei den Eigenproduktionen das Aufnamedatum.
-    /// </summary>
     public DateOnly? Published { get; }
-
-    /// <summary>
-    /// Veröffentlichungsdatum. Entspricht bei den Eigenproduktionen dem Tag des Videoschnitts.
-    /// </summary>
     public DateOnly? ReleaseDate { get; }
     public string? Studio { get; }
     public string? Keywords { get; }
@@ -26,8 +25,8 @@ public class CustomProductionInfuseMetadata
     public List<string> Producers { get; }
     public List<string> Directors { get; }
 
-    private CustomProductionInfuseMetadata(string type, string title, string? description, string? artist, string? copyright, 
-                        DateOnly? published, DateOnly? releaseDate, string? studio, string? keywords, 
+    private CustomProductionInfuseMetadata(string type, string title, string? description, string? artist, string? copyright,
+                        DateOnly? published, DateOnly? releaseDate, string? studio, string? keywords,
                         string? album, List<string> producers, List<string> directors)
     {
         Type = type;
@@ -44,59 +43,61 @@ public class CustomProductionInfuseMetadata
         Directors = directors;
     }
 
-    public static Result<CustomProductionInfuseMetadata> Create(string xmlContent)
+    /// <summary>
+    /// Erstellt ein CustomProductionInfuseMetadata-Objekt aus den Metadaten eines Videos, die von FFmpeg extrahiert wurden.
+    /// Das Aufnahmedatum wird als Parameter übergeben, da es nicht in den Metadaten enthalten ist. Es wird zum XML-Tag "published" hinzugefügt.
+    /// </summary>
+    /// <param name="ffmpegMetadata"></param>
+    /// <param name="recordingDate"></param>
+    /// <returns></returns>
+    public static CustomProductionInfuseMetadata CreateFromFfmpegMetadata(FFmpegMetadata ffmpegMetadata, DateOnly recordingDate)
     {
-        try
-        {
-            XDocument doc = XDocument.Parse(xmlContent);
+        var lines = ffmpegMetadata.Metadata
+            .Where(line => !line.StartsWith(';'))
+            .ToDictionary(line => line.Split('=')[0].Trim(), line => line.Split('=')[1].Trim());
 
-            XElement? mediaElement = doc.Element("media");
+        string type = "Other";
+        string title = lines.GetValueOrDefault("title", string.Empty);
+        string description = lines.GetValueOrDefault("com.apple.quicktime.description", string.Empty);
+        string artist = lines.GetValueOrDefault("artist", string.Empty);
+        string copyright = lines.GetValueOrDefault("copyright", string.Empty);
 
-            // Prüfe, ob ein <media>-Element vorhanden ist
-            if (mediaElement == null)
-            {
-                return Result.Failure<CustomProductionInfuseMetadata>("Inkorrektes Infuse Metadata-XML: <media>-Element fehlt.");
-            }
+        DateOnly? published = recordingDate;
+        DateOnly? releaseDate = DateOnly.TryParse(lines.GetValueOrDefault("com.apple.quicktime.creationdate"), out DateOnly releaseDateValue) ? releaseDateValue : null;
+        string studio = lines.GetValueOrDefault("com.apple.quicktime.studio", string.Empty);
+        string keywords = lines.GetValueOrDefault("keywords", string.Empty);
+        string album = lines.GetValueOrDefault("album", string.Empty);
 
-            // Prüfe, ob ein Type-Attribut vorhanden ist
-            if (mediaElement.Attribute("type") == null || mediaElement.Attribute("type")!.Value == null)
-            {
-                return Result.Failure<CustomProductionInfuseMetadata>("Inkorrektes Infuse Metadata-XML: Das Type-Attribut des <media>-Elements muss 'Other' sein.");
-            }
+        var producers = new List<string> { lines.GetValueOrDefault("producer", string.Empty) };
+        var directors = new List<string>();
 
-            if (mediaElement.Attribute("type")?.Value != "Other")
-            {
-                return Result.Failure<CustomProductionInfuseMetadata>("Inkorrektes Infuse Metadata-XML: Das Type-Attribut des <media>-Elements muss 'Other' sein.");
-            }
-            string type = mediaElement.Attribute("type")!.Value;
+        return new CustomProductionInfuseMetadata(type, title, description, artist, copyright, published, releaseDate, studio, keywords, album, producers, directors);
+    }
 
+    public XmlDocument ToXmlDocument()
+    {
+        var xml = ToXml();
+        var xmldoc = new XmlDocument();
+        xmldoc.LoadXml(xml.ToString());
+        return xmldoc;
+    }
 
-            XElement? titleElement = mediaElement.Element("title");
-            if (titleElement == null)
-            {
-                return Result.Failure<CustomProductionInfuseMetadata>("Inkorrektes Infuse Metadata-XML: <title>-Element fehlt.");
-            }
-
-            string? title = titleElement.Value;
-            string? description = mediaElement.Element("description")?.Value;
-            string? artist = mediaElement.Element("artist")?.Value;
-            string? copyright = mediaElement.Element("copyright")?.Value;
-            DateOnly? published = DateOnly.TryParse(mediaElement.Element("published")?.Value, out DateOnly publishedDate) ? publishedDate : null;
-            DateOnly? releaseDate = DateOnly.TryParse(mediaElement.Element("releasedate")?.Value, out DateOnly releaseDateValue) ? releaseDateValue : null;
-            string? studio = mediaElement.Element("studio")?.Value;
-            string? keywords = mediaElement.Element("keywords")?.Value;
-            string? album = mediaElement.Element("album")?.Value;
-
-            var producers = mediaElement.Element("producers")?.Elements("name").Select(e => e.Value).ToList() ?? new List<string>();
-            var directors = mediaElement.Element("directors")?.Elements("name").Select(e => e.Value).ToList() ?? new List<string>();
-
-            var mediaEntity = new CustomProductionInfuseMetadata(type, title, description, artist, copyright, published, releaseDate, studio, keywords, album, producers, directors);
-            return Result.Success(mediaEntity);
-        }
-        catch (Exception ex)
-        {
-            return Result.Failure<CustomProductionInfuseMetadata>($"Fehler beim Interpretieren des Infuse Metadata-XML: {ex.Message}");
-        }
+    public XElement ToXml()
+    {
+        return new XElement("media",
+            new XAttribute("type", Type),
+            new XElement("title", Title),
+            new XElement("description", Description),
+            new XElement("artist", Artist),
+            new XElement("copyright", Copyright),
+            new XElement("published", Published?.ToString("yyyy-MM-dd")),
+            new XElement("releasedate", ReleaseDate?.ToString("yyyy-MM-dd")),
+            new XElement("studio", Studio),
+            new XElement("keywords", Keywords),
+            new XElement("album", Album),
+            new XElement("producers", Producers.Select(p => new XElement("name", p))),
+            new XElement("directors", Directors.Select(d => new XElement("name", d)))
+        );
     }
 
     public override string ToString() => $"Title: {Title}, Published: {Published}, Album: {Album}";

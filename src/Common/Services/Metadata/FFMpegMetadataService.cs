@@ -47,19 +47,20 @@ public class FFmpegMetadataService
     /// </summary>
     /// <param name="filePath"></param>
     /// <returns></returns>
-    public async Task<Result<string>> GetRawMetadataAsync(string filePath)
+    public async Task<Result<FFmpegMetadata>> GetRawMetadataAsync(string filePath)
     {
         var arguments = $"-i \"{filePath}\" -f ffmetadata -";
         var result = await _executeCommandService.ExecuteCommandAsync(_ffmpegCommand, arguments);
 
         if (result.IsSuccess)
         {
-            var rawMetadata = string.Join("\n", result.Value);
-            return Result.Success(rawMetadata);
+            // Jede Zeile besteht aus einem Key-Value-Paar, getrennt durch ein '='.
+            var metadata = new FFmpegMetadata(result.Value);
+            return Result.Success(metadata);
         }
 
         _logger.LogError("Error retrieving FFmpeg metadata: {Error}", result.Error);
-        return Result.Failure<string>(result.Error);
+        return Result.Failure<FFmpegMetadata>(result.Error);
     }
 
     public async Task<Result<string>> GetMetadataFieldAsync(FileInfo fileInfo, string field)
@@ -120,5 +121,23 @@ public class FFmpegMetadataService
 
         _logger.LogError("Error retrieving video codec profile for file '{filePath}': {Error}", filePath, result.Error);
         return Result.Failure<string>(result.Error);
+    }
+}
+
+public record FFmpegMetadata(List<string> Metadata)
+{
+    /// <summary>
+    /// Gibt die Metadaten als Zeichenfolge zurück.
+    /// Jeder Listeneintrag kommt auf eine neue Zeile.
+    /// </summary>
+    /// <returns></returns>
+    public override string ToString()
+    {
+        return string.Join("\n", Metadata);
+    }
+
+    public static implicit operator string(FFmpegMetadata metadata)
+    {
+        return metadata.ToString();
     }
 }

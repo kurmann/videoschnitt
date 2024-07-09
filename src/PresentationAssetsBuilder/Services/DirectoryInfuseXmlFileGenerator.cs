@@ -1,5 +1,9 @@
+using System.Xml;
 using CSharpFunctionalExtensions;
+using Kurmann.Videoschnitt.Common.Models;
+using Kurmann.Videoschnitt.Common.Services.Metadata;
 using Kurmann.Videoschnitt.ConfigurationModule.Settings;
+using Kurmann.Videoschnitt.PresentationAssetsBuilder.Entities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -57,7 +61,28 @@ public class DirectoryInfuseXmlFileGenerator
                     continue;
                 }
 
-                generatedMetadataFilesByMediaSetList.Add(new GeneratedMetadataFilesByMediaSet(createRawMetadataFileResult.Value));
+                generatedMetadataFilesByMediaSetList.Add(new GeneratedMetadataFilesByMediaSet(createRawMetadataFileResult.Value.MetadataFile, createRawMetadataFileResult.Value.Metadata));
+
+                // Wenn die betreffende Datei eine QuickTime-Datei ist, dann erstelle im Wurzelverzeichnis des Mediensets eine Infuse-XML-Datei
+                // Die QuickTime-Datei hat mehr Metadaten als die MPEG-4-Dateien, deshalb dient sie als Referenz für die Infuse-XML-Datei
+                if (mediaFile.Extension.ToLower() == ".mov")
+                {
+                    // Lies das Aufnahmedatum aus dem Medienset-Namen
+                    var mediaSetNameResult = MediaSetName.Create(mediaSetTitle);
+                    if (mediaSetNameResult.IsFailure)
+                    {
+                        _logger.LogWarning("Fehler beim Parsen des Medienset-Namens {mediaSetTitle}: {mediaSetNameResult.Error}", mediaSetTitle, mediaSetNameResult.Error);
+                        _logger.LogInformation("Überspringe die Videodatei {mediaFile.Name}", mediaFile.Name);
+                        continue;
+                    }
+
+                    var customProductionInfuseMetadata = CustomProductionInfuseMetadata.CreateFromFfmpegMetadata(createRawMetadataFileResult.Value.Metadata, mediaSetNameResult.Value.Date);
+                    var customProductionInfuseMetadataXmlDoc = customProductionInfuseMetadata.ToXmlDocument();
+
+                    // Schreibe den Inhalt der XML-Datei in das Wurzelverzeichnis des Mediensets mit dem gleichen Dateinamen wie das Medienset
+                    customProductionInfuseMetadataXmlDoc.Save(Path.Combine(mediaSetDirectoryInfo.FullName, $"{mediaSetTitle}.xml"));
+                    
+                }
             }
         }
 
@@ -67,4 +92,4 @@ public class DirectoryInfuseXmlFileGenerator
 
 public record GeneratedMetadataFiles(List<GeneratedMetadataFilesByMediaSet> MetadataFiles);
 
-public record GeneratedMetadataFilesByMediaSet(Maybe<FileInfo> RawFFmpegMetadataFilePath);
+public record GeneratedMetadataFilesByMediaSet(FileInfo FilePath, FFmpegMetadata Metadata);
