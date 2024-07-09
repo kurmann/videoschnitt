@@ -11,6 +11,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<GenerateMediaSetIndexWorkflow>();
         services.AddScoped<MetadataXmlWorkflow>();
         services.AddScoped<DirectoryInfuseXmlFileGenerator>();
+        services.AddScoped<InfuseXmlFileGenerator>();
 
         return services;
     }
