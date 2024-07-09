@@ -32,6 +32,11 @@ public record SupportedImage : ISupportedMediaType
         return Result.Failure<SupportedImage>($"File {fileInfo.FullName} is not a supported cover art image.");
     }
 
+    public static Result<SupportedImage> CreateWithUpdatedFilePath(SupportedImage supportedImage, string newFilePath)
+    {
+        return Create(new FileInfo(newFilePath), supportedImage.IsAdobeRgbColorSpace);
+    }
+
     public static Result<SupportedImage> Create(string directory, string fileName)
     {
         try

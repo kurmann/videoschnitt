@@ -17,13 +17,11 @@ public class MediaIntegratorService
     private readonly PosterAndFanartService _posterAndFanartService;
     private readonly ApplicationSettings _applicationSettings; 
     private readonly InfuseMediaLibrarySettings _infuseMediaLibrarySettings;
-    private readonly ImageProcessorService _imageProcessorService;
 
     public MediaIntegratorService(ILogger<MediaIntegratorService> logger,
                                   IFileOperations fileOperations,
                                   FFmpegMetadataService ffmpegMetadataService,
                                   PosterAndFanartService posterAndFanartService,
-                                  ImageProcessorService imageProcessorService,
                                   IOptions<InfuseMediaLibrarySettings> infuseMediaLibrarySettings,
                                   IOptions<ApplicationSettings> applicationSettings)
     {
@@ -31,7 +29,6 @@ public class MediaIntegratorService
         _fileOperations = fileOperations;
         _ffmpegMetadataService = ffmpegMetadataService;
         _posterAndFanartService = posterAndFanartService;
-        _imageProcessorService = imageProcessorService;
         _applicationSettings = applicationSettings.Value;
         _infuseMediaLibrarySettings = infuseMediaLibrarySettings.Value;
     }
@@ -39,7 +36,9 @@ public class MediaIntegratorService
     public async Task<Result<Maybe<LocalMediaServerFiles>>> IntegrateMediaSetToLocalInfuseMediaLibrary(MediaSet mediaSet)
     {
         _logger.LogInformation("Integriere Medienset in die Infuse-Mediathek.");
-        var supportedImages = mediaSet.ImageFiles.Value;
+
+        // Berücksichtige bei den Bilder nur diejenigen, die im Adobe RGB-Farbraum sind.
+        var supportedImages = mediaSet.ImageFiles.Value.Where(image => image.IsAdobeRgbColorSpace).ToList();
         var internetStreamingVideoFiles = mediaSet.InternetStreamingVideoFiles.Value;
         if (supportedImages.Count != 0 || internetStreamingVideoFiles.Count != 0)
         {
@@ -150,7 +149,7 @@ public class MediaIntegratorService
         _logger.LogInformation("Video-Datei {FileInfo.FullName} erfolgreich in das Infuse-Mediathek-Verzeichnis {targetDirectory.FullName} verschoben.", mediaSet.LocalMediaServerVideoFile.Value.FileInfo.FullName, targetDirectory.FullName);
 
         // Integriere die Bild-Dateien in das Infuse-Mediathek-Verzeichnis. Diese haben den gleichen Namen und das gleiche Zielverzeichnis wie die Video-Datei.
-        var movedSupportedImagesResult = await IntegratedSupportedImagesToInfuseMediaLibrary(mediaSet.ImageFiles.Value, targetFilePathResult.Value);
+        var movedSupportedImagesResult = await IntegratedSupportedImagesToInfuseMediaLibrary(supportedImages, targetFilePathResult.Value);
         if (movedSupportedImagesResult.IsFailure)
         {
             _logger.LogWarning("Die Bild-Dateien konnten nicht in das Infuse-Mediathek-Verzeichnis {targetDirectory.FullName} verschoben werden: {movedSupportedImagesResult.Error}", targetDirectory.FullName, movedSupportedImagesResult.Error);
@@ -183,9 +182,6 @@ public class MediaIntegratorService
             _logger.LogInformation("Es wird kein Bild in das Infuse-Mediathek-Verzeichnis verschoben.");
             return Result.Success();
         }
-
-        // Für die Integration in die Infuse-Mediathek werden nur die Bilder im Adobe RGB-Farbraum verwendet.
-        // todo: implementieren
 
         // Ermittle das Zielverzeichnis für die Bild-Datei. Dieses ist das gleiche wie das Zielverzeichnis der Video-Datei.
         var videoTargetDirectory = videoFileTargetPath.Directory;
