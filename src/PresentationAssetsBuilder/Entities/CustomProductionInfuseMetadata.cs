@@ -1,4 +1,5 @@
 using System.Xml.Linq;
+using Kurmann.Videoschnitt.Common.Services.Metadata;
 
 namespace Kurmann.Videoschnitt.PresentationAssetsBuilder.Entities;
     
@@ -35,11 +36,11 @@ namespace Kurmann.Videoschnitt.PresentationAssetsBuilder.Entities;
             Directors = directors;
         }
 
-        public static CustomProductionInfuseMetadata CreateFromFfmpegMetadata(string ffmpegMetadata)
+        public static CustomProductionInfuseMetadata CreateFromFfmpegMetadata(FFmpegMetadata ffmpegMetadata)
         {
-            var lines = ffmpegMetadata.Split('\n', StringSplitOptions.RemoveEmptyEntries)
-                                      .Where(line => !line.StartsWith(';'))
-                                      .ToDictionary(line => line.Split('=')[0].Trim(), line => line.Split('=')[1].Trim());
+            var lines = ffmpegMetadata.Metadata
+                .Where(line => !line.StartsWith(';'))
+                .ToDictionary(line => line.Split('=')[0].Trim(), line => line.Split('=')[1].Trim());
 
             string type = "Other";
             string title = lines.GetValueOrDefault("title", string.Empty);
