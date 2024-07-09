@@ -12,12 +12,32 @@ public class Engine
     private readonly ApplicationSettings _applicationSettings;
     private readonly ILogger<Engine> _logger;
     private readonly MediaIntegratorService _mediaIntegratorService;
+    private readonly MediaSetOrganizerSettings _mediaSetOrganizerSettings;
 
-    public Engine(IOptions<ApplicationSettings> applicationSettings, ILogger<Engine> logger, MediaIntegratorService mediaIntegratorService)
+    public Engine(IOptions<ApplicationSettings> applicationSettings, IOptions<MediaSetOrganizerSettings> mediaSetOrganizerSettings,
+        ILogger<Engine> logger, MediaIntegratorService mediaIntegratorService)
     {
         _applicationSettings = applicationSettings.Value;
+        _mediaSetOrganizerSettings = mediaSetOrganizerSettings.Value;
         _logger = logger;
         _mediaIntegratorService = mediaIntegratorService;
+    }
+
+    public async Task<Result> StartAsync()
+    {
+        var sourceDirectoryPath = _applicationSettings.MediaSetPathLocal;
+        var sourceDirectory = new DirectoryInfo(sourceDirectoryPath);
+
+        // Prüfe ob das Verzeichnis exisitiert
+        if (sourceDirectory.Exists == false)
+        {
+            return Result.Failure($"Das Verzeichnis {sourceDirectory} existiert nicht.");
+        }
+
+        // Alle Unterverzeichnisse des Quellverzeichnisses werden als eigenständige Mediensets betrachtet
+        var mediaSetDirectories = sourceDirectory.GetDirectories();
+
+        return Result.Success();
     }
 
     public async Task<Result<List<LocalMediaServerFiles>>> StartAsync(List<MediaSet> mediaSets)
