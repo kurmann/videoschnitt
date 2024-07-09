@@ -37,6 +37,13 @@ public class Workflow
 
         // Alle Unterverzeichnisse des Quellverzeichnisses werden als eigenständige Mediensets betrachtet
         var mediaSetDirectories = sourceDirectory.GetDirectories();
+        if (mediaSetDirectories.Length == 0)
+        {
+            _logger.LogInformation("Keine Mediensets im Verzeichnis {Directory} gefunden.", sourceDirectoryPath);
+            return Result.Success();
+        }
+        var mediaSetNamesCommaseparated = string.Join(", ", mediaSetDirectories.Select(d => d.Name));
+        _logger.LogInformation("Folgende Mediensets wurden im Verzeichnis {Directory} gefunden: {MediaSets}", sourceDirectoryPath, mediaSetNamesCommaseparated);
 
         return Result.Success();
     }
