@@ -109,15 +109,11 @@ public class ConfigurationInfoService
         _logger.LogInformation("Metadata processing settings:");
 
         _logger.LogInformation("Liste der Varianten-Suffixe, die in den Dateinamen von Videos vorkommen können,die für den Medienserver bestimmt sind:");
-        foreach (var suffix in _metadataProcessingSettings.MediaSet.VideoVersionSuffixesForMediaServer)
-        {
-            _logger.LogInformation("{suffix}", suffix);
-        }
+        var commaSeparatedVideoVersionSuffixesForMediaServer = string.Join(", ", _metadataProcessingSettings.MediaSet.VideoVersionSuffixesForMediaServer);
+        _logger.LogInformation("{suffixes}", commaSeparatedVideoVersionSuffixesForMediaServer);
 
         _logger.LogInformation("Liste der Varianten-Suffixe, die in den Dateinamen von Videos vorkommen können,die für das Internet bestimmt sind:");
-        foreach (var suffix in _metadataProcessingSettings.MediaSet.VideoVersionSuffixesForInternet)
-        {
-            _logger.LogInformation("{suffix}", suffix);
-        }
+        var commaSeparatedVideoVersionSuffixesForInternet = string.Join(", ", _metadataProcessingSettings.MediaSet.VideoVersionSuffixesForInternet);
+        _logger.LogInformation("{suffixes}", commaSeparatedVideoVersionSuffixesForInternet);
     }
 }
