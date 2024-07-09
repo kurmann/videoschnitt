@@ -134,7 +134,7 @@ public class Program
             case MetadataXmlWorkflow.WorkflowName:
                 {
                     logger.LogInformation("Starting MetadataXml workflow.");
-                    var workflow = scopedServices.GetRequiredService<PresentationAssetsBuilder.MetadataXmlWorkflow>();
+                    var workflow = scopedServices.GetRequiredService<MetadataXmlWorkflow>();
                     var result = await workflow.ExecuteAsync();
                     if (result.IsSuccess)
                     {
@@ -151,7 +151,7 @@ public class Program
             case GenerateMediaSetIndexWorkflow.WorkflowName:
                 {
                     logger.LogInformation("Starting GenerateMediaSetIndex workflow.");
-                    var workflow = scopedServices.GetRequiredService<PresentationAssetsBuilder.GenerateMediaSetIndexWorkflow>();
+                    var workflow = scopedServices.GetRequiredService<GenerateMediaSetIndexWorkflow>();
                     var result = await workflow.ExecuteAsync();
                     if (result.IsSuccess)
                     {
