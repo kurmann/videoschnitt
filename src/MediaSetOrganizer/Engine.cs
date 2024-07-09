@@ -19,10 +19,12 @@ public class Engine
     private readonly ApplicationSettings _applicationSettings;
     private readonly MediaSetDirectoryIntegrator _mediaSetDirectoryIntegrator;
     private readonly FinalCutDirectoryIntegrator _finalCutDirectoryIntegrator;
+    private readonly ImageProcessorService _imageProcessorService;
 
     public Engine(ILogger<Engine> logger, IConfigurationService configurationService, MediaSetService mediaSetService,
         MediaPurposeOrganizer mediaPurposeOrganizer, InputDirectoryReaderService inputDirectoryReaderService,
-        MediaSetDirectoryIntegrator mediaSetDirectoryIntegrator, FinalCutDirectoryIntegrator finalCutDirectoryIntegrator)
+        MediaSetDirectoryIntegrator mediaSetDirectoryIntegrator, FinalCutDirectoryIntegrator finalCutDirectoryIntegrator,
+        ImageProcessorService imageProcessorService)
     {
         _logger = logger;
         _applicationSettings = configurationService.GetSettings<ApplicationSettings>();
@@ -31,6 +33,7 @@ public class Engine
         _inputDirectoryReaderService = inputDirectoryReaderService;
         _mediaSetDirectoryIntegrator = mediaSetDirectoryIntegrator;
         _finalCutDirectoryIntegrator = finalCutDirectoryIntegrator;
+        _imageProcessorService = imageProcessorService;
     }
 
     public async Task<Result<List<MediaSet>>> StartAsync()
@@ -77,8 +80,15 @@ public class Engine
         _logger.LogInformation("Anzahl Mediensets: {Count}", mediaSets.Value.Count);
         _logger.LogInformation("Medien erfolgreich nach ihrem Verwendungszweck organisiert.");
 
+        _logger.LogInformation("Erstelle JPG-Bilder im Adobe RGB-Farbraum für die Mediensets.");
+        var mediaSetsWithConvertedImages = await _imageProcessorService.ConvertColorSpaceAndFormatAsync(mediaSets.Value);
+        if (mediaSetsWithConvertedImages.IsFailure)
+        {
+            return Result.Failure<List<MediaSet>>($"Fehler beim Konvertieren des Farbraums und Formats der Bilder: {mediaSetsWithConvertedImages.Error}");
+        }
+
         _logger.LogInformation("Verschiebe die Medien in die lokalen Medienset-Verzeichnisse.");
-        var integratedMediaSets = await _mediaSetDirectoryIntegrator.IntegrateInLocalMediaSetDirectory(mediaSets.Value);
+        var integratedMediaSets = await _mediaSetDirectoryIntegrator.IntegrateInLocalMediaSetDirectory(mediaSetsWithConvertedImages.Value);
         if (integratedMediaSets.IsFailure)
         {
             return Result.Failure<List<MediaSet>>($"Fehler beim Integrieren der Mediensets in die lokalen Medienset-Verzeichnisse: {integratedMediaSets.Error}");
