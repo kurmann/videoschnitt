@@ -93,7 +93,7 @@ namespace Kurmann.Videoschnitt.ConsoleApp
                     {
                         logger.LogInformation("Starting FinalCutPro workflow.");
                         var workflow = scopedServices.GetRequiredService<InfuseMediaLibrary.Workflow>();
-                        var result = await workflow.StartAsync();
+                        var result = await workflow.ExecuteAsync();
                         if (result.IsSuccess)
                         {
                             logger.LogInformation("FinalCutPro workflow completed successfully.");
@@ -110,7 +110,7 @@ namespace Kurmann.Videoschnitt.ConsoleApp
                 {
                     logger.LogInformation("Starting InfuseMediaLibrary workflow.");
                     var workflow = scopedServices.GetRequiredService<InfuseMediaLibrary.Workflow>();
-                    var result = await workflow.StartAsync();
+                    var result = await workflow.ExecuteAsync();
                     if (result.IsSuccess)
                     {
                         logger.LogInformation("InfuseMediaLibrary workflow completed successfully.");

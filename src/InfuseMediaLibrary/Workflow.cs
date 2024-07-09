@@ -26,7 +26,7 @@ public class Workflow
         _fileOperations = fileOperations;
     }
 
-    public async Task<Result> StartAsync()
+    public async Task<Result> ExecuteAsync()
     {
         var sourceDirectoryPath = _applicationSettings.MediaSetPathLocal;
         var sourceDirectory = new DirectoryInfo(sourceDirectoryPath);
