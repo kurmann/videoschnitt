@@ -38,6 +38,27 @@ public class MediaIntegratorService
 
     public async Task<Result<Maybe<LocalMediaServerFiles>>> IntegrateMediaSetToLocalInfuseMediaLibrary(MediaSet mediaSet)
     {
+        _logger.LogInformation("Integriere Medienset in die Infuse-Mediathek.");
+        var supportedImages = mediaSet.ImageFiles.Value;
+        var internetStreamingVideoFiles = mediaSet.InternetStreamingVideoFiles.Value;
+        if (supportedImages.Count != 0 || internetStreamingVideoFiles.Count != 0)
+        {
+            _logger.LogInformation("Folgende Dateien werden berücksichtigt aus dem Medienset für die Integration in die Infuse-Mediathek:");
+            foreach (var supportedImage in supportedImages)
+            {
+                _logger.LogInformation("Bild: {supportedImage.FileInfo.FullName}", supportedImage.FileInfo.FullName);
+            }
+            foreach (var supportedImage in supportedImages)
+            {
+                _logger.LogInformation("Bild: {supportedImage.FileInfo.FullName}", supportedImage.FileInfo.FullName);
+            }
+        }
+        else
+        {
+            _logger.LogInformation("Keine Dateien für die Integration in die Infuse-Mediathek vorhanden.");
+            return Maybe<LocalMediaServerFiles>.None;
+        }
+
         // Prüfe ob das Infuse-Mediathek-Verzeichnis existiert und erstelle es falls es nicht existiert
         if (!Directory.Exists(_applicationSettings.InfuseMediaLibraryPathLocal))
         {
@@ -292,7 +313,7 @@ public class MediaIntegratorService
         if (supportedVideo.FileInfo == null)
             return Result.Failure<FileInfo>("Die Quelldatei des SupportedVideo-Objekts ist null.");
 
-        var targetDirectory = Path.Combine(_applicationSettings.InfuseMediaLibraryPathLocal, album, recordingDate.Year.ToString(), recordingDate.ToString("yyyy-MM-dd"));
+        var targetDirectory = Path.Combine(_applicationSettings.InfuseMediaLibraryPathLocal, album, recordingDate.Year.ToString(), title);
 
         // Der Ziel-Dateiname ist ohne vorangestelltes ISO-Datum. Dieses muss also aus dem Titel entfernt werden.
         var titleWithoutLeadingRecordingDate = title.Replace($"{recordingDate:yyyy-MM-dd} ", string.Empty);
