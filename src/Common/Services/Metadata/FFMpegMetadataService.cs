@@ -38,8 +38,8 @@ public class FFmpegMetadataService
             _logger.LogInformation("FFprobe-Pfad: {Path}", _applicationSettings.ExternalTools.FFProbe.Path);
 
         // Setze die Pfade zu FFmpeg und FFprobe aus den Einstellungen oder verwende die Standardwerte.
-        _ffmpegCommand = _applicationSettings.ExternalTools?.FFMpeg?.Path ?? DefaultFFMpegCommand;
-        _ffprobeCommand = _applicationSettings.ExternalTools?.FFProbe?.Path ?? DefaultFFProbeCommand;
+        _ffmpegCommand = _applicationSettings.ExternalTools?.FFMpeg.Path ?? DefaultFFMpegCommand;
+        _ffprobeCommand = _applicationSettings.ExternalTools?.FFProbe.Path ?? DefaultFFProbeCommand;
     }
 
     /// <summary>

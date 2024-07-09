@@ -41,7 +41,6 @@ public class ExecuteCommandService
             {
                 if (e.Data != null)
                 {
-                    _logger.LogInformation("{data}", e.Data);
                     outputLines.Add(e.Data);
                 }
             };
@@ -50,7 +49,6 @@ public class ExecuteCommandService
             {
                 if (e.Data != null)
                 {
-                    _logger.LogError("{data}", e.Data);
                     errorLines.Add(e.Data);
                 }
             };
