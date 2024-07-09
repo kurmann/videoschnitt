@@ -1,4 +1,5 @@
 using CSharpFunctionalExtensions;
+using Kurmann.Videoschnitt.Common.Services.Metadata;
 using Kurmann.Videoschnitt.ConfigurationModule.Settings;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -57,7 +58,7 @@ public class DirectoryInfuseXmlFileGenerator
                     continue;
                 }
 
-                generatedMetadataFilesByMediaSetList.Add(new GeneratedMetadataFilesByMediaSet(createRawMetadataFileResult.Value));
+                generatedMetadataFilesByMediaSetList.Add(new GeneratedMetadataFilesByMediaSet(createRawMetadataFileResult.Value.MetadataFile, createRawMetadataFileResult.Value.Metadata));
             }
         }
 
@@ -67,4 +68,4 @@ public class DirectoryInfuseXmlFileGenerator
 
 public record GeneratedMetadataFiles(List<GeneratedMetadataFilesByMediaSet> MetadataFiles);
 
-public record GeneratedMetadataFilesByMediaSet(Maybe<FileInfo> RawFFmpegMetadataFilePath);
+public record GeneratedMetadataFilesByMediaSet(FileInfo FilePath, FFmpegMetadata Metadata);

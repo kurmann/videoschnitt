@@ -23,12 +23,12 @@ public class InfuseXmlFileGenerator
     /// </summary>
     /// <param name="filePath"></param>
     /// <returns></returns>
-    public async Task<Result<FileInfo>> GenerateRawFile(string filePath)
+    public async Task<Result<GenerateRawFileResponse>> GenerateRawFile(string filePath)
     {
         var metadataResult = await _ffmpegMetadataService.GetRawMetadataAsync(filePath);
         if (metadataResult.IsFailure)
         {
-            return Result.Failure<FileInfo>($"Fehler beim Extrahieren der Metadaten aus {filePath}: {metadataResult.Error}");
+            return Result.Failure<GenerateRawFileResponse>($"Fehler beim Extrahieren der Metadaten aus {filePath}: {metadataResult.Error}");
         }
 
         // Schreibe die RAW-Metadatei (mit dem gleichen Namen wie die Videodatei) als Textdatei
@@ -36,7 +36,9 @@ public class InfuseXmlFileGenerator
         await File.WriteAllTextAsync(metadataFilePath, metadataResult.Value);
         _logger.LogInformation("RAW-Metadaten-Datei für {filePath} erstellt: {metadataFilePath}", filePath, metadataFilePath);
 
-        return new FileInfo(metadataFilePath);
+        return new GenerateRawFileResponse(new FileInfo(metadataFilePath), metadataResult.Value);
     }
 
 }
+
+public record GenerateRawFileResponse(FileInfo MetadataFile, FFmpegMetadata Metadata);
