@@ -66,7 +66,9 @@ public class Workflow
 
             // Nimm an, dass alle Videos fürs Internet und alle Bilder im entsprechenden Verzeichnis liegen (durch vorangehende Prozesse)
             var mediaServerFiles = mediaServerFileDirectory.GetFiles();
-            var imageFiles = imagesDirectory.GetFiles();
+
+            // Für die Bilder sollen nur JPG-Dateien berücksichtigt werden (Dateiendung JPG und JPEG)
+            var imageFiles = imagesDirectory.GetFiles().Where(f => f.Extension == ".jpg" || f.Extension == ".jpeg").ToArray();
 
             // Entferne Videos, die derzeit in Bearbeitung sind
             var mediaServerFilesNotInUse = new List<FileInfo>();
@@ -124,10 +126,10 @@ public class Workflow
                 _logger.LogWarning("Für das Medienset {MediaSet} wurden {Count} Videodateien gefunden. Es wird nur eine Videodatei unterstützt.", mediaSetDirectory.Name, mediaServerFiles.Length);
                 continue;
             }
-            var internetFile = mediaServerFiles.First();
+            var mediaServerFile = mediaServerFiles.First();
 
             // Starte die Integration mit dem entsprechenden Service
-            _mediaIntegratorService.IntegrateMediaSetToLocalInfuseMediaLibrary(internetFile, imageFiles);
+            _mediaIntegratorService.IntegrateMediaSetToLocalInfuseMediaLibrary(mediaServerFile, imageFiles);
         }
 
 
