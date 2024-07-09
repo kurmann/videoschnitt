@@ -105,6 +105,23 @@ namespace Kurmann.Videoschnitt.ConsoleApp
                             return 1; // error
                         }
                     }
+                
+                case InfuseMediaLibrary.Workflow.WorkflowName:
+                {
+                    logger.LogInformation("Starting InfuseMediaLibrary workflow.");
+                    var workflow = scopedServices.GetRequiredService<InfuseMediaLibrary.Workflow>();
+                    var result = await workflow.StartAsync();
+                    if (result.IsSuccess)
+                    {
+                        logger.LogInformation("InfuseMediaLibrary workflow completed successfully.");
+                        return 0; // success
+                    }
+                    else
+                    {
+                        logger.LogError("Error in InfuseMediaLibrary workflow: {Error}", result.Error);
+                        return 1; // error
+                    }
+                }
 
                 default:
                     logger.LogWarning("No valid workflow specified.");
