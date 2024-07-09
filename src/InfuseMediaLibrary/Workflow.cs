@@ -129,6 +129,10 @@ public class Workflow
             var mediaServerFile = mediaServerFiles.First();
 
             // Starte die Integration mit dem entsprechenden Service
+            var imageFilesCommaseparated = string.Join(", ", imageFiles.Select(f => f.Name));
+            _logger.LogInformation("Folgende Videodatei wird in die Infuse-Mediathek integriert: {File}", mediaServerFile.Name);
+            _logger.LogInformation("Folgende Bilder werden in die Infuse-Mediathek integriert: {Files}", imageFilesCommaseparated);
+
             _mediaIntegratorService.IntegrateMediaSetToLocalInfuseMediaLibrary(mediaServerFile, imageFiles);
         }
 
