@@ -10,6 +10,9 @@ public record SupportedImage : ISupportedMediaType
         FileInfo.Extension.Equals(".tif", StringComparison.InvariantCultureIgnoreCase) ||
         FileInfo.Extension.Equals(".png", StringComparison.InvariantCultureIgnoreCase);
 
+    public bool IsJpeg => FileInfo.Extension.Equals(".jpg", StringComparison.InvariantCultureIgnoreCase) || 
+        FileInfo.Extension.Equals(".jpeg", StringComparison.InvariantCultureIgnoreCase);
+
     public bool IsAdobeRgbColorSpace { get; private set; }
 
     private SupportedImage(FileInfo fileInfo, bool isAdobeRgbColorSpace)
