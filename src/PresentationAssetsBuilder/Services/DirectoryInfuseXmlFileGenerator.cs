@@ -26,14 +26,14 @@ public class DirectoryInfuseXmlFileGenerator
     /// </summary>
     /// <param name="inputDirectory"></param>
     /// <returns></returns>
-    public async Task<Result<List<FileInfo>>> Generate(string inputDirectory)
+    public async Task<Result<GeneratedMetadataFiles>> Generate(string inputDirectory)
     {
         // Lese alle Verzeichnisse im Eingabeverzeichnis und nimm an, dass es sich um Mediensets handelt
         var mediaSetDirectoryInfos = new DirectoryInfo(inputDirectory).GetDirectories().ToList();
         _logger.LogInformation("Es wurden {mediaSetDirectoryInfos.Count} Mediensets gefunden", mediaSetDirectoryInfos.Count);
 
         // Ziel ist es in jedem Mediaset zu jeder Videodatei eine Infuse-XML-Datei zu erstellen
-        var infuseXmlFiles = new List<FileInfo>();
+        var generatedMetadataFilesByMediaSetList = new List<GeneratedMetadataFilesByMediaSet>();
         foreach (var mediaSetDirectoryInfo in mediaSetDirectoryInfos)
         {
             // Filtere alle Videodateien mit dem richtigen Dateiendungen einschließlich Unterverzeichnisse
@@ -45,9 +45,18 @@ public class DirectoryInfuseXmlFileGenerator
             var mediaSetTitle = mediaSetDirectoryInfo.Name;
             _logger.LogInformation("Im Medienset {mediaSetTitle} wurden {supportedMediaByMediaSet.Count} unterstützte Medien gefunden", mediaSetTitle, supportedMediaByMediaSet.Count);
 
-            // Erstelle für jede Videodatei eine Infuse-XML-Datei
+            // Erstelle für jede Videodatei die Metadaten-Dateien
             foreach (var mediaFile in supportedMediaByMediaSet)
             {
+                // Erstelle die RAW-Metadaten-Datei
+                var createRawMetadataFileResult = await _infuseXmlService.GenerateRawFile(mediaFile.FullName);
+                if (createRawMetadataFileResult.IsFailure)
+                {
+                    _logger.LogWarning("Fehler beim Erstellen der RAW-Metadaten-Datei für {mediaFile.Name}: {createRawMetadataFileResult.Error}", mediaFile.Name, createRawMetadataFileResult.Error);
+                    _logger.LogInformation("Überspringe die Videodatei {mediaFile.Name}", mediaFile.Name);
+                    continue;
+                }
+
                 // Erstelle die Infuse-XML-Datei
                 var createMetadataFileResult = await _infuseXmlService.Generate(mediaFile.FullName);
                 if (createMetadataFileResult.IsFailure)
@@ -58,10 +67,15 @@ public class DirectoryInfuseXmlFileGenerator
                 }
 
                 _logger.LogInformation("Infuse-XML-Datei für {mediaFile.Name} erstellt", mediaFile.Name);
-                infuseXmlFiles.Add(createMetadataFileResult.Value);
+
+                generatedMetadataFilesByMediaSetList.Add(new GeneratedMetadataFilesByMediaSet(createRawMetadataFileResult.Value, createMetadataFileResult.Value));
             }
         }
 
-        return infuseXmlFiles;
+        return Result.Success(new GeneratedMetadataFiles(generatedMetadataFilesByMediaSetList));
     }
 }
+
+public record GeneratedMetadataFiles(List<GeneratedMetadataFilesByMediaSet> MetadataFiles);
+
+public record GeneratedMetadataFilesByMediaSet(Maybe<FileInfo> RawFFmpegMetadataFilePath, Maybe<FileInfo> InfuseXmlFilePath);

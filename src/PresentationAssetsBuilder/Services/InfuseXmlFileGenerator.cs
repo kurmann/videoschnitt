@@ -20,6 +20,26 @@ public class InfuseXmlFileGenerator
     }
 
     /// <summary>
+    /// Erstellt eine RAW-Metadatei für eine Videodatei.
+    /// </summary>
+    /// <param name="filePath"></param>
+    /// <returns></returns>
+    public async Task<Result<FileInfo>> GenerateRawFile(string filePath)
+    {
+        var metadataResult = await _ffmpegMetadataService.GetRawMetadataAsync(filePath);
+        if (metadataResult.IsFailure)
+        {
+            return Result.Failure<FileInfo>($"Fehler beim Extrahieren der Metadaten aus {filePath}: {metadataResult.Error}");
+        }
+
+        // Schreibe die RAW-Metadatei (mit dem gleichen Namen wie die Videodatei) als Textdatei
+        var metadataFilePath = Path.ChangeExtension(filePath, ".txt");
+        await File.WriteAllTextAsync(metadataFilePath, metadataResult.Value);
+
+        return new FileInfo(metadataFilePath);
+    }
+
+    /// <summary>
     /// Erstellt eine Infuse-XML-Datei für eine Videodatei.
     /// </summary>
     /// <param name="filePath"></param>
