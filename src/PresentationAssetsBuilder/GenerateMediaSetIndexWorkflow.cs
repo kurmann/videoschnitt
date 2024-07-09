@@ -22,7 +22,7 @@ public class GenerateMediaSetIndexWorkflow
     {
         _logger.LogInformation("Starting GenerateMediaSetIndexWorkflow...");
 
-
+        _logger.LogInformation("GenerateMediaSetIndexWorkflow finished.");
         return Task.FromResult(Result.Success());
     }
 }

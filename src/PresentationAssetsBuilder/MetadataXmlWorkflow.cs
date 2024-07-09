@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Options;
 using Kurmann.Videoschnitt.ConfigurationModule.Settings;
 using CSharpFunctionalExtensions;
+using Kurmann.Videoschnitt.PresentationAssetsBuilder.Services;
 
 namespace Kurmann.Videoschnitt.PresentationAssetsBuilder;
 
@@ -11,18 +12,25 @@ public class MetadataXmlWorkflow
 
     private readonly ILogger<MetadataXmlWorkflow> _logger;
     private readonly ApplicationSettings _applicationSettings;
+    private readonly DirectoryInfuseXmlFileGenerator _infuseXmlFileGenarator;
 
-    public MetadataXmlWorkflow(ILogger<MetadataXmlWorkflow> logger, IOptions<ApplicationSettings> applicationSettings)
+    public MetadataXmlWorkflow(ILogger<MetadataXmlWorkflow> logger, IOptions<ApplicationSettings> applicationSettings, DirectoryInfuseXmlFileGenerator infuseXmlFileGenarator)
     {
         _logger = logger;
         _applicationSettings = applicationSettings.Value;
+        _infuseXmlFileGenarator = infuseXmlFileGenarator;
     }
-
-    public Task<Result> ExecuteAsync()
+    public async Task<Result> ExecuteAsync()
     {
         _logger.LogInformation("Starting MetadataXmlWorkflow...");
 
+        var generateInfuseXmlFilesResult = await _infuseXmlFileGenarator.Generate(_applicationSettings.MediaSetPathLocal);
+        if (generateInfuseXmlFilesResult.IsFailure)
+        {
+            return Result.Failure($"Fehler beim Erstellen der Infuse-XML-Dateien: {generateInfuseXmlFilesResult.Error}");
+        }
 
-        return Task.FromResult(Result.Success());
+        _logger.LogInformation("MetadataXmlWorkflow finished.");
+        return Result.Success();
     }
 }

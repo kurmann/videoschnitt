@@ -40,4 +40,11 @@ public class MediaSetSettings
     /// In welches Unterverzeichnis des Medienset-Verzeichnisses sollen die Masterdateien kopiert oder verschoben werden.
     /// </summary>
     public string MasterfileSubDirectoryName { get; set; } = "Masterdatei";
+
+    /// <summary>
+    /// Unterstützte Video-Dateiendungen, die in den Medienset-Verzeichnissen erwartet werden.
+    /// Dies umfasst alle Varianten von MPEG-4-Dateien sowie QuickTime-Dateien.
+    /// </summary>
+    /// <value></value>
+    public List<string> SupportedVideoExtensions { get; set; } = new List<string> { ".mp4", ".mov", ".m4v" };
 }
