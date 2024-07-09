@@ -38,6 +38,25 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
       "console": "integratedTerminal"
+    },
+    {
+      "name": ".NET Core Launch (MetadataXml)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build",
+      "program": "${workspaceFolder}/src/ConsoleApp/bin/Debug/net9.0/osx-arm64/Kurmann.Videoschnitt.ConsoleApp.dll",
+      "args": [
+        "--workflow",
+        "MetadataXml",
+        "--environment",
+        "Development"
+      ],
+      "cwd": "${workspaceFolder}/src/ConsoleApp",
+      "stopAtEntry": false,
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "console": "integratedTerminal"
     }
   ]
 }
