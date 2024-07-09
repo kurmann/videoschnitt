@@ -17,7 +17,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<MediaIntegratorService>();
         services.AddScoped<IFileOperations, FileOperations>();
         services.AddScoped<PosterAndFanartService>();
-        services.AddScoped<ImageProcessorService>();
 
         services.AddCommonServicesEngine(configuration);
 

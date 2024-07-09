@@ -174,7 +174,8 @@ public class MediaSetDirectoryIntegrator
                 }
 
                 // Füge das Bild mit dem neuen Pfad zur Liste der integrierten Bilder hinzu
-                var integratedImage = SupportedImage.Create(imageFilesSubDirectory.FullName, imageFile.FileInfo.Name);
+                // var integratedImage = SupportedImage.Create(imageFilesSubDirectory.FullName, imageFile.FileInfo.Name);
+                var integratedImage = SupportedImage.CreateWithUpdatedFilePath(imageFile, imageFileTargetPath);
                 if (integratedImage.IsFailure)
                 {
                     return Result.Failure<List<SupportedImage>>($"Fehler beim Erstellen des integrierten Bildes: {integratedImage.Error}");

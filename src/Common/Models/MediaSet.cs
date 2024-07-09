@@ -17,7 +17,7 @@ public record MediaSet
 
     public Maybe<List<SupportedVideo>> InternetStreamingVideoFiles { get; init; }
 
-    public Maybe<List<SupportedImage>> ImageFiles { get; init; }
+    public Maybe<List<SupportedImage>> ImageFiles { get; set; }
 
     public Maybe<Masterfile> Masterfile { get; set; }
 }
