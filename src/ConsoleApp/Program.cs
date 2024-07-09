@@ -5,9 +5,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Kurmann.Videoschnitt.Workflows;
 using Kurmann.Videoschnitt.ConfigurationModule;
 using Kurmann.Videoschnitt.ConfigurationModule.Services;
+using Kurmann.Videoschnitt.HealthCheck;
 
 namespace Kurmann.Videoschnitt.ConsoleApp
 {
@@ -63,7 +63,7 @@ namespace Kurmann.Videoschnitt.ConsoleApp
                 {
                     services.AddLogging(configure => configure.AddConsole());
                     services.AddConfigurationModule(hostContext.Configuration);
-                    services.AddWorkflows(hostContext.Configuration);
+                    services.AddHealthCheck();
                 });
 
         private static async Task<int> RunOptions(Options opts, IServiceProvider services, ILogger logger)
@@ -72,11 +72,11 @@ namespace Kurmann.Videoschnitt.ConsoleApp
             var scopedServices = scope.ServiceProvider;
             switch (opts.Workflow)
             {
-                case HealthCheckWorkflow.WorkflowName:
+                case HealthCheck.Workflow.WorkflowName:
                     {
                         logger.LogInformation("Starting HealthCheck workflow.");
-                        var workflow = scopedServices.GetRequiredService<HealthCheckWorkflow>();
-                        var result = workflow.Execute();
+                        var workflow = scopedServices.GetRequiredService<HealthCheck.Workflow>();
+                        var result = workflow.RunHealthCheck();
                         if (result.IsSuccess)
                         {
                             logger.LogInformation("HealthCheck workflow completed successfully.");
@@ -92,8 +92,8 @@ namespace Kurmann.Videoschnitt.ConsoleApp
                 case "FinalCutPro":
                     {
                         logger.LogInformation("Starting FinalCutPro workflow.");
-                        var workflow = scopedServices.GetRequiredService<FinalCutProWorkflow>();
-                        var result = await workflow.ExecuteAsync();
+                        var workflow = scopedServices.GetRequiredService<InfuseMediaLibrary.Workflow>();
+                        var result = await workflow.StartAsync();
                         if (result.IsSuccess)
                         {
                             logger.LogInformation("FinalCutPro workflow completed successfully.");

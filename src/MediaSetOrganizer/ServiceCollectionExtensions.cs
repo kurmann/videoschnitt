@@ -16,7 +16,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddMediaSetOrganizer(this IServiceCollection services, IConfiguration configuration)
     {   
         // Register MetadataProcessingService
-        services.AddScoped<Engine>();
+        services.AddScoped<Workflow>();
         services.AddScoped<FFmpegMetadataService>();
         services.AddScoped<MediaSetService>();
         services.AddScoped<MediaPurposeOrganizer>();
