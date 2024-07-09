@@ -16,12 +16,12 @@
           "console": "integratedTerminal"
       },
       {
-        "name": ".NET Core Launch (LocalInfuseMediaLibraryIntegration)",
+        "name": ".NET Core Launch (InfuseMediaLibrary)",
         "type": "coreclr",
         "request": "launch",
         "preLaunchTask": "build",
         "program": "${workspaceFolder}/src/ConsoleApp/bin/Debug/net9.0/osx-arm64/Kurmann.Videoschnitt.ConsoleApp.dll",
-        "args": ["--workflow", "LocalInfuseMediaLibraryIntegration", "--environment", "Development"],
+        "args": ["--workflow", "InfuseMediaLibrary", "--environment", "Development"],
         "cwd": "${workspaceFolder}/src/ConsoleApp",
         "stopAtEntry": false,
         "env": {
