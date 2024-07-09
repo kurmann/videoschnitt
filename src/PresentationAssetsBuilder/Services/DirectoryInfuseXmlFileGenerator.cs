@@ -57,18 +57,7 @@ public class DirectoryInfuseXmlFileGenerator
                     continue;
                 }
 
-                // Erstelle die Infuse-XML-Datei
-                var createMetadataFileResult = await _infuseXmlService.Generate(mediaFile.FullName);
-                if (createMetadataFileResult.IsFailure)
-                {
-                    _logger.LogWarning("Fehler beim Erstellen der Infuse-XML-Datei für {mediaFile.Name}: {createMetadataFileResult.Error}", mediaFile.Name, createMetadataFileResult.Error);
-                    _logger.LogInformation("Überspringe die Videodatei {mediaFile.Name}", mediaFile.Name);
-                    continue;
-                }
-
-                _logger.LogInformation("Infuse-XML-Datei für {mediaFile.Name} erstellt", mediaFile.Name);
-
-                generatedMetadataFilesByMediaSetList.Add(new GeneratedMetadataFilesByMediaSet(createRawMetadataFileResult.Value, createMetadataFileResult.Value));
+                generatedMetadataFilesByMediaSetList.Add(new GeneratedMetadataFilesByMediaSet(createRawMetadataFileResult.Value));
             }
         }
 
@@ -78,4 +67,4 @@ public class DirectoryInfuseXmlFileGenerator
 
 public record GeneratedMetadataFiles(List<GeneratedMetadataFilesByMediaSet> MetadataFiles);
 
-public record GeneratedMetadataFilesByMediaSet(Maybe<FileInfo> RawFFmpegMetadataFilePath, Maybe<FileInfo> InfuseXmlFilePath);
+public record GeneratedMetadataFilesByMediaSet(Maybe<FileInfo> RawFFmpegMetadataFilePath);
