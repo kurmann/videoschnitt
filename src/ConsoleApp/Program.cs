@@ -5,9 +5,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Kurmann.Videoschnitt.Workflows;
 using Kurmann.Videoschnitt.ConfigurationModule;
 using Kurmann.Videoschnitt.ConfigurationModule.Services;
+using Kurmann.Videoschnitt.HealthCheck;
+using Kurmann.Videoschnitt.InfuseMediaLibrary;
+using Kurmann.Videoschnitt.Common;
+using Kurmann.Videoschnitt.MediaSetOrganizer;
 
 namespace Kurmann.Videoschnitt.ConsoleApp
 {
@@ -63,7 +66,10 @@ namespace Kurmann.Videoschnitt.ConsoleApp
                 {
                     services.AddLogging(configure => configure.AddConsole());
                     services.AddConfigurationModule(hostContext.Configuration);
-                    services.AddWorkflows(hostContext.Configuration);
+                    services.AddCommonServicesEngine(hostContext.Configuration);
+                    services.AddMediaSetOrganizer(hostContext.Configuration);
+                    services.AddInfuseMediaLibrary(hostContext.Configuration);
+                    services.AddHealthCheck();
                 });
 
         private static async Task<int> RunOptions(Options opts, IServiceProvider services, ILogger logger)
@@ -72,11 +78,11 @@ namespace Kurmann.Videoschnitt.ConsoleApp
             var scopedServices = scope.ServiceProvider;
             switch (opts.Workflow)
             {
-                case HealthCheckWorkflow.WorkflowName:
+                case HealthCheck.Workflow.WorkflowName:
                     {
                         logger.LogInformation("Starting HealthCheck workflow.");
-                        var workflow = scopedServices.GetRequiredService<HealthCheckWorkflow>();
-                        var result = workflow.Execute();
+                        var workflow = scopedServices.GetRequiredService<HealthCheck.Workflow>();
+                        var result = workflow.ExecuteAsync();
                         if (result.IsSuccess)
                         {
                             logger.LogInformation("HealthCheck workflow completed successfully.");
@@ -92,7 +98,7 @@ namespace Kurmann.Videoschnitt.ConsoleApp
                 case "FinalCutPro":
                     {
                         logger.LogInformation("Starting FinalCutPro workflow.");
-                        var workflow = scopedServices.GetRequiredService<FinalCutProWorkflow>();
+                        var workflow = scopedServices.GetRequiredService<MediaSetOrganizer.Workflow>();
                         var result = await workflow.ExecuteAsync();
                         if (result.IsSuccess)
                         {
@@ -110,7 +116,7 @@ namespace Kurmann.Videoschnitt.ConsoleApp
                 {
                     logger.LogInformation("Starting InfuseMediaLibrary workflow.");
                     var workflow = scopedServices.GetRequiredService<InfuseMediaLibrary.Workflow>();
-                    var result = await workflow.StartAsync();
+                    var result = await workflow.ExecuteAsync();
                     if (result.IsSuccess)
                     {
                         logger.LogInformation("InfuseMediaLibrary workflow completed successfully.");

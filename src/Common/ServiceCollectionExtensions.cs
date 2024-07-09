@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Kurmann.Videoschnitt.Common.Services.FileSystem;
 using Kurmann.Videoschnitt.Common.Services.FileSystem.Unix;
 using Kurmann.Videoschnitt.ConfigurationModule;
+using Kurmann.Videoschnitt.Common.Services.Metadata;
 
 namespace Kurmann.Videoschnitt.Common;
 
@@ -14,6 +15,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ExecuteCommandService>();
         services.AddScoped<IFileOperations, FileOperations>();
         services.AddScoped<IFileSearchService, FileSearchService>();
+        services.AddScoped<FFmpegMetadataService>();
 
         // Register Feature Modules
         services.AddConfigurationModule(configuration);

@@ -4,18 +4,20 @@ using CSharpFunctionalExtensions;
 
 namespace Kurmann.Videoschnitt.HealthCheck;
 
-public class Engine
+public class Workflow
 {
-    private readonly ToolsVersionService _toolsVersionService;
-    private readonly ILogger<Engine> _logger;
+    public const string WorkflowName = "HealthCheck";
 
-    public Engine(ToolsVersionService toolsVersionService, ILogger<Engine> logger)
+    private readonly ToolsVersionService _toolsVersionService;
+    private readonly ILogger<Workflow> _logger;
+
+    public Workflow(ToolsVersionService toolsVersionService, ILogger<Workflow> logger)
     {
         _toolsVersionService = toolsVersionService;
         _logger = logger;
     }
 
-    public Result<HealthCheckResonse> RunHealthCheck()
+    public Result<HealthCheckResonse> ExecuteAsync()
     {
         // Ermitteln der FFmpeg-Version
         _logger.LogInformation("Checking FFmpeg version...");

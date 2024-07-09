@@ -10,9 +10,9 @@ namespace Kurmann.Videoschnitt.MediaSetOrganizer;
 /// <summary>
 /// Zentrale Steuereinheit für die Metadaten-Verarbeitung.
 /// </summary>
-public class Engine
+public class Workflow
 {
-    private readonly ILogger<Engine> _logger;
+    private readonly ILogger<Workflow> _logger;
     private readonly MediaSetService _mediaSetService;
     private readonly MediaPurposeOrganizer _mediaPurposeOrganizer;
     private readonly InputDirectoryReaderService _inputDirectoryReaderService;
@@ -21,7 +21,7 @@ public class Engine
     private readonly FinalCutDirectoryIntegrator _finalCutDirectoryIntegrator;
     private readonly ImageProcessorService _imageProcessorService;
 
-    public Engine(ILogger<Engine> logger, IConfigurationService configurationService, MediaSetService mediaSetService,
+    public Workflow(ILogger<Workflow> logger, IConfigurationService configurationService, MediaSetService mediaSetService,
         MediaPurposeOrganizer mediaPurposeOrganizer, InputDirectoryReaderService inputDirectoryReaderService,
         MediaSetDirectoryIntegrator mediaSetDirectoryIntegrator, FinalCutDirectoryIntegrator finalCutDirectoryIntegrator,
         ImageProcessorService imageProcessorService)
@@ -36,7 +36,7 @@ public class Engine
         _imageProcessorService = imageProcessorService;
     }
 
-    public async Task<Result<List<MediaSet>>> StartAsync()
+    public async Task<Result<List<MediaSet>>> ExecuteAsync()
     {
         _logger.LogInformation("Steuereinheit für die Metadaten-Verarbeitung gestartet.");
 

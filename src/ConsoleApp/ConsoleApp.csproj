@@ -22,7 +22,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Workflows\Workflows.csproj" />
+    <ProjectReference Include="..\MediaSetOrganizer\MediaSetOrganizer.csproj" />
+    <ProjectReference Include="..\InfuseMediaLibrary\InfuseMediaLibrary.csproj" />
+    <ProjectReference Include="..\HealthCheck\HealthCheck.csproj" />
   </ItemGroup>
 
 </Project>
