@@ -292,7 +292,7 @@ public class MediaIntegratorService
         if (supportedVideo.FileInfo == null)
             return Result.Failure<FileInfo>("Die Quelldatei des SupportedVideo-Objekts ist null.");
 
-        var targetDirectory = Path.Combine(_applicationSettings.InfuseMediaLibraryPathLocal, album, recordingDate.Year.ToString(), recordingDate.ToString("yyyy-MM-dd"));
+        var targetDirectory = Path.Combine(_applicationSettings.InfuseMediaLibraryPathLocal, album, recordingDate.Year.ToString(), title);
 
         // Der Ziel-Dateiname ist ohne vorangestelltes ISO-Datum. Dieses muss also aus dem Titel entfernt werden.
         var titleWithoutLeadingRecordingDate = title.Replace($"{recordingDate:yyyy-MM-dd} ", string.Empty);
