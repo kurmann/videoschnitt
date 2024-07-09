@@ -36,7 +36,7 @@ public class Workflow
         _imageProcessorService = imageProcessorService;
     }
 
-    public async Task<Result<List<MediaSet>>> StartAsync()
+    public async Task<Result<List<MediaSet>>> ExecuteAsync()
     {
         _logger.LogInformation("Steuereinheit für die Metadaten-Verarbeitung gestartet.");
 

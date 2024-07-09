@@ -17,7 +17,7 @@ public class Workflow
         _logger = logger;
     }
 
-    public Result<HealthCheckResonse> RunHealthCheck()
+    public Result<HealthCheckResonse> ExecuteAsync()
     {
         // Ermitteln der FFmpeg-Version
         _logger.LogInformation("Checking FFmpeg version...");

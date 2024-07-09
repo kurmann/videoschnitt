@@ -76,7 +76,7 @@ namespace Kurmann.Videoschnitt.ConsoleApp
                     {
                         logger.LogInformation("Starting HealthCheck workflow.");
                         var workflow = scopedServices.GetRequiredService<HealthCheck.Workflow>();
-                        var result = workflow.RunHealthCheck();
+                        var result = workflow.ExecuteAsync();
                         if (result.IsSuccess)
                         {
                             logger.LogInformation("HealthCheck workflow completed successfully.");
