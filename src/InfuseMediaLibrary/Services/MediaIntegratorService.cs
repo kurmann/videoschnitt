@@ -121,7 +121,6 @@ public class MediaIntegratorService
             _logger.LogWarning("Die Bild-Dateien konnten nicht in das Infuse-Mediathek-Verzeichnis {targetDirectory.FullName} verschoben werden: {movedSupportedImagesResult.Error}", targetDirectory.FullName, movedSupportedImagesResult.Error);
             _logger.LogInformation("Es werden keine Bild-Dateien in das Infuse-Mediathek-Verzeichnis verschoben.");
         }
-        _logger.LogInformation("Bild-Dateien erfolgreich in das Infuse-Mediathek-Verzeichnis {targetDirectory.FullName} verschoben.", targetDirectory.FullName);
 
         return Result.Success();
     }
