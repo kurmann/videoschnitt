@@ -6,29 +6,27 @@ public record SupportedImage : ISupportedMediaType
 {
     public FileInfo FileInfo { get; }
 
-    private SupportedImage(FileInfo fileInfo) => FileInfo = fileInfo;
+    public bool IsTiffOrPng => FileInfo.Extension.Equals(".tiff", StringComparison.InvariantCultureIgnoreCase) || 
+        FileInfo.Extension.Equals(".tif", StringComparison.InvariantCultureIgnoreCase) ||
+        FileInfo.Extension.Equals(".png", StringComparison.InvariantCultureIgnoreCase);
 
-    public static Result<SupportedImage> Create(FileInfo fileInfo)
+    public bool IsAdobeRgbColorSpace { get; private set; }
+
+    private SupportedImage(FileInfo fileInfo, bool isAdobeRgbColorSpace)
+    {
+        FileInfo = fileInfo;
+        IsAdobeRgbColorSpace = isAdobeRgbColorSpace;
+    }
+
+    public static Result<SupportedImage> Create(FileInfo fileInfo, bool isAdobeRgbColorSpace = false)
     {
         // Prüfe, einschliesslich Gross- und Kleinschreibung (InvariantCultureIgnoreCase), ob die Dateiendung .jpg, .jpeg oder .png ist
         if (IsSupportedImageExtension(fileInfo))
         {
-            return new SupportedImage(fileInfo);
+            return new SupportedImage(fileInfo, isAdobeRgbColorSpace);
         }
 
         return Result.Failure<SupportedImage>($"File {fileInfo.FullName} is not a supported cover art image.");
-    }
-
-    public static Result<SupportedImage> Create(string filePath)
-    {
-        try
-        {
-            return Create(new FileInfo(filePath));
-        }
-        catch (Exception ex)
-        {
-            return Result.Failure<SupportedImage>($"Error creating SupportedImage from file path {filePath}: {ex.Message}");
-        }
     }
 
     public static Result<SupportedImage> Create(string directory, string fileName)

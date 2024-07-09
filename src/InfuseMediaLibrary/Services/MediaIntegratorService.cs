@@ -184,31 +184,8 @@ public class MediaIntegratorService
             return Result.Success();
         }
 
-        _logger.LogInformation("Es sind {supportedImages.Count()} Bild-Dateien für das Medienset vorhanden.", supportedImages.Count());
-        _logger.LogInformation("Versuche alle unterstützten Bilder in den Farbraum Adobe RGB umzuwandeln.");
-        var supportedConvertedImages = new List<SupportedImage>();
-        foreach (var supportedImage in supportedImages)
-        {
-            _logger.LogInformation("Versuche das Bild {supportedImage.FileInfo.FullName} in den Farbraum Adobe RGB umzuwandeln und als JPEG zu speichern.", supportedImage.FileInfo.FullName);
-            var convertColorSpaceResult = await _imageProcessorService.ConvertColorSpaceAndFormatAsync(supportedImage.FileInfo);
-            if (convertColorSpaceResult.IsFailure)
-            {
-                return Result.Failure($"Das Bild {supportedImage.FileInfo.FullName} konnte nicht in den Farbraum Adobe RGB konvertiert werden: {convertColorSpaceResult.Error}. Der Schritt ist wichtig damit die Bilder in der Infuse-Mediathek korrekt dargestellt werden.");
-            }
-            else
-            {
-                _logger.LogInformation("Das Bild {supportedImage.FileInfo.FullName} wurde erfolgreich in den Farbraum Adobe RGB konvertiert.", supportedImage.FileInfo.FullName);
-
-                // Aktualisiere das FileInfo-Objekt des Bildes mit dem konvertierten Dateipfad
-                var convertedImageFileInfo = new FileInfo(convertColorSpaceResult.Value.FullName);
-                var supportedImageResult = SupportedImage.Create(convertedImageFileInfo);
-                if (supportedImageResult.IsFailure)
-                {
-                    return Result.Failure($"Das konvertierte Bild {convertedImageFileInfo.FullName} konnte nicht als SupportedImage-Objekt erstellt werden: {supportedImageResult.Error}");
-                }
-                supportedConvertedImages.Add(supportedImageResult.Value);
-            }
-        }
+        // Für die Integration in die Infuse-Mediathek werden nur die Bilder im Adobe RGB-Farbraum verwendet.
+        // todo: implementieren
 
         // Ermittle das Zielverzeichnis für die Bild-Datei. Dieses ist das gleiche wie das Zielverzeichnis der Video-Datei.
         var videoTargetDirectory = videoFileTargetPath.Directory;
@@ -216,9 +193,6 @@ public class MediaIntegratorService
         {
             return Result.Failure($"Das Verzeichnis der Video-Datei {videoFileTargetPath.FullName} konnte nicht ermittelt werden. Das Verzeichnis wird benötigt, um die Bild-Dateien in das Infuse-Mediathek-Verzeichnis zu verschieben.");
         }
-
-        // Entnehme die konvertierten JPG-Dateien als Ausgangslage für die Ermittlung des Posters und Fanarts.
-        supportedImages = supportedConvertedImages;
 
         // Wenn nur ein Bild vorhanden ist, wird dieses als Poster verwendet. Der Name des Bildes entspricht dem Namen der Video-Datei.
         if (supportedImages.Count() == 1)

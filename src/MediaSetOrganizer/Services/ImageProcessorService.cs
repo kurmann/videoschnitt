@@ -40,7 +40,7 @@ public class ImageProcessorService
                 continue;
             }
 
-            var newImageFilesCreatedOnProcess = new List<SupportedImage>();
+            var processedImages = new List<SupportedImage>();
             foreach (var image in supportedImages.Value)
             {
                 var convertedImageResult = await ConvertColorSpaceAndFormatAsync(image.FileInfo);
@@ -55,23 +55,36 @@ public class ImageProcessorService
                     // Wenn die konvertierte Datei nicht gleich der Originaldatei ist, füge sie zur Medienset hinzu
                     if (!convertedImageResult.Value.IsConvertedImageEqualToOriginalImage)
                     {
-                        var supportedImageFileResult = SupportedImage.Create(convertedImageResult.Value.ConvertedImage);
+                        var supportedImageFileResult = SupportedImage.Create(convertedImageResult.Value.ConvertedImage, true);
                         if (supportedImageFileResult.IsFailure)
                         {
-                            _logger.LogError("Fehler beim Erstellen des SupportedImage-Objekts für die konvertierte Bilddatei {convertedImageResult.Value.ConvertedImage.FullName}: {supportedImageFileResult.Error}", convertedImageResult.Value.ConvertedImage.FullName, supportedImageFileResult.Error);
+                            return Result.Failure<List<MediaSet>>($"Fehler beim Erstellen des SupportedImage-Objekts für die konvertierte Bilddatei {convertedImageResult.Value.ConvertedImage.FullName}: {supportedImageFileResult.Error}");
                         }
                         else
                         {
-                            newImageFilesCreatedOnProcess.Add(supportedImageFileResult.Value);
+                            processedImages.Add(supportedImageFileResult.Value);
+                        }
+                    }
+                    else
+                    {
+                        // aktualisiere die Originaldatei mit der konvertierten Datei und setze das Flag für Adobe RGB auf true
+                        var supportedImageAdobeRgb = SupportedImage.Create(convertedImageResult.Value.ConvertedImage, true);
+                        if (supportedImageAdobeRgb.IsFailure)
+                        {
+                            return Result.Failure<List<MediaSet>>($"Fehler beim Erstellen des SupportedImage-Objekts für die konvertierte Bilddatei {convertedImageResult.Value.ConvertedImage.FullName}: {supportedImageAdobeRgb.Error}");
+                        }
+                        else
+                        {
+                            processedImages.Add(supportedImageAdobeRgb.Value);
                         }
                     }
                 }
             }
 
-            // Füge die neuen Bilder zur Medienset hinzu
-            if (newImageFilesCreatedOnProcess.Count > 0)
+            // Erstetze die Bild-Dateien im Medienset mit den konvertierten Bildern
+            if (processedImages.Count > 0)
             {
-                mediaSet.ImageFiles.Value.AddRange(newImageFilesCreatedOnProcess);
+                mediaSet.ImageFiles = processedImages;
             }
         }
 
