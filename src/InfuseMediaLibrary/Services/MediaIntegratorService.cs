@@ -33,6 +33,11 @@ public class MediaIntegratorService
         _infuseMediaLibrarySettings = infuseMediaLibrarySettings.Value;
     }
 
+    public async Task<Result> IntegrateMediaSetToLocalInfuseMediaLibrary(FileInfo videoFile, IEnumerable<FileInfo> imageFiles)
+    {
+        return Result.Success();
+    }
+
     public async Task<Result<Maybe<LocalMediaServerFiles>>> IntegrateMediaSetToLocalInfuseMediaLibrary(MediaSet mediaSet)
     {
         _logger.LogInformation("Integriere Medienset in die Infuse-Mediathek.");
