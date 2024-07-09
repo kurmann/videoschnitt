@@ -23,6 +23,8 @@ public class MetadataXmlWorkflow
         _logger.LogInformation("Starting MetadataXmlWorkflow...");
 
 
+
+        _logger.LogInformation("MetadataXmlWorkflow finished.");
         return Task.FromResult(Result.Success());
     }
 }
