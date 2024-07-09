@@ -133,7 +133,10 @@ public class Workflow
             _logger.LogInformation("Folgende Videodatei wird in die Infuse-Mediathek integriert: {File}", mediaServerFile.Name);
             _logger.LogInformation("Folgende Bilder werden in die Infuse-Mediathek integriert: {Files}", imageFilesCommaseparated);
 
-            _mediaIntegratorService.IntegrateMediaSetToLocalInfuseMediaLibrary(mediaServerFile, imageFiles);
+            // Der Titel des Mediensets ist der Verzeichnisname des Mediensets
+            var title = mediaSetDirectory.Name;
+
+            await _mediaIntegratorService.IntegrateMediaSetToLocalInfuseMediaLibrary(title, mediaServerFile, imageFiles);
         }
 
 

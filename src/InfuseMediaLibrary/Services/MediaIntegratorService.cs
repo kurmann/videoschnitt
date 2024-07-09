@@ -33,8 +33,62 @@ public class MediaIntegratorService
         _infuseMediaLibrarySettings = infuseMediaLibrarySettings.Value;
     }
 
-    public async Task<Result> IntegrateMediaSetToLocalInfuseMediaLibrary(FileInfo videoFile, IEnumerable<FileInfo> imageFiles)
+    public async Task<Result> IntegrateMediaSetToLocalInfuseMediaLibrary(string title, FileInfo videoFile, IEnumerable<FileInfo> imageFiles)
     {
+        // Prüfe ob das Infuse-Mediathek-Verzeichnis existiert und erstelle es falls es nicht existiert
+        if (!Directory.Exists(_applicationSettings.InfuseMediaLibraryPathLocal))
+        {
+            _logger.LogInformation("Das Infuse-Mediathek-Verzeichnis {infuseMediaLibraryPathLocal} existiert nicht. Erstelle Verzeichnis.", _applicationSettings.InfuseMediaLibraryPathLocal);
+            var createDirectoryResult = await _fileOperations.CreateDirectoryAsync(_applicationSettings.InfuseMediaLibraryPathLocal);
+            if (createDirectoryResult.IsFailure)
+            {
+                return Result.Failure<Maybe<LocalMediaServerFiles>>($"Das Infuse-Mediathek-Verzeichnis {createDirectoryResult.Error} konnte nicht erstellt werden.");
+            }
+            _logger.LogInformation("Infuse-Mediathek-Verzeichnis {infuseMediaLibraryPathLocal} erfolgreich erstellt.", _applicationSettings.InfuseMediaLibraryPathLocal);
+        }
+
+        // Ermittle das Album aus den Metadaten der Video-Datei
+        var albumResult = await _ffmpegMetadataService.GetMetadataFieldAsync(videoFile, "album");
+        if (albumResult.IsFailure)
+        {
+            return Result.Failure<Maybe<LocalMediaServerFiles>>($"Das Album konnte nicht aus den Metadaten der Video-Datei {videoFile} ermittelt werden: {albumResult.Error}");
+        }
+        Maybe<string> album = string.IsNullOrWhiteSpace(albumResult.Value) ? Maybe<string>.None : albumResult.Value;
+        if (album.HasNoValue)
+        {
+            _logger.LogTrace("Album-Tag ist nicht in den Metadaten der Video-Datei {FileInfo.Name} vorhanden.", videoFile.Name);
+            _logger.LogTrace("Das Album wird für die Integration in die Infuse-Mediathek nicht verwendet.");
+        }
+        else
+        {
+            _logger.LogTrace("Album-Tag aus den Metadaten der Video-Datei {FileInfo.Name} ermittelt: {album.Value}", videoFile.Name, album.Value);
+            _logger.LogTrace($"Das Album wird für die Integration in die Infuse-Mediathek als erste Verzeichnisebene verwendet.");
+        }
+
+        // Ermittle das Aufnahmedatum aus dem Titel der Video-Datei. Das Aufnahemdatum ist als ISO-String im Titel enthalten mit einem Leerzeichen getrennt.
+        var recordingDate = GetRecordingDateFromTitle(title);
+        if (recordingDate.HasNoValue)
+        {
+            _logger.LogTrace("Das Aufnahmedatum konnte nicht aus dem Titel der Video-Datei {FileInfo.Name} ermittelt werden.", videoFile.Name);
+            _logger.LogTrace("Das Aufnahmedatum wird für die Integration in die Infuse-Mediathek nicht verwendet.");
+        }
+        else
+        {
+            _logger.LogTrace("Aufnahmedatum aus dem Titel der Video-Datei {FileInfo.Name} ermittelt: {recordingDate.Value}", videoFile.Name, recordingDate.Value);
+            _logger.LogTrace("Das Aufnahmedatum wird für die Integration in die Infuse-Mediathek als zweite Verzeichnisebene verwendet.");
+        }
+
+        _logger.LogInformation("Gefunden in den Metadaten der Video-Datei: Album: {album}", album);
+        _logger.LogInformation("Ausgelesen aus dem Dateinamen: Aufnahmedatum: {recordingDate}", recordingDate);
+
+        var targetFilePathResult = GetTargetFilePath(videoFile, album.Value, title, recordingDate.Value);
+        if (targetFilePathResult.IsFailure)
+        {
+            return Result.Failure<Maybe<LocalMediaServerFiles>>($"Das Zielverzeichnis für die Integration in die Infuse-Mediathek konnte nicht ermittelt werden: {targetFilePathResult.Error}");
+        }
+        _logger.LogInformation("Zielverzeichnis für die Integration in die Infuse-Mediathek ermittelt: {targetFilePathResult.Value.FullName}", targetFilePathResult.Value.FullName);
+
+
         return Result.Success();
     }
 
@@ -123,7 +177,7 @@ public class MediaIntegratorService
         _logger.LogInformation("Album: {album}", album);
         _logger.LogInformation("Aufnahmedatum: {recordingDate}", recordingDate);
 
-        var targetFilePathResult = GetTargetFilePath(mediaSet.LocalMediaServerVideoFile.Value, album.Value, mediaSet.Title, recordingDate.Value);
+        var targetFilePathResult = GetTargetFilePath(mediaSet.LocalMediaServerVideoFile.Value.FileInfo, album.Value, mediaSet.Title, recordingDate.Value);
         if (targetFilePathResult.IsFailure)
         {
             return Result.Failure<Maybe<LocalMediaServerFiles>>($"Das Zielverzeichnis für die Integration in die Infuse-Mediathek konnte nicht ermittelt werden: {targetFilePathResult.Error}");
@@ -277,7 +331,7 @@ public class MediaIntegratorService
     /// <param name="album"></param>
     /// <param name="recordingDate"></param>
     /// <returns></returns>
-    private Result<FileInfo> GetTargetFilePath(SupportedVideo supportedVideo, string? album, string? title, DateOnly recordingDate)
+    private Result<FileInfo> GetTargetFilePath(FileInfo supportedVideo, string? album, string? title, DateOnly recordingDate)
     {
         if (string.IsNullOrWhiteSpace(album))
             return Result.Failure<FileInfo>("Das Album ist leer.");
@@ -285,7 +339,7 @@ public class MediaIntegratorService
         if (string.IsNullOrWhiteSpace(title))
             return Result.Failure<FileInfo>("Der Titel ist leer.");
 
-        if (supportedVideo.FileInfo == null)
+        if (supportedVideo == null)
             return Result.Failure<FileInfo>("Die Quelldatei des SupportedVideo-Objekts ist null.");
 
         var targetDirectory = Path.Combine(_applicationSettings.InfuseMediaLibraryPathLocal, album, recordingDate.Year.ToString(), title);
@@ -293,7 +347,7 @@ public class MediaIntegratorService
         // Der Ziel-Dateiname ist ohne vorangestelltes ISO-Datum. Dieses muss also aus dem Titel entfernt werden.
         var titleWithoutLeadingRecordingDate = title.Replace($"{recordingDate:yyyy-MM-dd} ", string.Empty);
 
-        var targetFileName = $"{titleWithoutLeadingRecordingDate}{supportedVideo.FileInfo.Extension}";
+        var targetFileName = $"{titleWithoutLeadingRecordingDate}{supportedVideo.Extension}";
         var targetFilePath = Path.Combine(targetDirectory, targetFileName);
     
         return new FileInfo(targetFilePath);
