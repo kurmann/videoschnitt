@@ -21,6 +21,11 @@ public class DirectoryInfuseXmlFileGenerator
         _infuseXmlService = infuseXmlService;
     }
 
+    /// <summary>
+    /// Erstellt für jede Videodatei in einem Verzeichnis eine Infuse-XML-Datei.
+    /// </summary>
+    /// <param name="inputDirectory"></param>
+    /// <returns></returns>
     public async Task<Result<List<FileInfo>>> Generate(string inputDirectory)
     {
         // Lese alle Verzeichnisse im Eingabeverzeichnis und nimm an, dass es sich um Mediensets handelt
@@ -44,7 +49,7 @@ public class DirectoryInfuseXmlFileGenerator
             foreach (var mediaFile in supportedMediaByMediaSet)
             {
                 // Erstelle die Infuse-XML-Datei
-                var createMetadataFileResult = await _infuseXmlService.CreateMetadataFile(mediaFile.FullName);
+                var createMetadataFileResult = await _infuseXmlService.Generate(mediaFile.FullName);
                 if (createMetadataFileResult.IsFailure)
                 {
                     _logger.LogWarning("Fehler beim Erstellen der Infuse-XML-Datei für {mediaFile.Name}: {createMetadataFileResult.Error}", mediaFile.Name, createMetadataFileResult.Error);
