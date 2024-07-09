@@ -7,13 +7,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaSetOrganizer", "MediaS
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HealthCheck", "HealthCheck\HealthCheck.csproj", "{D3FA771C-611F-4519-9B86-E5EC06522AB3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Workflows", "Workflows\Workflows.csproj", "{EBEABBBB-DB73-4D39-BE62-52B3E05C9617}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InfuseMediaLibrary", "InfuseMediaLibrary\InfuseMediaLibrary.csproj", "{6C090849-3D6D-4A6C-BC2E-DCB435BD3EC2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleApp", "ConsoleApp\ConsoleApp.csproj", "{7854B67B-498E-43D7-85AB-AD0C38236757}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConfigurationModule", "ConfigurationModule\ConfigurationModule.csproj", "{DB2128CC-7D9E-4806-89C5-AB1954F84F31}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PresentationAssetsBuilder", "PresentationAssetsBuilder\PresentationAssetsBuilder.csproj", "{210D48A9-7A29-47D5-A077-011DF16B16EC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -32,10 +32,6 @@ Global
 		{D3FA771C-611F-4519-9B86-E5EC06522AB3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D3FA771C-611F-4519-9B86-E5EC06522AB3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D3FA771C-611F-4519-9B86-E5EC06522AB3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{EBEABBBB-DB73-4D39-BE62-52B3E05C9617}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{EBEABBBB-DB73-4D39-BE62-52B3E05C9617}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{EBEABBBB-DB73-4D39-BE62-52B3E05C9617}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{EBEABBBB-DB73-4D39-BE62-52B3E05C9617}.Release|Any CPU.Build.0 = Release|Any CPU
 		{6C090849-3D6D-4A6C-BC2E-DCB435BD3EC2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6C090849-3D6D-4A6C-BC2E-DCB435BD3EC2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6C090849-3D6D-4A6C-BC2E-DCB435BD3EC2}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -48,5 +44,9 @@ Global
 		{DB2128CC-7D9E-4806-89C5-AB1954F84F31}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DB2128CC-7D9E-4806-89C5-AB1954F84F31}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DB2128CC-7D9E-4806-89C5-AB1954F84F31}.Release|Any CPU.Build.0 = Release|Any CPU
+		{210D48A9-7A29-47D5-A077-011DF16B16EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{210D48A9-7A29-47D5-A077-011DF16B16EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{210D48A9-7A29-47D5-A077-011DF16B16EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{210D48A9-7A29-47D5-A077-011DF16B16EC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
