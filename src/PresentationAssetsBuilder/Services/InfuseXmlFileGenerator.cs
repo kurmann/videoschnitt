@@ -10,26 +10,15 @@ namespace Kurmann.Videoschnitt.PresentationAssetsBuilder.Services;
 /// <summary>
 /// Verantwortlich für das Erstellen von Infuse-XML-Dateien.
 /// </summary>
-public class InfuseXmlService
+public class InfuseXmlFileGenerator
 {
-    private readonly ILogger<InfuseXmlService> _logger;
+    private readonly ILogger<InfuseXmlFileGenerator> _logger;
     private readonly FFmpegMetadataService _ffmpegMetadataService;
 
-    public InfuseXmlService(ILogger<InfuseXmlService> logger, FFmpegMetadataService ffmpegMetadataService)
+    public InfuseXmlFileGenerator(ILogger<InfuseXmlFileGenerator> logger, FFmpegMetadataService ffmpegMetadataService)
     {
         _logger = logger;
         _ffmpegMetadataService = ffmpegMetadataService;
-    }
-
-    public async Task<Result<string>> GetRawMetadataAsync(string filePath)
-    {
-        var metadataResult = await _ffmpegMetadataService.GetRawMetadataAsync(filePath);
-        if (metadataResult.IsFailure)
-        {
-            return Result.Failure<string>($"Fehler beim Extrahieren der Metadaten aus {filePath}: {metadataResult.Error}");
-        }
-
-        return metadataResult.Value;
     }
 
     public async Task<Result<FileInfo>> CreateMetadataFile(string filePath)

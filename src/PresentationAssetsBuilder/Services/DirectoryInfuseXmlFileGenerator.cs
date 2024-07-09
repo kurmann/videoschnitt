@@ -12,9 +12,9 @@ public class DirectoryInfuseXmlFileGenerator
 {
     private readonly ILogger<DirectoryInfuseXmlFileGenerator> _logger;
     private readonly MediaSetOrganizerSettings _mediaSetOrganizerSettings;
-    private readonly InfuseXmlService _infuseXmlService;
+    private readonly InfuseXmlFileGenerator _infuseXmlService;
 
-    public DirectoryInfuseXmlFileGenerator(ILogger<DirectoryInfuseXmlFileGenerator> logger, IOptions<MediaSetOrganizerSettings> applicationSettings, InfuseXmlService infuseXmlService)
+    public DirectoryInfuseXmlFileGenerator(ILogger<DirectoryInfuseXmlFileGenerator> logger, IOptions<MediaSetOrganizerSettings> applicationSettings, InfuseXmlFileGenerator infuseXmlService)
     {
         _logger = logger;
         _mediaSetOrganizerSettings = applicationSettings.Value;
