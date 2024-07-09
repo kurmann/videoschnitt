@@ -1,10 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Kurmann.Videoschnitt.ConfigurationModule.Settings;
-using Kurmann.Videoschnitt.Common.Services;
 using CSharpFunctionalExtensions;
-using System.Threading.Tasks;
-using System.Reflection;
 
 namespace Kurmann.Videoschnitt.PresentationAssetsBuilder;
 
@@ -12,7 +9,7 @@ public class GenerateMediaSetIndexWorkflow
 {
     public const string WorkflowName = "MediaSetIndex";
 
-    private readonly ILogger<MetadataXmlWorkflow> _logger;
+    private readonly ILogger<GenerateMediaSetIndexWorkflow> _logger;
     private readonly ApplicationSettings _applicationSettings;
 
     public GenerateMediaSetIndexWorkflow(ILogger<GenerateMediaSetIndexWorkflow> logger, IOptions<ApplicationSettings> applicationSettings)

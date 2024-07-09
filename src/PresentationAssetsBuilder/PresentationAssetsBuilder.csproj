@@ -5,8 +5,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <LangVersion>10</LangVersion>
-    <AssemblyName>Kurmann.Videoschnitt.InfuseMediaLibrary</AssemblyName>
-    <RootNamespace>Kurmann.Videoschnitt.InfuseMediaLibrary</RootNamespace>
+    <AssemblyName>Kurmann.Videoschnitt.PresentationAssetsBuilder</AssemblyName>
+    <RootNamespace>Kurmann.Videoschnitt.PresentationAssetsBuilder</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

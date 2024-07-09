@@ -24,6 +24,7 @@
   <ItemGroup>
     <ProjectReference Include="..\MediaSetOrganizer\MediaSetOrganizer.csproj" />
     <ProjectReference Include="..\InfuseMediaLibrary\InfuseMediaLibrary.csproj" />
+    <ProjectReference Include="..\PresentationAssetsBuilder\PresentationAssetsBuilder.csproj" />
     <ProjectReference Include="..\HealthCheck\HealthCheck.csproj" />
   </ItemGroup>
 

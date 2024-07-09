@@ -8,9 +8,10 @@ using Microsoft.Extensions.Logging;
 using Kurmann.Videoschnitt.ConfigurationModule;
 using Kurmann.Videoschnitt.ConfigurationModule.Services;
 using Kurmann.Videoschnitt.HealthCheck;
-using Kurmann.Videoschnitt.InfuseMediaLibrary;
 using Kurmann.Videoschnitt.Common;
 using Kurmann.Videoschnitt.MediaSetOrganizer;
+using Kurmann.Videoschnitt.InfuseMediaLibrary;
+using Kurmann.Videoschnitt.PresentationAssetsBuilder;
 
 namespace Kurmann.Videoschnitt.ConsoleApp;
 
@@ -69,6 +70,7 @@ public class Program
                 services.AddCommonServicesEngine(hostContext.Configuration);
                 services.AddMediaSetOrganizer(hostContext.Configuration);
                 services.AddInfuseMediaLibrary(hostContext.Configuration);
+                services.AddPresentationAssetsBuilder(hostContext.Configuration);
                 services.AddHealthCheck();
             });
 
@@ -128,6 +130,40 @@ public class Program
                     return 1; // error
                 }
             }
+
+            case MetadataXmlWorkflow.WorkflowName:
+                {
+                    logger.LogInformation("Starting MetadataXml workflow.");
+                    var workflow = scopedServices.GetRequiredService<PresentationAssetsBuilder.MetadataXmlWorkflow>();
+                    var result = await workflow.ExecuteAsync();
+                    if (result.IsSuccess)
+                    {
+                        logger.LogInformation("MetadataXml workflow completed successfully.");
+                        return 0; // success
+                    }
+                    else
+                    {
+                        logger.LogError("Error in MetadataXml workflow: {Error}", result.Error);
+                        return 1; // error
+                    }
+                }
+
+            case GenerateMediaSetIndexWorkflow.WorkflowName:
+                {
+                    logger.LogInformation("Starting GenerateMediaSetIndex workflow.");
+                    var workflow = scopedServices.GetRequiredService<PresentationAssetsBuilder.GenerateMediaSetIndexWorkflow>();
+                    var result = await workflow.ExecuteAsync();
+                    if (result.IsSuccess)
+                    {
+                        logger.LogInformation("GenerateMediaSetIndex workflow completed successfully.");
+                        return 0; // success
+                    }
+                    else
+                    {
+                        logger.LogError("Error in GenerateMediaSetIndex workflow: {Error}", result.Error);
+                        return 1; // error
+                    }
+                }
 
             default:
                 logger.LogWarning("No valid workflow specified.");

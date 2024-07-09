@@ -1,10 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Kurmann.Videoschnitt.ConfigurationModule.Settings;
-using Kurmann.Videoschnitt.Common.Services;
 using CSharpFunctionalExtensions;
-using System.Threading.Tasks;
-using System.Reflection;
 
 namespace Kurmann.Videoschnitt.PresentationAssetsBuilder;
 
