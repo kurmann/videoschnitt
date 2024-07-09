@@ -1,7 +1,4 @@
-using Microsoft.Extensions.Logging;
 using CSharpFunctionalExtensions;
-using Kurmann.Videoschnitt.Common.Entities.MediaTypes;
-using Kurmann.Videoschnitt.Common.Services.Metadata;
 
 namespace Kurmann.Videoschnitt.InfuseMediaLibrary.Services;
 
@@ -10,15 +7,6 @@ namespace Kurmann.Videoschnitt.InfuseMediaLibrary.Services;
 /// </summary>
 public class PosterAndFanartService
 {
-    private readonly ILogger<PosterAndFanartService> _logger;
-    private readonly FFmpegMetadataService _ffmpegMetadataService;
-
-    public PosterAndFanartService(ILogger<PosterAndFanartService> logger, FFmpegMetadataService ffmpegMetadataService)
-    {
-        _logger = logger;
-        _ffmpegMetadataService = ffmpegMetadataService;
-    }
-
     /// <summary>
     /// Ermittelt die Bilddateien, die als Poster und Fanart verwendet werden sollen.
     /// Die eine Bilddatei wird als Poster und die andere als Hintergrundbild verwendet.
@@ -28,28 +16,28 @@ public class PosterAndFanartService
     /// 2. Wenn beide Bilddateien das gleiche Seitenverhältnis haben, wird die jünge Bilddatei als Poster verwendet.
     /// Hinweis: Die Bildauflösungen werden über den FFMpegMetadataService ermittelt indem die Attribute "width" und "height" aus den Metadaten extrahiert werden.
     /// </summary>
-    public Result<DetectPosterAndFanartImagesResponse> DetectPosterAndFanartImages(SupportedImage firstImage, SupportedImage secondImage)
+    public static Result<DetectPosterAndFanartImagesResponse> DetectPosterAndFanartImages(FileInfo firstImage, FileInfo secondImage)
     {
-        SupportedImage? posterImage = null;
-        SupportedImage? fanartImage = null;
+        FileInfo? posterImage;
+        FileInfo? fanartImage;
 
         // Priorität 1: Überprüfung auf spezifische Schlüsselwörter im Dateinamen
-        if (firstImage.FileInfo.FullName.Contains("poster"))
+        if (firstImage.FullName.Contains("poster"))
         {
             posterImage = firstImage;
             fanartImage = secondImage;
         }
-        else if (secondImage.FileInfo.Name.Contains("poster"))
+        else if (secondImage.Name.Contains("poster"))
         {
             posterImage = secondImage;
             fanartImage = firstImage;
         }
-        else if (firstImage.FileInfo.Name.Contains("fanart"))
+        else if (firstImage.Name.Contains("fanart"))
         {
             fanartImage = firstImage;
             posterImage = secondImage;
         }
-        else if (secondImage.FileInfo.Name.Contains("fanart"))
+        else if (secondImage.Name.Contains("fanart"))
         {
             fanartImage = secondImage;
             posterImage = firstImage;
@@ -58,7 +46,7 @@ public class PosterAndFanartService
         // Priorität 3: Vergleich des Änderungsdatum, wenn Seitenverhältnisse gleich sind. Die jüngere Bilddatei wird als Poster verwendet.
         else
         {
-            if (File.GetLastWriteTime(firstImage.FileInfo.FullName) > File.GetLastWriteTime(secondImage.FileInfo.FullName))
+            if (File.GetLastWriteTime(firstImage.FullName) > File.GetLastWriteTime(secondImage.FullName))
             {
                 posterImage = firstImage;
                 fanartImage = secondImage;
@@ -77,4 +65,4 @@ public class PosterAndFanartService
     }
 }
 
-public record DetectPosterAndFanartImagesResponse(SupportedImage PosterImage, SupportedImage FanartImage);
+public record DetectPosterAndFanartImagesResponse(FileInfo PosterImage, FileInfo FanartImage);

@@ -12,7 +12,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddInfuseMediaLibrary(this IServiceCollection services, IConfiguration configuration)
     {   
         // Register Engine
-        services.AddScoped<Engine>();
+        services.AddScoped<Workflow>();
         services.AddScoped<InfuseMetadataXmlService>();
         services.AddScoped<MediaIntegratorService>();
         services.AddScoped<IFileOperations, FileOperations>();

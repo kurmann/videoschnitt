@@ -37,7 +37,7 @@ public class ToolsVersionService
                 }
             };
 
-            _logger.LogInformation("Executing command: {Command}", process.StartInfo.Arguments);
+            _logger.LogTrace("Executing command: {Command}", process.StartInfo.Arguments);
 
             process.Start();
             string result = process.StandardOutput.ReadToEnd();
@@ -72,7 +72,7 @@ public class ToolsVersionService
                 }
             };
 
-            _logger.LogInformation("Executing command: {Command}", process.StartInfo.Arguments);
+            _logger.LogTrace("Executing command: {Command}", process.StartInfo.Arguments);
 
             process.Start();
             string result = process.StandardOutput.ReadToEnd();

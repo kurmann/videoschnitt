@@ -20,7 +20,7 @@ public class ExecuteCommandService
     /// <returns>Ein Result-Objekt, das den Erfolg oder Fehler enthält.</returns>
     public async Task<Result<List<string>>> ExecuteCommandAsync(string commandPath, string arguments)
     {
-        _logger.LogInformation("Executing command: {commandPath} {arguments}", commandPath, arguments);
+        _logger.LogTrace("Executing command: {commandPath} {arguments}", commandPath, arguments);
 
         var psi = new ProcessStartInfo(commandPath, arguments)
         {
@@ -79,12 +79,12 @@ public class ExecuteCommandService
     /// <returns></returns>
     public async Task<bool> ExecuteBooleanCommandAsync(string commandPath, string arguments)
     {
-        _logger.LogInformation("Executing command: {commandPath} {arguments}", commandPath, arguments);
+        _logger.LogTrace("Executing command: {commandPath} {arguments}", commandPath, arguments);
 
         var commandResult = await ExecuteCommandAsync(commandPath, arguments);
         if (commandResult.IsFailure)
         {
-            _logger.LogInformation("Prozess hat Exit-Code ungleich 0. Wird als True interpretiert.");
+            _logger.LogTrace("Prozess hat Exit-Code ungleich 0. Wird als True interpretiert.");
             return false;
         }
 

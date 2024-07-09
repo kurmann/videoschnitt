@@ -96,24 +96,24 @@ public class ConfigurationInfoService
 
     private void LogInfuseMediaLibrarySettings()
     {
-        _logger.LogInformation("Infuse Media Library settings:");
+        _logger.LogTrace("Infuse Media Library settings:");
         var bannerFilePostFix = _infuseMediaLibrarySettings.BannerFilePostfix;
-        _logger.LogInformation("Banner-Dateiendung: {postfix}", bannerFilePostFix);
+        _logger.LogTrace("Banner-Dateiendung: {postfix}", bannerFilePostFix);
 
         var tempImageSuffix = _infuseMediaLibrarySettings.SuffixForConvertedTempImage;
-        _logger.LogInformation("Suffix für konvertiertes temporäres Bild: {suffix}", tempImageSuffix);
+        _logger.LogTrace("Suffix für konvertiertes temporäres Bild: {suffix}", tempImageSuffix);
     }
 
     private void LogMetadataProcessingSettings()
     {
-        _logger.LogInformation("Metadata processing settings:");
+        _logger.LogTrace("Metadata processing settings:");
 
-        _logger.LogInformation("Liste der Varianten-Suffixe, die in den Dateinamen von Videos vorkommen können,die für den Medienserver bestimmt sind:");
+        _logger.LogTrace("Liste der Varianten-Suffixe, die in den Dateinamen von Videos vorkommen können,die für den Medienserver bestimmt sind:");
         var commaSeparatedVideoVersionSuffixesForMediaServer = string.Join(", ", _metadataProcessingSettings.MediaSet.VideoVersionSuffixesForMediaServer);
-        _logger.LogInformation("{suffixes}", commaSeparatedVideoVersionSuffixesForMediaServer);
+        _logger.LogTrace("{suffixes}", commaSeparatedVideoVersionSuffixesForMediaServer);
 
-        _logger.LogInformation("Liste der Varianten-Suffixe, die in den Dateinamen von Videos vorkommen können,die für das Internet bestimmt sind:");
+        _logger.LogTrace("Liste der Varianten-Suffixe, die in den Dateinamen von Videos vorkommen können,die für das Internet bestimmt sind:");
         var commaSeparatedVideoVersionSuffixesForInternet = string.Join(", ", _metadataProcessingSettings.MediaSet.VideoVersionSuffixesForInternet);
-        _logger.LogInformation("{suffixes}", commaSeparatedVideoVersionSuffixesForInternet);
+        _logger.LogTrace("{suffixes}", commaSeparatedVideoVersionSuffixesForInternet);
     }
 }

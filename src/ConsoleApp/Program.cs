@@ -70,42 +70,62 @@ namespace Kurmann.Videoschnitt.ConsoleApp
         {
             using var scope = services.CreateScope();
             var scopedServices = scope.ServiceProvider;
-            if (opts.Workflow == HealthCheckWorkflow.WorkflowName)
+            switch (opts.Workflow)
             {
-                logger.LogInformation("Starting HealthCheck workflow.");
-                var workflow = scopedServices.GetRequiredService<HealthCheckWorkflow>();
-                var result = workflow.Execute();
-                if (result.IsSuccess)
+                case HealthCheckWorkflow.WorkflowName:
+                    {
+                        logger.LogInformation("Starting HealthCheck workflow.");
+                        var workflow = scopedServices.GetRequiredService<HealthCheckWorkflow>();
+                        var result = workflow.Execute();
+                        if (result.IsSuccess)
+                        {
+                            logger.LogInformation("HealthCheck workflow completed successfully.");
+                            return 0; // success
+                        }
+                        else
+                        {
+                            logger.LogError("Error in HealthCheck workflow: {Error}", result.Error);
+                            return 1; // error
+                        }
+                    }
+
+                case "FinalCutPro":
+                    {
+                        logger.LogInformation("Starting FinalCutPro workflow.");
+                        var workflow = scopedServices.GetRequiredService<FinalCutProWorkflow>();
+                        var result = await workflow.ExecuteAsync();
+                        if (result.IsSuccess)
+                        {
+                            logger.LogInformation("FinalCutPro workflow completed successfully.");
+                            return 0; // success
+                        }
+                        else
+                        {
+                            logger.LogError("Error in FinalCutPro workflow: {Error}", result.Error);
+                            return 1; // error
+                        }
+                    }
+                
+                case InfuseMediaLibrary.Workflow.WorkflowName:
                 {
-                    logger.LogInformation("HealthCheck workflow completed successfully.");
-                    return 0; // success
+                    logger.LogInformation("Starting InfuseMediaLibrary workflow.");
+                    var workflow = scopedServices.GetRequiredService<InfuseMediaLibrary.Workflow>();
+                    var result = await workflow.StartAsync();
+                    if (result.IsSuccess)
+                    {
+                        logger.LogInformation("InfuseMediaLibrary workflow completed successfully.");
+                        return 0; // success
+                    }
+                    else
+                    {
+                        logger.LogError("Error in InfuseMediaLibrary workflow: {Error}", result.Error);
+                        return 1; // error
+                    }
                 }
-                else
-                {
-                    logger.LogError("Error in HealthCheck workflow: {Error}", result.Error);
-                    return 1; // error
-                }
-            }
-            else if (opts.Workflow == "FinalCutPro")
-            {
-                logger.LogInformation("Starting FinalCutPro workflow.");
-                var workflow = scopedServices.GetRequiredService<FinalCutProWorkflow>();
-                var result = await workflow.ExecuteAsync();
-                if (result.IsSuccess)
-                {
-                    logger.LogInformation("FinalCutPro workflow completed successfully.");
-                    return 0; // success
-                }
-                else
-                {
-                    logger.LogError("Error in FinalCutPro workflow: {Error}", result.Error);
-                    return 1; // error
-                }
-            }
-            else
-            {
-                logger.LogWarning("No valid workflow specified.");
-                return 1; // invalid workflow
+
+                default:
+                    logger.LogWarning("No valid workflow specified.");
+                    return 1; // invalid workflow
             }
         }
     }
