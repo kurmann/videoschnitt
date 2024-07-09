@@ -86,6 +86,13 @@ public class ImageProcessorService
             {
                 mediaSet.ImageFiles = processedImages;
             }
+
+            // Füge die TIFF- oder PNG-Dateien, die nicht konvertiert werden konnten, zur Medienset hinzu damit sie nicht verloren gehen
+            var unprocessedImages = supportedImages.Value.Where(i => !processedImages.Any(p => p.FileInfo.FullName == i.FileInfo.FullName));
+            foreach (var unprocessedImage in unprocessedImages)
+            {
+                processedImages.Add(unprocessedImage);
+            }
         }
 
         return Result.Success(mediaSets.ToList());
