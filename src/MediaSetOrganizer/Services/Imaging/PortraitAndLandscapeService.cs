@@ -37,8 +37,10 @@ public class PortraitAndLandscapeService
                 var detectResult = await DetectPortraitAndLandscapeImagesAsync(mediaSet.GetSingleImage().FileInfo);
                 if (detectResult.IsFailure)
                 {
-                    return Result.Failure($"Fehler beim Ermitteln des Bildformats: {detectResult.Error});
+                    return Result.Failure($"Fehler beim Ermitteln des Bildformats: {detectResult.Error}");
                 }
+
+                // Benenne das Bild wie folgt um: {Medienset-Titel}{PortraitSuffix}.ext
             }
             if (mediaSet.IsMultipleImageFiles)
             {
