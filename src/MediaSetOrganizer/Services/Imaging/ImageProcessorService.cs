@@ -7,7 +7,7 @@ using System.Diagnostics;
 using Kurmann.Videoschnitt.Common.Models;
 using Kurmann.Videoschnitt.Common.Entities.MediaTypes;
 
-namespace Kurmann.Videoschnitt.MediaSetOrganizer.Services;
+namespace Kurmann.Videoschnitt.MediaSetOrganizer.Services.Imaging;
 
 /// <summary>
 /// Verantwortlich für die Vorverarbeitung von Bildern
@@ -118,7 +118,7 @@ public class ImageProcessorService
         var isTiffOrPngSource = filePath.Extension.Equals(".tiff", StringComparison.OrdinalIgnoreCase) ||
             filePath.Extension.Equals(".tif", StringComparison.OrdinalIgnoreCase) ||
             filePath.Extension.Equals(".png", StringComparison.OrdinalIgnoreCase);
-    
+
 
         // Konvertiere TIFF oder PNG Dateien nach JPEG
         Maybe<FileInfo> convertedJpgImageFromTiffOrPng = Maybe<FileInfo>.None;

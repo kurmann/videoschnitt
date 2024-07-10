@@ -8,6 +8,7 @@ using Kurmann.Videoschnitt.Common.Services.ImageProcessing.MacOS;
 using Kurmann.Videoschnitt.Common.Services.FileSystem;
 using Kurmann.Videoschnitt.Common.Services.FileSystem.Unix;
 using Kurmann.Videoschnitt.ConfigurationModule;
+using Kurmann.Videoschnitt.MediaSetOrganizer.Services.Imaging;
 
 namespace Kurmann.Videoschnitt.MediaSetOrganizer;
 

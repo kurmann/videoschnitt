@@ -4,6 +4,7 @@ using CSharpFunctionalExtensions;
 using Kurmann.Videoschnitt.Common.Models;
 using Kurmann.Videoschnitt.ConfigurationModule.Services;
 using Kurmann.Videoschnitt.ConfigurationModule.Settings;
+using Kurmann.Videoschnitt.MediaSetOrganizer.Services.Imaging;
 
 namespace Kurmann.Videoschnitt.MediaSetOrganizer;
 
