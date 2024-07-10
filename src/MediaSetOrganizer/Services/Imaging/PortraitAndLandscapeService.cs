@@ -1,5 +1,6 @@
 using System.Drawing;
 using CSharpFunctionalExtensions;
+using Kurmann.Videoschnitt.Common.Models;
 
 namespace Kurmann.Videoschnitt.InfuseMediaLibrary.Imaging.Services;
 
@@ -23,6 +24,16 @@ public class PortraitAndLandscapeService
         {
             return Result.Failure<DetectPortraitAndLandscapeImagesResponse>($"Fehler beim Laden des Bildes: {ex.Message}");
         }
+    }
+
+    /// <summary>
+    /// Benennt alle Bilder pro Medienset um auf Basis des Seitenverhältnisses. Aktualisiert im Medienset die Dateinamen der Bilder.
+    /// </summary>
+    /// <param name="mediaSet"></param>
+    public Task<Result> RenameImagesByAspectRatioAsync(IEnumerable<MediaSet> mediaSet)
+    {
+        // todo: wenn mehr als zwei Bilder pro Medienset vorhanden sind, nimm die beiden jüngsten Bilder und unterscheide bei diesen zwischen Portrait und Landscape
+        return Task.FromResult(Result.Success());
     }
 
     /// <summary>

@@ -5,6 +5,7 @@ using Kurmann.Videoschnitt.Common.Models;
 using Kurmann.Videoschnitt.ConfigurationModule.Services;
 using Kurmann.Videoschnitt.ConfigurationModule.Settings;
 using Kurmann.Videoschnitt.MediaSetOrganizer.Services.Imaging;
+using Kurmann.Videoschnitt.InfuseMediaLibrary.Imaging.Services;
 
 namespace Kurmann.Videoschnitt.MediaSetOrganizer;
 
@@ -21,11 +22,12 @@ public class Workflow
     private readonly MediaSetDirectoryIntegrator _mediaSetDirectoryIntegrator;
     private readonly FinalCutDirectoryIntegrator _finalCutDirectoryIntegrator;
     private readonly ImageProcessorService _imageProcessorService;
+    private readonly PortraitAndLandscapeService _portraitAndLandscapeService;
 
     public Workflow(ILogger<Workflow> logger, IConfigurationService configurationService, MediaSetService mediaSetService,
         MediaPurposeOrganizer mediaPurposeOrganizer, InputDirectoryReaderService inputDirectoryReaderService,
         MediaSetDirectoryIntegrator mediaSetDirectoryIntegrator, FinalCutDirectoryIntegrator finalCutDirectoryIntegrator,
-        ImageProcessorService imageProcessorService)
+        ImageProcessorService imageProcessorService, PortraitAndLandscapeService portraitAndLandscapeService)
     {
         _logger = logger;
         _applicationSettings = configurationService.GetSettings<ApplicationSettings>();
@@ -35,6 +37,7 @@ public class Workflow
         _mediaSetDirectoryIntegrator = mediaSetDirectoryIntegrator;
         _finalCutDirectoryIntegrator = finalCutDirectoryIntegrator;
         _imageProcessorService = imageProcessorService;
+        _portraitAndLandscapeService = portraitAndLandscapeService;
     }
 
     public async Task<Result<List<MediaSet>>> ExecuteAsync()
@@ -80,6 +83,9 @@ public class Workflow
         }
         _logger.LogInformation("Anzahl Mediensets: {Count}", mediaSets.Value.Count);
         _logger.LogInformation("Medien erfolgreich nach ihrem Verwendungszweck organisiert.");
+
+        _logger.LogInformation("Benenne die Bilder pro Medienset anhand ihres Seitenverhältnisses um.");
+        var portraitAndLandscapeServiceResult = await _portraitAndLandscapeService.RenameImagesByAspectRatioAsync(mediaSets.Value);
 
         _logger.LogInformation("Erstelle JPG-Bilder im Adobe RGB-Farbraum für die Mediensets.");
         var mediaSetsWithConvertedImages = await _imageProcessorService.ConvertColorSpaceAndFormatAsync(mediaSets.Value);
