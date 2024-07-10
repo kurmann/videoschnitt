@@ -22,10 +22,9 @@ public record MediaSet
 
     public Maybe<Masterfile> Masterfile { get; set; }
 
-    public bool IsNoImageFiles => ImageFiles.HasNoValue || ImageFiles.Value.Count == 0;
+    public bool IsNoImageFile => ImageFiles.HasNoValue || ImageFiles.Value.Count == 0;
     public bool IsSingleImageFile => ImageFiles.HasValue && ImageFiles.Value.Count == 1;
-    public bool IsTwoImageFiles => ImageFiles.HasValue && ImageFiles.Value.Count == 2;
-    public bool IsMoreThanTwoImageFiles => ImageFiles.HasValue && ImageFiles.Value.Count > 2;
+    public bool IsMultipleImageFiles => ImageFiles.HasValue && ImageFiles.Value.Count > 1;
 
     /// <summary>
     /// Gibt die zwei Bilder zurück mit dem jüngsten Änderungsdatum.
@@ -34,6 +33,25 @@ public record MediaSet
     {
         var images = ImageFiles.Value.OrderByDescending(x => x.FileInfo.LastWriteTime).Take(2).ToList();
         return (images[0], images[1]);
+    }
+
+    /// <summary>
+    /// Returns single image from the list of images.
+    /// Throws an exception if there are more than one image in the list or no image at all.
+    /// </summary>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    public SupportedImage GetSingleImage()
+    {
+        if (IsNoImageFile)
+        {
+            throw new InvalidOperationException("No image file found in the media set.");
+        }
+        if (IsMoreThanTwoImageFiles)
+        {
+            throw new InvalidOperationException("More than two image files found in the media set.");
+        }
+        return ImageFiles.Value.Single();
     }
 }
 

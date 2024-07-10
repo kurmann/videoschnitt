@@ -23,16 +23,41 @@ public class PortraitAndLandscapeService
     /// Benennt alle Bilder pro Medienset um auf Basis des Seitenverhältnisses. Aktualisiert im Medienset die Dateinamen der Bilder.
     /// </summary>
     /// <param name="mediaSet"></param>
-    public Task<Result> RenameImagesByAspectRatioAsync(IEnumerable<MediaSet> mediaSet)
+    public async Task<Result> RenameImagesByAspectRatioAsync(IEnumerable<MediaSet> mediaSets)
     {
-        // todo: wenn mehr als zwei Bilder pro Medienset vorhanden sind, nimm die beiden jüngsten Bilder und unterscheide bei diesen zwischen Portrait und Landscape
-        return Task.FromResult(Result.Success());
+        // Iteriere durch alle Mediensets
+        foreach (var mediaSet in mediaSets)
+        {
+            if (mediaSet.IsNoImageFile)
+            {
+                continue;
+            }
+            if (mediaSet.IsSingleImageFile)
+            {
+                var detectResult = await DetectPortraitAndLandscapeImagesAsync(mediaSet.GetSingleImage().FileInfo);
+                if (detectResult.IsFailure)
+                {
+                    return Result.Failure($"Fehler beim Ermitteln des Bildformats: {detectResult.Error});
+                }
+            }
+            if (mediaSet.IsMultipleImageFiles)
+            {
+                var (image1, image2) = mediaSet.GetTwoLatestImages();
+                var detectResult = await DetectPortraitAndLandscapeImagesAsync(image1.FileInfo, image2.FileInfo);
+                if (detectResult.IsFailure)
+                {
+                    return Result.Failure($"Fehler beim Ermitteln des Bildformats: {detectResult.Error});
+                }
+            }
+        }
+
+        return Result.Success();
     }
 
     /// <summary>
     /// Ermittelt, ob ein Bild im Hoch- oder Querformat vorliegt.
     /// </summary>
-    public async Task<Result<DetectPortraitAndLandscapeImagesResponse>> DetectPortraitAndLandscapeImages(FileInfo image)
+    public async Task<Result<DetectPortraitAndLandscapeImagesResponse>> DetectPortraitAndLandscapeImagesAsync(FileInfo image)
     {
         var dimensionsResult = await _sipMetadataService.GetImageDimensionsWithSipsAsync(image.FullName);
         if (dimensionsResult.IsFailure)
@@ -50,7 +75,7 @@ public class PortraitAndLandscapeService
     /// <summary>
     /// Ermittelt die Bilddateien, die als Portrait und Landscape verwendet werden sollen.
     /// </summary>
-    public async Task<Result<DetectPortraitAndLandscapeImagesResponse>> DetectPortraitAndLandscapeImages(FileInfo firstImage, FileInfo secondImage)
+    public async Task<Result<DetectPortraitAndLandscapeImagesResponse>> DetectPortraitAndLandscapeImagesAsync(FileInfo firstImage, FileInfo secondImage)
     {
         var dimensionsResult1 = await _sipMetadataService.GetImageDimensionsWithSipsAsync(firstImage.FullName);
         var dimensionsResult2 = await _sipMetadataService.GetImageDimensionsWithSipsAsync(secondImage.FullName);
