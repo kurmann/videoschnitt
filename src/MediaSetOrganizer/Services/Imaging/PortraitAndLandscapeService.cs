@@ -1,6 +1,7 @@
-using System.Drawing;
 using CSharpFunctionalExtensions;
 using Kurmann.Videoschnitt.Common.Models;
+using Kurmann.Videoschnitt.Common.Services.Metadata;
+using Microsoft.Extensions.Logging;
 
 namespace Kurmann.Videoschnitt.InfuseMediaLibrary.Imaging.Services;
 
@@ -9,21 +10,13 @@ namespace Kurmann.Videoschnitt.InfuseMediaLibrary.Imaging.Services;
 /// </summary>
 public class PortraitAndLandscapeService
 {
-    /// <summary>
-    /// Ermittelt, ob ein Bild im Hoch- oder Querformat vorliegt.
-    /// </summary>
-    public static Result<DetectPortraitAndLandscapeImagesResponse> DetectPortraitAndLandscapeImages(FileInfo image)
+    private readonly SipsMetadataService _sipMetadataService;
+    private readonly ILogger<PortraitAndLandscapeService> _logger;
+
+    public PortraitAndLandscapeService(SipsMetadataService sipMetadataService, ILogger<PortraitAndLandscapeService> logger)
     {
-        try
-        {
-            using var img = Image.FromFile(image.FullName);
-            var isPortrait = img.Height > img.Width;
-            return new DetectPortraitAndLandscapeImagesResponse(isPortrait ? image : null, isPortrait ? null : image);
-        }
-        catch (Exception ex)
-        {
-            return Result.Failure<DetectPortraitAndLandscapeImagesResponse>($"Fehler beim Laden des Bildes: {ex.Message}");
-        }
+        _sipMetadataService = sipMetadataService;
+        _logger = logger;
     }
 
     /// <summary>
@@ -37,45 +30,67 @@ public class PortraitAndLandscapeService
     }
 
     /// <summary>
+    /// Ermittelt, ob ein Bild im Hoch- oder Querformat vorliegt.
+    /// </summary>
+    public async Task<Result<DetectPortraitAndLandscapeImagesResponse>> DetectPortraitAndLandscapeImages(FileInfo image)
+    {
+        var dimensionsResult = await _sipMetadataService.GetImageDimensionsWithSipsAsync(image.FullName);
+        if (dimensionsResult.IsFailure)
+            return Result.Failure<DetectPortraitAndLandscapeImagesResponse>(dimensionsResult.Error);
+
+        var (width, height) = dimensionsResult.Value;
+        var isPortrait = height > width;
+
+        _logger.LogInformation("Bild {Filename} hat die Auflösung {Width}x{Height} und ist im Format {Format}.", image.Name, width, height, isPortrait ? "Portrait" : "Landscape");
+        _logger.LogInformation("Das Bild wird somit als {Orientation} verwendet.", isPortrait ? "Portrait" : "Landscape");
+
+        return new DetectPortraitAndLandscapeImagesResponse(isPortrait ? image : null, isPortrait ? null : image);
+    }
+
+    /// <summary>
     /// Ermittelt die Bilddateien, die als Portrait und Landscape verwendet werden sollen.
     /// </summary>
-    public static Result<DetectPortraitAndLandscapeImagesResponse> DetectPortraitAndLandscapeImages(FileInfo firstImage, FileInfo secondImage)
+    public async Task<Result<DetectPortraitAndLandscapeImagesResponse>> DetectPortraitAndLandscapeImages(FileInfo firstImage, FileInfo secondImage)
     {
-        try
+        var dimensionsResult1 = await _sipMetadataService.GetImageDimensionsWithSipsAsync(firstImage.FullName);
+        var dimensionsResult2 = await _sipMetadataService.GetImageDimensionsWithSipsAsync(secondImage.FullName);
+
+        if (dimensionsResult1.IsFailure)
+            return Result.Failure<DetectPortraitAndLandscapeImagesResponse>(dimensionsResult1.Error);
+        if (dimensionsResult2.IsFailure)
+            return Result.Failure<DetectPortraitAndLandscapeImagesResponse>(dimensionsResult2.Error);
+
+        var (width1, height1) = dimensionsResult1.Value;
+        var (width2, height2) = dimensionsResult2.Value;
+
+        var img1IsPortrait = height1 > width1;
+        var img2IsPortrait = height2 > width2;
+
+        if (img1IsPortrait && !img2IsPortrait)
         {
-            using var img1 = Image.FromFile(firstImage.FullName);
-            using var img2 = Image.FromFile(secondImage.FullName);
+            return new DetectPortraitAndLandscapeImagesResponse(firstImage, secondImage);
+        }
+        else if (!img1IsPortrait && img2IsPortrait)
+        {
+            return new DetectPortraitAndLandscapeImagesResponse(secondImage, firstImage);
+        }
+        else
+        {
+            // Beide Bilder haben das gleiche Format, jetzt nach Seitenverhältnis entscheiden
+            var img1AspectRatio = (double)width1 / height1;
+            var img2AspectRatio = (double)width2 / height2;
 
-            var img1IsPortrait = img1.Height > img1.Width;
-            var img2IsPortrait = img2.Height > img2.Width;
+            _logger.LogInformation("Bild {Filename} hat die Auflösung {Width1}x{Height1} und ein Seitenverhältnis von {AspectRatio1}.", firstImage.Name, width1, height1, img1AspectRatio);
+            _logger.LogInformation("Bild {Filename} hat die Auflösung {Width2}x{Height2} und ein Seitenverhältnis von {AspectRatio2}.", secondImage.Name, width2, height2, img2AspectRatio);
 
-            if (img1IsPortrait && !img2IsPortrait)
-            {
-                return new DetectPortraitAndLandscapeImagesResponse(firstImage, secondImage);
-            }
-            else if (!img1IsPortrait && img2IsPortrait)
+            if (img1AspectRatio > img2AspectRatio)
             {
                 return new DetectPortraitAndLandscapeImagesResponse(secondImage, firstImage);
             }
             else
             {
-                // Beide Bilder haben das gleiche Format, jetzt nach Seitenverhältnis entscheiden
-                var img1AspectRatio = (double)img1.Width / img1.Height;
-                var img2AspectRatio = (double)img2.Width / img2.Height;
-
-                if (img1AspectRatio > img2AspectRatio)
-                {
-                    return new DetectPortraitAndLandscapeImagesResponse(secondImage, firstImage);
-                }
-                else
-                {
-                    return new DetectPortraitAndLandscapeImagesResponse(firstImage, secondImage);
-                }
+                return new DetectPortraitAndLandscapeImagesResponse(firstImage, secondImage);
             }
-        }
-        catch (Exception ex)
-        {
-            return Result.Failure<DetectPortraitAndLandscapeImagesResponse>($"Fehler beim Laden der Bilder: {ex.Message}");
         }
     }
 }
