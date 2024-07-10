@@ -42,11 +42,11 @@ public class PortraitAndLandscapeService
             }
             if (mediaSet.IsMultipleImageFiles)
             {
-                var (image1, image2) = mediaSet.GetTwoLatestImages();
-                var detectResult = await DetectPortraitAndLandscapeImagesAsync(image1.FileInfo, image2.FileInfo);
+                var images = mediaSet.GetImagesOrderedByLastWriteTime();
+                var detectResult = await DetectPortraitAndLandscapeImagesAsync(images.ElementAt(0).FileInfo, images.ElementAt(1).FileInfo);
                 if (detectResult.IsFailure)
                 {
-                    return Result.Failure($"Fehler beim Ermitteln des Bildformats: {detectResult.Error});
+                    return Result.Failure($"Fehler beim Ermitteln des Bildformats: {detectResult.Error}");
                 }
             }
         }

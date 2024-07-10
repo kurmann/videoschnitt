@@ -27,12 +27,11 @@ public record MediaSet
     public bool IsMultipleImageFiles => ImageFiles.HasValue && ImageFiles.Value.Count > 1;
 
     /// <summary>
-    /// Gibt die zwei Bilder zurück mit dem jüngsten Änderungsdatum.
+    /// Gibt die Bilder sortiert nach dem letzten Änderungsdatum zurück.
     /// </summary>
-    public (SupportedImage image1, SupportedImage image2) GetTwoLatestImages()
+    public List<SupportedImage> GetImagesOrderedByLastWriteTime()
     {
-        var images = ImageFiles.Value.OrderByDescending(x => x.FileInfo.LastWriteTime).Take(2).ToList();
-        return (images[0], images[1]);
+        return ImageFiles.Value.OrderByDescending(x => x.FileInfo.LastWriteTime).ToList();
     }
 
     /// <summary>
@@ -47,7 +46,7 @@ public record MediaSet
         {
             throw new InvalidOperationException("No image file found in the media set.");
         }
-        if (IsMoreThanTwoImageFiles)
+        if (IsMultipleImageFiles)
         {
             throw new InvalidOperationException("More than two image files found in the media set.");
         }
