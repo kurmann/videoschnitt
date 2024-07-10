@@ -47,4 +47,14 @@ public class MediaSetSettings
     /// </summary>
     /// <value></value>
     public List<string> SupportedVideoExtensions { get; set; } = new List<string> { ".mp4", ".mov", ".m4v" };
+
+    /// <summary>
+    /// Das Suffix, das an den Dateinamen von Portrait-Bildern angehängt wird.
+    /// </summary>
+    public const string PortraitImageSuffix = "-Portrait";
+
+    /// <summary>
+    /// Das Suffix, das an den Dateinamen von Landscape-Bildern angehängt wird.
+    /// </summary>
+    public const string LandscapeImageSuffix = "-Landscape";
 }
