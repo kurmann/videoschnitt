@@ -64,8 +64,8 @@ public class PortraitAndLandscapeService
             // Benne Dateien um
             try
             {
-                File.Move(mediaSet.SingleImage.FileInfo.FullName, newFilePath);
-                File.Move(mediaSet.SingleImage.FileInfoAdobeRgb.Value.FullName, newFilePathAdobeRgb);
+                File.Move(mediaSet.SingleImage.FileInfo.FullName, newFilePath, true);
+                File.Move(mediaSet.SingleImage.FileInfoAdobeRgb.Value.FullName, newFilePathAdobeRgb, true);
                 
                 // Aktualisiere Dateinamen im Medienset
                 mediaSet.SingleImage.UpdateFilePath(newFilePath);
