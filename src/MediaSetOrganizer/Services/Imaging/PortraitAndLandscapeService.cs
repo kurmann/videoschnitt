@@ -47,6 +47,11 @@ public class PortraitAndLandscapeService
                 _mediaSetOrganizerSettings.MediaSet.OrientationSuffixes.Landscape;
 
             var newFileName = $"{mediaSet.Title}{orientationSuffix}{mediaSet.SingleImage.FileInfo.Extension}";
+            if (mediaSet.SingleImage.FileInfoAdobeRgb.HasNoValue)
+            {
+                return Result.Failure($"Fehler beim Ermitteln des Dateipfades der Adobe RGB-Bilddatei {mediaSet.SingleImage.FileInfo.Name}.");
+            }
+            var newFileNameAdobeRgb = $"{mediaSet.Title}{orientationSuffix}{mediaSet.SingleImage.FileInfoAdobeRgb.Value.Extension}";
 
             var directoryName = mediaSet.SingleImage.FileInfo.DirectoryName;
             if (directoryName == null)
@@ -54,12 +59,21 @@ public class PortraitAndLandscapeService
                 return Result.Failure($"Fehler beim Ermitteln des Verzeichnisses der Bilddatei {mediaSet.SingleImage.FileInfo.Name}.");
             }
             var newFilePath = Path.Combine(directoryName, newFileName);
+            var newFilePathAdobeRgb = Path.Combine(directoryName, newFileNameAdobeRgb);
 
-            // Aktualisiere Dateiname im Medienset
-            var updateImagePathResult = mediaSet.UpdateSingleImagePath(newFilePath);
-            if (updateImagePathResult.IsFailure)
+            // Benne Dateien um
+            try
             {
-                return Result.Failure($"Fehler beim Aktualisieren des Dateipfads der Bilddatei {mediaSet.SingleImage.FileInfo.Name}: {updateImagePathResult.Error}");
+                File.Move(mediaSet.SingleImage.FileInfo.FullName, newFilePath);
+                File.Move(mediaSet.SingleImage.FileInfoAdobeRgb.Value.FullName, newFilePathAdobeRgb);
+                
+                // Aktualisiere Dateinamen im Medienset
+                mediaSet.SingleImage.UpdateFilePath(newFilePath);
+                mediaSet.SingleImage.UpdateFilePathAdobeRgb(newFilePathAdobeRgb);
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure($"Fehler beim Umbenennen der Bilddatei {mediaSet.SingleImage.FileInfo.Name}: {ex.Message}");
             }
         }
         if (mediaSet.IsMultipleImageFiles)

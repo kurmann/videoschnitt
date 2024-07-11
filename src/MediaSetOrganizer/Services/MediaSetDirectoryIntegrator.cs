@@ -146,18 +146,31 @@ public class MediaSetDirectoryIntegrator
 
             foreach (var imageFile in mediaSet.ImageFiles.Value)
             {
-/*                 var updateImagePathResult = await _portraitAndLandscapeService.UpdateFilePathByAspectRatioAsync(mediaSet);
+                var updateImagePathResult = await _portraitAndLandscapeService.UpdateFilePathByAspectRatioAsync(mediaSet);
                 if (updateImagePathResult.IsFailure)
                 {
                     return Result.Failure<List<SupportedImage>>($"Fehler beim Aktualisieren des Dateipfads des Bildes: {updateImagePathResult.Error}");
-                }  */
+                } 
 
+                // Verschiebe die Original-Bilddatei
                 var imageFileTargetPath = Path.Combine(imageFilesSubDirectory.FullName, imageFile.FileInfo.Name);
                 _logger.LogInformation("Verschiebe Bild-Datei: {imageFileTargetPath}", imageFileTargetPath);
                 var imageFileMoveResult = await _fileOperations.MoveFileAsync(imageFile.FileInfo.FullName, imageFileTargetPath, true);
                 if (imageFileMoveResult.IsFailure)
                 {
                     return Result.Failure<List<SupportedImage>>($"Fehler beim Verschieben der Bild-Datei: {imageFileMoveResult.Error}");
+                }
+
+                // Verschiebe die Adobe RGB-Bilddatei
+                if (imageFile.FileInfoAdobeRgb.HasValue)
+                {
+                    var imageFileAdobeRgbTargetPath = Path.Combine(imageFilesSubDirectory.FullName, imageFile.FileInfoAdobeRgb.Value.Name);
+                    _logger.LogInformation("Verschiebe Adobe RGB-Bild-Datei: {imageFileAdobeRgbTargetPath}", imageFileAdobeRgbTargetPath);
+                    var imageFileAdobeRgbMoveResult = await _fileOperations.MoveFileAsync(imageFile.FileInfoAdobeRgb.Value.FullName, imageFileAdobeRgbTargetPath, true);
+                    if (imageFileAdobeRgbMoveResult.IsFailure)
+                    {
+                        return Result.Failure<List<SupportedImage>>($"Fehler beim Verschieben der Adobe RGB-Bild-Datei: {imageFileAdobeRgbMoveResult.Error}");
+                    }
                 }
 
                 // Aktualisiere den Dateipfad des Bildes

@@ -32,12 +32,6 @@ public record MediaSet
     public SupportedImage SingleImage => ImageFiles.Value.Single();
 
     /// <summary>
-    /// Aktualisiert den Dateipfad des ersten Bildes.
-    /// </summary>
-    /// <param name="path"></param>
-    public Result UpdateSingleImagePath(string path) => ImageFiles.Value.Single().WithNewFilePath(path);
-
-    /// <summary>
     /// Gibt die Bilder sortiert nach dem letzten Änderungsdatum zurück.
     /// </summary>
     public List<SupportedImage> GetImagesOrderedByLastWriteTime()

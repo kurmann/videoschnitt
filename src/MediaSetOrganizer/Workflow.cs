@@ -5,7 +5,6 @@ using Kurmann.Videoschnitt.Common.Models;
 using Kurmann.Videoschnitt.ConfigurationModule.Services;
 using Kurmann.Videoschnitt.ConfigurationModule.Settings;
 using Kurmann.Videoschnitt.MediaSetOrganizer.Services.Imaging;
-using Kurmann.Videoschnitt.InfuseMediaLibrary.Imaging.Services;
 
 namespace Kurmann.Videoschnitt.MediaSetOrganizer;
 
@@ -22,12 +21,11 @@ public class Workflow
     private readonly MediaSetDirectoryIntegrator _mediaSetDirectoryIntegrator;
     private readonly FinalCutDirectoryIntegrator _finalCutDirectoryIntegrator;
     private readonly ImageProcessorService _imageProcessorService;
-    private readonly PortraitAndLandscapeService _portraitAndLandscapeService;
 
     public Workflow(ILogger<Workflow> logger, IConfigurationService configurationService, MediaSetService mediaSetService,
         MediaPurposeOrganizer mediaPurposeOrganizer, InputDirectoryReaderService inputDirectoryReaderService,
         MediaSetDirectoryIntegrator mediaSetDirectoryIntegrator, FinalCutDirectoryIntegrator finalCutDirectoryIntegrator,
-        ImageProcessorService imageProcessorService, PortraitAndLandscapeService portraitAndLandscapeService)
+        ImageProcessorService imageProcessorService)
     {
         _logger = logger;
         _applicationSettings = configurationService.GetSettings<ApplicationSettings>();
@@ -37,7 +35,6 @@ public class Workflow
         _mediaSetDirectoryIntegrator = mediaSetDirectoryIntegrator;
         _finalCutDirectoryIntegrator = finalCutDirectoryIntegrator;
         _imageProcessorService = imageProcessorService;
-        _portraitAndLandscapeService = portraitAndLandscapeService;
     }
 
     public async Task<Result<List<MediaSet>>> ExecuteAsync()

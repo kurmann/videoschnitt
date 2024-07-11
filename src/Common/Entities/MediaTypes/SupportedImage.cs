@@ -88,4 +88,6 @@ public record SupportedImage : ISupportedMediaType
     public override string ToString() => FileInfo.Name;
 
     public void UpdateFilePath(string imageFileTargetPath) => FileInfo = new FileInfo(imageFileTargetPath);
+
+    public void UpdateFilePathAdobeRgb(string newFilePathAdobeRgb) => FileInfoAdobeRgb = Maybe<FileInfo>.From(new FileInfo(newFilePathAdobeRgb));
 }
