@@ -85,23 +85,23 @@ public class Workflow
         _logger.LogInformation("Medien erfolgreich nach ihrem Verwendungszweck organisiert.");
 
         _logger.LogInformation("Erstelle JPG-Bilder im Adobe RGB-Farbraum für die Mediensets.");
-        var mediaSetsWithConvertedImages = await _imageProcessorService.ConvertColorSpaceAndFormatAsync(mediaSets.Value);
-        if (mediaSetsWithConvertedImages.IsFailure)
+        var convertColorSpaceResult = await _imageProcessorService.ConvertColorSpaceAndFormatAsync(mediaSets.Value);
+        if (convertColorSpaceResult.IsFailure)
         {
-            return Result.Failure<List<MediaSet>>($"Fehler beim Konvertieren des Farbraums und Formats der Bilder: {mediaSetsWithConvertedImages.Error}");
+            return Result.Failure<List<MediaSet>>($"Fehler beim Konvertieren des Farbraums und Formats der Bilder: {convertColorSpaceResult.Error}");
         }
 
         _logger.LogInformation("Verschiebe die Medien in die lokalen Medienset-Verzeichnisse.");
-        var integratedMediaSets = await _mediaSetDirectoryIntegrator.IntegrateInLocalMediaSetDirectory(mediaSetsWithConvertedImages.Value);
-        if (integratedMediaSets.IsFailure)
+        var integrateInLocalMediaSetDirectoryResult = await _mediaSetDirectoryIntegrator.IntegrateInLocalMediaSetDirectory(mediaSets.Value);
+        if (integrateInLocalMediaSetDirectoryResult.IsFailure)
         {
-            return Result.Failure<List<MediaSet>>($"Fehler beim Integrieren der Mediensets in die lokalen Medienset-Verzeichnisse: {integratedMediaSets.Error}");
+            return Result.Failure<List<MediaSet>>($"Fehler beim Integrieren der Mediensets in die lokalen Medienset-Verzeichnisse: {integrateInLocalMediaSetDirectoryResult.Error}");
         }
 
         _logger.LogInformation("Medien erfolgreich in die lokalen Medienset-Verzeichnisse verschoben.");
 
         _logger.LogInformation("Steuereinheit für die Metadaten-Verarbeitung beendet.");
-        return Result.Success(integratedMediaSets.Value);
+        return Result.Success(mediaSets.Value);
     }
 
 }
