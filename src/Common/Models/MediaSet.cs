@@ -1,4 +1,3 @@
-using System.Reflection;
 using CSharpFunctionalExtensions;
 using Kurmann.Videoschnitt.Common.Entities.MediaTypes;
 
@@ -27,30 +26,23 @@ public record MediaSet
     public bool IsMultipleImageFiles => ImageFiles.HasValue && ImageFiles.Value.Count > 1;
 
     /// <summary>
+    /// Gibt das erste Bild zurück.
+    /// </summary>
+    /// <returns></returns>
+    public SupportedImage SingleImage => ImageFiles.Value.Single();
+
+    /// <summary>
+    /// Aktualisiert den Dateipfad des ersten Bildes.
+    /// </summary>
+    /// <param name="path"></param>
+    public Result UpdateSingleImagePath(string path) => ImageFiles.Value.Single().WithNewFilePath(path);
+
+    /// <summary>
     /// Gibt die Bilder sortiert nach dem letzten Änderungsdatum zurück.
     /// </summary>
     public List<SupportedImage> GetImagesOrderedByLastWriteTime()
     {
         return ImageFiles.Value.OrderByDescending(x => x.FileInfo.LastWriteTime).ToList();
-    }
-
-    /// <summary>
-    /// Returns single image from the list of images.
-    /// Throws an exception if there are more than one image in the list or no image at all.
-    /// </summary>
-    /// <returns></returns>
-    /// <exception cref="InvalidOperationException"></exception>
-    public SupportedImage GetSingleImage()
-    {
-        if (IsNoImageFile)
-        {
-            throw new InvalidOperationException("No image file found in the media set.");
-        }
-        if (IsMultipleImageFiles)
-        {
-            throw new InvalidOperationException("More than two image files found in the media set.");
-        }
-        return ImageFiles.Value.Single();
     }
 }
 

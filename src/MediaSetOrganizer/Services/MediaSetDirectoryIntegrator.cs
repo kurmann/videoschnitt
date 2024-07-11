@@ -3,6 +3,7 @@ using Kurmann.Videoschnitt.Common.Entities.MediaTypes;
 using Kurmann.Videoschnitt.Common.Models;
 using Kurmann.Videoschnitt.Common.Services.FileSystem;
 using Kurmann.Videoschnitt.ConfigurationModule.Settings;
+using Kurmann.Videoschnitt.InfuseMediaLibrary.Imaging.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -17,16 +18,19 @@ public class MediaSetDirectoryIntegrator
     public readonly MediaSetOrganizerSettings _mediaSetOrganizerSettings;
     private readonly ILogger<MediaSetDirectoryIntegrator> _logger;
     private readonly IFileOperations _fileOperations;
+    private readonly PortraitAndLandscapeService _portraitAndLandscapeService;
 
     public MediaSetDirectoryIntegrator(IOptions<ApplicationSettings> applicationSettings,
                                        IOptions<MediaSetOrganizerSettings> mediaSetOrganizerSettings,
                                        ILogger<MediaSetDirectoryIntegrator> logger,
-                                       IFileOperations fileOperations)
+                                       IFileOperations fileOperations,
+                                       PortraitAndLandscapeService portraitAndLandscapeService)
     {
         _applicationSettings = applicationSettings.Value;
         _mediaSetOrganizerSettings = mediaSetOrganizerSettings.Value;
         _logger = logger;
         _fileOperations = fileOperations;
+        _portraitAndLandscapeService = portraitAndLandscapeService;
     }
 
     public async Task<Result<List<MediaSet>>> IntegrateInLocalMediaSetDirectory(IEnumerable<MediaSet> mediaSets)
@@ -165,6 +169,12 @@ public class MediaSetDirectoryIntegrator
             var integratedImages = new List<SupportedImage>();
             foreach (var imageFile in mediaSet.ImageFiles.Value)
             {
+/*                 var updateImagePathResult = await _portraitAndLandscapeService.UpdateFilePathByAspectRatioAsync(mediaSet);
+                if (updateImagePathResult.IsFailure)
+                {
+                    return Result.Failure<List<SupportedImage>>($"Fehler beim Aktualisieren des Dateipfads des Bildes: {updateImagePathResult.Error}");
+                }  */
+
                 var imageFileTargetPath = Path.Combine(imageFilesSubDirectory.FullName, imageFile.FileInfo.Name);
                 _logger.LogInformation("Verschiebe Bild-Datei: {imageFileTargetPath}", imageFileTargetPath);
                 var imageFileMoveResult = await _fileOperations.MoveFileAsync(imageFile.FileInfo.FullName, imageFileTargetPath, true);

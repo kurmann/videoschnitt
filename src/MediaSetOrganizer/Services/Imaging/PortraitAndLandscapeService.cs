@@ -1,5 +1,4 @@
 using CSharpFunctionalExtensions;
-using Kurmann.Videoschnitt.Common.Entities.MediaTypes;
 using Kurmann.Videoschnitt.Common.Models;
 using Kurmann.Videoschnitt.Common.Services.Metadata;
 using Kurmann.Videoschnitt.ConfigurationModule.Settings;
@@ -25,68 +24,51 @@ public class PortraitAndLandscapeService
     }
 
     /// <summary>
-    /// Benennt alle Bilder pro Medienset um auf Basis des Seitenverhältnisses. Aktualisiert im Medienset die Dateinamen der Bilder.
+    /// Aktualisiert den oder die Dateipfade eines Mediensets auf Basis des Seitenverhältnisses der Bilder.
     /// </summary>
     /// <param name="mediaSet"></param>
-    public async Task<Result> RenameImagesByAspectRatioAsync(IEnumerable<MediaSet> mediaSets)
+    public async Task<Result> UpdateFilePathByAspectRatioAsync(MediaSet mediaSet)
     {
-        // Iteriere durch alle Mediensets
-        foreach (var mediaSet in mediaSets)
+        if (mediaSet.IsNoImageFile)
         {
-            if (mediaSet.IsNoImageFile)
+            return Result.Success();
+        }
+        if (mediaSet.IsSingleImageFile)
+        {
+            var detectResult = await DetectPortraitAndLandscapeImagesAsync(mediaSet.SingleImage.FileInfo);
+            if (detectResult.IsFailure)
             {
-                continue;
+                return Result.Failure($"Fehler beim Ermitteln des Bildformats: {detectResult.Error}");
             }
-            if (mediaSet.IsSingleImageFile)
+
+            // Ermittle neuer Dateiname auf Basis des Seitenverhältnisses mit Schema <MediaSet-Title><Suffix><Dateiendung>
+            var orientationSuffix = detectResult.Value.PortraitImage != null ?
+                _mediaSetOrganizerSettings.MediaSet.OrientationSuffixes.Portrait :
+                _mediaSetOrganizerSettings.MediaSet.OrientationSuffixes.Landscape;
+
+            var newFileName = $"{mediaSet.Title}{orientationSuffix}{mediaSet.SingleImage.FileInfo.Extension}";
+
+            var directoryName = mediaSet.SingleImage.FileInfo.DirectoryName;
+            if (directoryName == null)
             {
-                var detectResult = await DetectPortraitAndLandscapeImagesAsync(mediaSet.GetSingleImage().FileInfo);
-                if (detectResult.IsFailure)
-                {
-                    return Result.Failure($"Fehler beim Ermitteln des Bildformats: {detectResult.Error}");
-                }
-
-                // Ermittle neuer Dateiname auf Basis des Seitenverhältnisses mit Schema <MediaSet-Title><Suffix><Dateiendung>
-                var orientationSuffix = detectResult.Value.PortraitImage != null ? 
-                    _mediaSetOrganizerSettings.MediaSet.OrientationSuffixes.Portrait : 
-                    _mediaSetOrganizerSettings.MediaSet.OrientationSuffixes.Landscape;
-
-                var newFileName = $"{mediaSet.Title}{orientationSuffix}{mediaSet.GetSingleImage().FileInfo.Extension}";
-
-                var directoryName = mediaSet.GetSingleImage().FileInfo.DirectoryName;
-                if (directoryName == null)
-                {
-                    return Result.Failure($"Fehler beim Ermitteln des Verzeichnisses der Bilddatei {mediaSet.GetSingleImage().FileInfo.Name}.");
-                }
-                var newFilePath = Path.Combine(directoryName, newFileName);
-
-                // Benenne Datei um
-                try
-                {
-                    var supportedImage = mediaSet.GetSingleImage();
-                    File.Move(supportedImage.FileInfo.FullName, newFilePath);
-
-                    // Aktualisiere Dateiname im Medienset
-                    var updatedSupportedImage = SupportedImage.CreateWithUpdatedFilePath(mediaSet.GetSingleImage(), newFilePath);
-                    if (updatedSupportedImage.IsFailure)
-                    {
-                        return Result.Failure($"Fehler beim Aktualisieren des Dateipfads der Bilddatei {mediaSet.GetSingleImage().FileInfo.Name}: {updatedSupportedImage.Error}");
-                    }
-                    supportedImage = updatedSupportedImage.Value;
-                }
-                catch (Exception ex)
-                {
-                    return Result.Failure($"Fehler beim Umbenennen der Bilddatei {mediaSet.GetSingleImage().FileInfo.Name}: {ex.Message}");
-                }
-    
+                return Result.Failure($"Fehler beim Ermitteln des Verzeichnisses der Bilddatei {mediaSet.SingleImage.FileInfo.Name}.");
             }
-            if (mediaSet.IsMultipleImageFiles)
+            var newFilePath = Path.Combine(directoryName, newFileName);
+
+            // Aktualisiere Dateiname im Medienset
+            var updateImagePathResult = mediaSet.UpdateSingleImagePath(newFilePath);
+            if (updateImagePathResult.IsFailure)
             {
-                var images = mediaSet.GetImagesOrderedByLastWriteTime();
-                var detectResult = await DetectPortraitAndLandscapeImagesAsync(images.ElementAt(0).FileInfo, images.ElementAt(1).FileInfo);
-                if (detectResult.IsFailure)
-                {
-                    return Result.Failure($"Fehler beim Ermitteln des Bildformats: {detectResult.Error}");
-                }
+                return Result.Failure($"Fehler beim Aktualisieren des Dateipfads der Bilddatei {mediaSet.SingleImage.FileInfo.Name}: {updateImagePathResult.Error}");
+            }
+        }
+        if (mediaSet.IsMultipleImageFiles)
+        {
+            var images = mediaSet.GetImagesOrderedByLastWriteTime();
+            var detectResult = await DetectPortraitAndLandscapeImagesAsync(images.ElementAt(0).FileInfo, images.ElementAt(1).FileInfo);
+            if (detectResult.IsFailure)
+            {
+                return Result.Failure($"Fehler beim Ermitteln des Bildformats: {detectResult.Error}");
             }
         }
 

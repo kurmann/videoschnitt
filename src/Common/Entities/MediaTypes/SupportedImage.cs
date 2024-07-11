@@ -4,7 +4,7 @@ namespace Kurmann.Videoschnitt.Common.Entities.MediaTypes;
 
 public record SupportedImage : ISupportedMediaType
 {
-    public FileInfo FileInfo { get; }
+    public FileInfo FileInfo { get; private set; }
 
     public bool IsTiffOrPng => FileInfo.Extension.Equals(".tiff", StringComparison.InvariantCultureIgnoreCase) || 
         FileInfo.Extension.Equals(".tif", StringComparison.InvariantCultureIgnoreCase) ||
@@ -37,9 +37,18 @@ public record SupportedImage : ISupportedMediaType
         return Create(new FileInfo(newFilePath), supportedImage.IsAdobeRgbColorSpace);
     }
 
-    public Result<SupportedImage> WithNewFilePath(string newFilePath)
+    public Result WithNewFilePath(string newFilePath)
     {
-        return CreateWithUpdatedFilePath(this, newFilePath);
+        try
+        {
+            var fileInfo = new FileInfo(newFilePath);
+            FileInfo = fileInfo;
+            return Result.Success();
+        }
+        catch (Exception ex)
+        {
+            return Result.Failure<SupportedImage>($"Error updating file path for {FileInfo.FullName}: {ex.Message}");
+        }
     }
 
     public static Result<SupportedImage> Create(string directory, string fileName)

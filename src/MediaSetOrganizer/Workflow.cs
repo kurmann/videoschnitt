@@ -84,13 +84,6 @@ public class Workflow
         _logger.LogInformation("Anzahl Mediensets: {Count}", mediaSets.Value.Count);
         _logger.LogInformation("Medien erfolgreich nach ihrem Verwendungszweck organisiert.");
 
-        _logger.LogInformation("Benenne die Bilder pro Medienset anhand ihres Seitenverhältnisses um.");
-        var portraitAndLandscapeServiceResult = await _portraitAndLandscapeService.RenameImagesByAspectRatioAsync(mediaSets.Value);
-        if (portraitAndLandscapeServiceResult.IsFailure)
-        {
-            return Result.Failure<List<MediaSet>>($"Fehler beim Umbenennen der Bilder pro Medienset anhand ihres Seitenverhältnisses: {portraitAndLandscapeServiceResult.Error}");
-        }
-
         _logger.LogInformation("Erstelle JPG-Bilder im Adobe RGB-Farbraum für die Mediensets.");
         var mediaSetsWithConvertedImages = await _imageProcessorService.ConvertColorSpaceAndFormatAsync(mediaSets.Value);
         if (mediaSetsWithConvertedImages.IsFailure)
@@ -104,6 +97,7 @@ public class Workflow
         {
             return Result.Failure<List<MediaSet>>($"Fehler beim Integrieren der Mediensets in die lokalen Medienset-Verzeichnisse: {integratedMediaSets.Error}");
         }
+
         _logger.LogInformation("Medien erfolgreich in die lokalen Medienset-Verzeichnisse verschoben.");
 
         _logger.LogInformation("Steuereinheit für die Metadaten-Verarbeitung beendet.");
