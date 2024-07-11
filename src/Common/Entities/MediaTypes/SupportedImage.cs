@@ -4,7 +4,17 @@ namespace Kurmann.Videoschnitt.Common.Entities.MediaTypes;
 
 public record SupportedImage : ISupportedMediaType
 {
+    /// <summary>
+    /// Entspricht dem Dateipfad der Bilddatei.
+    /// </summary>
+    /// <value></value>
     public FileInfo FileInfo { get; private set; }
+
+    /// <summary>
+    /// Entspricht dem Dateipfad der gleichen Bilddatei konvertiert in den Adobe RGB-Farbraum (falls vorhanden).
+    /// </summary>
+    /// <value></value>
+    public Maybe<FileInfo> FileInfoAdobeRgb { get; set; }
 
     public bool IsTiffOrPng => FileInfo.Extension.Equals(".tiff", StringComparison.InvariantCultureIgnoreCase) || 
         FileInfo.Extension.Equals(".tif", StringComparison.InvariantCultureIgnoreCase) ||
