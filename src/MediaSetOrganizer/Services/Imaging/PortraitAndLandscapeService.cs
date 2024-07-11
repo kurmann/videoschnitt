@@ -1,7 +1,10 @@
 using CSharpFunctionalExtensions;
+using Kurmann.Videoschnitt.Common.Entities.MediaTypes;
 using Kurmann.Videoschnitt.Common.Models;
 using Kurmann.Videoschnitt.Common.Services.Metadata;
+using Kurmann.Videoschnitt.ConfigurationModule.Settings;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Kurmann.Videoschnitt.InfuseMediaLibrary.Imaging.Services;
 
@@ -12,11 +15,13 @@ public class PortraitAndLandscapeService
 {
     private readonly SipsMetadataService _sipMetadataService;
     private readonly ILogger<PortraitAndLandscapeService> _logger;
+    private readonly MediaSetOrganizerSettings _mediaSetOrganizerSettings;
 
-    public PortraitAndLandscapeService(SipsMetadataService sipMetadataService, ILogger<PortraitAndLandscapeService> logger)
+    public PortraitAndLandscapeService(SipsMetadataService sipMetadataService, ILogger<PortraitAndLandscapeService> logger, IOptions<MediaSetOrganizerSettings> mediaSetOrganizerSettings)
     {
         _sipMetadataService = sipMetadataService;
         _logger = logger;
+        _mediaSetOrganizerSettings = mediaSetOrganizerSettings.Value;
     }
 
     /// <summary>
@@ -40,7 +45,39 @@ public class PortraitAndLandscapeService
                     return Result.Failure($"Fehler beim Ermitteln des Bildformats: {detectResult.Error}");
                 }
 
-                // Benenne das Bild wie folgt um: {Medienset-Titel}{PortraitSuffix}.ext
+                // Ermittle neuer Dateiname auf Basis des Seitenverhältnisses mit Schema <MediaSet-Title><Suffix><Dateiendung>
+                var orientationSuffix = detectResult.Value.PortraitImage != null ? 
+                    _mediaSetOrganizerSettings.MediaSet.OrientationSuffixes.Portrait : 
+                    _mediaSetOrganizerSettings.MediaSet.OrientationSuffixes.Landscape;
+
+                var newFileName = $"{mediaSet.Title}{orientationSuffix}{mediaSet.GetSingleImage().FileInfo.Extension}";
+
+                var directoryName = mediaSet.GetSingleImage().FileInfo.DirectoryName;
+                if (directoryName == null)
+                {
+                    return Result.Failure($"Fehler beim Ermitteln des Verzeichnisses der Bilddatei {mediaSet.GetSingleImage().FileInfo.Name}.");
+                }
+                var newFilePath = Path.Combine(directoryName, newFileName);
+
+                // Benenne Datei um
+                try
+                {
+                    var supportedImage = mediaSet.GetSingleImage();
+                    File.Move(supportedImage.FileInfo.FullName, newFilePath);
+
+                    // Aktualisiere Dateiname im Medienset
+                    var updatedSupportedImage = SupportedImage.CreateWithUpdatedFilePath(mediaSet.GetSingleImage(), newFilePath);
+                    if (updatedSupportedImage.IsFailure)
+                    {
+                        return Result.Failure($"Fehler beim Aktualisieren des Dateipfads der Bilddatei {mediaSet.GetSingleImage().FileInfo.Name}: {updatedSupportedImage.Error}");
+                    }
+                    supportedImage = updatedSupportedImage.Value;
+                }
+                catch (Exception ex)
+                {
+                    return Result.Failure($"Fehler beim Umbenennen der Bilddatei {mediaSet.GetSingleImage().FileInfo.Name}: {ex.Message}");
+                }
+    
             }
             if (mediaSet.IsMultipleImageFiles)
             {

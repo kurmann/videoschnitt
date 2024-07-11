@@ -86,6 +86,10 @@ public class Workflow
 
         _logger.LogInformation("Benenne die Bilder pro Medienset anhand ihres Seitenverhältnisses um.");
         var portraitAndLandscapeServiceResult = await _portraitAndLandscapeService.RenameImagesByAspectRatioAsync(mediaSets.Value);
+        if (portraitAndLandscapeServiceResult.IsFailure)
+        {
+            return Result.Failure<List<MediaSet>>($"Fehler beim Umbenennen der Bilder pro Medienset anhand ihres Seitenverhältnisses: {portraitAndLandscapeServiceResult.Error}");
+        }
 
         _logger.LogInformation("Erstelle JPG-Bilder im Adobe RGB-Farbraum für die Mediensets.");
         var mediaSetsWithConvertedImages = await _imageProcessorService.ConvertColorSpaceAndFormatAsync(mediaSets.Value);

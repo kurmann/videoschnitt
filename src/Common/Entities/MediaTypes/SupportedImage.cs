@@ -37,6 +37,11 @@ public record SupportedImage : ISupportedMediaType
         return Create(new FileInfo(newFilePath), supportedImage.IsAdobeRgbColorSpace);
     }
 
+    public Result<SupportedImage> WithNewFilePath(string newFilePath)
+    {
+        return CreateWithUpdatedFilePath(this, newFilePath);
+    }
+
     public static Result<SupportedImage> Create(string directory, string fileName)
     {
         try
