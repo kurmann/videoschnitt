@@ -47,4 +47,11 @@ public class MediaSetSettings
     /// </summary>
     /// <value></value>
     public List<string> SupportedVideoExtensions { get; set; } = new List<string> { ".mp4", ".mov", ".m4v" };
+
+    /// <summary>
+    /// Definition der Suffixe für Portrait- und Landscape-Bilder.
+    /// </summary>
+    public OrientationSuffixDefinition OrientationSuffixes { get; set; } = new OrientationSuffixDefinition();
 }
+
+public record OrientationSuffixDefinition(string Portrait = "-Portrait", string Landscape = "-Landscape");

@@ -3,6 +3,7 @@ using Kurmann.Videoschnitt.Common.Entities.MediaTypes;
 using Kurmann.Videoschnitt.Common.Models;
 using Kurmann.Videoschnitt.Common.Services.FileSystem;
 using Kurmann.Videoschnitt.ConfigurationModule.Settings;
+using Kurmann.Videoschnitt.MediaSetOrganizer.Services.Integration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -17,19 +18,22 @@ public class MediaSetDirectoryIntegrator
     public readonly MediaSetOrganizerSettings _mediaSetOrganizerSettings;
     private readonly ILogger<MediaSetDirectoryIntegrator> _logger;
     private readonly IFileOperations _fileOperations;
+    private readonly SupportedImagesIntegrator _supportedImagesIntegrator;
 
     public MediaSetDirectoryIntegrator(IOptions<ApplicationSettings> applicationSettings,
                                        IOptions<MediaSetOrganizerSettings> mediaSetOrganizerSettings,
                                        ILogger<MediaSetDirectoryIntegrator> logger,
-                                       IFileOperations fileOperations)
+                                       IFileOperations fileOperations,
+                                       SupportedImagesIntegrator supportedImagesIntegrator)
     {
         _applicationSettings = applicationSettings.Value;
         _mediaSetOrganizerSettings = mediaSetOrganizerSettings.Value;
         _logger = logger;
         _fileOperations = fileOperations;
+        _supportedImagesIntegrator = supportedImagesIntegrator;
     }
 
-    public async Task<Result<List<MediaSet>>> IntegrateInLocalMediaSetDirectory(IEnumerable<MediaSet> mediaSets)
+    public async Task<Result> IntegrateInLocalMediaSetDirectory(IEnumerable<MediaSet> mediaSets)
     {
         _logger.LogInformation("Integriere Mediensets in lokales Medienset-Verzeichnis.");
         _logger.LogInformation("Berücksichtige den Einsatzzweck der Medien indem diese in ein vordefiniertes Unterverzeichnis verschoben werden.");
@@ -38,7 +42,6 @@ public class MediaSetDirectoryIntegrator
         _logger.LogInformation("Unterverzeichnis für Titelbilder: {imageFilesSubDirectoryName}", _mediaSetOrganizerSettings.MediaSet.ImageFilesSubDirectoryName);
         _logger.LogInformation("Unterverzeichnis für Masterdatei: {masterfileSubDirectoryName}", _mediaSetOrganizerSettings.MediaSet.MasterfileSubDirectoryName);
 
-        var integratedMediaSets = new List<MediaSet>();
         foreach (var mediaSet in mediaSets)
         {
             if (mediaSet.Title == null)
@@ -69,7 +72,7 @@ public class MediaSetDirectoryIntegrator
                 return Result.Failure<List<MediaSet>>($"Fehler beim Integrieren der Internet-Dateien: {integrateInternetFilesResult.Error}");
             }
 
-            var inteagrateImageFilesResult = await IntegrateImageFiles(mediaSet, mediaSetTargetDirectory);
+            var inteagrateImageFilesResult = await _supportedImagesIntegrator.IntegrateImageFiles(mediaSet, mediaSetTargetDirectory);
             if (inteagrateImageFilesResult.IsFailure)
             {
                 return Result.Failure<List<MediaSet>>($"Fehler beim Integrieren der Bild-Dateien: {inteagrateImageFilesResult.Error}");
@@ -80,29 +83,18 @@ public class MediaSetDirectoryIntegrator
             {
                 return Result.Failure<List<MediaSet>>($"Fehler beim Integrieren der Masterdatei: {integratedMasterfileResult.Error}");
             }
-
-            _logger.LogInformation("Medienset erfolgreich integriert: {mediaSetTitle}", mediaSet.Title);
-            var integratedMediaSet = new MediaSet
-            {
-                Title = mediaSet.Title,
-                LocalMediaServerVideoFile = integrateMediaServerFilesResult.Value,
-                InternetStreamingVideoFiles = integrateInternetFilesResult.Value,
-                ImageFiles = inteagrateImageFilesResult.Value,
-                Masterfile = integratedMasterfileResult.Value
-            };
-            integratedMediaSets.Add(integratedMediaSet);
         }
 
-        return Result.Success(integratedMediaSets);
+        return Result.Success();
     }
 
-    private async Task<Result<Maybe<Masterfile>>> IntegrateMasterfile(MediaSet mediaSet, DirectoryInfo mediaSetTargetDirectory)
+    private async Task<Result> IntegrateMasterfile(MediaSet mediaSet, DirectoryInfo mediaSetTargetDirectory)
     {
         _logger.LogInformation("Verschiebe Masterdatei in das Medienset-Verzeichnis: {mediaSetDirectory}", mediaSetTargetDirectory.FullName);
         if (mediaSet.Masterfile.HasNoValue)
         {
             _logger.LogInformation("Keine Masterdatei für den Medienserver vorhanden.");
-            return Maybe<Masterfile>.None;
+            return Result.Success(Maybe<Masterfile>.None);
         }
         else
         {
@@ -125,69 +117,13 @@ public class MediaSetDirectoryIntegrator
                 return Result.Failure<Maybe<Masterfile>>($"Fehler beim Verschieben der Masterdatei: {masterfileMoveResult.Error}");
             }
 
-            // Füge die Masterdatei mit dem neuen Pfad zur Liste der integrierten Masterdateien hinzu
-            try
-            {
-                var newMasterFilePath = Path.Combine(masterfileSubDirectory.FullName, mediaSet.Masterfile.Value.FileInfo.Name);
-                var newMasterFileInfo = new FileInfo(newMasterFilePath);
-
-                var integratedMasterfile = new Masterfile(newMasterFileInfo, mediaSet.Masterfile.Value.Codec, mediaSet.Masterfile.Value.Profile);
-                return Maybe<Masterfile>.From(integratedMasterfile);
-            }
-            catch (Exception ex)
-            {
-                return Result.Failure<Maybe<Masterfile>>($"Fehler beim Erstellen des neuen Masterdatei-Objekts: {ex.Message}");
-            }
+            // Aktualisiere den Dateipfad der Masterdatei
+            mediaSet.Masterfile = mediaSet.Masterfile.Value with { FileInfo = new FileInfo(masterfileTargetPath) };
+            return Result.Success(Maybe<Masterfile>.From(mediaSet.Masterfile.Value));
         }
     }
 
-    private async Task<Result<List<SupportedImage>>> IntegrateImageFiles(MediaSet mediaSet, DirectoryInfo mediaSetTargetDirectory)
-    {
-        _logger.LogInformation("Verschiebe Bild-Dateien in das Medienset-Verzeichnis: {mediaSetDirectory}", mediaSetTargetDirectory.FullName);
-        if (mediaSet.ImageFiles.HasNoValue)
-        {
-            _logger.LogInformation("Keine Bild-Dateien für den Medienserver vorhanden.");
-            return Result.Success(new List<SupportedImage>());
-        }
-        else
-        {
-            var imageFilesSubDirectory = new DirectoryInfo(Path.Combine(mediaSetTargetDirectory.FullName, _mediaSetOrganizerSettings.MediaSet.ImageFilesSubDirectoryName));
-            if (!imageFilesSubDirectory.Exists)
-            {
-                _logger.LogInformation("Erstelle Unterverzeichnis für Bild-Dateien: {imageFilesSubDirectory}", imageFilesSubDirectory.FullName);
-                var imageFilesSubDirectoryCreateResult = await _fileOperations.CreateDirectoryAsync(imageFilesSubDirectory.FullName);
-                if (imageFilesSubDirectoryCreateResult.IsFailure)
-                {
-                    return Result.Failure<List<SupportedImage>>($"Fehler beim Erstellen des Unterverzeichnisses für Bild-Dateien: {imageFilesSubDirectoryCreateResult.Error}");
-                }
-            }
-
-            var integratedImages = new List<SupportedImage>();
-            foreach (var imageFile in mediaSet.ImageFiles.Value)
-            {
-                var imageFileTargetPath = Path.Combine(imageFilesSubDirectory.FullName, imageFile.FileInfo.Name);
-                _logger.LogInformation("Verschiebe Bild-Datei: {imageFileTargetPath}", imageFileTargetPath);
-                var imageFileMoveResult = await _fileOperations.MoveFileAsync(imageFile.FileInfo.FullName, imageFileTargetPath, true);
-                if (imageFileMoveResult.IsFailure)
-                {
-                    return Result.Failure<List<SupportedImage>>($"Fehler beim Verschieben der Bild-Datei: {imageFileMoveResult.Error}");
-                }
-
-                // Füge das Bild mit dem neuen Pfad zur Liste der integrierten Bilder hinzu
-                // var integratedImage = SupportedImage.Create(imageFilesSubDirectory.FullName, imageFile.FileInfo.Name);
-                var integratedImage = SupportedImage.CreateWithUpdatedFilePath(imageFile, imageFileTargetPath);
-                if (integratedImage.IsFailure)
-                {
-                    return Result.Failure<List<SupportedImage>>($"Fehler beim Erstellen des integrierten Bildes: {integratedImage.Error}");
-                }
-                integratedImages.Add(integratedImage.Value);
-            }
-
-            return integratedImages;
-        }
-    }
-
-    private async Task<Result<List<SupportedVideo>>> IntegrateInternetFiles(MediaSet mediaSet, DirectoryInfo mediaSetTargetDirectory)
+    private async Task<Result> IntegrateInternetFiles(MediaSet mediaSet, DirectoryInfo mediaSetTargetDirectory)
     {
         _logger.LogInformation("Verschiebe Internet-Dateien in das Medienset-Verzeichnis: {mediaSetDirectory}", mediaSetTargetDirectory.FullName);
         if (mediaSet.InternetStreamingVideoFiles.HasNoValue)
@@ -219,20 +155,15 @@ public class MediaSetDirectoryIntegrator
                     return Result.Failure<List<SupportedVideo>>($"Fehler beim Verschieben der Internet-Datei: {internetStreamingVideoFileMoveResult.Error}");
                 }
 
-                // Füge das Video mit dem neuen Pfad zur Liste der integrierten Videos hinzu
-                var integratedVideo = SupportedVideo.Create(internetFilesSubDirectory.FullName, internetStreamingVideoFile.FileInfo.Name);
-                if (integratedVideo.IsFailure)
-                {
-                    return Result.Failure<List<SupportedVideo>>($"Fehler beim Erstellen des integrierten Videos: {integratedVideo.Error}");
-                }
-                integratedInternetFiles.Add(integratedVideo.Value);
+                // Aktualisiere den Dateipfad des Videos
+                internetStreamingVideoFile.UpdateFilePath(internetStreamingVideoFileTargetPath);
             }
 
-            return integratedInternetFiles;
+            return Result.Success(integratedInternetFiles);
         }
     }
 
-    private async Task<Result<Maybe<SupportedVideo>>> IntegrateMediaServerFiles(MediaSet mediaSet, DirectoryInfo mediaSetTargetDirectory)
+    private async Task<Result> IntegrateMediaServerFiles(MediaSet mediaSet, DirectoryInfo mediaSetTargetDirectory)
     {
         _logger.LogInformation("Verschiebe Medien-Dateien in das Medienset-Verzeichnis: {mediaSetDirectory}", mediaSetTargetDirectory.FullName);
         if (mediaSet.LocalMediaServerVideoFile.HasNoValue)
@@ -267,14 +198,10 @@ public class MediaSetDirectoryIntegrator
             }
             _logger.LogInformation("Video-Datei für Medienserver erfolgreich verschoben.");
 
-            // Füge das Video mit dem neuen Pfad zur Liste der integrierten Videos hinzu
-            var integratedVideo = SupportedVideo.Create(mediaServerFilesSubDirectory.FullName, videoFileForMediaServer.FileInfo.Name);
-            if (integratedVideo.IsFailure)
-            {
-                return Result.Failure<Maybe<SupportedVideo>>($"Fehler beim Erstellen des integrierten Videos: {integratedVideo.Error}");
-            }
+            // Aktualisiere den Dateipfad des Videos
+            videoFileForMediaServer.UpdateFilePath(videoFileForMediaServerTargetPath);
 
-            return Maybe<SupportedVideo>.From(integratedVideo.Value);
+            return Result.Success(Maybe<SupportedVideo>.From(videoFileForMediaServer));
         }
     }
 }

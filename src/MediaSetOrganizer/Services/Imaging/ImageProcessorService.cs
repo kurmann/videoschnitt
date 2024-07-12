@@ -5,9 +5,8 @@ using Kurmann.Videoschnitt.ConfigurationModule.Services;
 using Kurmann.Videoschnitt.ConfigurationModule.Settings;
 using System.Diagnostics;
 using Kurmann.Videoschnitt.Common.Models;
-using Kurmann.Videoschnitt.Common.Entities.MediaTypes;
 
-namespace Kurmann.Videoschnitt.MediaSetOrganizer.Services;
+namespace Kurmann.Videoschnitt.MediaSetOrganizer.Services.Imaging;
 
 /// <summary>
 /// Verantwortlich für die Vorverarbeitung von Bildern
@@ -30,7 +29,9 @@ public class ImageProcessorService
     /// </summary>
     /// <param name="mediaSets"></param>
     /// <returns></returns>
-    public async Task<Result<List<MediaSet>>> ConvertColorSpaceAndFormatAsync(IEnumerable<MediaSet> mediaSets)
+    /// 
+    // todo: retourniere nur Result und passe das MediaSet direkt an (als Liste)
+    public async Task<Result> ConvertColorSpaceAndFormatAsync(IEnumerable<MediaSet> mediaSets)
     {
         foreach (var mediaSet in mediaSets)
         {
@@ -40,7 +41,6 @@ public class ImageProcessorService
                 continue;
             }
 
-            var processedImages = new List<SupportedImage>();
             foreach (var image in supportedImages.Value)
             {
                 var convertedImageResult = await ConvertColorSpaceAndFormatAsync(image.FileInfo);
@@ -52,50 +52,13 @@ public class ImageProcessorService
                 {
                     _logger.LogInformation("Erfolgreiches Konvertieren des Farbraums und Formats der Bilddatei {image.FullName}", image.FileInfo.FullName);
 
-                    // Wenn die konvertierte Datei nicht gleich der Originaldatei ist, füge sie zur Medienset hinzu
-                    if (!convertedImageResult.Value.IsConvertedImageEqualToOriginalImage)
-                    {
-                        var supportedImageFileResult = SupportedImage.Create(convertedImageResult.Value.ConvertedImage, true);
-                        if (supportedImageFileResult.IsFailure)
-                        {
-                            return Result.Failure<List<MediaSet>>($"Fehler beim Erstellen des SupportedImage-Objekts für die konvertierte Bilddatei {convertedImageResult.Value.ConvertedImage.FullName}: {supportedImageFileResult.Error}");
-                        }
-                        else
-                        {
-                            processedImages.Add(supportedImageFileResult.Value);
-                        }
-                    }
-                    else
-                    {
-                        // aktualisiere die Originaldatei mit der konvertierten Datei und setze das Flag für Adobe RGB auf true
-                        var supportedImageAdobeRgb = SupportedImage.Create(convertedImageResult.Value.ConvertedImage, true);
-                        if (supportedImageAdobeRgb.IsFailure)
-                        {
-                            return Result.Failure<List<MediaSet>>($"Fehler beim Erstellen des SupportedImage-Objekts für die konvertierte Bilddatei {convertedImageResult.Value.ConvertedImage.FullName}: {supportedImageAdobeRgb.Error}");
-                        }
-                        else
-                        {
-                            processedImages.Add(supportedImageAdobeRgb.Value);
-                        }
-                    }
+                    // Aktualisiere die Bilddatei im Medienset mit der konvertierten Bilddatei
+                    image.AddAdobeRgbFileInfo(convertedImageResult.Value.ConvertedImage);
                 }
-            }
-
-            // Erstetze die Bild-Dateien im Medienset mit den konvertierten Bildern
-            if (processedImages.Count > 0)
-            {
-                mediaSet.ImageFiles = processedImages;
-            }
-
-            // Füge die TIFF- oder PNG-Dateien, die nicht konvertiert werden konnten, zur Medienset hinzu damit sie nicht verloren gehen
-            var unprocessedImages = supportedImages.Value.Where(i => !processedImages.Any(p => p.FileInfo.FullName == i.FileInfo.FullName));
-            foreach (var unprocessedImage in unprocessedImages)
-            {
-                processedImages.Add(unprocessedImage);
             }
         }
 
-        return Result.Success(mediaSets.ToList());
+        return Result.Success();
     }
 
     /// <summary>
@@ -118,7 +81,7 @@ public class ImageProcessorService
         var isTiffOrPngSource = filePath.Extension.Equals(".tiff", StringComparison.OrdinalIgnoreCase) ||
             filePath.Extension.Equals(".tif", StringComparison.OrdinalIgnoreCase) ||
             filePath.Extension.Equals(".png", StringComparison.OrdinalIgnoreCase);
-    
+
 
         // Konvertiere TIFF oder PNG Dateien nach JPEG
         Maybe<FileInfo> convertedJpgImageFromTiffOrPng = Maybe<FileInfo>.None;

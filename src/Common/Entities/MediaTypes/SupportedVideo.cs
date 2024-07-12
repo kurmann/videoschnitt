@@ -8,7 +8,7 @@ namespace Kurmann.Videoschnitt.Common.Entities.MediaTypes;
 /// </summary>
 public class SupportedVideo
 {
-    public FileInfo FileInfo { get; }
+    public FileInfo FileInfo { get; private set; }
 
     private SupportedVideo(FileInfo fileInfo) => FileInfo = fileInfo;
 
@@ -65,4 +65,9 @@ public class SupportedVideo
     }
 
     public override string ToString() => FileInfo.Name;
+
+    public void UpdateFilePath(string videoFileForMediaServerTargetPath)
+    {
+        FileInfo = new FileInfo(videoFileForMediaServerTargetPath);
+    }
 }
