@@ -63,6 +63,9 @@ public class SupportedImagesIntegrator
                     return Result.Failure<List<SupportedImage>>($"Fehler beim Verschieben der Bild-Datei: {imageFileMoveResult.Error}");
                 }
 
+                // Aktualisiere den Dateipfad des Bildes
+                imageFile.UpdateFilePath(imageFileTargetPath);
+
                 // Verschiebe die Adobe RGB-Bilddatei
                 if (imageFile.FileInfoAdobeRgb.HasValue)
                 {
@@ -73,10 +76,11 @@ public class SupportedImagesIntegrator
                     {
                         return Result.Failure<List<SupportedImage>>($"Fehler beim Verschieben der Adobe RGB-Bild-Datei: {imageFileAdobeRgbMoveResult.Error}");
                     }
-                }
 
-                // Aktualisiere den Dateipfad des Bildes
-                imageFile.UpdateFilePath(imageFileTargetPath);
+                    // Aktualisiere den Dateipfad der Adobe RGB-Bilddatei
+                    imageFile.UpdateFilePathAdobeRgb(imageFileAdobeRgbTargetPath);
+                }      
+                
             }
 
             return Result.Success();
