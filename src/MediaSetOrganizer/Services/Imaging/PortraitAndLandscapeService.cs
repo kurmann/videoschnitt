@@ -135,6 +135,7 @@ public class PortraitAndLandscapeService
 
                 // Aktualisiere die Dateinamen im Medienset
                 portraitImage.UpdateFilePath(newFilePathForPortrait);
+                portraitImage.UpdateFilePathAdobeRgb(newFilePathForPortraitAdobeRgb);
             }
             catch (Exception ex)
             {
@@ -150,6 +151,7 @@ public class PortraitAndLandscapeService
 
                 // Aktualisiere die Dateinamen im Medienset
                 landscapeImage.UpdateFilePath(newFilePathForLandscape);
+                landscapeImage.UpdateFilePathAdobeRgb(newFilePathForLandscapeAdobeRgb);
             }
             catch (Exception ex)
             {
