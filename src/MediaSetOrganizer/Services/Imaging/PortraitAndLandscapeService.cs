@@ -95,14 +95,21 @@ public class PortraitAndLandscapeService
 
         async Task<Result> RenameOriginalImages(MediaSet mediaSet)
         {
+            // Falls mehr als zwei Dateien vorhanen sind, wird nur die erste und zweite Datei der zuletzt geschriebenen Dateien verwendet
             var images = mediaSet.GetImagesOrderedByLastWriteTime();
-            var detectResult = await DetectPortraitAndLandscapeImagesAsync(images.ElementAt(0).FileInfo, images.ElementAt(1).FileInfo);
+
+            if (images.ElementAt(0).FileInfoAdobeRgb.HasNoValue || images.ElementAt(1).FileInfoAdobeRgb.HasNoValue)
+            {
+                return Result.Failure("Fehler beim Ermitteln der Adobe RGB-Bilddateien.");
+            }
+
+            var detectResult = await DetectPortraitAndLandscapeImagesAsync(images.ElementAt(0).FileInfoAdobeRgb.Value, images.ElementAt(1).FileInfoAdobeRgb.Value);
             if (detectResult.IsFailure)
             {
                 return Result.Failure($"Fehler beim Ermitteln des Bildformats: {detectResult.Error}");
             }
 
-
+            // Lese aus, welche Datei im Portrait- und Landscape-Format vorliegt
             var fileToBeRenamedForPortrait = detectResult.Value.PortraitImage;
             var fileToBeRenamedForLandscape = detectResult.Value.LandscapeImage;
 
@@ -110,6 +117,7 @@ public class PortraitAndLandscapeService
             var newFileNameForPortrait = $"{mediaSet.Title}{_mediaSetOrganizerSettings.MediaSet.OrientationSuffixes.Portrait}{fileToBeRenamedForPortrait!.Extension}";
             var newFileNameForLandscape = $"{mediaSet.Title}{_mediaSetOrganizerSettings.MediaSet.OrientationSuffixes.Landscape}{fileToBeRenamedForLandscape!.Extension}";
 
+            // Ermittle neuen Dateipfad für beide Dateien
             var directoryName = fileToBeRenamedForPortrait.DirectoryName;
             if (directoryName == null)
             {
@@ -118,9 +126,9 @@ public class PortraitAndLandscapeService
             var newFilePathForPortrait = Path.Combine(directoryName, newFileNameForPortrait);
             var newFilePathForLandscape = Path.Combine(directoryName, newFileNameForLandscape);
 
-            // Benne Dateien um
             try
             {
+                // Benne Dateien um anhand des Seitenverhältnisses und überschreibe ggf. existierende Dateien
                 File.Move(fileToBeRenamedForPortrait.FullName, newFilePathForPortrait, true);
                 File.Move(fileToBeRenamedForLandscape.FullName, newFilePathForLandscape, true);
 
