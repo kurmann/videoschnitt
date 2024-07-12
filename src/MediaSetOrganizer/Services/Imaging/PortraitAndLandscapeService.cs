@@ -78,13 +78,13 @@ public class PortraitAndLandscapeService
         }
         if (mediaSet.IsMultipleImageFiles)
         {
-            var renameOriginalImagesResult = await RenameOriginalImages(mediaSet);
+            var renameOriginalImagesResult = await RenameImages(mediaSet, false);
             if (renameOriginalImagesResult.IsFailure)
             {
                 return Result.Failure($"Fehler beim Umbenennen der Original-Bilddateien: {renameOriginalImagesResult.Error}");
             }
 
-            var renamedAdobeRgbImagesResult = await RenameAdobeRgbImages(mediaSet);
+            var renamedAdobeRgbImagesResult = await RenameImages(mediaSet, true);
             if (renamedAdobeRgbImagesResult.IsFailure)
             {
                 return Result.Failure($"Fehler beim Umbenennen der Adobe RGB-Bilddateien: {renamedAdobeRgbImagesResult.Error}");
@@ -93,58 +93,7 @@ public class PortraitAndLandscapeService
 
         return Result.Success();
 
-        async Task<Result> RenameOriginalImages(MediaSet mediaSet)
-        {
-            // Falls mehr als zwei Dateien vorhanen sind, wird nur die erste und zweite Datei der zuletzt geschriebenen Dateien verwendet
-            var images = mediaSet.GetImagesOrderedByLastWriteTime();
-
-            if (images.ElementAt(0).FileInfoAdobeRgb.HasNoValue || images.ElementAt(1).FileInfoAdobeRgb.HasNoValue)
-            {
-                return Result.Failure("Fehler beim Ermitteln der Adobe RGB-Bilddateien.");
-            }
-
-            var detectResult = await DetectPortraitAndLandscapeImagesAsync(images.ElementAt(0).FileInfoAdobeRgb.Value, images.ElementAt(1).FileInfoAdobeRgb.Value);
-            if (detectResult.IsFailure)
-            {
-                return Result.Failure($"Fehler beim Ermitteln des Bildformats: {detectResult.Error}");
-            }
-
-            // Lese aus, welche Datei im Portrait- und Landscape-Format vorliegt
-            var fileToBeRenamedForPortrait = detectResult.Value.PortraitImage;
-            var fileToBeRenamedForLandscape = detectResult.Value.LandscapeImage;
-
-            // Ermittle neuer Dateiname auf Basis des Seitenverhältnisses mit Schema <MediaSet-Title><Suffix><Dateiendung>
-            var newFileNameForPortrait = $"{mediaSet.Title}{_mediaSetOrganizerSettings.MediaSet.OrientationSuffixes.Portrait}{fileToBeRenamedForPortrait!.Extension}";
-            var newFileNameForLandscape = $"{mediaSet.Title}{_mediaSetOrganizerSettings.MediaSet.OrientationSuffixes.Landscape}{fileToBeRenamedForLandscape!.Extension}";
-
-            // Ermittle neuen Dateipfad für beide Dateien
-            var directoryName = fileToBeRenamedForPortrait.DirectoryName;
-            if (directoryName == null)
-            {
-                return Result.Failure($"Fehler beim Ermitteln des Verzeichnisses der Bilddatei {fileToBeRenamedForPortrait.Name}.");
-            }
-            var newFilePathForPortrait = Path.Combine(directoryName, newFileNameForPortrait);
-            var newFilePathForLandscape = Path.Combine(directoryName, newFileNameForLandscape);
-
-            try
-            {
-                // Benne Dateien um anhand des Seitenverhältnisses und überschreibe ggf. existierende Dateien
-                File.Move(fileToBeRenamedForPortrait.FullName, newFilePathForPortrait, true);
-                File.Move(fileToBeRenamedForLandscape.FullName, newFilePathForLandscape, true);
-
-                // Aktualisiere Dateinamen im Medienset
-                images.ElementAt(0).UpdateFilePath(newFilePathForPortrait);
-                images.ElementAt(1).UpdateFilePath(newFilePathForLandscape);
-            }
-            catch (Exception ex)
-            {
-                return Result.Failure($"Fehler beim Umbenennen der Bilddatei {fileToBeRenamedForPortrait.Name}: {ex.Message}");
-            }
-
-            return Result.Success();
-        }
-
-        async Task<Result> RenameAdobeRgbImages(MediaSet mediaSet)
+        async Task<Result> RenameImages(MediaSet mediaSet, bool renameAdobeRgb)
         {
             var images = mediaSet.GetImagesOrderedByLastWriteTime();
 
@@ -162,7 +111,6 @@ public class PortraitAndLandscapeService
             var fileToBeRenamedForPortrait = detectResult.Value.PortraitImage;
             var fileToBeRenamedForLandscape = detectResult.Value.LandscapeImage;
 
-            // Ermittle neuer Dateiname auf Basis des Seitenverhältnisses mit Schema <MediaSet-Title><Suffix><Dateiendung>
             var newFileNameForPortrait = $"{mediaSet.Title}{_mediaSetOrganizerSettings.MediaSet.OrientationSuffixes.Portrait}{fileToBeRenamedForPortrait!.Extension}";
             var newFileNameForLandscape = $"{mediaSet.Title}{_mediaSetOrganizerSettings.MediaSet.OrientationSuffixes.Landscape}{fileToBeRenamedForLandscape!.Extension}";
 
@@ -174,15 +122,21 @@ public class PortraitAndLandscapeService
             var newFilePathForPortrait = Path.Combine(directoryName, newFileNameForPortrait);
             var newFilePathForLandscape = Path.Combine(directoryName, newFileNameForLandscape);
 
-            // Benne Dateien um
             try
             {
                 File.Move(fileToBeRenamedForPortrait.FullName, newFilePathForPortrait, true);
                 File.Move(fileToBeRenamedForLandscape.FullName, newFilePathForLandscape, true);
 
-                // Aktualisiere Dateinamen im Medienset
-                images.ElementAt(0).UpdateFilePathAdobeRgb(newFilePathForPortrait);
-                images.ElementAt(1).UpdateFilePathAdobeRgb(newFilePathForLandscape);
+                if (renameAdobeRgb)
+                {
+                    images.ElementAt(0).UpdateFilePathAdobeRgb(newFilePathForPortrait);
+                    images.ElementAt(1).UpdateFilePathAdobeRgb(newFilePathForLandscape);
+                }
+                else
+                {
+                    images.ElementAt(0).UpdateFilePath(newFilePathForPortrait);
+                    images.ElementAt(1).UpdateFilePath(newFilePathForLandscape);
+                }
             }
             catch (Exception ex)
             {
@@ -191,6 +145,17 @@ public class PortraitAndLandscapeService
 
             return Result.Success();
         }
+
+        public async Task<Result> RenameOriginalImages(MediaSet mediaSet)
+        {
+            return await RenameImages(mediaSet, false);
+        }
+
+        public async Task<Result> RenameAdobeRgbImages(MediaSet mediaSet)
+        {
+            return await RenameImages(mediaSet, true);
+        }
+
     }
 
     /// <summary>
