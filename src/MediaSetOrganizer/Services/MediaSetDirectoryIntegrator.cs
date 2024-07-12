@@ -146,7 +146,7 @@ public class MediaSetDirectoryIntegrator
 
             foreach (var imageFile in mediaSet.ImageFiles.Value)
             {
-                var updateImagePathResult = await _portraitAndLandscapeService.UpdateFilePathByAspectRatioAsync(mediaSet);
+                var updateImagePathResult = await _portraitAndLandscapeService.RenameImageFilesByAspectRatioAsync(mediaSet);
                 if (updateImagePathResult.IsFailure)
                 {
                     return Result.Failure<List<SupportedImage>>($"Fehler beim Aktualisieren des Dateipfads des Bildes: {updateImagePathResult.Error}");
