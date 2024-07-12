@@ -111,6 +111,8 @@ public class PortraitAndLandscapeService
 
             var newFileNameForPortrait = $"{mediaSet.Title}{_mediaSetOrganizerSettings.MediaSet.OrientationSuffixes.Portrait}{portraitImage.FileInfo.Extension}";
             var newFileNameForLandscape = $"{mediaSet.Title}{_mediaSetOrganizerSettings.MediaSet.OrientationSuffixes.Landscape}{landscapeImage.FileInfo.Extension}";
+            var newFileNameForPortraitAdobeRgb = $"{mediaSet.Title}{_mediaSetOrganizerSettings.MediaSet.OrientationSuffixes.Portrait}{portraitImage.FileInfoAdobeRgb.Value.Extension}";
+            var newFileNameForLandscapeAdobeRgb = $"{mediaSet.Title}{_mediaSetOrganizerSettings.MediaSet.OrientationSuffixes.Landscape}{landscapeImage.FileInfoAdobeRgb.Value.Extension}";
 
             // Nimm an, dass die beiden Bilder im gleichen Verzeichnis liegen
             var directoryName = portraitImage.FileInfo.DirectoryName;
@@ -121,12 +123,15 @@ public class PortraitAndLandscapeService
 
             var newFilePathForPortrait = Path.Combine(directoryName, newFileNameForPortrait);
             var newFilePathForLandscape = Path.Combine(directoryName, newFileNameForLandscape);
+            var newFilePathForPortraitAdobeRgb = Path.Combine(directoryName, newFileNameForPortraitAdobeRgb);
+            var newFilePathForLandscapeAdobeRgb = Path.Combine(directoryName, newFileNameForLandscapeAdobeRgb);
 
             // Porträt-Bild umbenennen
             try
             {
                 // Benne die Datei um und überschreibe ggf. vorhandene Dateien
                 File.Move(portraitImage.FileInfo.FullName, newFilePathForPortrait, true);
+                File.Move(portraitImage.FileInfoAdobeRgb.Value.FullName, newFilePathForPortraitAdobeRgb, true);
 
                 // Aktualisiere die Dateinamen im Medienset
                 portraitImage.UpdateFilePath(newFilePathForPortrait);
@@ -141,6 +146,7 @@ public class PortraitAndLandscapeService
             {
                 // Benne die Datei um und überschreibe ggf. vorhandene Dateien
                 File.Move(landscapeImage.FileInfo.FullName, newFilePathForLandscape, true);
+                File.Move(landscapeImage.FileInfoAdobeRgb.Value.FullName, newFilePathForLandscapeAdobeRgb, true);
 
                 // Aktualisiere die Dateinamen im Medienset
                 landscapeImage.UpdateFilePath(newFilePathForLandscape);
