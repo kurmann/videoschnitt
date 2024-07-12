@@ -3,7 +3,8 @@ using Kurmann.Videoschnitt.Common.Entities.MediaTypes;
 using Kurmann.Videoschnitt.Common.Models;
 using Kurmann.Videoschnitt.Common.Services.FileSystem;
 using Kurmann.Videoschnitt.ConfigurationModule.Settings;
-using Kurmann.Videoschnitt.InfuseMediaLibrary.Imaging.Services;
+using Kurmann.Videoschnitt.MediaSetOrganizer.Services.Imaging;
+using Kurmann.Videoschnitt.MediaSetOrganizer.Services.Integration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -19,18 +20,21 @@ public class MediaSetDirectoryIntegrator
     private readonly ILogger<MediaSetDirectoryIntegrator> _logger;
     private readonly IFileOperations _fileOperations;
     private readonly PortraitAndLandscapeService _portraitAndLandscapeService;
+    private readonly SupportedImagesIntegrator _supportedImagesIntegrator;
 
     public MediaSetDirectoryIntegrator(IOptions<ApplicationSettings> applicationSettings,
                                        IOptions<MediaSetOrganizerSettings> mediaSetOrganizerSettings,
                                        ILogger<MediaSetDirectoryIntegrator> logger,
                                        IFileOperations fileOperations,
-                                       PortraitAndLandscapeService portraitAndLandscapeService)
+                                       PortraitAndLandscapeService portraitAndLandscapeService,
+                                       SupportedImagesIntegrator supportedImagesIntegrator)
     {
         _applicationSettings = applicationSettings.Value;
         _mediaSetOrganizerSettings = mediaSetOrganizerSettings.Value;
         _logger = logger;
         _fileOperations = fileOperations;
         _portraitAndLandscapeService = portraitAndLandscapeService;
+        _supportedImagesIntegrator = supportedImagesIntegrator;
     }
 
     public async Task<Result> IntegrateInLocalMediaSetDirectory(IEnumerable<MediaSet> mediaSets)
@@ -72,7 +76,7 @@ public class MediaSetDirectoryIntegrator
                 return Result.Failure<List<MediaSet>>($"Fehler beim Integrieren der Internet-Dateien: {integrateInternetFilesResult.Error}");
             }
 
-            var inteagrateImageFilesResult = await IntegrateImageFiles(mediaSet, mediaSetTargetDirectory);
+            var inteagrateImageFilesResult = await _supportedImagesIntegrator.IntegrateImageFiles(mediaSet, mediaSetTargetDirectory);
             if (inteagrateImageFilesResult.IsFailure)
             {
                 return Result.Failure<List<MediaSet>>($"Fehler beim Integrieren der Bild-Dateien: {inteagrateImageFilesResult.Error}");
@@ -120,64 +124,6 @@ public class MediaSetDirectoryIntegrator
             // Aktualisiere den Dateipfad der Masterdatei
             mediaSet.Masterfile = mediaSet.Masterfile.Value with { FileInfo = new FileInfo(masterfileTargetPath) };
             return Result.Success(Maybe<Masterfile>.From(mediaSet.Masterfile.Value));
-        }
-    }
-
-    private async Task<Result> IntegrateImageFiles(MediaSet mediaSet, DirectoryInfo mediaSetTargetDirectory)
-    {
-        _logger.LogInformation("Verschiebe Bild-Dateien in das Medienset-Verzeichnis: {mediaSetDirectory}", mediaSetTargetDirectory.FullName);
-        if (mediaSet.ImageFiles.HasNoValue)
-        {
-            _logger.LogInformation("Keine Bild-Dateien für den Medienserver vorhanden.");
-            return Result.Success(new List<SupportedImage>());
-        }
-        else
-        {
-            var imageFilesSubDirectory = new DirectoryInfo(Path.Combine(mediaSetTargetDirectory.FullName, _mediaSetOrganizerSettings.MediaSet.ImageFilesSubDirectoryName));
-            if (!imageFilesSubDirectory.Exists)
-            {
-                _logger.LogInformation("Erstelle Unterverzeichnis für Bild-Dateien: {imageFilesSubDirectory}", imageFilesSubDirectory.FullName);
-                var imageFilesSubDirectoryCreateResult = await _fileOperations.CreateDirectoryAsync(imageFilesSubDirectory.FullName);
-                if (imageFilesSubDirectoryCreateResult.IsFailure)
-                {
-                    return Result.Failure<List<SupportedImage>>($"Fehler beim Erstellen des Unterverzeichnisses für Bild-Dateien: {imageFilesSubDirectoryCreateResult.Error}");
-                }
-            }
-
-            foreach (var imageFile in mediaSet.ImageFiles.Value)
-            {
-                var updateImagePathResult = await _portraitAndLandscapeService.RenameImageFilesByAspectRatioAsync(mediaSet);
-                if (updateImagePathResult.IsFailure)
-                {
-                    return Result.Failure<List<SupportedImage>>($"Fehler beim Aktualisieren des Dateipfads des Bildes: {updateImagePathResult.Error}");
-                } 
-
-                // Verschiebe die Original-Bilddatei
-                var imageFileTargetPath = Path.Combine(imageFilesSubDirectory.FullName, imageFile.FileInfo.Name);
-                _logger.LogInformation("Verschiebe Bild-Datei: {imageFileTargetPath}", imageFileTargetPath);
-                var imageFileMoveResult = await _fileOperations.MoveFileAsync(imageFile.FileInfo.FullName, imageFileTargetPath, true);
-                if (imageFileMoveResult.IsFailure)
-                {
-                    return Result.Failure<List<SupportedImage>>($"Fehler beim Verschieben der Bild-Datei: {imageFileMoveResult.Error}");
-                }
-
-                // Verschiebe die Adobe RGB-Bilddatei
-                if (imageFile.FileInfoAdobeRgb.HasValue)
-                {
-                    var imageFileAdobeRgbTargetPath = Path.Combine(imageFilesSubDirectory.FullName, imageFile.FileInfoAdobeRgb.Value.Name);
-                    _logger.LogInformation("Verschiebe Adobe RGB-Bild-Datei: {imageFileAdobeRgbTargetPath}", imageFileAdobeRgbTargetPath);
-                    var imageFileAdobeRgbMoveResult = await _fileOperations.MoveFileAsync(imageFile.FileInfoAdobeRgb.Value.FullName, imageFileAdobeRgbTargetPath, true);
-                    if (imageFileAdobeRgbMoveResult.IsFailure)
-                    {
-                        return Result.Failure<List<SupportedImage>>($"Fehler beim Verschieben der Adobe RGB-Bild-Datei: {imageFileAdobeRgbMoveResult.Error}");
-                    }
-                }
-
-                // Aktualisiere den Dateipfad des Bildes
-                imageFile.UpdateFilePath(imageFileTargetPath);
-            }
-
-            return Result.Success();
         }
     }
 

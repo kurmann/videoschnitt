@@ -5,7 +5,7 @@ using Kurmann.Videoschnitt.ConfigurationModule.Settings;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Kurmann.Videoschnitt.InfuseMediaLibrary.Imaging.Services;
+namespace Kurmann.Videoschnitt.MediaSetOrganizer.Services.Imaging;
 
 /// <summary>
 /// Verantwortlich für das Verwalten von Portrait- und Landscape-Bildern auf Basis von unterstützten Medien.
@@ -66,7 +66,7 @@ public class PortraitAndLandscapeService
             {
                 File.Move(mediaSet.SingleImage.FileInfo.FullName, newFilePath, true);
                 File.Move(mediaSet.SingleImage.FileInfoAdobeRgb.Value.FullName, newFilePathAdobeRgb, true);
-                
+
                 // Aktualisiere Dateinamen im Medienset
                 mediaSet.SingleImage.UpdateFilePath(newFilePath);
                 mediaSet.SingleImage.UpdateFilePathAdobeRgb(newFilePathAdobeRgb);

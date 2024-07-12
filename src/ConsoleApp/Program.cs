@@ -68,7 +68,7 @@ public class Program
                 services.AddLogging(configure => configure.AddConsole());
                 services.AddConfigurationModule(hostContext.Configuration);
                 services.AddCommonServicesEngine(hostContext.Configuration);
-                services.AddMediaSetOrganizer(hostContext.Configuration);
+                services.AddMediaSetOrganizer();
                 services.AddInfuseMediaLibrary(hostContext.Configuration);
                 services.AddPresentationAssetsBuilder();
                 services.AddHealthCheck();
