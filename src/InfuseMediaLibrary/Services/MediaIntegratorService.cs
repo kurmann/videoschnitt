@@ -9,6 +9,9 @@ using Kurmann.Videoschnitt.Common.Services.FileSystem.Unix;
 
 namespace Kurmann.Videoschnitt.InfuseMediaLibrary.Services;
 
+/// <summary>
+/// Verantwortlich für die Integration von Mediensets in die lokale Infuse-Mediathek.
+/// </summary>
 public class MediaIntegratorService
 {
     private readonly ILogger<MediaIntegratorService> _logger;

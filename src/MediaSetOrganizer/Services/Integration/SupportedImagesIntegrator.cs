@@ -9,6 +9,9 @@ using Microsoft.Extensions.Options;
 
 namespace Kurmann.Videoschnitt.MediaSetOrganizer.Services.Integration;
 
+/// <summary>
+/// Verantwortlich für die Integration von unterstützten Bild-Dateien in das lokale Medienset-Verzeichnis.
+/// </summary>
 public class SupportedImagesIntegrator
 {
     private readonly ILogger<SupportedImagesIntegrator> _logger;
