@@ -97,12 +97,18 @@ public class PortraitAndLandscapeService
         {
             var images = mediaSet.GetImagesOrderedByLastWriteTime();
 
-            if (images.ElementAt(0).FileInfoAdobeRgb.HasNoValue || images.ElementAt(1).FileInfoAdobeRgb.HasNoValue)
+            if (renameAdobeRgb)
             {
-                return Result.Failure("Fehler beim Ermitteln der Adobe RGB-Bilddateien.");
+                if (images.ElementAt(0).FileInfoAdobeRgb.HasNoValue || images.ElementAt(1).FileInfoAdobeRgb.HasNoValue)
+                {
+                    return Result.Failure("Fehler beim Ermitteln der Adobe RGB-Bilddateien. Bei diesem Schritt wird aufgrund der vorangehenden Prozesse davon ausgegangen, dass AdobeRGB-Versionen vorhanden sind.");
+                }
             }
 
-            var detectResult = await DetectPortraitAndLandscapeImagesAsync(images.ElementAt(0).FileInfoAdobeRgb.Value, images.ElementAt(1).FileInfoAdobeRgb.Value);
+            var file0 = renameAdobeRgb ? images.ElementAt(0).FileInfoAdobeRgb.Value : images.ElementAt(0).FileInfo;
+            var file1 = renameAdobeRgb ? images.ElementAt(1).FileInfoAdobeRgb.Value : images.ElementAt(1).FileInfo;
+
+            var detectResult = await DetectPortraitAndLandscapeImagesAsync(file0, file1);
             if (detectResult.IsFailure)
             {
                 return Result.Failure($"Fehler beim Ermitteln des Bildformats: {detectResult.Error}");
