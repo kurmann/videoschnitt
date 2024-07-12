@@ -1,4 +1,5 @@
 using CSharpFunctionalExtensions;
+using Kurmann.Videoschnitt.Common.Entities.MediaTypes;
 using Kurmann.Videoschnitt.Common.Models;
 using Kurmann.Videoschnitt.Common.Services.Metadata;
 using Kurmann.Videoschnitt.ConfigurationModule.Settings;
@@ -78,75 +79,75 @@ public class PortraitAndLandscapeService
         }
         if (mediaSet.IsMultipleImageFiles)
         {
-            var renameOriginalImagesResult = await RenameImages(mediaSet, false);
-            if (renameOriginalImagesResult.IsFailure)
-            {
-                return Result.Failure($"Fehler beim Umbenennen der Original-Bilddateien: {renameOriginalImagesResult.Error}");
-            }
-
-            var renamedAdobeRgbImagesResult = await RenameImages(mediaSet, true);
-            if (renamedAdobeRgbImagesResult.IsFailure)
-            {
-                return Result.Failure($"Fehler beim Umbenennen der Adobe RGB-Bilddateien: {renamedAdobeRgbImagesResult.Error}");
-            }
-        }
-
-        return Result.Success();
-
-        async Task<Result> RenameImages(MediaSet mediaSet, bool renameAdobeRgb)
-        {
+            // Falls mehrere Bilder vorhanden sind, berücksichtigen wir für die Umbenennung nur die zwei zuletzt geschriebenen Bilder
             var images = mediaSet.GetImagesOrderedByLastWriteTime();
+            var file0 = images.ElementAt(0);
+            var file1 = images.ElementAt(1);
 
-            if (renameAdobeRgb)
-            {
-                if (images.ElementAt(0).FileInfoAdobeRgb.HasNoValue || images.ElementAt(1).FileInfoAdobeRgb.HasNoValue)
-                {
-                    return Result.Failure("Fehler beim Ermitteln der Adobe RGB-Bilddateien. Bei diesem Schritt wird aufgrund der vorangehenden Prozesse davon ausgegangen, dass AdobeRGB-Versionen vorhanden sind.");
-                }
-            }
-
-            var file0 = renameAdobeRgb ? images.ElementAt(0).FileInfoAdobeRgb.Value : images.ElementAt(0).FileInfo;
-            var file1 = renameAdobeRgb ? images.ElementAt(1).FileInfoAdobeRgb.Value : images.ElementAt(1).FileInfo;
-
+            // Lege fest, welches Bild im Hoch- und Querformat verwendet wird
             var detectResult = await DetectPortraitAndLandscapeImagesAsync(file0, file1);
             if (detectResult.IsFailure)
             {
                 return Result.Failure($"Fehler beim Ermitteln des Bildformats: {detectResult.Error}");
             }
 
-            var fileToBeRenamedForPortrait = detectResult.Value.PortraitImage;
-            var fileToBeRenamedForLandscape = detectResult.Value.LandscapeImage;
+            // Benenne die Originalbilder und Adobe RGB-Bilder um anhand des Seitenverhältnisses
+            var renameOriginalImagesResult = RenameImages(detectResult.Value.PortraitImage, detectResult.Value.LandscapeImage);
+            if (renameOriginalImagesResult.IsFailure)
+            {
+                return Result.Failure($"Fehler beim Umbenennen der Original- und Adobe RGB-Bilddateien: {renameOriginalImagesResult.Error}");
+            }
+        }
 
-            var newFileNameForPortrait = $"{mediaSet.Title}{_mediaSetOrganizerSettings.MediaSet.OrientationSuffixes.Portrait}{fileToBeRenamedForPortrait!.Extension}";
-            var newFileNameForLandscape = $"{mediaSet.Title}{_mediaSetOrganizerSettings.MediaSet.OrientationSuffixes.Landscape}{fileToBeRenamedForLandscape!.Extension}";
+        return Result.Success();
 
-            var directoryName = fileToBeRenamedForPortrait.DirectoryName;
+        Result RenameImages(SupportedImage portraitImage, SupportedImage landscapeImage)
+        {
+            // Prüfe ob beide Bilder vorhanden sind
+            if (portraitImage == null || landscapeImage == null)
+            {
+                return Result.Failure("Es konnten keine Bilder für die Umbenennung gefunden werden.");
+            }
+
+            var newFileNameForPortrait = $"{mediaSet.Title}{_mediaSetOrganizerSettings.MediaSet.OrientationSuffixes.Portrait}{portraitImage.FileInfo.Extension}";
+            var newFileNameForLandscape = $"{mediaSet.Title}{_mediaSetOrganizerSettings.MediaSet.OrientationSuffixes.Landscape}{landscapeImage.FileInfo.Extension}";
+
+            // Nimm an, dass die beiden Bilder im gleichen Verzeichnis liegen
+            var directoryName = portraitImage.FileInfo.DirectoryName;
             if (directoryName == null)
             {
-                return Result.Failure($"Fehler beim Ermitteln des Verzeichnisses der Bilddatei {fileToBeRenamedForPortrait.Name}.");
+                return Result.Failure($"Fehler beim Ermitteln des Verzeichnisses der Bilddatei {portraitImage.FileInfo.Name}.");
             }
+
             var newFilePathForPortrait = Path.Combine(directoryName, newFileNameForPortrait);
             var newFilePathForLandscape = Path.Combine(directoryName, newFileNameForLandscape);
 
+            // Porträt-Bild umbenennen
             try
             {
-                File.Move(fileToBeRenamedForPortrait.FullName, newFilePathForPortrait, true);
-                File.Move(fileToBeRenamedForLandscape.FullName, newFilePathForLandscape, true);
+                // Benne die Datei um und überschreibe ggf. vorhandene Dateien
+                File.Move(portraitImage.FileInfo.FullName, newFilePathForPortrait, true);
 
-                if (renameAdobeRgb)
-                {
-                    images.ElementAt(0).UpdateFilePathAdobeRgb(newFilePathForPortrait);
-                    images.ElementAt(1).UpdateFilePathAdobeRgb(newFilePathForLandscape);
-                }
-                else
-                {
-                    images.ElementAt(0).UpdateFilePath(newFilePathForPortrait);
-                    images.ElementAt(1).UpdateFilePath(newFilePathForLandscape);
-                }
+                // Aktualisiere die Dateinamen im Medienset
+                portraitImage.UpdateFilePath(newFilePathForPortrait);
             }
             catch (Exception ex)
             {
-                return Result.Failure($"Fehler beim Umbenennen der Bilddatei {fileToBeRenamedForPortrait.Name}: {ex.Message}");
+                return Result.Failure($"Fehler beim Umbenennen der Bilddatei {portraitImage.FileInfo.Name}: {ex.Message}");
+            }
+
+            // Landscape-Bild umbenennen
+            try
+            {
+                // Benne die Datei um und überschreibe ggf. vorhandene Dateien
+                File.Move(landscapeImage.FileInfo.FullName, newFilePathForLandscape, true);
+
+                // Aktualisiere die Dateinamen im Medienset
+                landscapeImage.UpdateFilePath(newFilePathForLandscape);
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure($"Fehler beim Umbenennen der Bilddatei {landscapeImage.FileInfo.Name}: {ex.Message}");
             }
 
             return Result.Success();
@@ -173,12 +174,13 @@ public class PortraitAndLandscapeService
     }
 
     /// <summary>
-    /// Ermittelt die Bilddateien, die als Portrait und Landscape verwendet werden sollen.
+    /// Ermittelt die Bilddateien, die als Portrait und Landscape verwendet werden sollen. Geht vom Originalbild aus und nicht der Adobe RGB-Version.
     /// </summary>
-    public async Task<Result<DetectPortraitAndLandscapeImagesResponse>> DetectPortraitAndLandscapeImagesAsync(FileInfo firstImage, FileInfo secondImage)
+    public async Task<Result<DetectPortraitAndLandscapeImagesResponse>> DetectPortraitAndLandscapeImagesAsync(SupportedImage firstImage, SupportedImage secondImage)
     {
-        var dimensionsResult1 = await _sipMetadataService.GetImageDimensionsWithSipsAsync(firstImage.FullName);
-        var dimensionsResult2 = await _sipMetadataService.GetImageDimensionsWithSipsAsync(secondImage.FullName);
+        // Ermittle Bildformat der beiden Originalbilder
+        var dimensionsResult1 = await _sipMetadataService.GetImageDimensionsWithSipsAsync(firstImage.FileInfo.FullName);
+        var dimensionsResult2 = await _sipMetadataService.GetImageDimensionsWithSipsAsync(secondImage.FileInfo.FullName);
 
         if (dimensionsResult1.IsFailure)
             return Result.Failure<DetectPortraitAndLandscapeImagesResponse>(dimensionsResult1.Error);
@@ -205,8 +207,8 @@ public class PortraitAndLandscapeService
             var img1AspectRatio = (double)width1 / height1;
             var img2AspectRatio = (double)width2 / height2;
 
-            _logger.LogInformation("Bild {Filename} hat die Auflösung {Width1}x{Height1} und ein Seitenverhältnis von {AspectRatio1}.", firstImage.Name, width1, height1, img1AspectRatio);
-            _logger.LogInformation("Bild {Filename} hat die Auflösung {Width2}x{Height2} und ein Seitenverhältnis von {AspectRatio2}.", secondImage.Name, width2, height2, img2AspectRatio);
+            _logger.LogInformation("Bild {Filename} hat die Auflösung {Width1}x{Height1} und ein Seitenverhältnis von {AspectRatio1}.", firstImage.FileInfo.Name, width1, height1, img1AspectRatio);
+            _logger.LogInformation("Bild {Filename} hat die Auflösung {Width2}x{Height2} und ein Seitenverhältnis von {AspectRatio2}.", secondImage.FileInfo.Name, width2, height2, img2AspectRatio);
 
             if (img1AspectRatio > img2AspectRatio)
             {
@@ -226,4 +228,4 @@ public enum ImageOrientation
     Landscape
 }
 
-public record DetectPortraitAndLandscapeImagesResponse(FileInfo PortraitImage, FileInfo LandscapeImage);
+public record DetectPortraitAndLandscapeImagesResponse(SupportedImage PortraitImage, SupportedImage LandscapeImage);

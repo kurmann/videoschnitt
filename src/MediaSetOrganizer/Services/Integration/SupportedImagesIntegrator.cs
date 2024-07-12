@@ -49,14 +49,16 @@ public class SupportedImagesIntegrator
                 }
             }
 
+            // Benenne die Dateien im Quellverzeichnis um anhand des Seitenverhältnisses
+            var renamingResult = await _portraitAndLandscapeService.RenameImageFilesByAspectRatioAsync(mediaSet);
+            if (renamingResult.IsFailure)
+            {
+                return Result.Failure<List<SupportedImage>>($"Fehler beim Aktualisieren des Dateipfads des Bildes: {renamingResult.Error}");
+            } 
+
+            // Verschiebe alle Dateien in das Medienset-Verzeichnis
             foreach (var imageFile in mediaSet.ImageFiles.Value)
             {
-                var updateImagePathResult = await _portraitAndLandscapeService.RenameImageFilesByAspectRatioAsync(mediaSet);
-                if (updateImagePathResult.IsFailure)
-                {
-                    return Result.Failure<List<SupportedImage>>($"Fehler beim Aktualisieren des Dateipfads des Bildes: {updateImagePathResult.Error}");
-                } 
-
                 // Verschiebe die Original-Bilddatei
                 var imageFileTargetPath = Path.Combine(imageFilesSubDirectory.FullName, imageFile.FileInfo.Name);
                 _logger.LogInformation("Verschiebe Bild-Datei: {imageFileTargetPath}", imageFileTargetPath);
