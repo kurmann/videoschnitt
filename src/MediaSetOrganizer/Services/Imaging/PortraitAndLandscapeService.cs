@@ -146,16 +146,6 @@ public class PortraitAndLandscapeService
             return Result.Success();
         }
 
-        public async Task<Result> RenameOriginalImages(MediaSet mediaSet)
-        {
-            return await RenameImages(mediaSet, false);
-        }
-
-        public async Task<Result> RenameAdobeRgbImages(MediaSet mediaSet)
-        {
-            return await RenameImages(mediaSet, true);
-        }
-
     }
 
     /// <summary>
