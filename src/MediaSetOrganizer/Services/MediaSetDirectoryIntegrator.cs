@@ -3,7 +3,6 @@ using Kurmann.Videoschnitt.Common.Entities.MediaTypes;
 using Kurmann.Videoschnitt.Common.Models;
 using Kurmann.Videoschnitt.Common.Services.FileSystem;
 using Kurmann.Videoschnitt.ConfigurationModule.Settings;
-using Kurmann.Videoschnitt.MediaSetOrganizer.Services.Imaging;
 using Kurmann.Videoschnitt.MediaSetOrganizer.Services.Integration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -19,21 +18,18 @@ public class MediaSetDirectoryIntegrator
     public readonly MediaSetOrganizerSettings _mediaSetOrganizerSettings;
     private readonly ILogger<MediaSetDirectoryIntegrator> _logger;
     private readonly IFileOperations _fileOperations;
-    private readonly PortraitAndLandscapeService _portraitAndLandscapeService;
     private readonly SupportedImagesIntegrator _supportedImagesIntegrator;
 
     public MediaSetDirectoryIntegrator(IOptions<ApplicationSettings> applicationSettings,
                                        IOptions<MediaSetOrganizerSettings> mediaSetOrganizerSettings,
                                        ILogger<MediaSetDirectoryIntegrator> logger,
                                        IFileOperations fileOperations,
-                                       PortraitAndLandscapeService portraitAndLandscapeService,
                                        SupportedImagesIntegrator supportedImagesIntegrator)
     {
         _applicationSettings = applicationSettings.Value;
         _mediaSetOrganizerSettings = mediaSetOrganizerSettings.Value;
         _logger = logger;
         _fileOperations = fileOperations;
-        _portraitAndLandscapeService = portraitAndLandscapeService;
         _supportedImagesIntegrator = supportedImagesIntegrator;
     }
 
