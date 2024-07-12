@@ -38,7 +38,7 @@ public class PortraitAndLandscapeService
             var detectResult = await DetectPortraitAndLandscapeImagesAsync(mediaSet.SingleImage.FileInfo);
             if (detectResult.IsFailure)
             {
-                return Result.Failure($"Fehler beim Ermitteln des Bildformats: {detectResult.Error}");
+                return Result.Failure($"Fehler beim Ermitteln des Bildformats bei der Datei {mediaSet.SingleImage.FileInfo.Name}: {detectResult.Error}");
             }
 
             // Ermittle neuer Dateiname auf Basis des Seitenverhältnisses mit Schema <MediaSet-Title><Suffix><Dateiendung>
