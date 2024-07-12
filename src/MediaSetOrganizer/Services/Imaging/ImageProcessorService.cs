@@ -5,7 +5,6 @@ using Kurmann.Videoschnitt.ConfigurationModule.Services;
 using Kurmann.Videoschnitt.ConfigurationModule.Settings;
 using System.Diagnostics;
 using Kurmann.Videoschnitt.Common.Models;
-using Kurmann.Videoschnitt.Common.Entities.MediaTypes;
 
 namespace Kurmann.Videoschnitt.MediaSetOrganizer.Services.Imaging;
 
