@@ -1,6 +1,8 @@
 using CSharpFunctionalExtensions;
 using Kurmann.Videoschnitt.Common.Services.Metadata;
+using Kurmann.Videoschnitt.ConfigurationModule.Settings;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Kurmann.Videoschnitt.InfuseMediaLibrary.Services.FileInspection;
 
@@ -8,11 +10,14 @@ public class VideoMetadataService
 {
     private readonly ILogger<VideoMetadataService> _logger;
     private readonly FFmpegMetadataService _ffmpegMetadataService;
+    private readonly MediaSetOrganizerSettings _mediaSetOrganizerSettings;
 
-    public VideoMetadataService(ILogger<VideoMetadataService> logger, FFmpegMetadataService ffmpegMetadataService)
+    public VideoMetadataService(ILogger<VideoMetadataService> logger, FFmpegMetadataService ffmpegMetadataService, 
+        IOptions<MediaSetOrganizerSettings> mediaSetOrganizerSettings)
     {
         _logger = logger;
         _ffmpegMetadataService = ffmpegMetadataService;
+        _mediaSetOrganizerSettings = mediaSetOrganizerSettings.Value;
     }
 
     /// <summary>
@@ -40,6 +45,43 @@ public class VideoMetadataService
         }
 
         return Result.Success(album.Value);
+    }
+
+    /// <summary>
+    /// Ermittelt aus dem Verzeichnisbaum der Video-Datei den Titel des Mediensets.
+    /// </summary>
+    /// <param name="videoFile"></param>
+    /// <returns></returns>
+    public Result<string> GetTitle(FileInfo videoFile)
+    {
+        var videoFileDirectory = videoFile.Directory;
+        if (videoFileDirectory == null)
+        {
+            _logger.LogWarning("Das Verzeichnis der Video-Datei {FileInfo.Name} konnte nicht ermittelt werden.", videoFile.Name);
+            return Result.Failure<string>("Das Verzeichnis der Video-Datei konnte nicht ermittelt werden.");
+        }
+
+        // Es wird angenommen, dass der Titel des Mediensets wie folgt aufgebaut ist <RootDirectory>/<MediasetName>/<MediaServerFilesSubDirectoryName>/<VideoFile>
+        var mediaServerFilesDirectoryDefinedBySettings = _mediaSetOrganizerSettings.MediaSet.MediaServerFilesSubDirectoryName;
+
+        // Ermittle den Names des Verzeichnisses oberhalb des Verzeichnisses für die Media-Server-Dateien. Also das Eltern-Verzeichnis des Verzeichnisses für die Media-Server-Dateien.
+        var mediaServerFilesDirectoryName = videoFileDirectory.Parent?.Name;
+
+        // Prüfe ob das Elternverzeichnis der Videodatei den erwarteten Namen für das Verzeichnis der Media-Server-Dateien hat.
+        if (mediaServerFilesDirectoryName != mediaServerFilesDirectoryDefinedBySettings)
+        {
+            return Result.Failure<string>($"Das Elternverzeichnis der Video-Datei hat nicht den erwarteten Namen für Verzeichnis der Media-Server-Dateien: {mediaServerFilesDirectoryDefinedBySettings}.");
+        }
+
+        // Der Name des Verzeichnisses des Mediensets ist das übergeordnete Verzeichnis des Verzeichnisses für die Media-Server-Dateien.
+        var mediaSetDirectoryName = videoFileDirectory.Parent?.Parent?.Name;
+        if (string.IsNullOrWhiteSpace(mediaSetDirectoryName))
+        {
+            return Result.Failure<string>("Der Name des Verzeichnisses des Mediensets konnte nicht ermittelt werden.");
+        }
+
+        // Der Name des Mediensets ist der Name des Verzeichnisses des Mediensets.
+        return Result.Success(mediaSetDirectoryName);
     }
 
     /// <summary>

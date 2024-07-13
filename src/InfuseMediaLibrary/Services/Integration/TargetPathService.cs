@@ -26,7 +26,7 @@ internal class TargetPathService
     /// <param name="album"></param>
     /// <param name="recordingDate"></param>
     /// <returns></returns>
-    internal async Task<Result<DirectoryInfo>> GetTargetDirectory(FileInfo videoFile)
+    internal async Task<Result<DirectoryInfo>> GetTargetDirectoryAsync(FileInfo videoFile)
     {
         var album = await _videoMetadataService.GetAlbumAsync(videoFile);
         if (album.IsFailure)
@@ -64,10 +64,5 @@ internal class TargetPathService
         var targetDirectory = Path.Combine(_applicationSettings.InfuseMediaLibraryPathLocal, album.Value, recordingDate.Value.Year.ToString(), title.Value);
 
         return new DirectoryInfo(targetDirectory);
-    }
-
-    internal async Task<string> GetTargetFileName(FileInfo videoFile)
-    {
-
     }
 }
