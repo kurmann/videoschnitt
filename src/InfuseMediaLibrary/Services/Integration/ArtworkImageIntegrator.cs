@@ -1,4 +1,5 @@
 using CSharpFunctionalExtensions;
+using Kurmann.Videoschnitt.Common.Entities.MediaTypes;
 using Kurmann.Videoschnitt.Common.Services.FileSystem;
 using Kurmann.Videoschnitt.Common.Services.FileSystem.Unix;
 using Kurmann.Videoschnitt.ConfigurationModule.Settings;
@@ -31,18 +32,26 @@ internal class ArtworkImageIntegrator
     /// <summary>
     /// Verschiebt die unterstützten Bild-Dateien in das Infuse-Mediathek-Verzeichnis und konvertiert den Farbraum der Bilder in Adobe RGB.
     /// </summary>
-    /// <param name="supportedImages"></param>
+    /// <param name="supportedFiles"></param>
     /// <param name="videoFileTargetPath"></param>
     /// <returns></returns>
-    public async Task<Result> IntegrateImagesAsync(IEnumerable<FileInfo> supportedImages, FileInfo videoFileTargetPath)
+    public async Task<Result> IntegrateImagesAsync(IEnumerable<FileInfo> supportedFiles, FileInfo videoFileTargetPath)
     {
         // Wenn kein Bild vorhanden sind, wird mit einer Info geloggt und die Methode beendet.
-        if (!supportedImages.Any())
+        if (!supportedFiles.Any())
         {
             _logger.LogInformation($"Keine Bild-Dateien für das Medienset vorhanden.");
             _logger.LogInformation("Es wird kein Bild in das Infuse-Mediathek-Verzeichnis verschoben.");
             return Result.Success();
         }
+
+        // Parse die Dateien zu unterstützten Bildern
+        var supportedImagesResult = supportedFiles.Select(SupportedImage.Create).ToList();
+        if (supportedImagesResult.Any(supportedImage => supportedImage.IsFailure))
+        {
+            return Result.Failure($"Die Bild-Dateien konnten nicht als unterstützte Bilder geparst werden: {supportedImagesResult.First(supportedImage => supportedImage.IsFailure).Error}");
+        }
+        var supportedImages = supportedImagesResult.Select(supportedImage => supportedImage.Value).ToList();
 
         // Ermittle das Zielverzeichnis für die Bild-Datei. Dieses ist das gleiche wie das Zielverzeichnis der Video-Datei.
         var videoTargetDirectory = videoFileTargetPath.Directory;
@@ -52,9 +61,9 @@ internal class ArtworkImageIntegrator
         }
 
         // Wenn nur ein Bild vorhanden ist, wird dieses als Poster verwendet. Der Name des Bildes entspricht dem Namen der Video-Datei.
-        if (supportedImages.Count() == 1)
+        if (supportedFiles.Count() == 1)
         {
-            var supportedImage = supportedImages.First();
+            var supportedImage = supportedFiles.First();
 
             var targetFilePath = Path.Combine(videoTargetDirectory.FullName, videoFileTargetPath.Name.Replace(videoFileTargetPath.Extension, supportedImage.Extension));
             var moveFileResult = await _fileOperations.CopyFileAsync(supportedImage.FullName, targetFilePath);
@@ -67,7 +76,7 @@ internal class ArtworkImageIntegrator
         }
 
         // Wenn mehr als ein Bild vorhanden ist, dann werden die ersten zwei Bilder als Poster und Fanart verwendet und mit Hilfe des PosterAndFanartService die passenden Bilder ermittelt.
-        var detectPosterAndFanartImagesResult = PosterAndFanartService.DetectPosterAndFanartImages(supportedImages.ElementAt(0), supportedImages.ElementAt(1));
+        var detectPosterAndFanartImagesResult = PosterAndFanartService.DetectPosterAndFanartImages(supportedFiles.ElementAt(0), supportedFiles.ElementAt(1));
         if (detectPosterAndFanartImagesResult.IsFailure)
         {
             return Result.Failure($"Das Poster und Fanart konnte nicht ermittelt werden: {detectPosterAndFanartImagesResult.Error}");

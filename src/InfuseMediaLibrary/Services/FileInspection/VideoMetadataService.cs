@@ -1,9 +1,8 @@
 using CSharpFunctionalExtensions;
+using Kurmann.Videoschnitt.Common.Entities.MediaTypes;
 using Kurmann.Videoschnitt.Common.Models;
 using Kurmann.Videoschnitt.Common.Services.Metadata;
-using Kurmann.Videoschnitt.ConfigurationModule.Settings;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace Kurmann.Videoschnitt.InfuseMediaLibrary.Services.FileInspection;
 
@@ -11,14 +10,11 @@ internal class VideoMetadataService
 {
     private readonly ILogger<VideoMetadataService> _logger;
     private readonly FFmpegMetadataService _ffmpegMetadataService;
-    private readonly MediaSetOrganizerSettings _mediaSetOrganizerSettings;
 
-    public VideoMetadataService(ILogger<VideoMetadataService> logger, FFmpegMetadataService ffmpegMetadataService, 
-        IOptions<MediaSetOrganizerSettings> mediaSetOrganizerSettings)
+    public VideoMetadataService(ILogger<VideoMetadataService> logger, FFmpegMetadataService ffmpegMetadataService)
     {
         _logger = logger;
         _ffmpegMetadataService = ffmpegMetadataService;
-        _mediaSetOrganizerSettings = mediaSetOrganizerSettings.Value;
     }
 
     /// <summary>
@@ -27,21 +23,33 @@ internal class VideoMetadataService
     /// <returns></returns>
     public async Task<Result<string>> GetAlbumAsync(FileInfo videoFile)
     {
+        // Parse die Datei
+        var supportedVideo = SupportedVideo.Create(videoFile);
+        if (supportedVideo.IsFailure)
+        {
+            return Result.Failure<string>($"Die Video-Datei {videoFile} konnte nicht als unterstütztes Video geparst werden: {supportedVideo.Error}");
+        }
+
+        return await GetAlbumAsync(supportedVideo.Value);
+    }
+
+    public async Task<Result<string>> GetAlbumAsync(SupportedVideo supportedVideo)
+    {
         // Ermittle das Album aus den Metadaten der Video-Datei
-        var albumResult = await _ffmpegMetadataService.GetMetadataFieldAsync(videoFile, "album");
+        var albumResult = await _ffmpegMetadataService.GetMetadataFieldAsync(supportedVideo, "album");
         if (albumResult.IsFailure)
         {
-            return Result.Failure<string>($"Das Album konnte nicht aus den Metadaten der Video-Datei {videoFile} ermittelt werden: {albumResult.Error}");
+            return Result.Failure<string>($"Das Album konnte nicht aus den Metadaten der Video-Datei {supportedVideo} ermittelt werden: {albumResult.Error}");
         }
         Maybe<string> album = string.IsNullOrWhiteSpace(albumResult.Value) ? Maybe<string>.None : albumResult.Value;
         if (album.HasNoValue)
         {
-            _logger.LogTrace("Album-Tag ist nicht in den Metadaten der Video-Datei {FileInfo.Name} vorhanden.", videoFile.Name);
+            _logger.LogTrace("Album-Tag ist nicht in den Metadaten der Video-Datei {FileInfo.Name} vorhanden.", supportedVideo);
             _logger.LogTrace("Das Album wird für die Integration in die Infuse-Mediathek nicht verwendet.");
         }
         else
         {
-            _logger.LogTrace("Album-Tag aus den Metadaten der Video-Datei {FileInfo.Name} ermittelt: {album.Value}", videoFile.Name, album.Value);
+            _logger.LogTrace("Album-Tag aus den Metadaten der Video-Datei {FileInfo.Name} ermittelt: {album.Value}", supportedVideo, album.Value);
             _logger.LogTrace($"Das Album wird für die Integration in die Infuse-Mediathek als erste Verzeichnisebene verwendet.");
         }
 

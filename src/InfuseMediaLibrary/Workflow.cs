@@ -138,7 +138,7 @@ internal class Workflow : IWorkflow
             _logger.LogInformation("Folgende Videodatei wird in die Infuse-Mediathek integriert: {File}", mediaServerFile.Name);
             _logger.LogInformation("Folgende Bilder werden in die Infuse-Mediathek integriert: {Files}", imageFilesCommaseparated);
 
-            await _mediaIntegratorService.IntegrateMediaSetToLocalInfuseMediaLibrary(mediaServerFile, imageFiles);
+            await _mediaIntegratorService.IntegrateToLocalInfuseMediaLibrary(mediaServerFile, imageFiles);
         }
 
         return Result.Success();
