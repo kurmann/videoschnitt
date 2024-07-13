@@ -69,7 +69,7 @@ public class Workflow
             // Für die Bilder sollen nur JPG-Dateien berücksichtigt werden (Dateiendung JPG und JPEG)
             var imageFiles = imagesDirectory.GetFiles().Where(f => f.Extension == ".jpg" || f.Extension == ".jpeg").ToArray();
 
-            // Entferne Videos, die derzeit in Bearbeitung sind
+            // Ignoriere Videos, die derzeit in Bearbeitung sind
             var mediaServerFilesNotInUse = new List<FileInfo>();
             foreach (var file in mediaServerFiles)
             {
@@ -90,7 +90,7 @@ public class Workflow
             }
             mediaServerFiles = mediaServerFilesNotInUse.ToArray();
 
-            // Entferne Bilder, die derzeit in Bearbeitung sind
+            // Ignoriere Bilder, die derzeit in Bearbeitung sind
             var imageFilesNotInUse = new List<FileInfo>();
             foreach (var file in imageFiles)
             {
@@ -112,18 +112,18 @@ public class Workflow
             imageFiles = imageFilesNotInUse.ToArray();
 
             // Wenn nur Bilddateien vorhanden sind, wird das Medienset ignoriert
-            // Damit soll sichergestellt sein, dass nicht die Bilder sofort verschoben werden wenn noch keine Videodatei vorhanden ist
+            // Damit soll sichergestellt sein, dass nicht die Bilder umgehend verschoben werden wenn noch keine Videodatei vorhanden ist.
+            // Damit lassen sich die Bilder nach dem Export aus Final Cut Pro noch bearbeiten bspw. Zuschneiden solange der Videoexport noch nicht abgeschlossen ist.
             if (mediaServerFiles.Length == 0)
             {
                 _logger.LogInformation("Für das Medienset {MediaSet} wurden keine Videodateien gefunden. Das Medienset wird ignoriert.", mediaSetDirectory.Name);
                 continue;
             }
 
-            // Für den Infuse-Medenserver darf pro Medienset nur eine Videodatei vorhanden sein
+            // Für den Infuse-Medenserver darf pro Medienset nur eine Videodatei vorhanden sein. Gib eine Warnung aus, wenn mehrere Videodateien gefunden wurden.
             if (mediaServerFiles.Length != 1)
             {
                 _logger.LogWarning("Für das Medienset {MediaSet} wurden {Count} Videodateien gefunden. Es wird nur eine Videodatei unterstützt.", mediaSetDirectory.Name, mediaServerFiles.Length);
-                continue;
             }
             var mediaServerFile = mediaServerFiles.First();
 
