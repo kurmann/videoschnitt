@@ -39,14 +39,18 @@ public class DirectoryInfuseXmlFileGenerator
         var generatedMetadataFilesByMediaSetList = new List<GeneratedMetadataFilesByMediaSet>();
         foreach (var mediaSetDirectoryInfo in mediaSetDirectoryInfos)
         {
+            // Parse den Medienset-Namen, der hier dem Verzeichnisnamen entspricht
+            var mediaSetNameResult = MediaSetName.Create(mediaSetDirectoryInfo.Name);
+            if (mediaSetNameResult.IsFailure)
+            {
+                return Result.Failure<GeneratedMetadataFiles>($"Fehler beim Parsen des Medienset-Namens: {mediaSetNameResult.Error}");
+            }
+
             // Filtere alle Videodateien mit dem richtigen Dateiendungen einschließlich Unterverzeichnisse
             var supportedMediaByMediaSet = mediaSetDirectoryInfo.GetFiles("*", SearchOption.AllDirectories)
                 .Where(file => _mediaSetOrganizerSettings.MediaSet.SupportedVideoExtensions.Contains(file.Extension.ToLower()))
                 .ToList();
-
-            // Der Titel des Mediensets ist der Verzeichnisname
-            var mediaSetTitle = mediaSetDirectoryInfo.Name;
-            _logger.LogInformation("Im Medienset {mediaSetTitle} wurden {supportedMediaByMediaSet.Count} unterstützte Medien gefunden", mediaSetTitle, supportedMediaByMediaSet.Count);
+            _logger.LogInformation("Im Medienset {mediaSetTitle} wurden {supportedMediaByMediaSet.Count} unterstützte Medien gefunden", mediaSetNameResult.Value, supportedMediaByMediaSet.Count);
 
             // Erstelle für jede Videodatei die Metadaten-Dateien
             foreach (var mediaFile in supportedMediaByMediaSet)
@@ -66,21 +70,12 @@ public class DirectoryInfuseXmlFileGenerator
                 // Die QuickTime-Datei hat mehr Metadaten als die MPEG-4-Dateien, deshalb dient sie als Referenz für die Infuse-XML-Datei
                 if (mediaFile.Extension.Equals(".mov", StringComparison.CurrentCultureIgnoreCase))
                 {
-                    // Lies das Aufnahmedatum aus dem Medienset-Namen
-                    var mediaSetTitleResult = MediaSetTitle.Create(mediaSetTitle);
-                    if (mediaSetTitleResult.IsFailure)
-                    {
-                        _logger.LogWarning("Fehler beim Parsen des Medienset-Namens {mediaSetTitle}: {mediaSetNameResult.Error}", mediaSetTitle, mediaSetTitleResult.Error);
-                        _logger.LogInformation("Überspringe die Videodatei {mediaFile.Name}", mediaFile.Name);
-                        continue;
-                    }
-
-                    var customProductionInfuseMetadata = CustomProductionInfuseMetadata.CreateFromFfmpegMetadata(createRawMetadataFileResult.Value.Metadata, mediaSetTitleResult.Value.Date);
+                    var customProductionInfuseMetadata = CustomProductionInfuseMetadata.CreateFromFfmpegMetadata(createRawMetadataFileResult.Value.Metadata, mediaSetNameResult.Value.Date);
                     var customProductionInfuseMetadataXmlDoc = customProductionInfuseMetadata.ToXmlDocument();
 
                     // Schreibe den Inhalt der XML-Datei in das Wurzelverzeichnis des Mediensets mit dem gleichen Dateinamen wie das Medienset
-                    customProductionInfuseMetadataXmlDoc.Save(Path.Combine(mediaSetDirectoryInfo.FullName, $"{mediaSetTitle}.xml"));
-                    
+                    customProductionInfuseMetadataXmlDoc.Save(Path.Combine(mediaSetDirectoryInfo.FullName, $"{mediaSetNameResult.Value}.xml"));
+
                 }
             }
         }

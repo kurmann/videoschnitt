@@ -63,7 +63,7 @@ internal class LocalMediaSetDirectoryReader
                     .FirstOrDefault(d => d.Name == _mediaSetOrganizerSettings.MediaSet.ImageFilesSubDirectoryName);
 
                 // Parse media set name
-                var mediaSetNameResult = MediaSetTitle.Create(mediaSetDirectory.Name);
+                var mediaSetNameResult = MediaSetName.Create(mediaSetDirectory.Name);
                 if (mediaSetNameResult.IsFailure)
                 {
                     _logger.LogError("Fehler beim Parsen des Medienset-Namens '{MediaSetName}': {Error}", mediaSetDirectory.Name, mediaSetNameResult.Error);
@@ -84,7 +84,7 @@ internal class LocalMediaSetDirectoryReader
     }
 }
 
-internal record LocalMediaSetDirectory(DirectoryInfo DirectoryInfo, MediaSetTitle MediaSetName, Maybe<DirectoryInfo> ArtworkDirectory, Maybe<DirectoryInfo> MediaServerFilesDirectory)
+internal record LocalMediaSetDirectory(DirectoryInfo DirectoryInfo, MediaSetName MediaSetName, Maybe<DirectoryInfo> ArtworkDirectory, Maybe<DirectoryInfo> MediaServerFilesDirectory)
 {
     public override string ToString()
     {

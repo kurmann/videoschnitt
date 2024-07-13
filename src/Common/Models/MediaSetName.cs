@@ -4,22 +4,30 @@ using CSharpFunctionalExtensions;
 namespace Kurmann.Videoschnitt.Common.Models;
 
 /// <summary>
-/// Repräsentiert ein Titel eines Mediensets bestehend aus dem ISO-Datum, Leerzeichen und dem restlichen Dateinamen
-/// </summary>
-public class MediaSetTitle
+/// Repräsentiert ein den Namen eines MedienSets und validiert nach folgendem Schema: yyyy-MM-dd Titel
+public class MediaSetName
 {
+    /// <summary>
+    /// Der Titel des MedienSets. Entspricht in der Regel auch dem Titel des darin enthaltenen Videos.
+    /// </summary>
+    /// <value></value>
     public string Title { get; }
+
+    /// <summary>
+    /// Das Datum des MedienSets. Entspricht in den meisten Fällen dem Aufnahmedatum des darin enthaltenen Videos.
+    /// </summary>
+    /// <value></value>
     public DateOnly Date { get; }
 
     public string Name => $"{Date:yyyy-MM-dd} {Title}";
 
-    private MediaSetTitle(string title, DateOnly date)
+    private MediaSetName(string title, DateOnly date)
     {
         Title = title;
         Date = date;
     }
 
-    public static Result<MediaSetTitle> Create(string name)
+    public static Result<MediaSetName> Create(string name)
     {
         // The ISO date is the first part of the file name and always has the same length (10 characters)
         var datePart = name[..10];
@@ -27,13 +35,13 @@ public class MediaSetTitle
         // Try to parse the ISO date
         if (!DateOnly.TryParseExact(datePart, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date))
         {
-            return Result.Failure<MediaSetTitle>($"The date '{datePart}' could not be parsed.");
+            return Result.Failure<MediaSetName>($"The date '{datePart}' could not be parsed.");
         }
 
         // The part after the file name and the space is the title of the media set
         var title = name[11..];
 
-        return Result.Success(new MediaSetTitle(title, date));
+        return Result.Success(new MediaSetName(title, date));
     }
 
     public override string ToString()
@@ -41,7 +49,7 @@ public class MediaSetTitle
         return Name;
     }
 
-    public static implicit operator string(MediaSetTitle mediaSetTitle)
+    public static implicit operator string(MediaSetName mediaSetTitle)
     {
         return mediaSetTitle.Name;
     }

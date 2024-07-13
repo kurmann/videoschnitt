@@ -61,27 +61,27 @@ internal class VideoMetadataService
     /// </summary>
     /// <param name="videoFile"></param>
     /// <returns></returns>
-    public Result<MediaSetTitle> GetMediaSetName(FileInfo videoFile)
+    public Result<MediaSetName> GetMediaSetName(FileInfo videoFile)
     {
         var videoFileDirectory = videoFile.Directory;
         if (videoFileDirectory == null)
         {
             _logger.LogWarning("Das Verzeichnis der Video-Datei {FileInfo.Name} konnte nicht ermittelt werden.", videoFile.Name);
-            return Result.Failure<MediaSetTitle>("Das Verzeichnis der Video-Datei konnte nicht ermittelt werden.");
+            return Result.Failure<MediaSetName>("Das Verzeichnis der Video-Datei konnte nicht ermittelt werden.");
         }
 
         // Der Name des Mediensets ist der Name des Elternverzeichnisses des Verzeichnisses für die Media-Server-Dateien. 
         var parentDirectoryName = videoFileDirectory.Parent?.Name;
         if (string.IsNullOrWhiteSpace(parentDirectoryName))
         {
-            return Result.Failure<MediaSetTitle>("Der Name des Elternverzeichnisses des Verzeichnisses für die Media-Server-Dateien konnte nicht ermittelt werden.");
+            return Result.Failure<MediaSetName>("Der Name des Elternverzeichnisses des Verzeichnisses für die Media-Server-Dateien konnte nicht ermittelt werden.");
         }
 
         // Parse den Verzeichnisnamen als Medienset-Namen
-        var mediaSetTitle = MediaSetTitle.Create(parentDirectoryName);
+        var mediaSetTitle = MediaSetName.Create(parentDirectoryName);
         if (mediaSetTitle.IsFailure)
         {
-            return Result.Failure<MediaSetTitle>($"Der Verzeichnisname {parentDirectoryName} konnte nicht als Medienset-Name geparst werden.");
+            return Result.Failure<MediaSetName>($"Der Verzeichnisname {parentDirectoryName} konnte nicht als Medienset-Name geparst werden.");
         }
 
         return Result.Success(mediaSetTitle.Value);
