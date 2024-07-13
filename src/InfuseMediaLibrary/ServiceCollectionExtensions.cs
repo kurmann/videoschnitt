@@ -21,6 +21,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<VideoMetadataService>();
         services.AddScoped<TargetPathService>();
         services.AddScoped<ArtworkDirectoryReader>();
+        services.AddScoped<LocalMediaSetDirectoryReader>();
 
         return services;
     }

@@ -4,6 +4,8 @@ using Kurmann.Videoschnitt.InfuseMediaLibrary.Services;
 using CSharpFunctionalExtensions;
 using Kurmann.Videoschnitt.ConfigurationModule.Settings;
 using Kurmann.Videoschnitt.Common.Services.FileSystem;
+using Kurmann.Videoschnitt.InfuseMediaLibrary.Services.Integration;
+using Kurmann.Videoschnitt.InfuseMediaLibrary.Services.FileInspection;
 
 namespace Kurmann.Videoschnitt.InfuseMediaLibrary;
 
@@ -21,15 +23,20 @@ internal class Workflow : IWorkflow
     private readonly MediaIntegratorService _mediaIntegratorService;
     private readonly MediaSetOrganizerSettings _mediaSetOrganizerSettings;
     private readonly IFileOperations _fileOperations;
+    private readonly VideoIntegratorService _videoIntegratorService;
+    private readonly LocalMediaSetDirectoryReader _localMediaSetDirectoryReader;
 
     public Workflow(IOptions<ApplicationSettings> applicationSettings, IOptions<MediaSetOrganizerSettings> mediaSetOrganizerSettings,
-        ILogger<Workflow> logger, MediaIntegratorService mediaIntegratorService, IFileOperations fileOperations)
+        ILogger<Workflow> logger, MediaIntegratorService mediaIntegratorService, IFileOperations fileOperations, 
+        VideoIntegratorService videoIntegratorService, LocalMediaSetDirectoryReader localMediaSetDirectoryReader)
     {
         _applicationSettings = applicationSettings.Value;
         _mediaSetOrganizerSettings = mediaSetOrganizerSettings.Value;
         _logger = logger;
         _mediaIntegratorService = mediaIntegratorService;
         _fileOperations = fileOperations;
+        _videoIntegratorService = videoIntegratorService;
+        _localMediaSetDirectoryReader = localMediaSetDirectoryReader;
     }
 
     public async Task<Result> ExecuteAsync()
@@ -41,6 +48,12 @@ internal class Workflow : IWorkflow
         if (sourceDirectory.Exists == false)
         {
             return Result.Failure($"Das Verzeichnis {sourceDirectory} existiert nicht.");
+        }
+
+        var mediaSetDirectoriesResult = _localMediaSetDirectoryReader.GetMediaSetDirectories(sourceDirectory);
+        if (mediaSetDirectoriesResult.IsFailure)
+        {
+            return Result.Failure($"Fehler beim Ermitteln der Medienset-Verzeichnisse im Quellverzeichnis {sourceDirectoryPath}. Fehler: {mediaSetDirectoriesResult.Error}");
         }
 
         // Alle Unterverzeichnisse des Quellverzeichnisses werden als eigenständige Mediensets betrachtet
@@ -56,7 +69,17 @@ internal class Workflow : IWorkflow
         // Ziel ist es die Dateien zusammenzusammeln pro Medienset, die relevant für die Integration sind
         foreach (var mediaSetDirectory in mediaSetDirectories)
         {
-            
+            var integrateMediaServerFilesTask = _videoIntegratorService.IntegrateMediaServerFiles(mediaSetDirectory);
+            // todo: integrate images
+
+            // Warte auf das Ergebnis der Integration der Medienserver-Dateien
+            var tasks = await integrateMediaServerFilesTask;
+            if (tasks.IsFailure)
+            {
+                _logger.LogError("Fehler beim Integrieren der Medienserver-Dateien für das Medienset {MediaSet}: {Error}", mediaSetDirectory.Name, tasks.Error);
+                continue;
+            }
+
             // Suche nach dem Unterverzeichnis, das die Dateien für den Medienserver enthält
             var mediaServerFileDirectory = mediaSetDirectory.GetDirectories().FirstOrDefault(d => d.Name == _mediaSetOrganizerSettings.MediaSet.MediaServerFilesSubDirectoryName);
 
@@ -72,6 +95,8 @@ internal class Workflow : IWorkflow
 
             // Nimm an, dass alle Videos fürs Internet und alle Bilder im entsprechenden Verzeichnis liegen (durch vorangehende Prozesse)
             var mediaServerFiles = mediaServerFileDirectory.GetFiles();
+
+            
 
             // Für die Bilder sollen nur JPG-Dateien berücksichtigt werden (Dateiendung JPG und JPEG)
             var imageFiles = imagesDirectory.GetFiles().Where(f => f.Extension == ".jpg" || f.Extension == ".jpeg").ToArray();
