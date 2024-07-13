@@ -1,4 +1,5 @@
 using CSharpFunctionalExtensions;
+using Kurmann.Videoschnitt.Common.Models;
 using Kurmann.Videoschnitt.ConfigurationModule.Settings;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -53,8 +54,6 @@ internal class LocalMediaSetDirectoryReader
             var localMediaSetDirectories = new List<LocalMediaSetDirectory>();
             foreach (var mediaSetDirectory in mediaSetDirectories)
             {
-                var mediaSetName = mediaSetDirectory.Name;
-
                 // Suche nach dem Unterverzeichnis, das die Dateien für den Medienserver enthält
                 var mediaServerFilesDirectory = mediaSetDirectory.GetDirectories()
                     .FirstOrDefault(d => d.Name == _mediaSetOrganizerSettings.MediaSet.MediaServerFilesSubDirectoryName);
@@ -63,7 +62,15 @@ internal class LocalMediaSetDirectoryReader
                 var artworkDirectory = mediaSetDirectory.GetDirectories()
                     .FirstOrDefault(d => d.Name == _mediaSetOrganizerSettings.MediaSet.ImageFilesSubDirectoryName);
 
-                var localMediaSetDirectory = new LocalMediaSetDirectory(mediaSetDirectory, mediaSetName, artworkDirectory ?? Maybe<DirectoryInfo>.None, mediaServerFilesDirectory ?? Maybe<DirectoryInfo>.None);
+                // Parse media set name
+                var mediaSetNameResult = MediaSetTitle.Create(mediaSetDirectory.Name);
+                if (mediaSetNameResult.IsFailure)
+                {
+                    _logger.LogError("Fehler beim Parsen des Medienset-Namens '{MediaSetName}': {Error}", mediaSetDirectory.Name, mediaSetNameResult.Error);
+                    continue;
+                }
+
+                var localMediaSetDirectory = new LocalMediaSetDirectory(mediaSetDirectory, mediaSetNameResult.Value, artworkDirectory ?? Maybe<DirectoryInfo>.None, mediaServerFilesDirectory ?? Maybe<DirectoryInfo>.None);
                 localMediaSetDirectories.Add(localMediaSetDirectory);
             }
 
@@ -77,7 +84,7 @@ internal class LocalMediaSetDirectoryReader
     }
 }
 
-internal record LocalMediaSetDirectory(DirectoryInfo DirectoryInfo, string MediaSetName, Maybe<DirectoryInfo> ArtworkDirectory, Maybe<DirectoryInfo> MediaServerFilesDirectory)
+internal record LocalMediaSetDirectory(DirectoryInfo DirectoryInfo, MediaSetTitle MediaSetName, Maybe<DirectoryInfo> ArtworkDirectory, Maybe<DirectoryInfo> MediaServerFilesDirectory)
 {
     public override string ToString()
     {
