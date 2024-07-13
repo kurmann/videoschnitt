@@ -56,6 +56,7 @@ internal class Workflow : IWorkflow
         // Ziel ist es die Dateien zusammenzusammeln pro Medienset, die relevant für die Integration sind
         foreach (var mediaSetDirectory in mediaSetDirectories)
         {
+            
             // Suche nach dem Unterverzeichnis, das die Dateien für den Medienserver enthält
             var mediaServerFileDirectory = mediaSetDirectory.GetDirectories().FirstOrDefault(d => d.Name == _mediaSetOrganizerSettings.MediaSet.MediaServerFilesSubDirectoryName);
 

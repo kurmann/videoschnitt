@@ -20,6 +20,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<VideoIntegratorService>();
         services.AddScoped<VideoMetadataService>();
         services.AddScoped<TargetPathService>();
+        services.AddScoped<ArtworkDirectoryReader>();
 
         return services;
     }

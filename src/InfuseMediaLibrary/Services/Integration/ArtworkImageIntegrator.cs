@@ -3,6 +3,7 @@ using Kurmann.Videoschnitt.Common.Entities.MediaTypes;
 using Kurmann.Videoschnitt.Common.Services.FileSystem;
 using Kurmann.Videoschnitt.Common.Services.FileSystem.Unix;
 using Kurmann.Videoschnitt.ConfigurationModule.Settings;
+using Kurmann.Videoschnitt.InfuseMediaLibrary.Services.FileInspection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -17,15 +18,17 @@ internal class ArtworkImageIntegrator
     private readonly InfuseMediaLibrarySettings _infuseMediaLibrarySettings;
     private readonly IFileOperations _fileOperations;
     private readonly PosterAndFanartService _posterAndFanartService;
+    private readonly ArtworkDirectoryReader _artworkDirectoryReader;
 
     public ArtworkImageIntegrator(ILogger<ArtworkImageIntegrator> logger,
         IOptions<InfuseMediaLibrarySettings> infuseMediaLibrarySettings,
-        IFileOperations fileOperations,
+        IFileOperations fileOperations, ArtworkDirectoryReader artworkDirectoryReader,
         PosterAndFanartService posterAndFanartService)
     {
         _logger = logger;
         _infuseMediaLibrarySettings = infuseMediaLibrarySettings.Value;
         _fileOperations = fileOperations;
+        _artworkDirectoryReader = artworkDirectoryReader;
         _posterAndFanartService = posterAndFanartService;
     }
 
@@ -58,6 +61,13 @@ internal class ArtworkImageIntegrator
         if (videoTargetDirectory == null)
         {
             return Result.Failure($"Das Verzeichnis der Video-Datei {videoFileTargetPath.FullName} konnte nicht ermittelt werden. Das Verzeichnis wird benötigt, um die Bild-Dateien in das Infuse-Mediathek-Verzeichnis zu verschieben.");
+        }
+
+        // Lies den Inhalt des Verzeichnisses aus in dem die Bilder gespeichert sind
+        var artworkDirectoryContentResult = _artworkDirectoryReader.GetDirectoryContent(videoTargetDirectory);
+        if (artworkDirectoryContentResult.IsFailure)
+        {
+            return Result.Failure($"Das Verzeichnis '{videoTargetDirectory.FullName}' konnte nicht geöffnet werden: {artworkDirectoryContentResult.Error}");
         }
 
         // Wenn nur ein Bild vorhanden ist, wird dieses als Poster verwendet. Der Name des Bildes entspricht dem Namen der Video-Datei.
