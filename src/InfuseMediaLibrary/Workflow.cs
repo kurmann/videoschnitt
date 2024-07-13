@@ -57,10 +57,10 @@ internal class Workflow : IWorkflow
         }
         var mediaSetDirectories = mediaSetDirectoriesResult.Value;
 
-        // Ziel ist es die Dateien zusammenzusammeln pro Medienset, die relevant für die Integration sind
+        // Ziel ist es, die unterstützten Video- und Bildformate in die Infuse-Mediathek zu integrieren
         foreach (var mediaSetDirectory in mediaSetDirectories)
         {
-            var integrateMediaServerFilesTask = _videoIntegratorService.IntegrateMediaServerFiles(mediaSetDirectory);
+            var integrateMediaServerFilesTask = _videoIntegratorService.IntegrateMediaServerFiles(mediaSetDirectory.MediaServerFilesDirectory.GetValueOrDefault());
             // todo: integrate images
 
             // Warte auf das Ergebnis der Integration der Medienserver-Dateien

@@ -1,4 +1,5 @@
 using CSharpFunctionalExtensions;
+using Kurmann.Videoschnitt.Common.Entities.MediaTypes;
 using Kurmann.Videoschnitt.Common.Models;
 using Kurmann.Videoschnitt.ConfigurationModule.Settings;
 using Microsoft.Extensions.Logging;
@@ -139,4 +140,6 @@ internal record MediaServerFilesDirectory(DirectoryInfo DirectoryInfo, MediaSetN
     {
         return mediaServerFilesDirectory.DirectoryInfo;
     }
+
+    public Result<List<SupportedVideo>> GetSupportedVideos() => SupportedVideo.GetSupportedVideosFromDirectory(DirectoryInfo);
 }

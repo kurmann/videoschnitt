@@ -1,10 +1,8 @@
 using CSharpFunctionalExtensions;
 using Kurmann.Videoschnitt.Common.Entities.MediaTypes;
 using Kurmann.Videoschnitt.Common.Services.FileSystem;
-using Kurmann.Videoschnitt.ConfigurationModule.Settings;
 using Kurmann.Videoschnitt.InfuseMediaLibrary.Services.FileInspection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace Kurmann.Videoschnitt.InfuseMediaLibrary.Services.Integration;
 
@@ -13,91 +11,41 @@ internal class VideoIntegratorService
     private readonly IFileOperations _fileOperations;
     private readonly ILogger<VideoIntegratorService> _logger;
     private readonly TargetPathService _targetPathService;
-    private readonly MediaSetOrganizerSettings _mediaSetOrganizerSettings;
 
-    public VideoIntegratorService(IFileOperations fileOperations,
-        ILogger<VideoIntegratorService> logger,
-        IOptions<MediaSetOrganizerSettings> mediaSetOrganizerSettings,
-        TargetPathService targetPathService)
+    public VideoIntegratorService(IFileOperations fileOperations, ILogger<VideoIntegratorService> logger, TargetPathService targetPathService)
     {
         _fileOperations = fileOperations;
         _logger = logger;
-        _mediaSetOrganizerSettings = mediaSetOrganizerSettings.Value;
         _targetPathService = targetPathService;
-    }
-
-    public async Task<Result> IntegrateMediaServerFiles(MediaServerFilesDirectory mediaServerFilesDirectory)
-    {
-        return await IntegrateMediaServerFiles(mediaServerFilesDirectory.DirectoryInfo);
     }
 
     /// <summary>
     /// Integriert die Dateien eines Mediensets in die Infuse-Mediathek
     /// </summary>
-    /// <param name="mediaSetDirectory"></param>
+    /// <param name="mediaServerFilesDirectory"></param>
     /// <returns></returns>
-    public async Task<Result> IntegrateMediaServerFiles(DirectoryInfo mediaSetDirectory)
+    public Task<Result> IntegrateMediaServerFiles(MediaServerFilesDirectory mediaServerFilesDirectory)
     {
-        // Prüfe ob das Verzeichnis exisitiert
-        if (mediaSetDirectory.Exists == false)
-        {
-            return Result.Failure($"Das Verzeichnis {mediaSetDirectory} existiert nicht.");
-        }
-
-        // Suche nach dem Unterverzeichnis, das die Dateien für den Medienserver enthält
-        var mediaServerFileDirectory = mediaSetDirectory.GetDirectories()
-            .FirstOrDefault(d => d.Name == _mediaSetOrganizerSettings.MediaSet.MediaServerFilesSubDirectoryName);
-
-        // Ein Medienserver-Verzeichnis ist wird erwartet
-        if (mediaServerFileDirectory == null)
-        {
-            return Result.Failure($"Das Unterverzeichnis {_mediaSetOrganizerSettings.MediaSet.MediaServerFilesSubDirectoryName} wurde im Medienset-Verzeichnis {mediaSetDirectory.FullName} nicht gefunden.");
-        }
-
         // Hole alle unterstützten Videodateien aus dem Medienserver-Verzeichnis
-        var supportedVideosResult = SupportedVideo.GetSupportedVideosFromDirectory(mediaServerFileDirectory);
+        var supportedVideosResult = mediaServerFilesDirectory.GetSupportedVideos();
         if (supportedVideosResult.IsFailure)
         {
-            return Result.Failure($"Fehler beim Ermitteln der unterstützten Videodateien im Medienserver-Verzeichnis {mediaServerFileDirectory.FullName}. Fehler: {supportedVideosResult.Error}");
+            return Task.FromResult(Result.Failure($"Fehler beim Ermitteln der unterstützten Videodateien im Medienserver-Verzeichnis {mediaServerFilesDirectory}. Fehler: {supportedVideosResult.Error}"));
         }
 
         if (supportedVideosResult.Value.Count == 0)
         {
-            return Result.Failure($"Keine unterstützten Videodateien im Medienserver-Verzeichnis {mediaServerFileDirectory.FullName} gefunden.");
+            return Task.FromResult(Result.Failure($"Es wurden keine unterstützten Videodateien im Medienserver-Verzeichnis {mediaServerFilesDirectory} gefunden."));
         }
 
-        // Für Medienserver wird nur eine Datei erwartet, wenn mehrere Dateien gefunden werden, wird ein Fehler zurückgegeben
+        // Für Medienserver wird nur eine Videodatei erwartet, wenn mehrere Dateien gefunden werden, wird ein Fehler zurückgegeben
         if (supportedVideosResult.Value.Count > 1)
         {
-            return Result.Failure($"Es wurden mehrere unterstützte Videodateien im Medienserver-Verzeichnis {mediaServerFileDirectory.FullName} gefunden. Es wird nur eine Datei erwartet.");
+            return Task.FromResult(Result.Failure($"Es wurden mehrere unterstützte Videodateien im Medienserver-Verzeichnis {mediaServerFilesDirectory} gefunden. Es wird nur eine Videodatei erwartet."));
         }
 
         // Integriere die Videodatei in die Infuse-Mediathek
-        var integrateVideoResult = await IntegrateVideoAsync(supportedVideosResult.Value.First());
-        if (integrateVideoResult.IsFailure)
-        {
-            return Result.Failure($"Fehler beim Integrieren der Videodatei {supportedVideosResult.Value.First()} in die Infuse-Mediathek. Fehler: {integrateVideoResult.Error}");
-        }
-
-        return Result.Success();
-    }
-
-    public Task<Result> IntegrateVideoAsync(FileInfo videoFile)
-    {
-        // Prüfe ob die Datei existiert
-        if (videoFile.Exists == false)
-        {
-            return Task.FromResult(Result.Failure($"Die Datei {videoFile} existiert nicht."));
-        }
-
-        // Prüfe, ob die Datei eine unterstützte Videodatei ist
-        var supportedVideo = SupportedVideo.Create(videoFile);
-        if (supportedVideo.IsFailure)
-        {
-            return Task.FromResult(Result.Failure($"Die Datei {videoFile} ist keine unterstützte Videodatei. Fehler: {supportedVideo.Error}"));
-        }
-
-        return IntegrateVideoAsync(supportedVideo.Value);
+        return IntegrateVideoAsync(supportedVideosResult.Value.First());
     }
 
     public async Task<Result> IntegrateVideoAsync(SupportedVideo supportedVideo)
