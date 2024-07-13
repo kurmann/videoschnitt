@@ -13,11 +13,10 @@ public static class ServiceCollectionExtensions
     {   
         // Register Engine
         services.AddScoped<IWorkflow, Workflow>();
-        services.AddScoped<MediaIntegratorService>();
         services.AddScoped<IFileOperations, FileOperations>();
         services.AddScoped<PosterAndFanartService>();
         services.AddScoped<ArtworkImageIntegrator>();
-        services.AddScoped<VideoIntegratorService>();
+        services.AddScoped<VideoIntegrator>();
         services.AddScoped<VideoMetadataService>();
         services.AddScoped<TargetPathService>();
         services.AddScoped<ArtworkDirectoryReader>();

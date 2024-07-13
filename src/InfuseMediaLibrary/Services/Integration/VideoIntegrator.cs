@@ -6,13 +6,16 @@ using Microsoft.Extensions.Logging;
 
 namespace Kurmann.Videoschnitt.InfuseMediaLibrary.Services.Integration;
 
-internal class VideoIntegratorService
+/// <summary>
+/// Verantwortlich für die Integration von Videodateien in die Infuse-Mediathek
+/// </summary>
+internal class VideoIntegrator
 {
     private readonly IFileOperations _fileOperations;
-    private readonly ILogger<VideoIntegratorService> _logger;
+    private readonly ILogger<VideoIntegrator> _logger;
     private readonly TargetPathService _targetPathService;
 
-    public VideoIntegratorService(IFileOperations fileOperations, ILogger<VideoIntegratorService> logger, TargetPathService targetPathService)
+    public VideoIntegrator(IFileOperations fileOperations, ILogger<VideoIntegrator> logger, TargetPathService targetPathService)
     {
         _fileOperations = fileOperations;
         _logger = logger;

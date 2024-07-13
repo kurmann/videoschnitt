@@ -1,6 +1,5 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Kurmann.Videoschnitt.InfuseMediaLibrary.Services;
 using CSharpFunctionalExtensions;
 using Kurmann.Videoschnitt.ConfigurationModule.Settings;
 using Kurmann.Videoschnitt.Common.Services.FileSystem;
@@ -20,22 +19,20 @@ internal class Workflow : IWorkflow
 {
     private readonly ApplicationSettings _applicationSettings;
     private readonly ILogger<Workflow> _logger;
-    private readonly MediaIntegratorService _mediaIntegratorService;
     private readonly MediaSetOrganizerSettings _mediaSetOrganizerSettings;
     private readonly IFileOperations _fileOperations;
-    private readonly VideoIntegratorService _videoIntegratorService;
+    private readonly VideoIntegrator _videoIntegrator;
     private readonly LocalMediaSetDirectoryReader _localMediaSetDirectoryReader;
 
     public Workflow(IOptions<ApplicationSettings> applicationSettings, IOptions<MediaSetOrganizerSettings> mediaSetOrganizerSettings,
-        ILogger<Workflow> logger, MediaIntegratorService mediaIntegratorService, IFileOperations fileOperations, 
-        VideoIntegratorService videoIntegratorService, LocalMediaSetDirectoryReader localMediaSetDirectoryReader)
+        ILogger<Workflow> logger, IFileOperations fileOperations, 
+        VideoIntegrator videoIntegrator, LocalMediaSetDirectoryReader localMediaSetDirectoryReader)
     {
         _applicationSettings = applicationSettings.Value;
         _mediaSetOrganizerSettings = mediaSetOrganizerSettings.Value;
         _logger = logger;
-        _mediaIntegratorService = mediaIntegratorService;
         _fileOperations = fileOperations;
-        _videoIntegratorService = videoIntegratorService;
+        _videoIntegrator = videoIntegrator;
         _localMediaSetDirectoryReader = localMediaSetDirectoryReader;
     }
 
@@ -60,7 +57,7 @@ internal class Workflow : IWorkflow
         // Ziel ist es, die unterstützten Video- und Bildformate in die Infuse-Mediathek zu integrieren
         foreach (var mediaSetDirectory in mediaSetDirectories)
         {
-            var integrateMediaServerFilesTask = _videoIntegratorService.IntegrateMediaServerFiles(mediaSetDirectory.MediaServerFilesDirectory.GetValueOrDefault());
+            var integrateMediaServerFilesTask = _videoIntegrator.IntegrateMediaServerFiles(mediaSetDirectory.MediaServerFilesDirectory.GetValueOrDefault());
             // todo: integrate images
 
             // Warte auf das Ergebnis der Integration der Medienserver-Dateien
@@ -154,8 +151,6 @@ internal class Workflow : IWorkflow
             var imageFilesCommaseparated = string.Join(", ", imageFiles.Select(f => f.Name));
             _logger.LogInformation("Folgende Videodatei wird in die Infuse-Mediathek integriert: {File}", mediaServerFile.Name);
             _logger.LogInformation("Folgende Bilder werden in die Infuse-Mediathek integriert: {Files}", imageFilesCommaseparated);
-
-            await _mediaIntegratorService.IntegrateToLocalInfuseMediaLibrary(mediaServerFile, imageFiles);
         }
 
         return Result.Success();
