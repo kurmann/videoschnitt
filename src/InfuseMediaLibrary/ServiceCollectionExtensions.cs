@@ -11,7 +11,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddInfuseMediaLibrary(this IServiceCollection services)
     {   
         // Register Engine
-        services.AddScoped<Workflow>();
+        services.AddScoped<IWorkflow, Workflow>();
         services.AddScoped<MediaIntegratorService>();
         services.AddScoped<IFileOperations, FileOperations>();
         services.AddScoped<PosterAndFanartService>();

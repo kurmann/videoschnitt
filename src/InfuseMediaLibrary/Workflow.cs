@@ -7,9 +7,15 @@ using Kurmann.Videoschnitt.Common.Services.FileSystem;
 
 namespace Kurmann.Videoschnitt.InfuseMediaLibrary;
 
-public class Workflow
+public interface IWorkflow
 {
-    public const string WorkflowName = "InfuseMediaLibrary";
+    const string WorkflowName = "InfuseMediaLibrary";
+
+    Task<Result> ExecuteAsync();
+}
+
+internal class Workflow : IWorkflow
+{
     private readonly ApplicationSettings _applicationSettings;
     private readonly ILogger<Workflow> _logger;
     private readonly MediaIntegratorService _mediaIntegratorService;
@@ -52,7 +58,7 @@ public class Workflow
         {
             // Suche nach dem Unterverzeichnis, das die Dateien für den Medienserver enthält
             var mediaServerFileDirectory = mediaSetDirectory.GetDirectories().FirstOrDefault(d => d.Name == _mediaSetOrganizerSettings.MediaSet.MediaServerFilesSubDirectoryName);
-            
+
             // Suche nach dem Unterverzeichnis, das die Bilder enthält
             var imagesDirectory = mediaSetDirectory.GetDirectories().FirstOrDefault(d => d.Name == _mediaSetOrganizerSettings.MediaSet.ImageFilesSubDirectoryName);
 

@@ -114,10 +114,10 @@ public class Program
                     }
                 }
             
-            case InfuseMediaLibrary.Workflow.WorkflowName:
+            case InfuseMediaLibrary.IWorkflow.WorkflowName:
             {
                 logger.LogInformation("Starting InfuseMediaLibrary workflow.");
-                var workflow = scopedServices.GetRequiredService<InfuseMediaLibrary.Workflow>();
+                var workflow = scopedServices.GetRequiredService<InfuseMediaLibrary.IWorkflow>();
                 var result = await workflow.ExecuteAsync();
                 if (result.IsSuccess)
                 {
