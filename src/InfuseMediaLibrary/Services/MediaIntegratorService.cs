@@ -50,21 +50,9 @@ internal class MediaIntegratorService
         }
 
         var videoIntegrationResult = await _videoIntegratorService.IntegrateVideoAsync(videoFile);
-
-        // Verschiebe die Video-Datei in das Infuse-Mediathek-Verzeichnis und erstelle das Verzeichnis falls es nicht existiert
-        var targetDirectory = await _targetPathService.GetTargetDirectoryAsync(videoFile);
-        if (targetDirectory.IsFailure)
+        if (videoIntegrationResult.IsFailure)
         {
-            return Result.Failure<Maybe<LocalMediaServerFiles>>($"Das Zielverzeichnis für die Integration in die Infuse-Mediathek konnte nicht ermittelt werden: {targetDirectory.Value.FullName}");
-        }
-        if (!targetDirectory.Value.Exists)
-        {
-            _logger.LogInformation("Das Zielverzeichnis für die Integration in die Infuse-Mediathek existiert nicht. Erstelle Verzeichnis: {targetDirectory.FullName}", targetDirectory.Value.FullName);
-            var createDirectoryResult = await _fileOperations.CreateDirectoryAsync(targetDirectory.Value.FullName);
-            if (createDirectoryResult.IsFailure)
-            {
-                return Result.Failure<Maybe<LocalMediaServerFiles>>($"Das Zielverzeichnis für die Integration in die Infuse-Mediathek konnte nicht erstellt werden: {targetDirectory.Value.FullName}. Fehler: {createDirectoryResult.Error}");
-            }
+            return Result.Failure<Maybe<LocalMediaServerFiles>>($"Die Video-Datei {videoFile.Name} konnte nicht in das Infuse-Mediathek-Verzeichnis integriert werden. Fehler: {videoIntegrationResult.Error}");
         }
 /* 
         // Prüfe ob bereits eine Datei am Zielort existiert mit gleichem Namen und gleichem Änderungsdatum
