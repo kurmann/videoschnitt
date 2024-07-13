@@ -59,6 +59,29 @@ public class SupportedVideo
         }
     }
 
+    public static Result<List<SupportedVideo>> GetSupportedVideosFromDirectory(string directory)
+    {
+        var directoryInfo = new DirectoryInfo(directory);
+        if (!directoryInfo.Exists)
+        {
+            return Result.Failure<List<SupportedVideo>>($"The directory {directory} does not exist.");
+        }
+
+        // retourniere alle Dateien dessen Create-Methode erfolgreich war
+        return directoryInfo.GetFiles().Select(Create).Where(result => result.IsSuccess).Select(result => result.Value).ToList();
+    }
+
+    public static Result<List<SupportedVideo>> GetSupportedVideosFromDirectory(DirectoryInfo directoryInfo)
+    {
+        if (!directoryInfo.Exists)
+        {
+            return Result.Failure<List<SupportedVideo>>($"The directory {directoryInfo.FullName} does not exist.");
+        }
+
+        // retourniere alle Dateien dessen Create-Methode erfolgreich war
+        return directoryInfo.GetFiles().Select(Create).Where(result => result.IsSuccess).Select(result => result.Value).ToList();
+    }
+
     public static bool IsSupportedVideoExtension(FileInfo fileInfo)
     {
         return QuickTimeMovie.IsQuickTimeMovieExtension(fileInfo) || Mpeg4Video.IsVideoExtensionMpeg4(fileInfo);
@@ -78,6 +101,6 @@ public class SupportedVideo
 
     public static implicit operator string(SupportedVideo supportedVideo)
     {
-        return supportedVideo.FileInfo.Name;
+        return supportedVideo.FileInfo.FullName;
     }
 }
