@@ -34,10 +34,10 @@ internal class ArtworkImageIntegrator
     /// <param name="supportedImages"></param>
     /// <param name="videoFileTargetPath"></param>
     /// <returns></returns>
-    public async Task<Result> IntegrateImagesAsync(List<FileInfo> supportedImages, FileInfo videoFileTargetPath)
+    public async Task<Result> IntegrateImagesAsync(IEnumerable<FileInfo> supportedImages, FileInfo videoFileTargetPath)
     {
         // Wenn kein Bild vorhanden sind, wird mit einer Info geloggt und die Methode beendet.
-        if (supportedImages.Count == 0)
+        if (!supportedImages.Any())
         {
             _logger.LogInformation($"Keine Bild-Dateien für das Medienset vorhanden.");
             _logger.LogInformation("Es wird kein Bild in das Infuse-Mediathek-Verzeichnis verschoben.");
@@ -52,7 +52,7 @@ internal class ArtworkImageIntegrator
         }
 
         // Wenn nur ein Bild vorhanden ist, wird dieses als Poster verwendet. Der Name des Bildes entspricht dem Namen der Video-Datei.
-        if (supportedImages.Count == 1)
+        if (supportedImages.Count() == 1)
         {
             var supportedImage = supportedImages.First();
 

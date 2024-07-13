@@ -49,10 +49,15 @@ internal class MediaIntegratorService
             _logger.LogInformation("Infuse-Mediathek-Verzeichnis {infuseMediaLibraryPathLocal} erfolgreich erstellt.", _applicationSettings.InfuseMediaLibraryPathLocal);
         }
 
-        var videoIntegrationResult = await _videoIntegratorService.IntegrateVideoAsync(videoFile);
-        if (videoIntegrationResult.IsFailure)
+        // Integriere parallel die Video- und Bild-Dateien in das Infuse-Mediathek-Verzeichnis
+        var videoIntegrationResultTask = _videoIntegratorService.IntegrateVideoAsync(videoFile);
+        var imageIntegrationResultTask = _artworkImageIntegrator.IntegrateImagesAsync(imageFiles, videoFile);
+
+        var integrationResults = await Task.WhenAll(videoIntegrationResultTask, imageIntegrationResultTask);
+        var results = Result.Combine(integrationResults);
+        if (results.IsFailure)
         {
-            return Result.Failure<Maybe<LocalMediaServerFiles>>($"Die Video-Datei {videoFile.Name} konnte nicht in das Infuse-Mediathek-Verzeichnis integriert werden. Fehler: {videoIntegrationResult.Error}");
+            return Result.Failure<Maybe<LocalMediaServerFiles>>($"Die Integration der Medienset-Dateien in das Infuse-Mediathek-Verzeichnis war nicht erfolgreich: {results.Error}");
         }
 /* 
         // Prüfe ob bereits eine Datei am Zielort existiert mit gleichem Namen und gleichem Änderungsdatum
