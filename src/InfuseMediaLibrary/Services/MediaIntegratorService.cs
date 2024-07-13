@@ -7,6 +7,7 @@ using Kurmann.Videoschnitt.ConfigurationModule.Settings;
 using Microsoft.Extensions.Options;
 using Kurmann.Videoschnitt.Common.Services.FileSystem.Unix;
 using Kurmann.Videoschnitt.InfuseMediaLibrary.Services.Integration;
+using Kurmann.Videoschnitt.InfuseMediaLibrary.Services.FileInspection;
 
 namespace Kurmann.Videoschnitt.InfuseMediaLibrary.Services;
 
@@ -19,18 +20,18 @@ public class MediaIntegratorService
     private readonly IFileOperations _fileOperations;
     private readonly FFmpegMetadataService _ffmpegMetadataService;
     private readonly ApplicationSettings _applicationSettings; 
-    private readonly InfuseMediaLibrarySettings _infuseMediaLibrarySettings;
     private readonly ArtworkImageIntegrator _artworkImageIntegrator;
+    private readonly VideoMetadataService _videoMetadataService;
 
     public MediaIntegratorService(ILogger<MediaIntegratorService> logger, IFileOperations fileOperations, FFmpegMetadataService ffmpegMetadataService, 
-        IOptions<InfuseMediaLibrarySettings> infuseMediaLibrarySettings, IOptions<ApplicationSettings> applicationSettings, ArtworkImageIntegrator artworkImageIntegrator)
+        IOptions<ApplicationSettings> applicationSettings, ArtworkImageIntegrator artworkImageIntegrator, VideoMetadataService videoMetadataService)
     {
         _logger = logger;
         _fileOperations = fileOperations;
         _ffmpegMetadataService = ffmpegMetadataService;
         _applicationSettings = applicationSettings.Value;
-        _infuseMediaLibrarySettings = infuseMediaLibrarySettings.Value;
         _artworkImageIntegrator = artworkImageIntegrator;
+        _videoMetadataService = videoMetadataService;
     }
 
     public async Task<Result> IntegrateMediaSetToLocalInfuseMediaLibrary(string title, FileInfo videoFile, IEnumerable<FileInfo> imageFiles)
