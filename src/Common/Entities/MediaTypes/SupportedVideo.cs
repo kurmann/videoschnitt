@@ -70,4 +70,9 @@ public class SupportedVideo
     {
         FileInfo = new FileInfo(videoFileForMediaServerTargetPath);
     }
+
+    public static implicit operator FileInfo(SupportedVideo supportedVideo)
+    {
+        return supportedVideo.FileInfo;
+    }
 }
