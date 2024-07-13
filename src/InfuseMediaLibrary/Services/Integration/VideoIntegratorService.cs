@@ -2,6 +2,7 @@ using CSharpFunctionalExtensions;
 using Kurmann.Videoschnitt.Common.Entities.MediaTypes;
 using Kurmann.Videoschnitt.Common.Services.FileSystem;
 using Kurmann.Videoschnitt.ConfigurationModule.Settings;
+using Kurmann.Videoschnitt.InfuseMediaLibrary.Services.FileInspection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -23,6 +24,11 @@ internal class VideoIntegratorService
         _logger = logger;
         _mediaSetOrganizerSettings = mediaSetOrganizerSettings.Value;
         _targetPathService = targetPathService;
+    }
+
+    public async Task<Result> IntegrateMediaServerFiles(MediaServerFilesDirectory mediaServerFilesDirectory)
+    {
+        return await IntegrateMediaServerFiles(mediaServerFilesDirectory.DirectoryInfo);
     }
 
     /// <summary>

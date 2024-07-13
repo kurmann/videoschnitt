@@ -55,16 +55,7 @@ internal class Workflow : IWorkflow
         {
             return Result.Failure($"Fehler beim Ermitteln der Medienset-Verzeichnisse im Quellverzeichnis {sourceDirectoryPath}. Fehler: {mediaSetDirectoriesResult.Error}");
         }
-
-        // Alle Unterverzeichnisse des Quellverzeichnisses werden als eigenständige Mediensets betrachtet
-        var mediaSetDirectories = sourceDirectory.GetDirectories();
-        if (mediaSetDirectories.Length == 0)
-        {
-            _logger.LogInformation("Keine Mediensets im Verzeichnis {Directory} gefunden.", sourceDirectoryPath);
-            return Result.Success();
-        }
-        var mediaSetNamesCommaseparated = string.Join(", ", mediaSetDirectories.Select(d => d.Name));
-        _logger.LogInformation("Folgende Mediensets wurden im Verzeichnis {Directory} gefunden: {MediaSets}", sourceDirectoryPath, mediaSetNamesCommaseparated);
+        var mediaSetDirectories = mediaSetDirectoriesResult.Value;
 
         // Ziel ist es die Dateien zusammenzusammeln pro Medienset, die relevant für die Integration sind
         foreach (var mediaSetDirectory in mediaSetDirectories)
