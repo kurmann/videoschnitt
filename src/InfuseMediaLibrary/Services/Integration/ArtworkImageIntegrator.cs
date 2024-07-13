@@ -3,6 +3,7 @@ using Kurmann.Videoschnitt.Common.Services.FileSystem;
 using Kurmann.Videoschnitt.Common.Services.FileSystem.Unix;
 using Kurmann.Videoschnitt.ConfigurationModule.Settings;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Kurmann.Videoschnitt.InfuseMediaLibrary.Services.Integration;
 
@@ -16,10 +17,13 @@ public class ArtworkImageIntegrator
     private readonly IFileOperations _fileOperations;
     private readonly PosterAndFanartService _posterAndFanartService;
 
-    public ArtworkImageIntegrator(ILogger<ArtworkImageIntegrator> logger, InfuseMediaLibrarySettings infuseMediaLibrarySettings, IFileOperations fileOperations, PosterAndFanartService posterAndFanartService)
+    public ArtworkImageIntegrator(ILogger<ArtworkImageIntegrator> logger,
+        IOptions<InfuseMediaLibrarySettings> infuseMediaLibrarySettings,
+        IFileOperations fileOperations,
+        PosterAndFanartService posterAndFanartService)
     {
         _logger = logger;
-        _infuseMediaLibrarySettings = infuseMediaLibrarySettings;
+        _infuseMediaLibrarySettings = infuseMediaLibrarySettings.Value;
         _fileOperations = fileOperations;
         _posterAndFanartService = posterAndFanartService;
     }

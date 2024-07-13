@@ -3,6 +3,7 @@ using Kurmann.Videoschnitt.InfuseMediaLibrary.Services;
 using Kurmann.Videoschnitt.Common.Services.FileSystem;
 using Kurmann.Videoschnitt.Common.Services.FileSystem.Unix;
 using Kurmann.Videoschnitt.InfuseMediaLibrary.Services.Integration;
+using Kurmann.Videoschnitt.InfuseMediaLibrary.Services.FileInspection;
 
 namespace Kurmann.Videoschnitt.InfuseMediaLibrary;
 
@@ -17,6 +18,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<PosterAndFanartService>();
         services.AddScoped<ArtworkImageIntegrator>();
         services.AddScoped<VideoIntegratorService>();
+        services.AddScoped<VideoMetadataService>();
         services.AddScoped<TargetPathService>();
 
         return services;
