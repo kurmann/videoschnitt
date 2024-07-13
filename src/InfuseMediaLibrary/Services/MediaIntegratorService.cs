@@ -121,7 +121,7 @@ public class MediaIntegratorService
         }
 
         // Integriere die Bild-Dateien in das Infuse-Mediathek-Verzeichnis. Diese haben den gleichen Namen und das gleiche Zielverzeichnis wie die Video-Datei.
-        var movedSupportedImagesResult = await _artworkImageIntegrator.IntegratedSupportedImagesToInfuseMediaLibrary(imageFiles.ToList(), targetFilePathResult.Value);
+        var movedSupportedImagesResult = await _artworkImageIntegrator.IntegrateImages(imageFiles.ToList(), targetFilePathResult.Value);
         if (movedSupportedImagesResult.IsFailure)
         {
             _logger.LogWarning("Die Bild-Dateien konnten nicht in das Infuse-Mediathek-Verzeichnis {targetDirectory.FullName} verschoben werden: {movedSupportedImagesResult.Error}", targetDirectory.FullName, movedSupportedImagesResult.Error);
