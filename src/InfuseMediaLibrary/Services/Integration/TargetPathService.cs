@@ -44,22 +44,31 @@ internal class TargetPathService
             return Result.Failure<DirectoryInfo>($"Das Album ist leer.");
         }
 
-        var mediaSetTitle = _videoMetadataService.GetMediaSetName(videoFile);
-        if (mediaSetTitle.IsFailure)
+        var mediaSetName = _videoMetadataService.GetMediaSetName(videoFile);
+        if (mediaSetName.IsFailure)
         {
-            return Result.Failure<DirectoryInfo>($"Das Zielverzeichnis für die Video-Datei {videoFile} konnte aufgrund Fehler bei der Titel-Ermittlung nicht ermittelt werden: {mediaSetTitle.Error}");
+            return Result.Failure<DirectoryInfo>($"Das Zielverzeichnis für die Video-Datei {videoFile} konnte aufgrund Fehler bei der Titel-Ermittlung nicht ermittelt werden: {mediaSetName.Error}");
         }
 
-        var targetDirectory = Path.Combine(_applicationSettings.InfuseMediaLibraryPathLocal, album.Value, mediaSetTitle.Value.Date.Year.ToString(), mediaSetTitle.Value);
+        var targetDirectory = Path.Combine(_applicationSettings.InfuseMediaLibraryPathLocal, album.Value, mediaSetName.Value.Date.Year.ToString(), mediaSetName.Value);
 
         return new DirectoryInfo(targetDirectory);
     }
 
+    /// <summary>
+    /// Retourniert den Ziel-Dateinamen für die Video-Datei.
+    /// </summary>
+    /// <param name="videoFile"></param>
+    /// <returns></returns>
     internal Result<string> GetTargetFileName(FileInfo videoFile)
     {
-        // Der Ziel-Dateiname ist ohne vorangestelltes ISO-Datum. Dieses muss also aus dem Titel entfernt werden.
-        // var titleWithoutLeadingRecordingDate = title.Replace($"{recordingDate:yyyy-MM-dd} ", string.Empty);
+        // Der Ziel-Dateiname entspricht dem Medienset-Titel (also dem Medienset-Namen ohne ISO-Datum) + Dateiendung
+        var mediaSetName = _videoMetadataService.GetMediaSetName(videoFile);
+        if (mediaSetName.IsFailure)
+        {
+            return Result.Failure<string>($"Der Ziel-Dateiname für die Video-Datei {videoFile} konnte aufgrund Fehler bei der Titel-Ermittlung nicht ermittelt werden: {mediaSetName.Error}");
+        }
 
-        throw new NotImplementedException();
+        return $"{mediaSetName.Value.Title}{videoFile.Extension}";
     }
 }
