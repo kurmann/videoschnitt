@@ -2,7 +2,6 @@ using Microsoft.Extensions.Logging;
 using CSharpFunctionalExtensions;
 using Kurmann.Videoschnitt.Common.Models;
 using Kurmann.Videoschnitt.Common.Services.FileSystem;
-using Kurmann.Videoschnitt.Common.Services.Metadata;
 using Kurmann.Videoschnitt.ConfigurationModule.Settings;
 using Microsoft.Extensions.Options;
 using Kurmann.Videoschnitt.Common.Services.FileSystem.Unix;
@@ -18,20 +17,20 @@ public class MediaIntegratorService
 {
     private readonly ILogger<MediaIntegratorService> _logger;
     private readonly IFileOperations _fileOperations;
-    private readonly FFmpegMetadataService _ffmpegMetadataService;
     private readonly ApplicationSettings _applicationSettings; 
     private readonly ArtworkImageIntegrator _artworkImageIntegrator;
     private readonly VideoMetadataService _videoMetadataService;
+    private readonly VideoIntegratorService _videoIntegratorService;
 
-    public MediaIntegratorService(ILogger<MediaIntegratorService> logger, IFileOperations fileOperations, FFmpegMetadataService ffmpegMetadataService, 
-        IOptions<ApplicationSettings> applicationSettings, ArtworkImageIntegrator artworkImageIntegrator, VideoMetadataService videoMetadataService)
+    public MediaIntegratorService(ILogger<MediaIntegratorService> logger, IFileOperations fileOperations, IOptions<ApplicationSettings> applicationSettings, 
+        ArtworkImageIntegrator artworkImageIntegrator, VideoMetadataService videoMetadataService, VideoIntegratorService videoIntegratorService)
     {
         _logger = logger;
         _fileOperations = fileOperations;
-        _ffmpegMetadataService = ffmpegMetadataService;
         _applicationSettings = applicationSettings.Value;
         _artworkImageIntegrator = artworkImageIntegrator;
         _videoMetadataService = videoMetadataService;
+        _videoIntegratorService = videoIntegratorService;
     }
 
     public async Task<Result> IntegrateMediaSetToLocalInfuseMediaLibrary(string title, FileInfo videoFile, IEnumerable<FileInfo> imageFiles)
