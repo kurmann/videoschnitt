@@ -61,27 +61,14 @@ public class VideoMetadataService
             return Result.Failure<string>("Das Verzeichnis der Video-Datei konnte nicht ermittelt werden.");
         }
 
-        // Es wird angenommen, dass der Titel des Mediensets wie folgt aufgebaut ist <RootDirectory>/<MediasetName>/<MediaServerFilesSubDirectoryName>/<VideoFile>
-        var mediaServerFilesDirectoryDefinedBySettings = _mediaSetOrganizerSettings.MediaSet.MediaServerFilesSubDirectoryName;
-
-        // Ermittle den Names des Verzeichnisses oberhalb des Verzeichnisses für die Media-Server-Dateien. Also das Eltern-Verzeichnis des Verzeichnisses für die Media-Server-Dateien.
-        var mediaServerFilesDirectoryName = videoFileDirectory.Parent?.Name;
-
-        // Prüfe ob das Elternverzeichnis der Videodatei den erwarteten Namen für das Verzeichnis der Media-Server-Dateien hat.
-        if (mediaServerFilesDirectoryName != mediaServerFilesDirectoryDefinedBySettings)
+        // Der Titel des Mediensets ist der Name des Elternverzeichnisses des Verzeichnisses für die Media-Server-Dateien. 
+        var mediaSetTitle = videoFileDirectory.Parent?.Name;
+        if (string.IsNullOrWhiteSpace(mediaSetTitle))
         {
-            return Result.Failure<string>($"Das Elternverzeichnis der Video-Datei hat nicht den erwarteten Namen für Verzeichnis der Media-Server-Dateien: {mediaServerFilesDirectoryDefinedBySettings}.");
+            return Result.Failure<string>("Der Name des Elternverzeichnisses des Verzeichnisses für die Media-Server-Dateien konnte nicht ermittelt werden.");
         }
 
-        // Der Name des Verzeichnisses des Mediensets ist das übergeordnete Verzeichnis des Verzeichnisses für die Media-Server-Dateien.
-        var mediaSetDirectoryName = videoFileDirectory.Parent?.Parent?.Name;
-        if (string.IsNullOrWhiteSpace(mediaSetDirectoryName))
-        {
-            return Result.Failure<string>("Der Name des Verzeichnisses des Mediensets konnte nicht ermittelt werden.");
-        }
-
-        // Der Name des Mediensets ist der Name des Verzeichnisses des Mediensets.
-        return Result.Success(mediaSetDirectoryName);
+        return Result.Success(mediaSetTitle);
     }
 
     /// <summary>
