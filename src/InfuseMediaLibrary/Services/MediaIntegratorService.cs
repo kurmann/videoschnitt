@@ -48,39 +48,20 @@ public class MediaIntegratorService
             _logger.LogInformation("Infuse-Mediathek-Verzeichnis {infuseMediaLibraryPathLocal} erfolgreich erstellt.", _applicationSettings.InfuseMediaLibraryPathLocal);
         }
 
-        // Ermittle das Album aus den Metadaten der Video-Datei
-        var albumResult = await _ffmpegMetadataService.GetMetadataFieldAsync(videoFile, "album");
-        if (albumResult.IsFailure)
+        var album = await _videoMetadataService.GetAlbumAsync(videoFile);
+        if (album.IsFailure)
         {
-            return Result.Failure<Maybe<LocalMediaServerFiles>>($"Das Album konnte nicht aus den Metadaten der Video-Datei {videoFile} ermittelt werden: {albumResult.Error}");
-        }
-        Maybe<string> album = string.IsNullOrWhiteSpace(albumResult.Value) ? Maybe<string>.None : albumResult.Value;
-        if (album.HasNoValue)
-        {
-            _logger.LogTrace("Album-Tag ist nicht in den Metadaten der Video-Datei {FileInfo.Name} vorhanden.", videoFile.Name);
-            _logger.LogTrace("Das Album wird für die Integration in die Infuse-Mediathek nicht verwendet.");
-        }
-        else
-        {
-            _logger.LogTrace("Album-Tag aus den Metadaten der Video-Datei {FileInfo.Name} ermittelt: {album.Value}", videoFile.Name, album.Value);
-            _logger.LogTrace($"Das Album wird für die Integration in die Infuse-Mediathek als erste Verzeichnisebene verwendet.");
+            return Result.Failure<Maybe<LocalMediaServerFiles>>($"Das Album konnte nicht aus den Metadaten der Video-Datei {videoFile} ermittelt werden: {album.Error}");
         }
 
-        // Ermittle das Aufnahmedatum aus dem Titel der Video-Datei. Das Aufnahemdatum ist als ISO-String im Titel enthalten mit einem Leerzeichen getrennt.
-        var recordingDate = GetRecordingDateFromTitle(title);
-        if (recordingDate.HasNoValue)
+        var recordingDate = _videoMetadataService.GetRecordingDate(title);
+        if (recordingDate.IsFailure)
         {
-            _logger.LogTrace("Das Aufnahmedatum konnte nicht aus dem Titel der Video-Datei {FileInfo.Name} ermittelt werden.", videoFile.Name);
-            _logger.LogTrace("Das Aufnahmedatum wird für die Integration in die Infuse-Mediathek nicht verwendet.");
-        }
-        else
-        {
-            _logger.LogTrace("Aufnahmedatum aus dem Titel der Video-Datei {FileInfo.Name} ermittelt: {recordingDate.Value}", videoFile.Name, recordingDate.Value);
-            _logger.LogTrace("Das Aufnahmedatum wird für die Integration in die Infuse-Mediathek als zweite Verzeichnisebene verwendet.");
+            return Result.Failure<Maybe<LocalMediaServerFiles>>($"Das Aufnahmedatum konnte nicht aus dem Titel der Video-Datei {videoFile} ermittelt werden: {recordingDate.Error}");
         }
 
-        _logger.LogInformation("Gefunden in den Metadaten der Video-Datei: Album: {album}", album);
-        _logger.LogInformation("Ausgelesen aus dem Dateinamen: Aufnahmedatum: {recordingDate}", recordingDate);
+        _logger.LogInformation("Gefunden in den Metadaten der Video-Datei: Album: {album}", album.Value);
+        _logger.LogInformation("Ausgelesen aus dem Dateinamen: Aufnahmedatum: {recordingDate}", recordingDate.Value.ToLongDateString());
 
         var targetFilePathResult = GetTargetFilePath(videoFile, album.Value, title, recordingDate.Value);
         if (targetFilePathResult.IsFailure)
@@ -130,28 +111,6 @@ public class MediaIntegratorService
         }
 
         return Result.Success();
-    }
-
-    /// <summary>
-    /// Gibt das Aufnahmedatum aus dem Titel der Video-Datei zurück.
-    /// Das Aufnahemdatum ist zu Beginn des Titels als ISO-String enthalten mit einem Leerzeichen getrennt.
-    /// </summary>
-    /// <param name="videoFile"></param>
-    /// <returns></returns>
-    private static Maybe<DateOnly> GetRecordingDateFromTitle(string? titleFromMetadata)
-    {
-        if (string.IsNullOrWhiteSpace(titleFromMetadata))
-            return Maybe<DateOnly>.None;
-
-        var titleParts = titleFromMetadata.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-        if (titleParts.Length == 0)
-            return Maybe<DateOnly>.None;
-
-        var recordingDate = titleParts[0];
-        if (!DateOnly.TryParse(recordingDate, out var recordingDateValue))
-            return Maybe<DateOnly>.None;
-
-        return recordingDateValue;
     }
 
     /// <summary>
