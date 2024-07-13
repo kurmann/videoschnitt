@@ -69,7 +69,7 @@ public class Program
                 services.AddConfigurationModule(hostContext.Configuration);
                 services.AddCommonServicesEngine(hostContext.Configuration);
                 services.AddMediaSetOrganizer();
-                services.AddInfuseMediaLibrary(hostContext.Configuration);
+                services.AddInfuseMediaLibrary();
                 services.AddPresentationAssetsBuilder();
                 services.AddHealthCheck();
             });
