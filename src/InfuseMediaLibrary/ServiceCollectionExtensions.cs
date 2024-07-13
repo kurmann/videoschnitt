@@ -17,6 +17,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<PosterAndFanartService>();
         services.AddScoped<ArtworkImageIntegrator>();
         services.AddScoped<VideoIntegratorService>();
+        services.AddScoped<TargetPathService>();
 
         return services;
     }
