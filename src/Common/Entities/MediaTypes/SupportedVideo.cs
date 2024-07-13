@@ -75,4 +75,9 @@ public class SupportedVideo
     {
         return supportedVideo.FileInfo;
     }
+
+    public static implicit operator string(SupportedVideo supportedVideo)
+    {
+        return supportedVideo.FileInfo.Name;
+    }
 }

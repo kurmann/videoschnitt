@@ -65,12 +65,7 @@ public class FFmpegMetadataService
 
     public async Task<Result<string>> GetMetadataFieldAsync(FileInfo fileInfo, string field)
     {
-        return await GetMetadataFieldAsync(fileInfo.FullName, field);
-    }
-
-    public async Task<Result<string>> GetMetadataFieldAsync(string filePath, string field)
-    {
-        var arguments = $"-v error -show_entries format_tags={field} -of default=noprint_wrappers=1:nokey=1 \"{filePath}\"";
+        var arguments = $"-v error -show_entries format_tags={field} -of default=noprint_wrappers=1:nokey=1 \"{fileInfo.FullName}\"";
         var result = await _executeCommandService.ExecuteCommandAsync(_ffprobeCommand, arguments);
 
         if (result.IsSuccess)
@@ -81,16 +76,6 @@ public class FFmpegMetadataService
 
         _logger.LogError("Error retrieving FFprobe metadata field '{field}': {Error}", field, result.Error);
         return Result.Failure<string>(result.Error);
-    }
-
-    public async Task<Result<string>> GetTitleAsync(string filePath)
-    {
-        return await GetMetadataFieldAsync(filePath, "title");
-    }
-
-    public async Task<Result<string>> GetDescriptionAsync(string filePath)
-    {
-        return await GetMetadataFieldAsync(filePath, "description");
     }
 
     public async Task<Result<string>> GetVideoCodecNameAsync(string filePath)
