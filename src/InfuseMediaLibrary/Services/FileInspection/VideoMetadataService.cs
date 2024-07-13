@@ -1,4 +1,5 @@
 using CSharpFunctionalExtensions;
+using Kurmann.Videoschnitt.Common.Models;
 using Kurmann.Videoschnitt.Common.Services.Metadata;
 using Kurmann.Videoschnitt.ConfigurationModule.Settings;
 using Microsoft.Extensions.Logging;
@@ -48,71 +49,33 @@ internal class VideoMetadataService
     }
 
     /// <summary>
-    /// Ermittelt aus dem Verzeichnisbaum der Video-Datei den Titel des Mediensets.
+    /// Ermittelt aus dem Verzeichnisbaum der Video-Datei den Namen des Mediensets.
     /// </summary>
     /// <param name="videoFile"></param>
     /// <returns></returns>
-    public Result<string> GetTitle(FileInfo videoFile)
+    public Result<MediaSetTitle> GetMediaSetName(FileInfo videoFile)
     {
         var videoFileDirectory = videoFile.Directory;
         if (videoFileDirectory == null)
         {
             _logger.LogWarning("Das Verzeichnis der Video-Datei {FileInfo.Name} konnte nicht ermittelt werden.", videoFile.Name);
-            return Result.Failure<string>("Das Verzeichnis der Video-Datei konnte nicht ermittelt werden.");
+            return Result.Failure<MediaSetTitle>("Das Verzeichnis der Video-Datei konnte nicht ermittelt werden.");
         }
 
-        // Der Titel des Mediensets ist der Name des Elternverzeichnisses des Verzeichnisses für die Media-Server-Dateien. 
-        var mediaSetTitle = videoFileDirectory.Parent?.Name;
-        if (string.IsNullOrWhiteSpace(mediaSetTitle))
+        // Der Name des Mediensets ist der Name des Elternverzeichnisses des Verzeichnisses für die Media-Server-Dateien. 
+        var parentDirectoryName = videoFileDirectory.Parent?.Name;
+        if (string.IsNullOrWhiteSpace(parentDirectoryName))
         {
-            return Result.Failure<string>("Der Name des Elternverzeichnisses des Verzeichnisses für die Media-Server-Dateien konnte nicht ermittelt werden.");
+            return Result.Failure<MediaSetTitle>("Der Name des Elternverzeichnisses des Verzeichnisses für die Media-Server-Dateien konnte nicht ermittelt werden.");
         }
 
-        return Result.Success(mediaSetTitle);
-    }
-
-    /// <summary>
-    /// Ermittelt das Aufnahmedatum aus dem Titel der Video-Datei.
-    /// </summary>
-    /// <param name="title"></param>
-    /// <returns></returns>
-    public Result<DateOnly> GetRecordingDate(string title)
-    {
-        // Ermittle das Aufnahmedatum aus dem Titel der Video-Datei. Das Aufnahemdatum ist als ISO-String im Titel enthalten mit einem Leerzeichen getrennt.
-        var recordingDate = GetRecordingDateFromTitle(title);
-        if (recordingDate.HasNoValue)
+        // Parse den Verzeichnisnamen als Medienset-Namen
+        var mediaSetTitle = MediaSetTitle.Create(parentDirectoryName);
+        if (mediaSetTitle.IsFailure)
         {
-            _logger.LogTrace("Das Aufnahmedatum konnte nicht aus dem Titel der Video-Datei ermittelt werden.");
-            _logger.LogTrace("Das Aufnahmedatum wird für die Integration in die Infuse-Mediathek nicht verwendet.");
-        }
-        else
-        {
-            _logger.LogTrace("Aufnahmedatum aus dem Titel der Video-Datei ermittelt: {recordingDate}", recordingDate.Value);
-            _logger.LogTrace("Das Aufnahmedatum wird für die Integration in die Infuse-Mediathek als zweite Verzeichnisebene verwendet.");
+            return Result.Failure<MediaSetTitle>($"Der Verzeichnisname {parentDirectoryName} konnte nicht als Medienset-Name geparst werden.");
         }
 
-        return Result.Success(recordingDate.Value);
-    }
-
-    /// <summary>
-    /// Gibt das Aufnahmedatum aus dem Titel der Video-Datei zurück.
-    /// Das Aufnahemdatum ist zu Beginn des Titels als ISO-String enthalten mit einem Leerzeichen getrennt.
-    /// </summary>
-    /// <param name="videoFile"></param>
-    /// <returns></returns>
-    private static Maybe<DateOnly> GetRecordingDateFromTitle(string? titleFromMetadata)
-    {
-        if (string.IsNullOrWhiteSpace(titleFromMetadata))
-            return Maybe<DateOnly>.None;
-
-        var titleParts = titleFromMetadata.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-        if (titleParts.Length == 0)
-            return Maybe<DateOnly>.None;
-
-        var recordingDate = titleParts[0];
-        if (!DateOnly.TryParse(recordingDate, out var recordingDateValue))
-            return Maybe<DateOnly>.None;
-
-        return recordingDateValue;
+        return Result.Success(mediaSetTitle.Value);
     }
 }

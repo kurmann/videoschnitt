@@ -49,6 +49,8 @@ internal class MediaIntegratorService
             _logger.LogInformation("Infuse-Mediathek-Verzeichnis {infuseMediaLibraryPathLocal} erfolgreich erstellt.", _applicationSettings.InfuseMediaLibraryPathLocal);
         }
 
+        var videoIntegrationResult = _videoIntegratorService.IntegrateVideoAsync(videoFile);
+
         // Verschiebe die Video-Datei in das Infuse-Mediathek-Verzeichnis und erstelle das Verzeichnis falls es nicht existiert
         var targetDirectory = await _targetPathService.GetTargetDirectoryAsync(videoFile);
         if (targetDirectory.IsFailure)

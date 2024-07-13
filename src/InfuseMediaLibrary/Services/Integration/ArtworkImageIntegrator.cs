@@ -34,7 +34,7 @@ internal class ArtworkImageIntegrator
     /// <param name="supportedImages"></param>
     /// <param name="videoFileTargetPath"></param>
     /// <returns></returns>
-    public async Task<Result> IntegrateImages(List<FileInfo> supportedImages, FileInfo videoFileTargetPath)
+    public async Task<Result> IntegrateImagesAsync(List<FileInfo> supportedImages, FileInfo videoFileTargetPath)
     {
         // Wenn kein Bild vorhanden sind, wird mit einer Info geloggt und die Methode beendet.
         if (supportedImages.Count == 0)
