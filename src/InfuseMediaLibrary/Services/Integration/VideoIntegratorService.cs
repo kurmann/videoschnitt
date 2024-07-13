@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Kurmann.Videoschnitt.InfuseMediaLibrary.Services.Integration;
 
-public class VideoIntegratorService
+internal class VideoIntegratorService
 {
 
 }

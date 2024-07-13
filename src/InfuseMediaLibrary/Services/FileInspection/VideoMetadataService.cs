@@ -6,7 +6,7 @@ using Microsoft.Extensions.Options;
 
 namespace Kurmann.Videoschnitt.InfuseMediaLibrary.Services.FileInspection;
 
-public class VideoMetadataService
+internal class VideoMetadataService
 {
     private readonly ILogger<VideoMetadataService> _logger;
     private readonly FFmpegMetadataService _ffmpegMetadataService;
