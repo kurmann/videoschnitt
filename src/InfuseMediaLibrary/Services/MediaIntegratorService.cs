@@ -35,7 +35,7 @@ internal class MediaIntegratorService
         _targetPathService = targetPathService;
     }
 
-    public async Task<Result> IntegrateMediaSetToLocalInfuseMediaLibrary(string title, FileInfo videoFile, IEnumerable<FileInfo> imageFiles)
+    public async Task<Result> IntegrateMediaSetToLocalInfuseMediaLibrary(FileInfo videoFile, IEnumerable<FileInfo> imageFiles)
     {
         // Prüfe ob das Infuse-Mediathek-Verzeichnis existiert und erstelle es falls es nicht existiert
         if (!Directory.Exists(_applicationSettings.InfuseMediaLibraryPathLocal))
