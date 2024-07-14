@@ -122,12 +122,17 @@ internal record ArtworkDirectory(DirectoryInfo DirectoryInfo, MediaSetName Media
 {
     public override string ToString()
     {
-        return MediaSetName;
+        return DirectoryInfo.FullName;
     }
 
     public static implicit operator DirectoryInfo(ArtworkDirectory artworkDirectory)
     {
         return artworkDirectory.DirectoryInfo;
+    }
+
+    public static implicit operator string(ArtworkDirectory artworkDirectory)
+    {
+        return artworkDirectory.DirectoryInfo.FullName;
     }
 
     public Result<List<SupportedImage>> GetSupportedImages() => SupportedImage.GetSupportedImagesFromDirectory(DirectoryInfo);
@@ -137,7 +142,12 @@ internal record MediaServerFilesDirectory(DirectoryInfo DirectoryInfo, MediaSetN
 {
     public override string ToString()
     {
-        return MediaSetName;
+        return DirectoryInfo.FullName;
+    }
+
+    public static implicit operator string(MediaServerFilesDirectory mediaServerFilesDirectory)
+    {
+        return mediaServerFilesDirectory.DirectoryInfo.FullName;
     }
 
     public static implicit operator DirectoryInfo(MediaServerFilesDirectory mediaServerFilesDirectory)
