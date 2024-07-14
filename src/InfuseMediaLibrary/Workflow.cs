@@ -2,7 +2,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using CSharpFunctionalExtensions;
 using Kurmann.Videoschnitt.ConfigurationModule.Settings;
-using Kurmann.Videoschnitt.Common.Services.FileSystem;
 using Kurmann.Videoschnitt.InfuseMediaLibrary.Services.Integration;
 using Kurmann.Videoschnitt.InfuseMediaLibrary.Services.FileInspection;
 
@@ -19,21 +18,16 @@ internal class Workflow : IWorkflow
 {
     private readonly ApplicationSettings _applicationSettings;
     private readonly ILogger<Workflow> _logger;
-    private readonly MediaSetOrganizerSettings _mediaSetOrganizerSettings;
-    private readonly IFileOperations _fileOperations;
-    private readonly VideoIntegrator _videoIntegrator;
     private readonly LocalMediaSetDirectoryReader _localMediaSetDirectoryReader;
+    private readonly MediaSetIntegrator _mediaSetIntegrator;
 
-    public Workflow(IOptions<ApplicationSettings> applicationSettings, IOptions<MediaSetOrganizerSettings> mediaSetOrganizerSettings,
-        ILogger<Workflow> logger, IFileOperations fileOperations, 
-        VideoIntegrator videoIntegrator, LocalMediaSetDirectoryReader localMediaSetDirectoryReader)
+    public Workflow(IOptions<ApplicationSettings> applicationSettings, ILogger<Workflow> logger, 
+        LocalMediaSetDirectoryReader localMediaSetDirectoryReader, MediaSetIntegrator mediaSetIntegrator)
     {
         _applicationSettings = applicationSettings.Value;
-        _mediaSetOrganizerSettings = mediaSetOrganizerSettings.Value;
         _logger = logger;
-        _fileOperations = fileOperations;
-        _videoIntegrator = videoIntegrator;
         _localMediaSetDirectoryReader = localMediaSetDirectoryReader;
+        _mediaSetIntegrator = mediaSetIntegrator;
     }
 
     public async Task<Result> ExecuteAsync()
@@ -57,102 +51,17 @@ internal class Workflow : IWorkflow
         // Ziel ist es, die unterstützten Video- und Bildformate in die Infuse-Mediathek zu integrieren
         foreach (var mediaSetDirectory in mediaSetDirectories)
         {
-            var integrateMediaServerFilesTask = _videoIntegrator.IntegrateMediaServerFiles(mediaSetDirectory.MediaServerFilesDirectory.GetValueOrDefault());
-            // todo: integrate images
-
-            // Warte auf das Ergebnis der Integration der Medienserver-Dateien
-            var tasks = await integrateMediaServerFilesTask;
-            if (tasks.IsFailure)
+            var mediaSetIntegratorResult = await _mediaSetIntegrator.IntegrateMediaSetAsync(mediaSetDirectory);
+            if (mediaSetIntegratorResult.IsFailure)
             {
-                _logger.LogError("Fehler beim Integrieren der Medienserver-Dateien für das Medienset {MediaSet}: {Error}", mediaSetDirectory.Name, tasks.Error);
+                _logger.LogError("Fehler beim Integrieren des Mediensets {MediaSet}: {Error}", mediaSetDirectory.Name, mediaSetIntegratorResult.Error);
+                _logger.LogInformation("Das Medienset {MediaSet} wird ignoriert.", mediaSetDirectory.Name);
                 continue;
             }
-
-            // Suche nach dem Unterverzeichnis, das die Dateien für den Medienserver enthält
-            var mediaServerFileDirectory = mediaSetDirectory.GetDirectories().FirstOrDefault(d => d.Name == _mediaSetOrganizerSettings.MediaSet.MediaServerFilesSubDirectoryName);
-
-            // Suche nach dem Unterverzeichnis, das die Bilder enthält
-            var imagesDirectory = mediaSetDirectory.GetDirectories().FirstOrDefault(d => d.Name == _mediaSetOrganizerSettings.MediaSet.ImageFilesSubDirectoryName);
-
-            // Mache mit dem nächsten Medienset weiter, wenn kein Verzeichnis für Internet-Dateien und/oder Bilder gefunden wurde
-            if (mediaServerFileDirectory == null || imagesDirectory == null)
-            {
-                _logger.LogInformation("Für das Medienset {MediaSet} wurden keine Internet-Dateien und/oder Bilder gefunden.", mediaSetDirectory.Name);
-                continue;
-            }
-
-            // Nimm an, dass alle Videos fürs Internet und alle Bilder im entsprechenden Verzeichnis liegen (durch vorangehende Prozesse)
-            var mediaServerFiles = mediaServerFileDirectory.GetFiles();
-
-            
-
-            // Für die Bilder sollen nur JPG-Dateien berücksichtigt werden (Dateiendung JPG und JPEG)
-            var imageFiles = imagesDirectory.GetFiles().Where(f => f.Extension == ".jpg" || f.Extension == ".jpeg").ToArray();
-
-            // Ignoriere Videos, die derzeit in Bearbeitung sind
-            var mediaServerFilesNotInUse = new List<FileInfo>();
-            foreach (var file in mediaServerFiles)
-            {
-                var isUsedResult = await _fileOperations.IsFileInUseAsync(file.FullName);
-                if (isUsedResult.IsFailure)
-                {
-                    _logger.LogWarning("Fehler beim Prüfen, ob die Datei {File} verwendet wird: {Error}", file.Name, isUsedResult.Error);
-                    continue;
-                }
-                if (isUsedResult.Value)
-                {
-                    _logger.LogInformation("Die Datei {File} wird derzeit verwendet und wird daher nicht in die Infuse-Mediathek integriert.", file.Name);
-                }
-                else
-                {
-                    mediaServerFilesNotInUse.Add(file);
-                }
-            }
-            mediaServerFiles = mediaServerFilesNotInUse.ToArray();
-
-            // Ignoriere Bilder, die derzeit in Bearbeitung sind
-            var imageFilesNotInUse = new List<FileInfo>();
-            foreach (var file in imageFiles)
-            {
-                var isUsedResult = await _fileOperations.IsFileInUseAsync(file.FullName);
-                if (isUsedResult.IsFailure)
-                {
-                    _logger.LogWarning("Fehler beim Prüfen, ob die Datei {File} verwendet wird: {Error}", file.Name, isUsedResult.Error);
-                    continue;
-                }
-                if (isUsedResult.Value)
-                {
-                    _logger.LogInformation("Die Datei {File} wird derzeit verwendet und wird daher nicht in die Infuse-Mediathek integriert.", file.Name);
-                }
-                else
-                {
-                    imageFilesNotInUse.Add(file);
-                }
-            }
-            imageFiles = imageFilesNotInUse.ToArray();
-
-            // Wenn nur Bilddateien vorhanden sind, wird das Medienset ignoriert
-            // Damit soll sichergestellt sein, dass nicht die Bilder umgehend verschoben werden wenn noch keine Videodatei vorhanden ist.
-            // Damit lassen sich die Bilder nach dem Export aus Final Cut Pro noch bearbeiten bspw. Zuschneiden solange der Videoexport noch nicht abgeschlossen ist.
-            if (mediaServerFiles.Length == 0)
-            {
-                _logger.LogInformation("Für das Medienset {MediaSet} wurden keine Videodateien gefunden. Das Medienset wird ignoriert.", mediaSetDirectory.Name);
-                continue;
-            }
-
-            // Für den Infuse-Medenserver darf pro Medienset nur eine Videodatei vorhanden sein. Gib eine Warnung aus, wenn mehrere Videodateien gefunden wurden.
-            if (mediaServerFiles.Length != 1)
-            {
-                _logger.LogWarning("Für das Medienset {MediaSet} wurden {Count} Videodateien gefunden. Es wird nur eine Videodatei unterstützt.", mediaSetDirectory.Name, mediaServerFiles.Length);
-            }
-            var mediaServerFile = mediaServerFiles.First();
-
-            // Starte die Integration mit dem entsprechenden Service
-            var imageFilesCommaseparated = string.Join(", ", imageFiles.Select(f => f.Name));
-            _logger.LogInformation("Folgende Videodatei wird in die Infuse-Mediathek integriert: {File}", mediaServerFile.Name);
-            _logger.LogInformation("Folgende Bilder werden in die Infuse-Mediathek integriert: {Files}", imageFilesCommaseparated);
+            _logger.LogInformation("Medienset {MediaSet} wurde erfolgreich in die Infuse-Mediathek integriert.", mediaSetDirectory.Name);
         }
 
+        _logger.LogInformation("InfuseMediaLibrary-Workflow wurde erfolgreich ausgeführt.");
         return Result.Success();
     }
 }

@@ -1,4 +1,5 @@
 using CSharpFunctionalExtensions;
+using Kurmann.Videoschnitt.Common.Entities.MediaTypes;
 using Kurmann.Videoschnitt.ConfigurationModule.Settings;
 using Kurmann.Videoschnitt.InfuseMediaLibrary.Services.FileInspection;
 using Microsoft.Extensions.Options;
@@ -26,7 +27,7 @@ internal class TargetPathService
     /// <param name="album"></param>
     /// <param name="recordingDate"></param>
     /// <returns></returns>
-    internal async Task<Result<DirectoryInfo>> GetTargetDirectoryAsync(FileInfo? videoFile)
+    internal async Task<Result<DirectoryInfo>> GetTargetDirectoryAsync(SupportedVideo? videoFile)
     {
         if (videoFile == null)
         {

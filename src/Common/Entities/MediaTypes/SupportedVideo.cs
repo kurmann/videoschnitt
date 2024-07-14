@@ -1,4 +1,3 @@
-using System.Security;
 using CSharpFunctionalExtensions;
 
 namespace Kurmann.Videoschnitt.Common.Entities.MediaTypes;
@@ -9,6 +8,12 @@ namespace Kurmann.Videoschnitt.Common.Entities.MediaTypes;
 public class SupportedVideo
 {
     public FileInfo FileInfo { get; private set; }
+
+    public string Name => FileInfo.Name;
+
+    public DirectoryInfo? Directory => FileInfo.Directory;
+
+    public string Extension => FileInfo.Extension;
 
     private SupportedVideo(FileInfo fileInfo) => FileInfo = fileInfo;
 
@@ -87,20 +92,14 @@ public class SupportedVideo
         return QuickTimeMovie.IsQuickTimeMovieExtension(fileInfo) || Mpeg4Video.IsVideoExtensionMpeg4(fileInfo);
     }
 
-    public override string ToString() => FileInfo.Name;
+    public override string ToString() => FileInfo.FullName;
 
     public void UpdateFilePath(string videoFileForMediaServerTargetPath)
     {
         FileInfo = new FileInfo(videoFileForMediaServerTargetPath);
     }
 
-    public static implicit operator FileInfo(SupportedVideo supportedVideo)
-    {
-        return supportedVideo.FileInfo;
-    }
+    public static implicit operator FileInfo(SupportedVideo supportedVideo) => supportedVideo.FileInfo;
 
-    public static implicit operator string(SupportedVideo supportedVideo)
-    {
-        return supportedVideo.FileInfo.FullName;
-    }
+    public static implicit operator string(SupportedVideo supportedVideo) => supportedVideo.FileInfo.FullName;
 }

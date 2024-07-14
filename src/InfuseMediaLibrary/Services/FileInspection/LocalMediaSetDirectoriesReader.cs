@@ -99,6 +99,8 @@ internal class LocalMediaSetDirectoryReader
 /// <returns></returns>
 internal record MediaSetDirectory(DirectoryInfo DirectoryInfo, MediaSetName MediaSetName, Maybe<ArtworkDirectory> ArtworkDirectory, Maybe<MediaServerFilesDirectory> MediaServerFilesDirectory)
 {
+    public string Name => MediaSetName;
+
     public override string ToString()
     {
         return MediaSetName;
@@ -127,6 +129,8 @@ internal record ArtworkDirectory(DirectoryInfo DirectoryInfo, MediaSetName Media
     {
         return artworkDirectory.DirectoryInfo;
     }
+
+    public Result<List<SupportedImage>> GetSupportedImages() => SupportedImage.GetSupportedImagesFromDirectory(DirectoryInfo);
 }
 
 internal record MediaServerFilesDirectory(DirectoryInfo DirectoryInfo, MediaSetName MediaSetName)
