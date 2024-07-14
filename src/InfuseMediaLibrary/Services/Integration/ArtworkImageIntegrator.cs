@@ -17,19 +17,16 @@ internal class ArtworkImageIntegrator
     private readonly ILogger<ArtworkImageIntegrator> _logger;
     private readonly InfuseMediaLibrarySettings _infuseMediaLibrarySettings;
     private readonly IFileOperations _fileOperations;
-    private readonly PosterAndFanartService _posterAndFanartService;
     private readonly ArtworkDirectoryReader _artworkDirectoryReader;
 
     public ArtworkImageIntegrator(ILogger<ArtworkImageIntegrator> logger,
         IOptions<InfuseMediaLibrarySettings> infuseMediaLibrarySettings,
-        IFileOperations fileOperations, ArtworkDirectoryReader artworkDirectoryReader,
-        PosterAndFanartService posterAndFanartService)
+        IFileOperations fileOperations, ArtworkDirectoryReader artworkDirectoryReader)
     {
         _logger = logger;
         _infuseMediaLibrarySettings = infuseMediaLibrarySettings.Value;
         _fileOperations = fileOperations;
         _artworkDirectoryReader = artworkDirectoryReader;
-        _posterAndFanartService = posterAndFanartService;
     }
 
     /// <summary>
