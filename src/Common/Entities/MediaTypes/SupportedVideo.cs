@@ -1,4 +1,3 @@
-using System.Security;
 using CSharpFunctionalExtensions;
 
 namespace Kurmann.Videoschnitt.Common.Entities.MediaTypes;
@@ -9,6 +8,12 @@ namespace Kurmann.Videoschnitt.Common.Entities.MediaTypes;
 public class SupportedVideo
 {
     public FileInfo FileInfo { get; private set; }
+
+    public string Name => FileInfo.Name;
+
+    public DirectoryInfo? Directory => FileInfo.Directory;
+
+    public string Extension => FileInfo.Extension;
 
     private SupportedVideo(FileInfo fileInfo) => FileInfo = fileInfo;
 
@@ -59,15 +64,42 @@ public class SupportedVideo
         }
     }
 
+    public static Result<List<SupportedVideo>> GetSupportedVideosFromDirectory(string directory)
+    {
+        var directoryInfo = new DirectoryInfo(directory);
+        if (!directoryInfo.Exists)
+        {
+            return Result.Failure<List<SupportedVideo>>($"The directory {directory} does not exist.");
+        }
+
+        // retourniere alle Dateien dessen Create-Methode erfolgreich war
+        return directoryInfo.GetFiles().Select(Create).Where(result => result.IsSuccess).Select(result => result.Value).ToList();
+    }
+
+    public static Result<List<SupportedVideo>> GetSupportedVideosFromDirectory(DirectoryInfo directoryInfo)
+    {
+        if (!directoryInfo.Exists)
+        {
+            return Result.Failure<List<SupportedVideo>>($"The directory {directoryInfo.FullName} does not exist.");
+        }
+
+        // retourniere alle Dateien dessen Create-Methode erfolgreich war
+        return directoryInfo.GetFiles().Select(Create).Where(result => result.IsSuccess).Select(result => result.Value).ToList();
+    }
+
     public static bool IsSupportedVideoExtension(FileInfo fileInfo)
     {
         return QuickTimeMovie.IsQuickTimeMovieExtension(fileInfo) || Mpeg4Video.IsVideoExtensionMpeg4(fileInfo);
     }
 
-    public override string ToString() => FileInfo.Name;
+    public override string ToString() => FileInfo.FullName;
 
     public void UpdateFilePath(string videoFileForMediaServerTargetPath)
     {
         FileInfo = new FileInfo(videoFileForMediaServerTargetPath);
     }
+
+    public static implicit operator FileInfo(SupportedVideo supportedVideo) => supportedVideo.FileInfo;
+
+    public static implicit operator string(SupportedVideo supportedVideo) => supportedVideo.FileInfo.FullName;
 }

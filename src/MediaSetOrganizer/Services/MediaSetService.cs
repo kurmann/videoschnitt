@@ -79,7 +79,7 @@ public class MediaSetService
         {
             _logger.LogInformation("Suche nach allen unterstützten Bild-Dateien die das gleiche Basis-Datei-Name haben wie die Videodatei");
             var supportedImageFileInfos = inputDirectoryContent.SupportedImages.Select(f => f.FileInfo);
-            var imageFileInfos = supportedImageFileInfos.Where(i => i.Name.StartsWith(videos.Title)).ToArray();
+            var imageFileInfos = supportedImageFileInfos.Where(i => i.Name.StartsWith(videos.NameString)).ToArray();
             var supportedImageFiles = new List<SupportedImage>();
             foreach (var imageFileInfo in imageFileInfos)
             {
@@ -95,9 +95,17 @@ public class MediaSetService
             }
 
             _logger.LogInformation("Suche für jedes Medienset nach einer Masterdatei.");
-            var masterfile = inputDirectoryContent.Masterfiles.FirstOrDefault(m => m.FileInfo.Name.StartsWith(videos.Title));
+            var masterfile = inputDirectoryContent.Masterfiles.FirstOrDefault(m => m.FileInfo.Name.StartsWith(videos.NameString));
 
-            mediaFilesByMediaSet.Add(new MediaFilesByMediaSet(videos.Title,
+            // Parse den Medienset-Namen
+            var mediaSetNameResult = MediaSetName.Create(videos.NameString);
+            if (mediaSetNameResult.IsFailure)
+            {
+                _logger.LogError("Fehler beim Parsen des Medienset-Namens '{MediaSetName}': {Error}", videos.NameString, mediaSetNameResult.Error);
+                continue;
+            }
+
+            mediaFilesByMediaSet.Add(new MediaFilesByMediaSet(mediaSetNameResult.Value,
                                                               videos.VideoFiles,
                                                               supportedImageFiles,
                                                               masterfile ?? Maybe<Masterfile>.None,
@@ -109,7 +117,7 @@ public class MediaSetService
 
         foreach (var mediaFiles in mediaFilesByMediaSet)
         {
-            _logger.LogInformation("Medienset: {Title}", mediaFiles.Title);
+            _logger.LogInformation("Medienset: {Name}", mediaFiles.Name);
             _logger.LogInformation("Anzahl Videos: {Count}", mediaFiles.VideoFiles.Count());
             _logger.LogInformation("Anzahl Bilder: {Count}", mediaFiles.ImageFiles.Count());
             _logger.LogInformation("Anzahl Dateien ohne Titel-Tag: {Count}", mediaFiles.EmptyTitleTags.Count());
@@ -123,10 +131,10 @@ public class MediaSetService
 /// <summary>
 /// Repräsentiert eine Gruppierung von unterstützten Videodateien nach Medienset.
 /// </summary>
-/// <param name="Title"></param>
+/// <param name="NameString"></param>
 /// <param name="VideoFiles"></param>
 /// <returns></returns>
-public record VideosByMediaSet(string Title, IEnumerable<SupportedVideo> VideoFiles);
+internal record VideosByMediaSet(string NameString, IEnumerable<SupportedVideo> VideoFiles);
 
 /// <summary>
 /// Repräsentiert eine Gruppierung von separat gelisteten unterstützten Medien-Dateien nach Medienset.
@@ -136,7 +144,7 @@ public record VideosByMediaSet(string Title, IEnumerable<SupportedVideo> VideoFi
 /// <param name="ImageFiles"></param>
 /// <param name="EmptyTitleTags"></param>
 /// <returns></returns>
-public record MediaFilesByMediaSet(string Title,
+public record MediaFilesByMediaSet(MediaSetName Name,
                                    IEnumerable<SupportedVideo> VideoFiles,
                                    IEnumerable<SupportedImage> ImageFiles,
                                    Maybe<Masterfile> Masterfile,

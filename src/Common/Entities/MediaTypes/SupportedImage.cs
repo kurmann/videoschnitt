@@ -1,3 +1,4 @@
+using System.Reflection;
 using CSharpFunctionalExtensions;
 
 namespace Kurmann.Videoschnitt.Common.Entities.MediaTypes;
@@ -11,20 +12,29 @@ public record SupportedImage : ISupportedMediaType
     public FileInfo FileInfo { get; private set; }
 
     /// <summary>
+    /// Der Dateiname der Bilddatei (inkl. Dateiendung und ohne Pfad).
+    /// </summary>
+    public string Name => FileInfo.Name;
+
+    /// <summary>
+    /// Gibt die Dateiendung der Originaldatei zurück.
+    /// </summary>
+    public string Extension => FileInfo.Extension;
+
+    /// <summary>
+    /// Gibt die Dateiendung der Bilddatei im Adobe RGB-Farbraum zurück (falls vorhanden).
+    /// </summary>
+    public Maybe<string> ExtensionAdobeRgb => FileInfoAdobeRgb.HasValue ? FileInfoAdobeRgb.Value.Extension : Maybe<string>.None;
+
+    /// <summary>
     /// Entspricht dem Dateipfad der gleichen Bilddatei konvertiert in den Adobe RGB-Farbraum (falls vorhanden).
     /// </summary>
     /// <value></value>
     public Maybe<FileInfo> FileInfoAdobeRgb { get; private set; }
 
-    public void AddAdobeRgbFileInfo(FileInfo fileInfo)
-    {
-        FileInfoAdobeRgb = Maybe<FileInfo>.From(fileInfo);
-    }
+    public void AddAdobeRgbFileInfo(FileInfo fileInfo) => FileInfoAdobeRgb = Maybe<FileInfo>.From(fileInfo);
 
-    public void ClearAdobeRgbFileInfo()
-    {
-        FileInfoAdobeRgb = Maybe<FileInfo>.None;
-    }
+    public void ClearAdobeRgbFileInfo() => FileInfoAdobeRgb = Maybe<FileInfo>.None;
 
     public bool IsTiffOrPng => FileInfo.Extension.Equals(".tiff", StringComparison.InvariantCultureIgnoreCase) || 
         FileInfo.Extension.Equals(".tif", StringComparison.InvariantCultureIgnoreCase) ||
@@ -85,9 +95,23 @@ public record SupportedImage : ISupportedMediaType
             fileInfo.Extension.Equals(".tif", StringComparison.InvariantCultureIgnoreCase);
     }
 
-    public override string ToString() => FileInfo.Name;
+    public override string ToString() => FileInfo.FullName;
+
+    public static implicit operator FileInfo(SupportedImage supportedImage) => supportedImage.FileInfo;
+    public static implicit operator string(SupportedImage supportedImage) => supportedImage.FileInfo.FullName;
 
     public void UpdateFilePath(string imageFileTargetPath) => FileInfo = new FileInfo(imageFileTargetPath);
 
     public void UpdateFilePathAdobeRgb(string newFilePathAdobeRgb) => FileInfoAdobeRgb = Maybe<FileInfo>.From(new FileInfo(newFilePathAdobeRgb));
+
+    public static Result<List<SupportedImage>> GetSupportedImagesFromDirectory(DirectoryInfo directoryInfo)
+    {
+        if (!directoryInfo.Exists)
+        {
+            return Result.Failure<List<SupportedImage>>($"The directory {directoryInfo.FullName} does not exist.");
+        }
+
+        // retourniere alle Dateien dessen Create-Methode erfolgreich war
+        return directoryInfo.GetFiles().Select(Create).Where(result => result.IsSuccess).Select(result => result.Value).ToList();
+    }
 }

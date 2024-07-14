@@ -47,12 +47,12 @@ public class PortraitAndLandscapeService
                 _mediaSetOrganizerSettings.MediaSet.OrientationSuffixes.Portrait :
                 _mediaSetOrganizerSettings.MediaSet.OrientationSuffixes.Landscape;
 
-            var newFileName = $"{mediaSet.Title}{orientationSuffix}{mediaSet.SingleImage.FileInfo.Extension}";
+            var newFileName = $"{mediaSet.Name}{orientationSuffix}{mediaSet.SingleImage.FileInfo.Extension}";
             if (mediaSet.SingleImage.FileInfoAdobeRgb.HasNoValue)
             {
                 return Result.Failure($"Fehler beim Ermitteln des Dateipfades der Adobe RGB-Bilddatei {mediaSet.SingleImage.FileInfo.Name}.");
             }
-            var newFileNameAdobeRgb = $"{mediaSet.Title}{orientationSuffix}{mediaSet.SingleImage.FileInfoAdobeRgb.Value.Extension}";
+            var newFileNameAdobeRgb = $"{mediaSet.Name}{orientationSuffix}{mediaSet.SingleImage.FileInfoAdobeRgb.Value.Extension}";
 
             var directoryName = mediaSet.SingleImage.FileInfo.DirectoryName;
             if (directoryName == null)
@@ -109,10 +109,10 @@ public class PortraitAndLandscapeService
                 return Result.Failure("Es konnten keine Bilder für die Umbenennung gefunden werden.");
             }
 
-            var newFileNameForPortrait = $"{mediaSet.Title}{_mediaSetOrganizerSettings.MediaSet.OrientationSuffixes.Portrait}{portraitImage.FileInfo.Extension}";
-            var newFileNameForLandscape = $"{mediaSet.Title}{_mediaSetOrganizerSettings.MediaSet.OrientationSuffixes.Landscape}{landscapeImage.FileInfo.Extension}";
-            var newFileNameForPortraitAdobeRgb = $"{mediaSet.Title}{_mediaSetOrganizerSettings.MediaSet.OrientationSuffixes.Portrait}{portraitImage.FileInfoAdobeRgb.Value.Extension}";
-            var newFileNameForLandscapeAdobeRgb = $"{mediaSet.Title}{_mediaSetOrganizerSettings.MediaSet.OrientationSuffixes.Landscape}{landscapeImage.FileInfoAdobeRgb.Value.Extension}";
+            var newFileNameForPortrait = $"{mediaSet.Name}{_mediaSetOrganizerSettings.MediaSet.OrientationSuffixes.Portrait}{portraitImage.FileInfo.Extension}";
+            var newFileNameForLandscape = $"{mediaSet.Name}{_mediaSetOrganizerSettings.MediaSet.OrientationSuffixes.Landscape}{landscapeImage.FileInfo.Extension}";
+            var newFileNameForPortraitAdobeRgb = $"{mediaSet.Name}{_mediaSetOrganizerSettings.MediaSet.OrientationSuffixes.Portrait}{portraitImage.FileInfoAdobeRgb.Value.Extension}";
+            var newFileNameForLandscapeAdobeRgb = $"{mediaSet.Name}{_mediaSetOrganizerSettings.MediaSet.OrientationSuffixes.Landscape}{landscapeImage.FileInfoAdobeRgb.Value.Extension}";
 
             // Nimm an, dass die beiden Bilder im gleichen Verzeichnis liegen
             var directoryName = portraitImage.FileInfo.DirectoryName;

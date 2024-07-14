@@ -1,11 +1,11 @@
 using CSharpFunctionalExtensions;
 
-namespace Kurmann.Videoschnitt.InfuseMediaLibrary.Services;
+namespace Kurmann.Videoschnitt.InfuseMediaLibrary.Services.Integration;
 
 /// <summary>
 /// Verantwortlich für das Verwalten von Postern und Fanarts auf Basis von unterstütuzten Medien.
 /// </summary>
-public class PosterAndFanartService
+internal class PosterAndFanartService
 {
     /// <summary>
     /// Ermittelt die Bilddateien, die als Poster und Fanart verwendet werden sollen.

@@ -44,12 +44,12 @@ public class MediaSetDirectoryIntegrator
 
         foreach (var mediaSet in mediaSets)
         {
-            if (mediaSet.Title == null)
+            if (mediaSet.Name == null)
             {
                 return Result.Failure<List<MediaSet>>("Der Titel des Mediensets darf nicht leer sein.");
             }
 
-            var mediaSetTargetDirectory = new DirectoryInfo(Path.Combine(_applicationSettings.MediaSetPathLocal, mediaSet.Title));
+            var mediaSetTargetDirectory = new DirectoryInfo(Path.Combine(_applicationSettings.MediaSetPathLocal, mediaSet.Name));
             if (!mediaSetTargetDirectory.Exists)
             {
                 _logger.LogInformation("Erstelle Medienset-Verzeichnis: {mediaSetDirectory}", mediaSetTargetDirectory.FullName);

@@ -11,7 +11,7 @@ namespace Kurmann.Videoschnitt.Common.Models;
 /// <returns></returns>
 public record MediaSet
 {
-    public string? Title { get; init; }
+    public MediaSetName? Name { get; init; }
 
     public Maybe<SupportedVideo> LocalMediaServerVideoFile { get; init;}
 
