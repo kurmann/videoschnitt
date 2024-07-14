@@ -120,6 +120,8 @@ internal record MediaSetDirectory(DirectoryInfo DirectoryInfo, MediaSetName Medi
 /// <returns></returns>
 internal record ArtworkDirectory(DirectoryInfo DirectoryInfo, MediaSetName MediaSetName)
 {
+    public string Name => DirectoryInfo.Name;
+
     public override string ToString()
     {
         return DirectoryInfo.FullName;
@@ -140,6 +142,8 @@ internal record ArtworkDirectory(DirectoryInfo DirectoryInfo, MediaSetName Media
 
 internal record MediaServerFilesDirectory(DirectoryInfo DirectoryInfo, MediaSetName MediaSetName)
 {
+    public string Name => DirectoryInfo.Name;
+
     public override string ToString()
     {
         return DirectoryInfo.FullName;
