@@ -116,7 +116,7 @@ internal class VideoIntegrator
         }
 
         // Verschiebe die Videodatei in das lokale Infuse-Mediathek-Verzeichnis und überschreibe die Datei falls sie bereits existiert
-        var fileMoveResult = await _fileOperations.MoveFileAsync(supportedVideo, targetFilePath, true, true);
+        var fileMoveResult = await _fileOperations.CopyFileAsync(supportedVideo, targetFilePath, true, true);
         if (fileMoveResult.IsFailure)
         {
             return Result.Failure<Maybe<Result>>($"Die Video-Datei {supportedVideo} konnte nicht in das Infuse-Mediathek-Verzeichnis {targetDirectory.Value.FullName} verschoben werden. Fehler: {fileMoveResult.Error}");
