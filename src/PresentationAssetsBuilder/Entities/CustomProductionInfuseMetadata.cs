@@ -1,5 +1,6 @@
-using System.Xml;
+using System.Text.Json;
 using System.Xml.Linq;
+using CSharpFunctionalExtensions;
 using Kurmann.Videoschnitt.Common.Services.Metadata;
 
 namespace Kurmann.Videoschnitt.PresentationAssetsBuilder.Entities;
@@ -44,42 +45,49 @@ public class CustomProductionInfuseMetadata
     }
 
     /// <summary>
-    /// Erstellt ein CustomProductionInfuseMetadata-Objekt aus den Metadaten eines Videos, die von FFmpeg extrahiert wurden.
+    /// Erstellt ein CustomProductionInfuseMetadata-Objekt aus den Metadaten eines Videos, die von FFprobe im JSON-Format extrahiert wurden.
     /// Das Aufnahmedatum wird als Parameter übergeben, da es nicht in den Metadaten enthalten ist. Es wird zum XML-Tag "published" hinzugefügt.
     /// </summary>
-    /// <param name="ffmpegMetadata"></param>
+    /// <param name="ffprobeJson"></param>
     /// <param name="recordingDate"></param>
     /// <returns></returns>
-    public static CustomProductionInfuseMetadata CreateFromFfmpegMetadata(FFmpegMetadata ffmpegMetadata, DateOnly recordingDate)
+    public static Result<CustomProductionInfuseMetadata> CreateFromFfprobeMetadata(FFprobeMetadata fFprobeMetadata, DateOnly recordingDate)
     {
-        var lines = ffmpegMetadata.Metadata
-            .Where(line => !line.StartsWith(';'))
-            .ToDictionary(line => line.Split('=')[0].Trim(), line => line.Split('=')[1].Trim());
+        if (fFprobeMetadata == null || fFprobeMetadata.Metadata == null)
+        {
+            return Result.Failure<CustomProductionInfuseMetadata>("Die FFprobe-Metadaten sind null.");
+        }
 
-        string type = "Other";
-        string title = lines.GetValueOrDefault("title", string.Empty);
-        string description = lines.GetValueOrDefault("com.apple.quicktime.description", string.Empty);
-        string artist = lines.GetValueOrDefault("artist", string.Empty);
-        string copyright = lines.GetValueOrDefault("copyright", string.Empty);
+        var json = fFprobeMetadata.ToString();
 
-        DateOnly? published = recordingDate;
-        DateOnly? releaseDate = DateOnly.TryParse(lines.GetValueOrDefault("com.apple.quicktime.creationdate"), out DateOnly releaseDateValue) ? releaseDateValue : null;
-        string studio = lines.GetValueOrDefault("com.apple.quicktime.studio", string.Empty);
-        string keywords = lines.GetValueOrDefault("keywords", string.Empty);
-        string album = lines.GetValueOrDefault("album", string.Empty);
+        // Parse JSON
+        try
+        {
+            var document = JsonDocument.Parse(json);
+            var format = document.RootElement.GetProperty("format");
+            var tags = format.GetProperty("tags");
 
-        var producers = new List<string> { lines.GetValueOrDefault("producer", string.Empty) };
-        var directors = new List<string>();
+            string type = "Other";
+            string title = tags.GetProperty("title").GetString() ?? string.Empty;
+            string description = tags.TryGetProperty("com.apple.quicktime.description", out var descProp) ? descProp.GetString() ?? string.Empty : string.Empty;
+            string artist = tags.GetProperty("artist").GetString() ?? string.Empty;
+            string copyright = tags.GetProperty("copyright").GetString() ?? string.Empty;
 
-        return new CustomProductionInfuseMetadata(type, title, description, artist, copyright, published, releaseDate, studio, keywords, album, producers, directors);
-    }
+            DateOnly? published = recordingDate;
+            DateOnly? releaseDate = DateOnly.TryParse(tags.GetProperty("com.apple.quicktime.creationdate").GetString(), out DateOnly releaseDateValue) ? releaseDateValue : null;
+            string studio = tags.TryGetProperty("com.apple.quicktime.studio", out var studioProp) ? studioProp.GetString() ?? string.Empty : string.Empty;
+            string keywords = tags.GetProperty("keywords").GetString() ?? string.Empty;
+            string album = tags.GetProperty("album").GetString() ?? string.Empty;
 
-    public XmlDocument ToXmlDocument()
-    {
-        var xml = ToXml();
-        var xmldoc = new XmlDocument();
-        xmldoc.LoadXml(xml.ToString());
-        return xmldoc;
+            var producers = new List<string> { tags.GetProperty("producer").GetString() ?? string.Empty };
+            var directors = new List<string>();
+
+            return new CustomProductionInfuseMetadata(type, title, description, artist, copyright, published, releaseDate, studio, keywords, album, producers, directors);
+        }
+        catch (Exception ex)
+        {
+            return Result.Failure<CustomProductionInfuseMetadata>($"Fehler beim Parsen der FFprobe-Metadaten: {ex.Message}");
+        }
     }
 
     public XElement ToXml()

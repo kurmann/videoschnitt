@@ -70,8 +70,12 @@ public class DirectoryInfuseXmlFileGenerator
                 // Die QuickTime-Datei hat mehr Metadaten als die MPEG-4-Dateien, deshalb dient sie als Referenz für die Infuse-XML-Datei
                 if (mediaFile.Extension.Equals(".mov", StringComparison.CurrentCultureIgnoreCase))
                 {
-                    var customProductionInfuseMetadata = CustomProductionInfuseMetadata.CreateFromFfmpegMetadata(createRawMetadataFileResult.Value.Metadata, mediaSetNameResult.Value.Date);
-                    var customProductionInfuseMetadataXmlDoc = customProductionInfuseMetadata.ToXmlDocument();
+                    var customProductionInfuseMetadata = CustomProductionInfuseMetadata.CreateFromFfprobeMetadata(createRawMetadataFileResult.Value.Metadata, mediaSetNameResult.Value.Date);
+                    if (customProductionInfuseMetadata.IsFailure)
+                    {
+                        return Result.Failure<GeneratedMetadataFiles>($"Fehler beim Erstellen der Infuse-XML-Datei für {mediaFile.Name}: {customProductionInfuseMetadata.Error}");
+                    }
+                    var customProductionInfuseMetadataXmlDoc = customProductionInfuseMetadata.Value.ToXml();
 
                     // Schreibe den Inhalt der XML-Datei in das Wurzelverzeichnis des Mediensets mit dem gleichen Dateinamen wie das Medienset
                     customProductionInfuseMetadataXmlDoc.Save(Path.Combine(mediaSetDirectoryInfo.FullName, $"{mediaSetNameResult.Value}.xml"));
@@ -82,8 +86,9 @@ public class DirectoryInfuseXmlFileGenerator
 
         return Result.Success(new GeneratedMetadataFiles(generatedMetadataFilesByMediaSetList));
     }
+
 }
 
 public record GeneratedMetadataFiles(List<GeneratedMetadataFilesByMediaSet> MetadataFiles);
 
-public record GeneratedMetadataFilesByMediaSet(FileInfo FilePath, FFmpegMetadata Metadata);
+public record GeneratedMetadataFilesByMediaSet(FileInfo FilePath, FFprobeMetadata Metadata);

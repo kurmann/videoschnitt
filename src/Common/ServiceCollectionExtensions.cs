@@ -16,6 +16,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IFileOperations, FileOperations>();
         services.AddScoped<IFileSearchService, FileSearchService>();
         services.AddScoped<FFmpegMetadataService>();
+        services.AddScoped<FFprobeService>();
         services.AddScoped<SipsMetadataService>();
 
         // Register Feature Modules
