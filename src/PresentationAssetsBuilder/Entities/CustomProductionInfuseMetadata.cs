@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Xml.Linq;
 using CSharpFunctionalExtensions;
 using Kurmann.Videoschnitt.Common.Services.Metadata;
 
@@ -87,6 +88,24 @@ public class CustomProductionInfuseMetadata
         {
             return Result.Failure<CustomProductionInfuseMetadata>($"Fehler beim Parsen der FFprobe-Metadaten: {ex.Message}");
         }
+    }
+
+    public XElement ToXml()
+    {
+        return new XElement("media",
+            new XAttribute("type", Type),
+            new XElement("title", Title),
+            new XElement("description", Description),
+            new XElement("artist", Artist),
+            new XElement("copyright", Copyright),
+            new XElement("published", Published?.ToString("yyyy-MM-dd")),
+            new XElement("releasedate", ReleaseDate?.ToString("yyyy-MM-dd")),
+            new XElement("studio", Studio),
+            new XElement("keywords", Keywords),
+            new XElement("album", Album),
+            new XElement("producers", Producers.Select(p => new XElement("name", p))),
+            new XElement("directors", Directors.Select(d => new XElement("name", d)))
+        );
     }
 
     public override string ToString() => $"Title: {Title}, Published: {Published}, Album: {Album}";

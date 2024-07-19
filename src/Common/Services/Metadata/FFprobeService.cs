@@ -1,4 +1,3 @@
-using System.Text.Json.Serialization;
 using CSharpFunctionalExtensions;
 using Kurmann.Videoschnitt.ConfigurationModule.Settings;
 using Microsoft.Extensions.Logging;
@@ -20,7 +19,7 @@ public class FFprobeService
         _applicationSettings = applicationSettings.Value;
     }
 
-    public async Task<Result<string>> GetRawJsonMetadataAsync(string filePath)
+    public async Task<Result<FFprobeMetadata>> GetRawJsonMetadataAsync(string filePath)
     {
         string ffprobeCommand = _applicationSettings.ExternalTools?.FFProbe?.Path ?? DefaultFFProbeCommand;
         string arguments = $"-v error -show_streams -show_format -print_format json \"{filePath}\"";
@@ -30,12 +29,27 @@ public class FFprobeService
         if (result.IsFailure)
         {
             _logger.LogError("Fehler beim Abrufen der Metadaten mit FFprobe: {Error}", result.Error);
-            return Result.Failure<string>(result.Error);
+            return Result.Failure<FFprobeMetadata>(result.Error);
         }
 
-        // Füge die Ausgabezeilen zusammen auf jeweils eine Zeile
-        var jsonRawData = string.Join(Environment.NewLine, result.Value);
+        return Result.Success(new FFprobeMetadata(result.Value));
+    }
+}
 
-        return Result.Success(jsonRawData);
+public record FFprobeMetadata(List<string> Metadata)
+{
+    /// <summary>
+    /// Gibt die Metadaten als Zeichenfolge zurück.
+    /// Jeder Listeneintrag kommt auf eine neue Zeile.
+    /// </summary>
+    /// <returns></returns>
+    public override string ToString()
+    {
+        return string.Join(Environment.NewLine, Metadata);
+    }
+
+    public static implicit operator string(FFprobeMetadata metadata)
+    {
+        return metadata.ToString();
     }
 }
