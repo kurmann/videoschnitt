@@ -1,6 +1,5 @@
 using System.Text.Json;
-using System.Xml;
-using System.Xml.Linq;
+using CSharpFunctionalExtensions;
 using Kurmann.Videoschnitt.Common.Services.Metadata;
 
 namespace Kurmann.Videoschnitt.PresentationAssetsBuilder.Entities;
@@ -82,54 +81,43 @@ public class CustomProductionInfuseMetadata
     /// <param name="ffprobeJson"></param>
     /// <param name="recordingDate"></param>
     /// <returns></returns>
-    public static CustomProductionInfuseMetadata CreateFromFfprobeJson(string ffprobeJson, DateOnly recordingDate)
+    public static Result<CustomProductionInfuseMetadata> CreateFromFfprobeMetadata(FFprobeMetadata fFprobeMetadata, DateOnly recordingDate)
     {
-        var document = JsonDocument.Parse(ffprobeJson);
-        var format = document.RootElement.GetProperty("format");
-        var tags = format.GetProperty("tags");
+        if (fFprobeMetadata == null || fFprobeMetadata.Metadata == null)
+        {
+            return Result.Failure<CustomProductionInfuseMetadata>("Die FFprobe-Metadaten sind null.");
+        }
 
-        string type = "Other";
-        string title = tags.GetProperty("title").GetString() ?? string.Empty;
-        string description = tags.TryGetProperty("com.apple.quicktime.description", out var descProp) ? descProp.GetString() ?? string.Empty : string.Empty;
-        string artist = tags.GetProperty("artist").GetString() ?? string.Empty;
-        string copyright = tags.GetProperty("copyright").GetString() ?? string.Empty;
+        var json = fFprobeMetadata.ToString();
 
-        DateOnly? published = recordingDate;
-        DateOnly? releaseDate = DateOnly.TryParse(tags.GetProperty("com.apple.quicktime.creationdate").GetString(), out DateOnly releaseDateValue) ? releaseDateValue : null;
-        string studio = tags.TryGetProperty("com.apple.quicktime.studio", out var studioProp) ? studioProp.GetString() ?? string.Empty : string.Empty;
-        string keywords = tags.GetProperty("keywords").GetString() ?? string.Empty;
-        string album = tags.GetProperty("album").GetString() ?? string.Empty;
+        // Parse JSON
+        try
+        {
+            var document = JsonDocument.Parse(json);
+            var format = document.RootElement.GetProperty("format");
+            var tags = format.GetProperty("tags");
 
-        var producers = new List<string> { tags.GetProperty("producer").GetString() ?? string.Empty };
-        var directors = new List<string>();
+            string type = "Other";
+            string title = tags.GetProperty("title").GetString() ?? string.Empty;
+            string description = tags.TryGetProperty("com.apple.quicktime.description", out var descProp) ? descProp.GetString() ?? string.Empty : string.Empty;
+            string artist = tags.GetProperty("artist").GetString() ?? string.Empty;
+            string copyright = tags.GetProperty("copyright").GetString() ?? string.Empty;
 
-        return new CustomProductionInfuseMetadata(type, title, description, artist, copyright, published, releaseDate, studio, keywords, album, producers, directors);
-    }
+            DateOnly? published = recordingDate;
+            DateOnly? releaseDate = DateOnly.TryParse(tags.GetProperty("com.apple.quicktime.creationdate").GetString(), out DateOnly releaseDateValue) ? releaseDateValue : null;
+            string studio = tags.TryGetProperty("com.apple.quicktime.studio", out var studioProp) ? studioProp.GetString() ?? string.Empty : string.Empty;
+            string keywords = tags.GetProperty("keywords").GetString() ?? string.Empty;
+            string album = tags.GetProperty("album").GetString() ?? string.Empty;
 
-    public XmlDocument ToXmlDocument()
-    {
-        var xml = ToXml();
-        var xmldoc = new XmlDocument();
-        xmldoc.LoadXml(xml.ToString());
-        return xmldoc;
-    }
+            var producers = new List<string> { tags.GetProperty("producer").GetString() ?? string.Empty };
+            var directors = new List<string>();
 
-    public XElement ToXml()
-    {
-        return new XElement("media",
-            new XAttribute("type", Type),
-            new XElement("title", Title),
-            new XElement("description", Description),
-            new XElement("artist", Artist),
-            new XElement("copyright", Copyright),
-            new XElement("published", Published?.ToString("yyyy-MM-dd")),
-            new XElement("releasedate", ReleaseDate?.ToString("yyyy-MM-dd")),
-            new XElement("studio", Studio),
-            new XElement("keywords", Keywords),
-            new XElement("album", Album),
-            new XElement("producers", Producers.Select(p => new XElement("name", p))),
-            new XElement("directors", Directors.Select(d => new XElement("name", d)))
-        );
+            return new CustomProductionInfuseMetadata(type, title, description, artist, copyright, published, releaseDate, studio, keywords, album, producers, directors);
+        }
+        catch (Exception ex)
+        {
+            return Result.Failure<CustomProductionInfuseMetadata>($"Fehler beim Parsen der FFprobe-Metadaten: {ex.Message}");
+        }
     }
 
     public override string ToString() => $"Title: {Title}, Published: {Published}, Album: {Album}";
