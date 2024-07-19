@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Xml;
 using System.Xml.Linq;
 using Kurmann.Videoschnitt.Common.Services.Metadata;
@@ -69,6 +70,37 @@ public class CustomProductionInfuseMetadata
         string album = lines.GetValueOrDefault("album", string.Empty);
 
         var producers = new List<string> { lines.GetValueOrDefault("producer", string.Empty) };
+        var directors = new List<string>();
+
+        return new CustomProductionInfuseMetadata(type, title, description, artist, copyright, published, releaseDate, studio, keywords, album, producers, directors);
+    }
+
+    /// <summary>
+    /// Erstellt ein CustomProductionInfuseMetadata-Objekt aus den Metadaten eines Videos, die von FFprobe im JSON-Format extrahiert wurden.
+    /// Das Aufnahmedatum wird als Parameter übergeben, da es nicht in den Metadaten enthalten ist. Es wird zum XML-Tag "published" hinzugefügt.
+    /// </summary>
+    /// <param name="ffprobeJson"></param>
+    /// <param name="recordingDate"></param>
+    /// <returns></returns>
+    public static CustomProductionInfuseMetadata CreateFromFfprobeJson(string ffprobeJson, DateOnly recordingDate)
+    {
+        var document = JsonDocument.Parse(ffprobeJson);
+        var format = document.RootElement.GetProperty("format");
+        var tags = format.GetProperty("tags");
+
+        string type = "Other";
+        string title = tags.GetProperty("title").GetString() ?? string.Empty;
+        string description = tags.TryGetProperty("com.apple.quicktime.description", out var descProp) ? descProp.GetString() ?? string.Empty : string.Empty;
+        string artist = tags.GetProperty("artist").GetString() ?? string.Empty;
+        string copyright = tags.GetProperty("copyright").GetString() ?? string.Empty;
+
+        DateOnly? published = recordingDate;
+        DateOnly? releaseDate = DateOnly.TryParse(tags.GetProperty("com.apple.quicktime.creationdate").GetString(), out DateOnly releaseDateValue) ? releaseDateValue : null;
+        string studio = tags.TryGetProperty("com.apple.quicktime.studio", out var studioProp) ? studioProp.GetString() ?? string.Empty : string.Empty;
+        string keywords = tags.GetProperty("keywords").GetString() ?? string.Empty;
+        string album = tags.GetProperty("album").GetString() ?? string.Empty;
+
+        var producers = new List<string> { tags.GetProperty("producer").GetString() ?? string.Empty };
         var directors = new List<string>();
 
         return new CustomProductionInfuseMetadata(type, title, description, artist, copyright, published, releaseDate, studio, keywords, album, producers, directors);
