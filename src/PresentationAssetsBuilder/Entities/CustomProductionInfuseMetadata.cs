@@ -44,37 +44,6 @@ public class CustomProductionInfuseMetadata
     }
 
     /// <summary>
-    /// Erstellt ein CustomProductionInfuseMetadata-Objekt aus den Metadaten eines Videos, die von FFmpeg extrahiert wurden.
-    /// Das Aufnahmedatum wird als Parameter übergeben, da es nicht in den Metadaten enthalten ist. Es wird zum XML-Tag "published" hinzugefügt.
-    /// </summary>
-    /// <param name="ffmpegMetadata"></param>
-    /// <param name="recordingDate"></param>
-    /// <returns></returns>
-    public static CustomProductionInfuseMetadata CreateFromFfmpegMetadata(FFmpegMetadata ffmpegMetadata, DateOnly recordingDate)
-    {
-        var lines = ffmpegMetadata.Metadata
-            .Where(line => !line.StartsWith(';'))
-            .ToDictionary(line => line.Split('=')[0].Trim(), line => line.Split('=')[1].Trim());
-
-        string type = "Other";
-        string title = lines.GetValueOrDefault("title", string.Empty);
-        string description = lines.GetValueOrDefault("com.apple.quicktime.description", string.Empty);
-        string artist = lines.GetValueOrDefault("artist", string.Empty);
-        string copyright = lines.GetValueOrDefault("copyright", string.Empty);
-
-        DateOnly? published = recordingDate;
-        DateOnly? releaseDate = DateOnly.TryParse(lines.GetValueOrDefault("com.apple.quicktime.creationdate"), out DateOnly releaseDateValue) ? releaseDateValue : null;
-        string studio = lines.GetValueOrDefault("com.apple.quicktime.studio", string.Empty);
-        string keywords = lines.GetValueOrDefault("keywords", string.Empty);
-        string album = lines.GetValueOrDefault("album", string.Empty);
-
-        var producers = new List<string> { lines.GetValueOrDefault("producer", string.Empty) };
-        var directors = new List<string>();
-
-        return new CustomProductionInfuseMetadata(type, title, description, artist, copyright, published, releaseDate, studio, keywords, album, producers, directors);
-    }
-
-    /// <summary>
     /// Erstellt ein CustomProductionInfuseMetadata-Objekt aus den Metadaten eines Videos, die von FFprobe im JSON-Format extrahiert wurden.
     /// Das Aufnahmedatum wird als Parameter übergeben, da es nicht in den Metadaten enthalten ist. Es wird zum XML-Tag "published" hinzugefügt.
     /// </summary>
