@@ -65,24 +65,7 @@ internal class ArtworkImageIntegrator
         }
 
         // Ignoriere alle Bilddateien, die in Verwendung sind
-        var supportedImagesNotInUse = new List<SupportedImage>();
-        foreach (var supportedImage in supportedImages)
-        {
-            var isUsedResult = await _fileOperations.IsFileInUseAsync(supportedImage);
-            if (isUsedResult.IsFailure)
-            {
-                return Result.Failure($"Fehler beim Prüfen, ob die Datei {supportedImage.Name} verwendet wird: {isUsedResult.Error}");
-            }
-            if (isUsedResult.Value)
-            {
-                _logger.LogInformation("Die Datei {File} wird derzeit verwendet und wird daher nicht in die Infuse-Mediathek integriert.", supportedImage.Name);
-            }
-            else
-            {
-                supportedImagesNotInUse.Add(supportedImage);
-            }
-        }
-        supportedImages = supportedImagesNotInUse;
+        await RemoveImagesInUse(supportedImages);
 
         // Ermittle das Zielverzeichnis für die Bild-Datei. Dieses ist das gleiche wie das Zielverzeichnis der Video-Datei.
         var videoTargetDirectory = integratedVideo.Directory;
@@ -158,6 +141,29 @@ internal class ArtworkImageIntegrator
             _logger.LogInformation("Fanartbild {fanartImage.FileInfo.FullName} erfolgreich in das Infuse-Mediathek-Verzeichnis {videoTargetDirectory.FullName} verschoben.", fanartImage.FullName, videoTargetDirectory.FullName);
         }
 
+        return Result.Success();
+    }
+
+    private async Task<Result> RemoveImagesInUse(List<SupportedImage> supportedImages)
+    {
+        var supportedImagesNotInUse = new List<SupportedImage>();
+        foreach (var supportedImage in supportedImages)
+        {
+            var isUsedResult = await _fileOperations.IsFileInUseAsync(supportedImage);
+            if (isUsedResult.IsFailure)
+            {
+                return Result.Failure($"Fehler beim Prüfen, ob die Datei {supportedImage.Name} verwendet wird: {isUsedResult.Error}");
+            }
+            if (isUsedResult.Value)
+            {
+                _logger.LogInformation("Die Datei {File} wird derzeit verwendet und wird daher nicht in die Infuse-Mediathek integriert.", supportedImage.Name);
+            }
+            else
+            {
+                supportedImagesNotInUse.Add(supportedImage);
+            }
+        }
+        supportedImages = supportedImagesNotInUse;
         return Result.Success();
     }
 
