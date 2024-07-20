@@ -101,16 +101,7 @@ internal class ArtworkImageIntegrator
         // Wenn nur ein Bild vorhanden ist, wird dieses als Poster verwendet. Der Name des Bildes entspricht dem Namen der Video-Datei.
         if (supportedImages.Count == 1)
         {
-            var supportedImage = supportedImages.First();
-
-            var targetFilePath = Path.Combine(videoTargetDirectory.FullName, integratedVideo.Name.Replace(integratedVideo.Extension, supportedImage.Extension));
-            var moveFileResult = await _fileOperations.CopyFileAsync(supportedImage, targetFilePath);
-            if (moveFileResult.IsFailure)
-            {
-                return Result.Failure($"Die Bild-Datei {supportedImage} konnte nicht in das Infuse-Mediathek-Verzeichnis {videoTargetDirectory.FullName} verschoben werden. Fehler: {moveFileResult.Error}");
-            }
-            _logger.LogInformation("Bild-Datei {supportedImage.FileInfo.FullName} erfolgreich in das Infuse-Mediathek-Verzeichnis {videoTargetDirectory.FullName} verschoben.", supportedImage, videoTargetDirectory.FullName);
-            return Result.Success();
+            return await IntegrateSingleImage(integratedVideo, videoTargetDirectory, supportedImages.First());
         }
 
         // Wenn mehr als ein Bild vorhanden ist, dann werden die ersten zwei Bilder als Poster und Fanart verwendet und mit Hilfe des PosterAndFanartService die passenden Bilder ermittelt.
@@ -124,7 +115,7 @@ internal class ArtworkImageIntegrator
 
         // Das Posterbild hat den gleichen Dateinamen die Videodatei.
         var posterImage = detectPosterAndFanartImagesResult.Value.PosterImage;
-        var targetPosterFilePath = Path.Combine(videoTargetDirectory.FullName, integratedVideo.Name.Replace(integratedVideo.Extension, posterImage.Extension));
+        var targetPosterFilePath = Path.Combine(videoTargetDirectory.FullName, integratedVideo.Name.Replace(integratedVideo.Extension, posterImage.ExtensionAdobeRgb.));
 
         // Prüfe ob bereits eine Datei am Zielort existiert mit gleichem Namen und gleichem Änderungsdatum
         if (FileOperations.ExistAtTarget(posterImage.FullName, targetPosterFilePath))
@@ -167,6 +158,18 @@ internal class ArtworkImageIntegrator
             _logger.LogInformation("Fanartbild {fanartImage.FileInfo.FullName} erfolgreich in das Infuse-Mediathek-Verzeichnis {videoTargetDirectory.FullName} verschoben.", fanartImage.FullName, videoTargetDirectory.FullName);
         }
 
+        return Result.Success();
+    }
+
+    private async Task<Result> IntegrateSingleImage(SupportedVideo integratedVideo, DirectoryInfo videoTargetDirectory, SupportedImage supportedImage)
+    {
+        var targetFilePath = Path.Combine(videoTargetDirectory.FullName, integratedVideo.Name.Replace(integratedVideo.Extension, supportedImage.Extension));
+        var moveFileResult = await _fileOperations.CopyFileAsync(supportedImage, targetFilePath);
+        if (moveFileResult.IsFailure)
+        {
+            return Result.Failure($"Die Bild-Datei {supportedImage} konnte nicht in das Infuse-Mediathek-Verzeichnis {videoTargetDirectory.FullName} verschoben werden. Fehler: {moveFileResult.Error}");
+        }
+        _logger.LogInformation("Bild-Datei {supportedImage.FileInfo.FullName} erfolgreich in das Infuse-Mediathek-Verzeichnis {videoTargetDirectory.FullName} verschoben.", supportedImage, videoTargetDirectory.FullName);
         return Result.Success();
     }
 }
