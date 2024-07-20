@@ -119,7 +119,6 @@ internal class ArtworkImageIntegrator
         {
             return Result.Failure($"Das Poster und Fanart konnte nicht ermittelt werden: {detectPosterAndFanartImagesResult.Error}");
         }
-        _logger.LogInformation($"Das Poster und Fanart wurde erfolgreich ermittelt.");
         _logger.LogInformation("Poster: {Name}", detectPosterAndFanartImagesResult.Value.PosterImage.Name);
         _logger.LogInformation("Fanart: {Name}", detectPosterAndFanartImagesResult.Value.FanartImage.Name);
 
@@ -135,7 +134,7 @@ internal class ArtworkImageIntegrator
         else
         {
             // Kopiere das Posterbild in das Infuse-Mediathek-Verzeichnis
-            var movePosterFileResult = await _fileOperations.CopyFileAsync(posterImage.FullName, targetPosterFilePath);
+            var movePosterFileResult = await _fileOperations.CopyFileAsync(posterImage.FullName, targetPosterFilePath, true, false);
             if (movePosterFileResult.IsFailure)
             {
                 return Result.Failure($"Das Posterbild {posterImage.FullName} konnte nicht in das Infuse-Mediathek-Verzeichnis {videoTargetDirectory.FullName} verschoben werden. Fehler: {movePosterFileResult.Error}");
@@ -160,7 +159,7 @@ internal class ArtworkImageIntegrator
         else
         {
             // Kopiere das Fanartbild in das Infuse-Mediathek-Verzeichnis
-            var moveFanartFileResult = await _fileOperations.CopyFileAsync(fanartImage.FullName, targetFanartFilePath);
+            var moveFanartFileResult = await _fileOperations.CopyFileAsync(fanartImage.FullName, targetFanartFilePath, true, false);
             if (moveFanartFileResult.IsFailure)
             {
                 return Result.Failure($"Das Fanartbild {fanartImage.FullName} konnte nicht in das Infuse-Mediathek-Verzeichnis {videoTargetDirectory.FullName} verschoben werden. Fehler: {moveFanartFileResult.Error}");
