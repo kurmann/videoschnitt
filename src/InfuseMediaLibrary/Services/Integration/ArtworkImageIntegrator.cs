@@ -65,20 +65,17 @@ internal class ArtworkImageIntegrator
         }
 
         // Ignoriere alle Bilddateien, die in Verwendung sind
-        await RemoveImagesInUse(supportedImages);
+        var removeImagesResult = await RemoveImagesInUse(supportedImages);
+        if (removeImagesResult.IsFailure)
+        {
+            return Result.Failure($"Fehler beim Entfernen der Bild-Dateien, die in Verwendung sind: {removeImagesResult.Error}");
+        }
 
-        // Ermittle das Zielverzeichnis für die Bild-Datei. Dieses ist das gleiche wie das Zielverzeichnis der Video-Datei.
+        // Ermittle das Zielverzeichnis für die Bild-Datei. Dieses ist das gleiche wie das Zielverzeichnis der Video-Datei, die in vorherigen Schritten integriert wurde.
         var videoTargetDirectory = integratedVideo.Directory;
         if (videoTargetDirectory == null)
         {
             return Result.Failure($"Das Verzeichnis der Video-Datei {integratedVideo} konnte nicht ermittelt werden. Das Verzeichnis wird benötigt, um die Bild-Dateien in das Infuse-Mediathek-Verzeichnis zu verschieben.");
-        }
-
-        // Lies den Inhalt des Verzeichnisses aus in dem die Bilder gespeichert sind
-        var artworkDirectoryContentResult = _artworkDirectoryReader.GetDirectoryContent(videoTargetDirectory);
-        if (artworkDirectoryContentResult.IsFailure)
-        {
-            return Result.Failure($"Das Verzeichnis '{videoTargetDirectory.FullName}' konnte nicht geöffnet werden: {artworkDirectoryContentResult.Error}");
         }
 
         // Wenn nur ein Bild vorhanden ist, wird dieses als Poster verwendet. Der Name des Bildes entspricht dem Namen der Video-Datei.
@@ -98,7 +95,7 @@ internal class ArtworkImageIntegrator
 
         // Das Posterbild hat den gleichen Dateinamen die Videodatei.
         var posterImage = detectPosterAndFanartImagesResult.Value.PosterImage;
-        var targetPosterFilePath = Path.Combine(videoTargetDirectory.FullName, integratedVideo.Name.Replace(integratedVideo.Extension, posterImage.ExtensionAdobeRgb.));
+        var targetPosterFilePath = Path.Combine(videoTargetDirectory.FullName, integratedVideo.Name.Replace(integratedVideo.Extension, posterImage.Extension));
 
         // Prüfe ob bereits eine Datei am Zielort existiert mit gleichem Namen und gleichem Änderungsdatum
         if (FileOperations.ExistAtTarget(posterImage.FullName, targetPosterFilePath))
