@@ -1,4 +1,5 @@
 using CSharpFunctionalExtensions;
+using Kurmann.Videoschnitt.Common.Entities.MediaTypes;
 
 namespace Kurmann.Videoschnitt.InfuseMediaLibrary.Services.Integration;
 
@@ -16,10 +17,10 @@ internal class PosterAndFanartService
     /// 2. Wenn beide Bilddateien das gleiche Seitenverhältnis haben, wird die jünge Bilddatei als Poster verwendet.
     /// Hinweis: Die Bildauflösungen werden über den FFMpegMetadataService ermittelt indem die Attribute "width" und "height" aus den Metadaten extrahiert werden.
     /// </summary>
-    public static Result<DetectPosterAndFanartImagesResponse> DetectPosterAndFanartImages(FileInfo firstImage, FileInfo secondImage)
+    public static Result<DetectPosterAndFanartImagesResponse> DetectPosterAndFanartImages(SupportedImage firstImage, SupportedImage secondImage)
     {
-        FileInfo? posterImage;
-        FileInfo? fanartImage;
+        SupportedImage? posterImage;
+        SupportedImage? fanartImage;
 
         // Priorität 1: Überprüfung auf spezifische Schlüsselwörter im Dateinamen
         if (firstImage.FullName.Contains("poster"))
@@ -65,4 +66,4 @@ internal class PosterAndFanartService
     }
 }
 
-public record DetectPosterAndFanartImagesResponse(FileInfo PosterImage, FileInfo FanartImage);
+public record DetectPosterAndFanartImagesResponse(SupportedImage PosterImage, SupportedImage FanartImage);

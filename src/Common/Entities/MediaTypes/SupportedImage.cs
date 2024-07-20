@@ -17,6 +17,11 @@ public record SupportedImage : ISupportedMediaType
     public string Name => FileInfo.Name;
 
     /// <summary>
+    /// Der vollständige Dateipfad der Bilddatei.
+    /// </summary>
+    public string FullName => FileInfo.FullName;
+
+    /// <summary>
     /// Gibt die Dateiendung der Originaldatei zurück.
     /// </summary>
     public string Extension => FileInfo.Extension;
