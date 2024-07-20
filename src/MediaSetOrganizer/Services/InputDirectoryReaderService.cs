@@ -54,7 +54,7 @@ public class InputDirectoryReaderService
             // Wenn die Datei versteckt ist, füge sie zu den ignorierten Dateien hinzu
             if ((file.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden)
             {
-                _logger.LogInformation("Die Datei {FullName} ist versteckt und wird ignoriert.", file.FullName);
+                _logger.LogTrace("Die Datei {FullName} ist versteckt und wird ignoriert.", file.FullName);
                 ignoredFiles.Add(new IgnoredFile(file, IgnoredFileReason.Hidden));
                 continue;
             }
@@ -62,7 +62,7 @@ public class InputDirectoryReaderService
             // Unterverzeichnisse werden ignoriert, also füge alle Unterverzeichnisse zu den ignorierten Dateien hinzu
             if (file.Attributes.HasFlag(FileAttributes.Directory))
             {
-                _logger.LogInformation("Das Verzeichnis {FullName} wird ignoriert.", file.FullName);
+                _logger.LogTrace("Das Verzeichnis {FullName} wird ignoriert.", file.FullName);
                 ignoredFiles.Add(new IgnoredFile(file, IgnoredFileReason.Directory));
                 continue;
             }
@@ -70,7 +70,7 @@ public class InputDirectoryReaderService
             // Dateien, die sich in einem Unterverzeichnis befinden, werden ignoriert (sofern nicht explizit angegeben, dass auch Unterverzeichnisse durchsucht werden sollen)
             if (file.DirectoryName != inputDirectory && !includeSubdirectories)
             {
-                _logger.LogInformation("Die Datei {FullName} befindet sich in einem Unterverzeichnis und wird ignoriert.", file.FullName);
+                _logger.LogTrace("Die Datei {FullName} befindet sich in einem Unterverzeichnis und wird ignoriert.", file.FullName);
                 ignoredFiles.Add(new IgnoredFile(file, IgnoredFileReason.LocatedInSubDirectory));
                 continue;
             }
@@ -95,7 +95,7 @@ public class InputDirectoryReaderService
             var isMasterfileResult = await IsMasterfile(file);
             if (isMasterfileResult.IsFailure)
             {
-                _logger.LogInformation("Die Datei wird ignoriert mit Vermerk 'IgnoredFileReason.NotDefined'.");
+                _logger.LogTrace("Die Datei wird ignoriert mit Vermerk 'IgnoredFileReason.NotDefined'.");
                 ignoredFiles.Add(new IgnoredFile(file, IgnoredFileReason.NotDefined));
                 continue;
             }
@@ -152,13 +152,12 @@ public class InputDirectoryReaderService
     /// <returns></returns>
     private async Task<Result<Maybe<Masterfile>>> IsMasterfile(FileInfo file)
     {
-        _logger.LogInformation("Prüfe ob die Datei {FullName} eine Masterdatei ist.", file.FullName);
         var isQuickTimeFileExtension = QuickTimeMovie.IsQuickTimeMovieExtension(file);
 
         // Wenn die Datei keine Quicktime-Datei ist, ist sie keine Masterdatei
         if (!isQuickTimeFileExtension)
         {
-            _logger.LogInformation("Die Datei {Name} ist keine Quicktime-Datei und wird nicht als Masterdatei betrachtet.", file.FullName);
+            _logger.LogTrace("Die Datei {Name} ist keine Quicktime-Datei und wird nicht als Masterdatei betrachtet.", file.FullName);
             return Result.Success(Maybe<Masterfile>.None);
         }
 
@@ -169,7 +168,7 @@ public class InputDirectoryReaderService
         }
         // Wenn die Datei eine Quicktime-Datei ist, prüfe ob sie den Codec Apple ProRes hat
         string? codecName = metadataResult.Value;
-        _logger.LogInformation("Der Codec der Datei {FullName} ist {codecName}.", file.FullName, codecName);
+        _logger.LogTrace("Der Codec der Datei {FullName} ist {codecName}.", file.FullName, codecName);
 
         // Wenn der Codec Apple ProRes ist, ist die Datei eine Masterdatei
         if (codecName == "prores")
@@ -192,7 +191,7 @@ public class InputDirectoryReaderService
             return Result.Success<Maybe<Masterfile>>(new Masterfile(file, codecName, codecProfile));
         }
 
-        _logger.LogInformation("Die Datei {file.FullName} ist keine Masterdatei, weil der Codec nicht Apple ProRes ist.", file.FullName);
+        _logger.LogTrace("Die Datei {file.FullName} ist keine Masterdatei, weil der Codec nicht Apple ProRes ist.", file.FullName);
         return Result.Success(Maybe<Masterfile>.None);
     }
 }
