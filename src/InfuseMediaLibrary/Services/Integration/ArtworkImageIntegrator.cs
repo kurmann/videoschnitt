@@ -105,13 +105,13 @@ internal class ArtworkImageIntegrator
         if (posterImage.HasNoValue)
         {
             // Informiere, dass wir kein Poster-Bild identifiziert haben, sondern nur ein Fanart-Bild.
-            _logger.LogWarning("Es wurde kein Poster-Bild identifiziert. Es wurde nur ein unterstütztes Bild gefunden, das den Suffix für das Fanart-Bild enthält.");
+            _logger.LogInformation("Es wurde kein Poster-Bild identifiziert. Es wurde nur ein unterstütztes Bild gefunden, das den Suffix für das Fanart-Bild enthält.");
         }
 
         if (fanartImage.HasNoValue)
         {
             // Informiere, dass wir kein Fanart-Bild identifiziert haben, sondern nur ein Poster-Bild.
-            _logger.LogWarning("Es wurde kein Fanart-Bild identifiziert. Es wurde nur ein unterstütztes Bild gefunden, das den Suffix für das Poster-Bild enthält.");
+            _logger.LogInformation("Es wurde kein Fanart-Bild identifiziert. Es wurde nur ein unterstütztes Bild gefunden, das den Suffix für das Poster-Bild enthält.");
         }
 
         // Ermittle das Zielverzeichnis für die Bild-Datei. Dieses ist das gleiche wie das Zielverzeichnis der Video-Datei, die in vorherigen Schritten integriert wurde.
