@@ -229,7 +229,7 @@ internal class ArtworkImageIntegrator
         // Kopiere die Bild-Datei in das Infuse-Mediathek-Verzeichnis
         // Wenn nur ein Bild vorhanden ist, wird dieses als Poster verwendet. Der Name des Bildes entspricht dem Namen der Video-Datei.
         var targetFilePath = Path.Combine(videoTargetDirectory.FullName, integratedVideo.Name.Replace(integratedVideo.Extension, supportedImage.ExtensionAdobeRgb.Value));
-        var moveFileResult = await _fileOperations.CopyFileAsync(supportedImage, targetFilePath, true, false);
+        var moveFileResult = await _fileOperations.CopyFileAsync(supportedImage.FileInfoAdobeRgb.Value.FullName, targetFilePath, true, false);
         if (moveFileResult.IsFailure)
         {
             return Result.Failure($"Die Bild-Datei {supportedImage} konnte nicht in das Infuse-Mediathek-Verzeichnis {videoTargetDirectory.FullName} verschoben werden. Fehler: {moveFileResult.Error}");
