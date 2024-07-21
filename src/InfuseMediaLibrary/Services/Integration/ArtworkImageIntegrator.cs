@@ -16,13 +16,15 @@ internal class ArtworkImageIntegrator
 {
     private readonly ILogger<ArtworkImageIntegrator> _logger;
     private readonly InfuseMediaLibrarySettings _infuseMediaLibrarySettings;
+    private readonly MediaSetOrganizerSettings _mediaSetOrganizerSettings;
     private readonly IFileOperations _fileOperations;
 
-    public ArtworkImageIntegrator(ILogger<ArtworkImageIntegrator> logger, IOptions<InfuseMediaLibrarySettings> infuseMediaLibrarySettings, IFileOperations fileOperations)
+    public ArtworkImageIntegrator(ILogger<ArtworkImageIntegrator> logger, IOptions<InfuseMediaLibrarySettings> infuseMediaLibrarySettings, IFileOperations fileOperations, IOptions<MediaSetOrganizerSettings> mediaSetOrganizerSettings)
     {
         _logger = logger;
         _infuseMediaLibrarySettings = infuseMediaLibrarySettings.Value;
         _fileOperations = fileOperations;
+        _mediaSetOrganizerSettings = mediaSetOrganizerSettings.Value;
     }
 
     /// <summary>
@@ -77,16 +79,40 @@ internal class ArtworkImageIntegrator
         return await IntegrateTwoImages(supportedImages, integratedVideo);
     }
 
+    /// <summary>
+    /// Übernimmt die Integration von zwei Bildern in die Infuse-Mediathek (Poster und Fanart).
+    /// </summary>
+    /// <param name="supportedImages"></param>
+    /// <param name="integratedVideo"></param>
+    /// <returns></returns>
     private async Task<Result> IntegrateTwoImages(List<SupportedImage> supportedImages, SupportedVideo integratedVideo)
     {
-        // Wenn mehr als ein Bild vorhanden ist, dann werden die ersten zwei Bilder als Poster und Fanart verwendet und mit Hilfe des PosterAndFanartService die passenden Bilder ermittelt.
-        var detectPosterAndFanartImagesResult = PosterAndFanartService.DetectPosterAndFanartImages(supportedImages.ElementAt(0), supportedImages.ElementAt(1));
-        if (detectPosterAndFanartImagesResult.IsFailure)
+        var posterImage = GetPosterImage(supportedImages);
+        var fanartImage = GetFanartImage(supportedImages);
+
+        if (posterImage.HasNoValue && fanartImage.HasNoValue)
         {
-            return Result.Failure($"Das Poster und Fanart konnte nicht ermittelt werden: {detectPosterAndFanartImagesResult.Error}");
+            // Warne, dass wir bei zwei Bildern keine Poster- und Fanart-Bilder identifizieren konnten.
+            _logger.LogWarning("Es wurden keine Poster- und Fanart-Bilder identifiziert. Es wurden zwei unterstützte Bilder gefunden, aber keines davon entspricht den Suffixen für Poster- und Fanart-Bilder.");
         }
-        _logger.LogTrace("Poster: {Name}", detectPosterAndFanartImagesResult.Value.PosterImage.Name);
-        _logger.LogTrace("Fanart: {Name}", detectPosterAndFanartImagesResult.Value.FanartImage.Name);
+
+        if (posterImage.HasValue && fanartImage.HasValue)
+        {
+            // Informiere, dass wir anhand des Dateisuffixes das Poster- und Fanart-Bild identifiziert haben.
+            _logger.LogInformation("Das Poster- und Fanart-Bild wurden anhand des Dateisuffixes identifiziert: Poster-Bild: '{posterImage.Name}', Fanart-Bild: '{fanartImage.Name}'", posterImage.Value.Name, fanartImage.Value.Name);
+        }
+
+        if (posterImage.HasNoValue)
+        {
+            // Informiere, dass wir kein Poster-Bild identifiziert haben, sondern nur ein Fanart-Bild.
+            _logger.LogWarning("Es wurde kein Poster-Bild identifiziert. Es wurde nur ein unterstütztes Bild gefunden, das den Suffix für das Fanart-Bild enthält.");
+        }
+
+        if (fanartImage.HasNoValue)
+        {
+            // Informiere, dass wir kein Fanart-Bild identifiziert haben, sondern nur ein Poster-Bild.
+            _logger.LogWarning("Es wurde kein Fanart-Bild identifiziert. Es wurde nur ein unterstütztes Bild gefunden, das den Suffix für das Poster-Bild enthält.");
+        }
 
         // Ermittle das Zielverzeichnis für die Bild-Datei. Dieses ist das gleiche wie das Zielverzeichnis der Video-Datei, die in vorherigen Schritten integriert wurde.
         var videoTargetDirectory = integratedVideo.Directory;
@@ -96,35 +122,34 @@ internal class ArtworkImageIntegrator
         }
 
         // Prüfe, ob für das Poster-Bild eine Version in Adobe RGB existiert. 
-        if (detectPosterAndFanartImagesResult.Value.PosterImage.FileInfoAdobeRgb.HasNoValue)
+        if (posterImage.Value.FileInfoAdobeRgb.HasNoValue)
         {
-            return Result.Failure($"Für das Poster-Bild {detectPosterAndFanartImagesResult.Value.PosterImage.Name} konnte keine Version in Adobe RGB gefunden werden.");
+            return Result.Failure($"Für das Poster-Bild {posterImage.Value.Name} konnte keine Version in Adobe RGB gefunden werden.");
         }
 
         // Das Posterbild hat den gleichen Dateinamen die Videodatei.
-        var posterImage = detectPosterAndFanartImagesResult.Value.PosterImage;
-        var targetPosterFilePath = Path.Combine(videoTargetDirectory.FullName, integratedVideo.Name.Replace(integratedVideo.Extension, posterImage.ExtensionAdobeRgb.Value));
+        var targetPosterFilePath = Path.Combine(videoTargetDirectory.FullName, integratedVideo.Name.Replace(integratedVideo.Extension, posterImage.Value.ExtensionAdobeRgb.Value));
 
         // Prüfe ob bereits eine Datei am Zielort existiert mit gleichem Namen und gleichem Änderungsdatum
-        if (FileOperations.ExistAtTarget(posterImage.FullName, targetPosterFilePath))
+        if (FileOperations.ExistAtTarget(posterImage.Value, targetPosterFilePath))
         {
-            _logger.LogTrace("Die Poster-Datei {posterImage.FileInfo.FullName} existiert bereits im Infuse-Mediathek-Verzeichnis {videoTargetDirectory.FullName}. Die Datei wird nicht verschoben.", posterImage.FullName, videoTargetDirectory.FullName);
+            _logger.LogTrace("Die Poster-Datei {posterImage.FileInfo.FullName} existiert bereits im Infuse-Mediathek-Verzeichnis {videoTargetDirectory.FullName}. Die Datei wird nicht verschoben.", posterImage.Value, videoTargetDirectory.FullName);
         }
         else
         {
             // Kopiere das Posterbild in das Infuse-Mediathek-Verzeichnis
-            var movePosterFileResult = await _fileOperations.CopyFileAsync(posterImage.FileInfoAdobeRgb.Value.FullName, targetPosterFilePath, true, false);
+            var movePosterFileResult = await _fileOperations.CopyFileAsync(posterImage.Value.FileInfoAdobeRgb.Value.FullName, targetPosterFilePath, true, false);
             if (movePosterFileResult.IsFailure)
             {
-                return Result.Failure($"Das Posterbild {posterImage.FullName} konnte nicht in das Infuse-Mediathek-Verzeichnis {videoTargetDirectory.FullName} verschoben werden. Fehler: {movePosterFileResult.Error}");
+                return Result.Failure($"Das Posterbild {posterImage.Value.FileInfoAdobeRgb.Value.FullName} konnte nicht in das Infuse-Mediathek-Verzeichnis {videoTargetDirectory.FullName} verschoben werden. Fehler: {movePosterFileResult.Error}");
             }
-            _logger.LogInformation("Posterbild {FileName} erfolgreich in das Infuse-Mediathek-Verzeichnis {videoTargetDirectory.FullName} verschoben.", posterImage.Name, videoTargetDirectory.FullName);
+            _logger.LogInformation("Posterbild {FileName} erfolgreich in das Infuse-Mediathek-Verzeichnis {videoTargetDirectory.FullName} verschoben.", posterImage.Value.Name, videoTargetDirectory.FullName);
         }
 
         // Prüfe, ob für das Fanart-Bild eine Version in Adobe RGB existiert.
-        if (detectPosterAndFanartImagesResult.Value.FanartImage.FileInfoAdobeRgb.HasNoValue)
+        if (fanartImage.Value.FileInfoAdobeRgb.HasNoValue)
         {
-            return Result.Failure($"Für das Fanart-Bild {detectPosterAndFanartImagesResult.Value.FanartImage.Name} konnte keine Version in Adobe RGB gefunden werden.");
+            return Result.Failure($"Für das Fanart-Bild {fanartImage.Value.Name} konnte keine Version in Adobe RGB gefunden werden.");
         }
 
         // Das Fanartbild hat den gleichen Dateinamen wie die Videodatei und zusätzlich dem Postfix definiert aus den Einstellungen.
@@ -133,26 +158,37 @@ internal class ArtworkImageIntegrator
         {
             return Result.Failure("Das Suffix des Dateinamens, das für die Banner-Datei verwendet wird für die Infuse-Mediathek als Titelbild, ist nicht definiert.");
         }
-        var fanartImage = detectPosterAndFanartImagesResult.Value.FanartImage;
-        var targetFanartFilePath = Path.Combine(videoTargetDirectory.FullName, integratedVideo.Name.Replace(integratedVideo.Extension, $"{bannerFilePostfix}{fanartImage.ExtensionAdobeRgb.Value}"));
+        var targetFanartFilePath = Path.Combine(videoTargetDirectory.FullName, integratedVideo.Name.Replace(integratedVideo.Extension, $"{bannerFilePostfix}{fanartImage.Value.ExtensionAdobeRgb.Value}"));
 
         // Prüfe ob bereits eine Datei am Zielort existiert mit gleichem Namen und gleichem Änderungsdatum
-        if (FileOperations.ExistAtTarget(fanartImage.FullName, targetFanartFilePath))
+        if (FileOperations.ExistAtTarget(fanartImage.Value, targetFanartFilePath))
         {
-            _logger.LogTrace("Die Fanart-Datei {fanartImage.FileInfo.FullName} existiert bereits im Infuse-Mediathek-Verzeichnis {videoTargetDirectory.FullName}. Die Datei wird nicht verschoben.", fanartImage.FullName, videoTargetDirectory.FullName);
+            _logger.LogTrace("Die Fanart-Datei {fanartImage.FileInfo.FullName} existiert bereits im Infuse-Mediathek-Verzeichnis {videoTargetDirectory.FullName}. Die Datei wird nicht verschoben.", fanartImage.Value, videoTargetDirectory.FullName);
         }
         else
         {
             // Kopiere das Fanartbild in das Infuse-Mediathek-Verzeichnis
-            var moveFanartFileResult = await _fileOperations.CopyFileAsync(fanartImage.FileInfoAdobeRgb.Value.FullName, targetFanartFilePath, true, false);
+            var moveFanartFileResult = await _fileOperations.CopyFileAsync(fanartImage.Value.FileInfoAdobeRgb.Value.FullName, targetFanartFilePath, true, false);
             if (moveFanartFileResult.IsFailure)
             {
-                return Result.Failure($"Das Fanartbild {fanartImage.FullName} konnte nicht in das Infuse-Mediathek-Verzeichnis {videoTargetDirectory.FullName} verschoben werden. Fehler: {moveFanartFileResult.Error}");
+                return Result.Failure($"Das Fanartbild {fanartImage.Value} konnte nicht in das Infuse-Mediathek-Verzeichnis {videoTargetDirectory.FullName} verschoben werden. Fehler: {moveFanartFileResult.Error}");
             }
-            _logger.LogInformation("Fanartbild {fanartImage.FileInfo.FullName} erfolgreich in das Infuse-Mediathek-Verzeichnis {videoTargetDirectory.FullName} verschoben.", fanartImage.FullName, videoTargetDirectory.FullName);
+            _logger.LogInformation("Fanartbild {fanartImage.FileInfo.FullName} erfolgreich in das Infuse-Mediathek-Verzeichnis {videoTargetDirectory.FullName} verschoben.", fanartImage.Value, videoTargetDirectory.FullName);
         }
 
         return Result.Success();
+    }
+
+    private Maybe<SupportedImage> GetFanartImage(List<SupportedImage> supportedImages)
+    {
+        // Suche unter den unterstützten Bildern das Fanart-Bild (mit dem entsprechenden Suffix im Dateinamen)
+        return supportedImages.FirstOrDefault(x => _mediaSetOrganizerSettings.MediaSet.OrientationSuffixes.HasLandscapeSuffix(x)) ?? Maybe<SupportedImage>.None;
+    }
+
+    private Maybe<SupportedImage> GetPosterImage(List<SupportedImage> supportedImages)
+    {
+        // Suche unter den unterstützten Bildern das Poster-Bild (ohne Suffix im Dateinamen)
+        return supportedImages.FirstOrDefault(x => _mediaSetOrganizerSettings.MediaSet.OrientationSuffixes.HasPortraitSuffix(x)) ?? Maybe<SupportedImage>.None;
     }
 
     private async Task<Result> RemoveImagesInUse(List<SupportedImage> supportedImages)
