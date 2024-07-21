@@ -54,4 +54,9 @@ public class MediaSetSettings
     public OrientationSuffixDefinition OrientationSuffixes { get; set; } = new OrientationSuffixDefinition();
 }
 
-public record OrientationSuffixDefinition(string Portrait = "-Portrait", string Landscape = "-Landscape");
+public record OrientationSuffixDefinition(string Portrait = "-Portrait", string Landscape = "-Landscape")
+{
+    public bool HasPortraitSuffix(string fileName) => fileName.Contains(Portrait);
+
+    public bool HasLandscapeSuffix(string fileName) => fileName.Contains(Landscape);
+}

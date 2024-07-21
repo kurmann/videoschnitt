@@ -36,7 +36,7 @@ public class MediaSetService
 
         _logger.LogInformation("Versuche die Dateien im Verzeichnis in Medienset zu organisieren.");
 
-        _logger.LogInformation("Lies aus allen unterstützen Videodateien mit FFMPeg den Titel-Tag aus den Metadaten und gruppiere alle Dateien mit dem gleichen Titel.");
+        _logger.LogTrace("Lies aus allen unterstützen Videodateien mit FFMPeg den Titel-Tag aus den Metadaten und gruppiere alle Dateien mit dem gleichen Titel.");
         var metadataTasks = inputDirectoryContent.SupportedVideos
             .Select(async f => new
             {
@@ -45,13 +45,13 @@ public class MediaSetService
             });
         var metadataResults = await Task.WhenAll(metadataTasks);
 
-        _logger.LogInformation("Prüfe ob die Metadaten bei allen Dateien erfolgreich gelesen werden konnten.");
+        _logger.LogTrace("Prüfe ob die Metadaten bei allen Dateien erfolgreich gelesen werden konnten.");
         if (metadataResults.Any(x => x.TitleResult.IsFailure))
         {
             return Result.Failure<List<MediaFilesByMediaSet>>($"Fehler beim Lesen der Metadaten: {metadataResults.First(x => x.TitleResult.IsFailure).TitleResult.Error}");
         }
 
-        _logger.LogInformation("Prüfe ob alle Dateien einen Titel-Tag haben.");
+        _logger.LogTrace("Prüfe ob alle Dateien einen Titel-Tag haben.");
         var filesWithEmptyTitleTags = metadataResults.Where(x => string.IsNullOrWhiteSpace(x.TitleResult.Value)).Select(x => x.File.FileInfo).ToArray();
 
         if (filesWithEmptyTitleTags.Length != 0)
@@ -62,22 +62,22 @@ public class MediaSetService
                 _logger.LogWarning("{FullName}", file.FullName);
             }
             
-            _logger.LogInformation("Entferne alle Dateien die einen leeren Titel haben von der weiteren Verarbeitung.");
+            _logger.LogTrace("Entferne alle Dateien die einen leeren Titel haben von der weiteren Verarbeitung.");
             metadataResults = metadataResults.Where(x => !string.IsNullOrWhiteSpace(x.TitleResult.Value)).ToArray();
         }
 
-        _logger.LogInformation("Gruppiere die Dateien nach Titel.");
+        _logger.LogTrace("Gruppiere die Dateien nach Titel.");
         var videosByMediaSet = metadataResults
             .Where(x => x.TitleResult.IsSuccess)
             .GroupBy(x => x.TitleResult.Value)
             .Select(g => new VideosByMediaSet(g.Key, g.Select(x => x.File)));
 
-        _logger.LogInformation("Suche in jedem Medienset ob noch eine unterstütze Bild-Datei vorhanden ist. Diese muss das gleiche Basis-Datei-Name haben wie die Videodatei.");
-        _logger.LogInformation("Wenn ja, füge die Bild-Datei zum Medienset hinzu.");
+        _logger.LogTrace("Suche in jedem Medienset ob noch eine unterstütze Bild-Datei vorhanden ist. Diese muss das gleiche Basis-Datei-Name haben wie die Videodatei.");
+        _logger.LogTrace("Wenn ja, füge die Bild-Datei zum Medienset hinzu.");
         var mediaFilesByMediaSet = new List<MediaFilesByMediaSet>();
         foreach (var videos in videosByMediaSet)
         {
-            _logger.LogInformation("Suche nach allen unterstützten Bild-Dateien die das gleiche Basis-Datei-Name haben wie die Videodatei");
+            _logger.LogTrace("Suche nach allen unterstützten Bild-Dateien die das gleiche Basis-Datei-Name haben wie die Videodatei");
             var supportedImageFileInfos = inputDirectoryContent.SupportedImages.Select(f => f.FileInfo);
             var imageFileInfos = supportedImageFileInfos.Where(i => i.Name.StartsWith(videos.NameString)).ToArray();
             var supportedImageFiles = new List<SupportedImage>();
@@ -94,7 +94,7 @@ public class MediaSetService
                 }
             }
 
-            _logger.LogInformation("Suche für jedes Medienset nach einer Masterdatei.");
+            _logger.LogTrace("Suche für jedes Medienset nach einer Masterdatei.");
             var masterfile = inputDirectoryContent.Masterfiles.FirstOrDefault(m => m.FileInfo.Name.StartsWith(videos.NameString));
 
             // Parse den Medienset-Namen
@@ -117,10 +117,10 @@ public class MediaSetService
 
         foreach (var mediaFiles in mediaFilesByMediaSet)
         {
-            _logger.LogInformation("Medienset: {Name}", mediaFiles.Name);
-            _logger.LogInformation("Anzahl Videos: {Count}", mediaFiles.VideoFiles.Count());
-            _logger.LogInformation("Anzahl Bilder: {Count}", mediaFiles.ImageFiles.Count());
-            _logger.LogInformation("Anzahl Dateien ohne Titel-Tag: {Count}", mediaFiles.EmptyTitleTags.Count());
+            _logger.LogTrace("Medienset: {Name}", mediaFiles.Name);
+            _logger.LogTrace("Anzahl Videos: {Count}", mediaFiles.VideoFiles.Count());
+            _logger.LogTrace("Anzahl Bilder: {Count}", mediaFiles.ImageFiles.Count());
+            _logger.LogTrace("Anzahl Dateien ohne Titel-Tag: {Count}", mediaFiles.EmptyTitleTags.Count());
         }
 
         return Result.Success(mediaFilesByMediaSet);
