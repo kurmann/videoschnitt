@@ -16,6 +16,11 @@ public class MediaSetOrganizerSettings
     public const string DefaultInputDirectory = "~/Movies/Final Cut Export";
     public bool IsDefaultInputDirectory => InputDirectory == DefaultInputDirectory;
 
+    public string FinalCutExportDirectory { get; set; } = ExpandHomeDirectory(DefaultFinalCutExportDirectory);
+    public const string FinalCutExportDirectoryConfigKey = $"{SectionName}:FinalCutExportDirectory";
+    public const string DefaultFinalCutExportDirectory = "~/Movies/Final Cut Export";
+    public bool IsDefaultFinalCutExportDirectory => FinalCutExportDirectory == DefaultFinalCutExportDirectory;
+
     private static string ExpandHomeDirectory(string path)
     {
         if (path.StartsWith('~'))
