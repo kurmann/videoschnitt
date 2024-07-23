@@ -35,7 +35,7 @@ public class MediaSetName
         // Try to parse the ISO date
         if (!DateOnly.TryParseExact(datePart, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date))
         {
-            return Result.Failure<MediaSetName>($"The date '{datePart}' could not be parsed.");
+            return Result.Failure<MediaSetName>($"Die Zeichenkette aus dem Medienset-Namen '{name}' konnte nicht als Datum interpretiert werden. Wahrscheinlich ist das Format des Datums nicht korrekt oder das Datum fehlt.");
         }
 
         // The part after the file name and the space is the title of the media set
