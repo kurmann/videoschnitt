@@ -30,7 +30,7 @@ public class ConfigurationInfoService
     {
         LogApplicationSettings();
         LogInfuseMediaLibrarySettings();
-        LogMetadataProcessingSettings();
+        LogMediaSetOrganizerSettings();
     }
 
     private void LogApplicationSettings()
@@ -84,7 +84,7 @@ public class ConfigurationInfoService
         _logger.LogTrace("Suffix für konvertiertes temporäres Bild: {suffix}", tempImageSuffix);
     }
 
-    private void LogMetadataProcessingSettings()
+    private void LogMediaSetOrganizerSettings()
     {
         _logger.LogTrace("Metadata processing settings:");
 
