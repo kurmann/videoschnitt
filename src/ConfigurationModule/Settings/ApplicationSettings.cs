@@ -26,9 +26,13 @@ namespace Kurmann.Videoschnitt.ConfigurationModule.Settings
         public const string DefaultMediaSetPathLocal = "~/Movies/MediaSets";
         public bool IsDefaultMediaSetPathLocal => MediaSetPathLocal == DefaultMediaSetPathLocal;
 
+        [Obsolete("Use MediaSetOrganizerSettings.FinalCutExportDirectory instead")]
         public string FinalCutExportDirectory { get; set; } = ExpandHomeDirectory(DefaultFinalCutExportDirectory);
+        [Obsolete("Use MediaSetOrganizerSettings.FinalCutExportDirectoryConfigKey instead")]
         public const string FinalCutExportDirectoryConfigKey = $"{SectionName}:FinalCutExportDirectory";
+        [Obsolete("Use MediaSetOrganizerSettings.DefaultFinalCutExportDirectory instead")]
         public const string DefaultFinalCutExportDirectory = "~/Movies/Final Cut Export";
+        [Obsolete("Use MediaSetOrganizerSettings.IsDefaultFinalCutExportDirectory instead")]
         public bool IsDefaultFinalCutExportDirectory => FinalCutExportDirectory == DefaultFinalCutExportDirectory;
 
         public string InfuseMediaLibraryPathLocal { get; set; } = ExpandHomeDirectory(DefaultInfuseMediaLibraryPathLocal);
