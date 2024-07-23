@@ -2,9 +2,9 @@ using Kurmann.Videoschnitt.MediaSetOrganizer.Services;
 using Microsoft.Extensions.Logging;
 using CSharpFunctionalExtensions;
 using Kurmann.Videoschnitt.Common.Models;
-using Kurmann.Videoschnitt.ConfigurationModule.Services;
 using Kurmann.Videoschnitt.ConfigurationModule.Settings;
 using Kurmann.Videoschnitt.MediaSetOrganizer.Services.Imaging;
+using Microsoft.Extensions.Options;
 
 namespace Kurmann.Videoschnitt.MediaSetOrganizer;
 
@@ -17,35 +17,28 @@ public class Workflow
     private readonly MediaSetService _mediaSetService;
     private readonly MediaPurposeOrganizer _mediaPurposeOrganizer;
     private readonly InputDirectoryReaderService _inputDirectoryReaderService;
-    private readonly ApplicationSettings _applicationSettings;
     private readonly MediaSetDirectoryIntegrator _mediaSetDirectoryIntegrator;
     private readonly FinalCutDirectoryIntegrator _finalCutDirectoryIntegrator;
     private readonly ImageProcessorService _imageProcessorService;
+    private readonly MediaSetOrganizerSettings _mediaSetOrganizerSettings;
 
-    public Workflow(ILogger<Workflow> logger, IConfigurationService configurationService, MediaSetService mediaSetService,
+    public Workflow(ILogger<Workflow> logger, MediaSetService mediaSetService,
         MediaPurposeOrganizer mediaPurposeOrganizer, InputDirectoryReaderService inputDirectoryReaderService,
         MediaSetDirectoryIntegrator mediaSetDirectoryIntegrator, FinalCutDirectoryIntegrator finalCutDirectoryIntegrator,
-        ImageProcessorService imageProcessorService)
+        ImageProcessorService imageProcessorService, IOptions<MediaSetOrganizerSettings> mediaSetOrganizerSettings)
     {
         _logger = logger;
-        _applicationSettings = configurationService.GetSettings<ApplicationSettings>();
         _mediaSetService = mediaSetService;
         _mediaPurposeOrganizer = mediaPurposeOrganizer;
         _inputDirectoryReaderService = inputDirectoryReaderService;
         _mediaSetDirectoryIntegrator = mediaSetDirectoryIntegrator;
         _finalCutDirectoryIntegrator = finalCutDirectoryIntegrator;
         _imageProcessorService = imageProcessorService;
+        _mediaSetOrganizerSettings = mediaSetOrganizerSettings.Value;
     }
 
     public async Task<Result<List<MediaSet>>> ExecuteAsync()
     {
-        _logger.LogInformation("Steuereinheit für die Metadaten-Verarbeitung gestartet.");
-
-        if (_applicationSettings.InputDirectory == null)
-        {
-            return Result.Failure<List<MediaSet>>("Eingabeverzeichnis wurde nicht korrekt aus den Einstellungen geladen.");
-        }
-
         _logger.LogInformation("Verschiebe unterstützte Dateien aus dem Final Cut Pro-Export-Verzeichnis in das Eingangsverzeichnis.");
         var integratedFinalCutFilesResult = await _finalCutDirectoryIntegrator.IntegrateFinalCutExportFilesAsync();
         if (integratedFinalCutFilesResult.IsFailure)
@@ -54,7 +47,7 @@ public class Workflow
         }
 
         _logger.LogInformation("Versuche die Dateien im Eingangsverzeichnis in Mediensets zu organisisieren.");
-        var inputDirectoryContent = await _inputDirectoryReaderService.ReadInputDirectoryAsync(_applicationSettings.InputDirectory);
+        var inputDirectoryContent = await _inputDirectoryReaderService.ReadInputDirectoryAsync(_mediaSetOrganizerSettings.InputDirectory);
         if (inputDirectoryContent.IsFailure)
         {
             return Result.Failure<List<MediaSet>>($"Fehler beim Lesen des Eingangsverzeichnisses: {inputDirectoryContent.Error}");

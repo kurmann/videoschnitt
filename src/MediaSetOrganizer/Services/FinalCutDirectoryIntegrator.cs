@@ -17,26 +17,30 @@ public class FinalCutDirectoryIntegrator
     private readonly ApplicationSettings _applicationSettings;
     private readonly IFileOperations _fileOperations;
     private readonly InputDirectoryReaderService _inputDirectoryReaderService;
+    private readonly MediaSetOrganizerSettings _mediaSetOrganizerSettings;
 
     public FinalCutDirectoryIntegrator(
         ILogger<FinalCutDirectoryIntegrator> logger,
         IOptions<ApplicationSettings> applicationSettings,
         InputDirectoryReaderService inputDirectoryReaderService,
+        IOptions<MediaSetOrganizerSettings> mediaSetOrganizerSettings,
         IFileOperations fileOperations)
     {
         _logger = logger;
         _applicationSettings = applicationSettings.Value;
         _inputDirectoryReaderService = inputDirectoryReaderService;
+        _mediaSetOrganizerSettings = mediaSetOrganizerSettings.Value;
         _fileOperations = fileOperations;
     }
 
     public async Task<Result<IntegratedFinalCutExportFiles>> IntegrateFinalCutExportFilesAsync()
     {
-        var inputDirectory = _applicationSettings.InputDirectory;
-        _logger.LogInformation("Integriere Dateien aus dem Final Cut Export-Verzeichnis {path} nach {inputdirectory}", _applicationSettings.FinalCutExportDirectory, inputDirectory);
+        // todo: use only a list of input directories that have to be watched
+        var inputDirectory = _mediaSetOrganizerSettings.InputDirectory;
+        _logger.LogInformation("Integriere Dateien aus dem Final Cut Export-Verzeichnis in das Eingangsverzeichnis {inputdirectory}.", inputDirectory);
 
         _logger.LogInformation("Lese Dateien aus dem Final Cut Export-Verzeichnis.");
-        var inputDirectoryContent = await _inputDirectoryReaderService.ReadInputDirectoryAsync(_applicationSettings.FinalCutExportDirectory);
+        var inputDirectoryContent = await _inputDirectoryReaderService.ReadInputDirectoryAsync(_mediaSetOrganizerSettings.FinalCutExportDirectory);
         if (inputDirectoryContent.IsFailure)
         {
             return Result.Failure<IntegratedFinalCutExportFiles>($"Fehler beim Lesen des Final Cut Export-Verzeichnisses: {inputDirectoryContent.Error}");

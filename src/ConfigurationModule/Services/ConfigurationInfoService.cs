@@ -46,16 +46,6 @@ public class ConfigurationInfoService
             _logger.LogInformation("Verwende Infuse Media Library Pfad aus der Konfiguration: {path}", _applicationSettings.InfuseMediaLibraryPath);
         }
 
-        if (_applicationSettings.IsDefaultInputDirectory)
-        {
-            _logger.LogInformation("Kein Eingangsverzeichnis konfiguriert. Verwende Standardwert: {path}", _applicationSettings.InputDirectory);
-            _logger.LogInformation("Sie können das Eingangsverzeichnis in der appsettings.json-Datei unter dem Schlüssel: {key} konfigurieren", ApplicationSettings.InputDirectoryConfigKey);
-        }
-        else
-        {
-            _logger.LogInformation("Verwende Eingangsverzeichnis aus der Konfiguration: {path}", _applicationSettings.InputDirectory);
-        }
-
         if (_applicationSettings.IsDefaultMediaSetPathLocal)
         {
             _logger.LogInformation("Kein lokales Medienset-Verzeichnis konfiguriert. Verwende Standardwert: {path}", _applicationSettings.MediaSetPathLocal);
@@ -71,16 +61,6 @@ public class ConfigurationInfoService
             _logger.LogInformation("Kein externes Medienset-Verzeichnis konfiguriert.");
             _logger.LogInformation("Ein externes Medienset-Verzeichnis ist optional und wird nur benötigt, wenn Mediensets auf einem externen Archiv oder Medienserver abgelegt werden.");
             _logger.LogInformation("Konfigurieren Sie das externe Medienset-Verzeichnis in der appsettings.json-Datei unter dem Schlüssel: {key}", ApplicationSettings.MediaSetPathRemoteConfigKey);
-        }
-
-        if (_applicationSettings.IsDefaultFinalCutExportDirectory)
-        {
-            _logger.LogInformation("Kein Verzeichnis für exportierte Final Cut Pro-Dateien konfiguriert. Verwende Standardwert: {path}", _applicationSettings.FinalCutExportDirectory);
-            _logger.LogInformation("Sie können das Verzeichnis für exportierte Final Cut Pro-Dateien in der appsettings.json-Datei unter dem Schlüssel: {key} konfigurieren", ApplicationSettings.FinalCutExportDirectoryConfigKey);
-        }
-        else
-        {
-            _logger.LogInformation("Verwende Verzeichnis für exportierte Final Cut Pro-Dateien aus der Konfiguration: {path}", _applicationSettings.FinalCutExportDirectory);
         }
 
         if (_applicationSettings.IsDefaultInfuseMediaLibraryPathLocal)

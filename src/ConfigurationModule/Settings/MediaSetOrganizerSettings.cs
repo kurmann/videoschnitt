@@ -5,6 +5,31 @@ public class MediaSetOrganizerSettings
     public const string SectionName = "MediaSetOrganizer";
 
     public MediaSetSettings MediaSet { get; set; } = new MediaSetSettings();
+
+    /// <summary>
+    /// Das Eingangsverzeichnis für alle Dateien, die in Mediensets organisiert werden sollen.
+    /// Dies kann bspw. das Verzeichnis sein, in dem Final Cut Pro X die exportierten Dateien ablegt.
+    /// </summary>
+    /// <returns></returns>
+    public string InputDirectory { get; set; } = ExpandHomeDirectory(DefaultInputDirectory);
+    public const string InputDirectoryConfigKey = $"{SectionName}:InputDirectory";
+    public const string DefaultInputDirectory = "~/Movies/Final Cut Export";
+    public bool IsDefaultInputDirectory => InputDirectory == DefaultInputDirectory;
+
+    public string FinalCutExportDirectory { get; set; } = ExpandHomeDirectory(DefaultFinalCutExportDirectory);
+    public const string FinalCutExportDirectoryConfigKey = $"{SectionName}:FinalCutExportDirectory";
+    public const string DefaultFinalCutExportDirectory = "~/Movies/Final Cut Export";
+    public bool IsDefaultFinalCutExportDirectory => FinalCutExportDirectory == DefaultFinalCutExportDirectory;
+
+    private static string ExpandHomeDirectory(string path)
+    {
+        if (path.StartsWith('~'))
+        {
+            var homeDirectory = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            return path.Replace("~", homeDirectory);
+        }
+        return path;
+    }
 }
 
 public class MediaSetSettings
