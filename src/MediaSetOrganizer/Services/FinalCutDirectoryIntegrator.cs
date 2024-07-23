@@ -62,7 +62,7 @@ public class FinalCutDirectoryIntegrator
             foreach (var video in inputDirectoryContent.Value.SupportedVideos)
             {
                 var targetPath = Path.Combine(_mediaSetOrganizerSettings.InputDirectory, video.FileInfo.Name);
-                var result = await _fileOperations.MoveFileAsync(video.FileInfo.FullName, targetPath);
+                var result = await _fileOperations.MoveFileAsync(video.FileInfo.FullName, targetPath, true, false);
                 if (result.IsFailure)
                 {
                     return Result.Failure<IntegratedFinalCutExportFiles>($"Fehler beim Verschieben der Datei {video.FileInfo.FullName} nach {targetPath}: {result.Error}");
@@ -79,7 +79,7 @@ public class FinalCutDirectoryIntegrator
             foreach (var masterfile in inputDirectoryContent.Value.Masterfiles)
             {
                 var targetPath = Path.Combine(_mediaSetOrganizerSettings.InputDirectory, masterfile.FileInfo.Name);
-                var result = await _fileOperations.MoveFileAsync(masterfile.FileInfo.FullName, targetPath);
+                var result = await _fileOperations.MoveFileAsync(masterfile.FileInfo.FullName, targetPath, true, false);
                 if (result.IsFailure)
                 {
                     return Result.Failure<IntegratedFinalCutExportFiles>($"Fehler beim Verschieben der Datei {masterfile.FileInfo.FullName} nach {targetPath}: {result.Error}");
@@ -95,7 +95,7 @@ public class FinalCutDirectoryIntegrator
             foreach (var image in inputDirectoryContent.Value.SupportedImages)
             {
                 var targetPath = Path.Combine(_mediaSetOrganizerSettings.InputDirectory, image.FileInfo.Name);
-                var result = await _fileOperations.MoveFileAsync(image.FileInfo.FullName, targetPath);
+                var result = await _fileOperations.MoveFileAsync(image.FileInfo.FullName, targetPath, true, false);
                 if (result.IsFailure)
                 {
                     return Result.Failure<IntegratedFinalCutExportFiles>($"Fehler beim Verschieben der Datei {image.FileInfo.FullName} nach {targetPath}: {result.Error}");
