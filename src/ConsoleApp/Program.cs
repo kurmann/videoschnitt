@@ -19,8 +19,6 @@ public class Program
 {
     public static async Task Main(string[] args)
     {
-        var stopwatch = Stopwatch.StartNew();
-
         var host = CreateHostBuilder(args).Build();
         var logger = host.Services.GetRequiredService<ILogger<Program>>();
 
@@ -37,10 +35,6 @@ public class Program
             );
 
         await host.StopAsync();
-
-        stopwatch.Stop();
-        logger.LogInformation("Total execution time: {ElapsedMilliseconds} ms", stopwatch.ElapsedMilliseconds);
-
         Environment.Exit(await exitCode);
     }
 

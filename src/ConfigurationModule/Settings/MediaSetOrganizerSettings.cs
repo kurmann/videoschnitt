@@ -7,8 +7,8 @@ public class MediaSetOrganizerSettings
     public MediaSetSettings MediaSet { get; set; } = new MediaSetSettings();
 
     /// <summary>
-    /// Das Eingangsverzeichnis für alle Dateien, die in Mediensets organisiert werden sollen.
-    /// Dies kann bspw. das Verzeichnis sein, in dem Final Cut Pro X die exportierten Dateien ablegt.
+    /// Das Verueichnis, in dem die Dateien liegen, die in Mediensets organisiert werden sollen.
+    /// Üblicherweise sind dies die Dateien, die komprimiert wurden aus der Masterdatei.
     /// </summary>
     /// <returns></returns>
     public string InputDirectory { get; set; } = ExpandHomeDirectory(DefaultInputDirectory);
@@ -16,6 +16,12 @@ public class MediaSetOrganizerSettings
     public const string DefaultInputDirectory = "~/Movies/Final Cut Export";
     public bool IsDefaultInputDirectory => InputDirectory == DefaultInputDirectory;
 
+    /// <summary>
+    /// Das Eingangsverzeichnis für alle Dateien, die in Mediensets organisiert werden sollen.
+    /// Dies kann bspw. das Verzeichnis sein, in dem Final Cut Pro X die exportierten Dateien ablegt.
+    /// Dazu gehören üblicherweise die Titelbilder und die Masterdateien.
+    /// </summary>
+    /// <returns></returns>
     public string FinalCutExportDirectory { get; set; } = ExpandHomeDirectory(DefaultFinalCutExportDirectory);
     public const string FinalCutExportDirectoryConfigKey = $"{SectionName}:FinalCutExportDirectory";
     public const string DefaultFinalCutExportDirectory = "~/Movies/Final Cut Export";

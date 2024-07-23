@@ -12,28 +12,10 @@ namespace Kurmann.Videoschnitt.ConfigurationModule.Settings
         public const string DefaultInfuseMediaLibraryPath = "~/Movies/Infuse Media Library";
         public bool IsDefaultInfuseMediaLibraryPath => InfuseMediaLibraryPath == DefaultInfuseMediaLibraryPath;
 
-        [Obsolete("Use MediaSetOrganizerSettings.InputDirectory instead")]
-        public string InputDirectory { get; set; } = ExpandHomeDirectory(DefaultInputDirectory);
-        [Obsolete("Use MediaSetOrganizerSettings.InputDirectoryConfigKey instead")]
-        public const string InputDirectoryConfigKey = $"{SectionName}:InputDirectory";
-        [Obsolete("Use MediaSetOrganizerSettings.DefaultInputDirectory instead")]
-        public const string DefaultInputDirectory = "~/Movies/Final Cut Export";
-        [Obsolete("Use MediaSetOrganizerSettings.IsDefaultInputDirectory instead")]
-        public bool IsDefaultInputDirectory => InputDirectory == DefaultInputDirectory;
-
         public string MediaSetPathLocal { get; set; } = ExpandHomeDirectory(DefaultMediaSetPathLocal);
         public const string MediaSetPathLocalConfigKey = $"{SectionName}:MediaSetPathLocal";
         public const string DefaultMediaSetPathLocal = "~/Movies/MediaSets";
         public bool IsDefaultMediaSetPathLocal => MediaSetPathLocal == DefaultMediaSetPathLocal;
-
-        [Obsolete("Use MediaSetOrganizerSettings.FinalCutExportDirectory instead")]
-        public string FinalCutExportDirectory { get; set; } = ExpandHomeDirectory(DefaultFinalCutExportDirectory);
-        [Obsolete("Use MediaSetOrganizerSettings.FinalCutExportDirectoryConfigKey instead")]
-        public const string FinalCutExportDirectoryConfigKey = $"{SectionName}:FinalCutExportDirectory";
-        [Obsolete("Use MediaSetOrganizerSettings.DefaultFinalCutExportDirectory instead")]
-        public const string DefaultFinalCutExportDirectory = "~/Movies/Final Cut Export";
-        [Obsolete("Use MediaSetOrganizerSettings.IsDefaultFinalCutExportDirectory instead")]
-        public bool IsDefaultFinalCutExportDirectory => FinalCutExportDirectory == DefaultFinalCutExportDirectory;
 
         public string InfuseMediaLibraryPathLocal { get; set; } = ExpandHomeDirectory(DefaultInfuseMediaLibraryPathLocal);
         public const string InfuseMediaLibraryPathLocalConfigKey = $"{SectionName}:InfuseMediaLibraryPathLocal";

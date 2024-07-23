@@ -14,20 +14,17 @@ namespace Kurmann.Videoschnitt.MediaSetOrganizer.Services;
 public class FinalCutDirectoryIntegrator
 {
     private readonly ILogger<FinalCutDirectoryIntegrator> _logger;
-    private readonly ApplicationSettings _applicationSettings;
     private readonly IFileOperations _fileOperations;
     private readonly InputDirectoryReaderService _inputDirectoryReaderService;
     private readonly MediaSetOrganizerSettings _mediaSetOrganizerSettings;
 
     public FinalCutDirectoryIntegrator(
         ILogger<FinalCutDirectoryIntegrator> logger,
-        IOptions<ApplicationSettings> applicationSettings,
         InputDirectoryReaderService inputDirectoryReaderService,
         IOptions<MediaSetOrganizerSettings> mediaSetOrganizerSettings,
         IFileOperations fileOperations)
     {
         _logger = logger;
-        _applicationSettings = applicationSettings.Value;
         _inputDirectoryReaderService = inputDirectoryReaderService;
         _mediaSetOrganizerSettings = mediaSetOrganizerSettings.Value;
         _fileOperations = fileOperations;
@@ -35,11 +32,8 @@ public class FinalCutDirectoryIntegrator
 
     public async Task<Result<IntegratedFinalCutExportFiles>> IntegrateFinalCutExportFilesAsync()
     {
-        // todo: use only a list of input directories that have to be watched
-        var inputDirectory = _mediaSetOrganizerSettings.InputDirectory;
-        _logger.LogInformation("Integriere Dateien aus dem Final Cut Export-Verzeichnis in das Eingangsverzeichnis {inputdirectory}.", inputDirectory);
+        _logger.LogInformation("Integriere Dateien aus dem Final Cut Export-Verzeichnis {finalCutDir} in das Eingangsverzeichnis {inputdirectory}.", _mediaSetOrganizerSettings.FinalCutExportDirectory, _mediaSetOrganizerSettings.InputDirectory);
 
-        _logger.LogInformation("Lese Dateien aus dem Final Cut Export-Verzeichnis.");
         var inputDirectoryContent = await _inputDirectoryReaderService.ReadInputDirectoryAsync(_mediaSetOrganizerSettings.FinalCutExportDirectory);
         if (inputDirectoryContent.IsFailure)
         {
@@ -64,11 +58,11 @@ public class FinalCutDirectoryIntegrator
         var supportedVideos = new List<SupportedVideo>();
         if (inputDirectoryContent.Value.HasSupportedVideos)
         {
-            _logger.LogInformation("Verschiebe unterstützte Videos aus dem Final Cut Export-Verzeichnis nach {inputdirectory}", inputDirectory);
+            _logger.LogInformation("Verschiebe unterstützte Videos aus dem Final Cut Export-Verzeichnis nach {inputdirectory}", _mediaSetOrganizerSettings.InputDirectory);
             foreach (var video in inputDirectoryContent.Value.SupportedVideos)
             {
-                var targetPath = Path.Combine(inputDirectory, video.FileInfo.Name);
-                var result = await _fileOperations.MoveFileAsync(video.FileInfo.FullName, targetPath);
+                var targetPath = Path.Combine(_mediaSetOrganizerSettings.InputDirectory, video.FileInfo.Name);
+                var result = await _fileOperations.MoveFileAsync(video.FileInfo.FullName, targetPath, true, false);
                 if (result.IsFailure)
                 {
                     return Result.Failure<IntegratedFinalCutExportFiles>($"Fehler beim Verschieben der Datei {video.FileInfo.FullName} nach {targetPath}: {result.Error}");
@@ -81,11 +75,11 @@ public class FinalCutDirectoryIntegrator
         var masterfiles = new List<Masterfile>();
         if (inputDirectoryContent.Value.HasMasterfiles)
         {
-            _logger.LogInformation("Verschiebe Masterdateien aus dem Final Cut Export-Verzeichnis nach {inputdirectory}", inputDirectory);
+            _logger.LogInformation("Verschiebe Masterdateien aus dem Final Cut Export-Verzeichnis nach {inputdirectory}", _mediaSetOrganizerSettings.InputDirectory);
             foreach (var masterfile in inputDirectoryContent.Value.Masterfiles)
             {
-                var targetPath = Path.Combine(inputDirectory, masterfile.FileInfo.Name);
-                var result = await _fileOperations.MoveFileAsync(masterfile.FileInfo.FullName, targetPath);
+                var targetPath = Path.Combine(_mediaSetOrganizerSettings.InputDirectory, masterfile.FileInfo.Name);
+                var result = await _fileOperations.MoveFileAsync(masterfile.FileInfo.FullName, targetPath, true, false);
                 if (result.IsFailure)
                 {
                     return Result.Failure<IntegratedFinalCutExportFiles>($"Fehler beim Verschieben der Datei {masterfile.FileInfo.FullName} nach {targetPath}: {result.Error}");
@@ -97,11 +91,11 @@ public class FinalCutDirectoryIntegrator
         var supportedImages = new List<SupportedImage>();
         if (inputDirectoryContent.Value.HasSupportedImages)
         {
-            _logger.LogInformation("Verschiebe unterstützte Bilder aus dem Final Cut Export-Verzeichnis nach {inputdirectory}", inputDirectory);
+            _logger.LogInformation("Verschiebe unterstützte Bilder aus dem Final Cut Export-Verzeichnis nach {inputdirectory}", _mediaSetOrganizerSettings.InputDirectory);
             foreach (var image in inputDirectoryContent.Value.SupportedImages)
             {
-                var targetPath = Path.Combine(inputDirectory, image.FileInfo.Name);
-                var result = await _fileOperations.MoveFileAsync(image.FileInfo.FullName, targetPath);
+                var targetPath = Path.Combine(_mediaSetOrganizerSettings.InputDirectory, image.FileInfo.Name);
+                var result = await _fileOperations.MoveFileAsync(image.FileInfo.FullName, targetPath, true, false);
                 if (result.IsFailure)
                 {
                     return Result.Failure<IntegratedFinalCutExportFiles>($"Fehler beim Verschieben der Datei {image.FileInfo.FullName} nach {targetPath}: {result.Error}");
