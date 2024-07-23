@@ -12,9 +12,13 @@ namespace Kurmann.Videoschnitt.ConfigurationModule.Settings
         public const string DefaultInfuseMediaLibraryPath = "~/Movies/Infuse Media Library";
         public bool IsDefaultInfuseMediaLibraryPath => InfuseMediaLibraryPath == DefaultInfuseMediaLibraryPath;
 
+        [Obsolete("Use MediaSetOrganizerSettings.InputDirectory instead")]
         public string InputDirectory { get; set; } = ExpandHomeDirectory(DefaultInputDirectory);
+        [Obsolete("Use MediaSetOrganizerSettings.InputDirectoryConfigKey instead")]
         public const string InputDirectoryConfigKey = $"{SectionName}:InputDirectory";
+        [Obsolete("Use MediaSetOrganizerSettings.DefaultInputDirectory instead")]
         public const string DefaultInputDirectory = "~/Movies/Final Cut Export";
+        [Obsolete("Use MediaSetOrganizerSettings.IsDefaultInputDirectory instead")]
         public bool IsDefaultInputDirectory => InputDirectory == DefaultInputDirectory;
 
         public string MediaSetPathLocal { get; set; } = ExpandHomeDirectory(DefaultMediaSetPathLocal);
