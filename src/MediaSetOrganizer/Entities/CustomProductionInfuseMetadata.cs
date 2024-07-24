@@ -65,22 +65,38 @@ public class CustomProductionInfuseMetadata
         {
             var document = JsonDocument.Parse(json);
             var format = document.RootElement.GetProperty("format");
-            var tags = format.GetProperty("tags");
 
+            // Initialize variables with default values
             string type = "Other";
-            string title = tags.GetProperty("title").GetString() ?? string.Empty;
-            string description = tags.TryGetProperty("com.apple.quicktime.description", out var descProp) ? descProp.GetString() ?? string.Empty : string.Empty;
-            string artist = tags.GetProperty("artist").GetString() ?? string.Empty;
-            string copyright = tags.GetProperty("copyright").GetString() ?? string.Empty;
+            string title = string.Empty;
+            string description = string.Empty;
+            string artist = string.Empty;
+            string copyright = string.Empty;
+            DateOnly? releaseDate = null;
+            string studio = string.Empty;
+            string keywords = string.Empty;
+            string album = string.Empty;
+            var producers = new List<string> { string.Empty };
+            var directors = new List<string>();
+
+            if (format.TryGetProperty("tags", out JsonElement tags))
+            {
+                title = tags.TryGetProperty("title", out var titleProp) ? titleProp.GetString() ?? string.Empty : string.Empty;
+                description = tags.TryGetProperty("com.apple.quicktime.description", out var descProp) ? descProp.GetString() ?? string.Empty : string.Empty;
+                artist = tags.TryGetProperty("artist", out var artistProp) ? artistProp.GetString() ?? string.Empty : string.Empty;
+                copyright = tags.TryGetProperty("copyright", out var copyrightProp) ? copyrightProp.GetString() ?? string.Empty : string.Empty;
+                if (tags.TryGetProperty("com.apple.quicktime.creationdate", out var releaseDateProp))
+                {
+                    releaseDate = DateOnly.TryParse(releaseDateProp.GetString(), out DateOnly releaseDateValue) ? releaseDateValue : null;
+                }
+                studio = tags.TryGetProperty("com.apple.quicktime.studio", out var studioProp) ? studioProp.GetString() ?? string.Empty : string.Empty;
+                keywords = tags.TryGetProperty("keywords", out var keywordsProp) ? keywordsProp.GetString() ?? string.Empty : string.Empty;
+                album = tags.TryGetProperty("album", out var albumProp) ? albumProp.GetString() ?? string.Empty : string.Empty;
+                producers = tags.TryGetProperty("producer", out var producerProp) ? new List<string> { producerProp.GetString() ?? string.Empty } : new List<string> { string.Empty };
+                // You might need to handle multiple producers/directors if your metadata supports that
+            }
 
             DateOnly? published = recordingDate;
-            DateOnly? releaseDate = DateOnly.TryParse(tags.GetProperty("com.apple.quicktime.creationdate").GetString(), out DateOnly releaseDateValue) ? releaseDateValue : null;
-            string studio = tags.TryGetProperty("com.apple.quicktime.studio", out var studioProp) ? studioProp.GetString() ?? string.Empty : string.Empty;
-            string keywords = tags.GetProperty("keywords").GetString() ?? string.Empty;
-            string album = tags.GetProperty("album").GetString() ?? string.Empty;
-
-            var producers = new List<string> { tags.GetProperty("producer").GetString() ?? string.Empty };
-            var directors = new List<string>();
 
             return new CustomProductionInfuseMetadata(type, title, description, artist, copyright, published, releaseDate, studio, keywords, album, producers, directors);
         }
