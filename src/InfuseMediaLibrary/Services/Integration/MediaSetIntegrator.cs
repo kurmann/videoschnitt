@@ -11,13 +11,15 @@ internal class MediaSetIntegrator
 {
     private readonly ArtworkImageIntegrator _artworkImageIntegrator;
     private readonly VideoIntegrator _videoIntegrator;
+    private readonly MetadataFileIntegrator _metadataFileIntegrator;
     private readonly ILogger<MediaSetIntegrator> _logger;
 
-    public MediaSetIntegrator(ArtworkImageIntegrator artworkImageIntegrator, VideoIntegrator videoIntegrator, ILogger<MediaSetIntegrator> logger)
+    public MediaSetIntegrator(ArtworkImageIntegrator artworkImageIntegrator, VideoIntegrator videoIntegrator, ILogger<MediaSetIntegrator> logger, MetadataFileIntegrator metadataFileIntegrator)
     {
         _artworkImageIntegrator = artworkImageIntegrator;
         _videoIntegrator = videoIntegrator;
         _logger = logger;
+        _metadataFileIntegrator = metadataFileIntegrator;
     }
 
     internal async Task<Result> IntegrateMediaSetAsync(MediaSetDirectory mediaSetDirectory)
@@ -46,6 +48,12 @@ internal class MediaSetIntegrator
         _logger.LogInformation("Artwork-Bilder für die Videodatei {Video} wurden erfolgreich in die Infuse-Mediathek integriert.", integratedVideo);
 
         // Integriere die Metadaten-XML-Datei in die Infuse-Mediathek
+        var integrateMetadataResult = await _metadataFileIntegrator.IntegrateMetadataFileAsync(mediaSetDirectory, integratedVideo.Value);
+        if (integrateMetadataResult.IsFailure)
+        {
+            return Result.Failure($"Fehler beim Integrieren der Metadaten-Datei in die Infuse-Mediathek: {integrateMetadataResult.Error}");
+        }
+        _logger.LogInformation("Infuse Metadaten-XML-Datei wurde erfolgreich in die Infuse-Mediathek integriert.");
 
         return Result.Success();
     }
