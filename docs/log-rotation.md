@@ -61,5 +61,3 @@ Diese Anleitung beschreibt, wie du die Log-Rotation für spezifische Log-Dateien
 ## Hinweis zum Bearbeiten bestehender Konfigurationen
 
 Wenn du bestehende Konfigurationsdateien bearbeitest und Zeilen löschen musst, kannst du in `nano` die Tastenkombination `Ctrl + K` verwenden, um die aktuelle Zeile zu löschen. Dies kann hilfreich sein, um alte oder fehlerhafte Konfigurationen zu entfernen.
-
-Diese Schritte sollten dir helfen, die Log-Rotation für deine spezifischen Log-Dateien unter macOS einzurichten und zu testen. Falls du noch weitere Anpassungen benötigst oder Fragen hast, stehe ich dir gerne zur Verfügung!
