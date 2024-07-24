@@ -33,6 +33,10 @@ internal class Workflow : IWorkflow
     public async Task<Result> ExecuteAsync()
     {
         var sourceDirectoryPath = _applicationSettings.MediaSetPathLocal;
+
+        // todo: Hardcodierter Verzeichnispfad, später aus Konfiguration auslesen
+        sourceDirectoryPath = "/Users/patrickkurmann/Movies/Mediensets";
+
         var sourceDirectory = new DirectoryInfo(sourceDirectoryPath);
 
         // Prüfe ob das Verzeichnis exisitiert
@@ -48,6 +52,13 @@ internal class Workflow : IWorkflow
         }
         var mediaSetDirectories = mediaSetDirectoriesResult.Value;
 
+        // Logge die Verzeichnisse, die gefunden wurden
+        _logger.LogInformation("Folgende Medienset-Verzeichnisse wurden gefunden:");
+        foreach (var mediaSetDirectory in mediaSetDirectories)
+        {
+            _logger.LogInformation("{MediaSetDirectory}", mediaSetDirectory.Name);
+        }
+
         // Ziel ist es, die unterstützten Video- und Bildformate in die Infuse-Mediathek zu integrieren
         foreach (var mediaSetDirectory in mediaSetDirectories)
         {
@@ -58,7 +69,6 @@ internal class Workflow : IWorkflow
                 _logger.LogInformation("Das Medienset {MediaSet} wird ignoriert.", mediaSetDirectory.Name);
                 continue;
             }
-            _logger.LogInformation("Medienset {MediaSet} wurde erfolgreich in die Infuse-Mediathek integriert.", mediaSetDirectory.Name);
         }
 
         _logger.LogInformation("InfuseMediaLibrary-Workflow wurde erfolgreich ausgeführt.");

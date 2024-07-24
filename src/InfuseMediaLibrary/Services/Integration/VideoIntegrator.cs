@@ -27,24 +27,30 @@ internal class VideoIntegrator
     /// </summary>
     /// <param name="mediaServerFilesDirectory"></param>
     /// <returns></returns>
-    public async Task<Result<SupportedVideo>> IntegrateMediaServerFiles(MediaServerFilesDirectory mediaServerFilesDirectory)
+    public async Task<Result<Maybe<SupportedVideo>>> IntegrateMediaServerFiles(MediaServerFilesDirectory mediaServerFilesDirectory)
     {
+        _logger.LogInformation("Integriere die Dateien des Medienservers in die Infuse-Mediathek.");
+        _logger.LogInformation("Medienserver-Verzeichnis: {mediaServerFilesDirectory}", mediaServerFilesDirectory);
+
         // Hole alle unterstützten Videodateien aus dem Medienserver-Verzeichnis
         var supportedVideosResult = mediaServerFilesDirectory.GetSupportedVideos();
         if (supportedVideosResult.IsFailure)
         {
-            return Result.Failure<SupportedVideo>($"Fehler beim Ermitteln der unterstützten Videodateien im Medienserver-Verzeichnis {mediaServerFilesDirectory}: {supportedVideosResult.Error}");
+            return Result.Failure<Maybe<SupportedVideo>>($"Fehler beim Ermitteln der unterstützten Videodateien im Medienserver-Verzeichnis {mediaServerFilesDirectory}: {supportedVideosResult.Error}");
         }
 
         if (supportedVideosResult.Value.Count == 0)
         {
-            return Result.Failure<SupportedVideo>($"Es wurden keine unterstützten Videodateien im Medienserver-Verzeichnis {mediaServerFilesDirectory} gefunden.");
+            // Informiere, dass keine unterstützten Videodateien gefunden wurden im entsprechenden Verzeichnis und fahre mit dem nächsten Mediensetverzeichnis fort
+            _logger.LogInformation("Es wurden keine unterstützten Videodateien im Medienserver-Verzeichnis {mediaServerFilesDirectory} gefunden.", mediaServerFilesDirectory);
+            return Result.Success(Maybe<SupportedVideo>.None);
+            
         }
 
         // Für Medienserver wird nur eine Videodatei erwartet, wenn mehrere Dateien gefunden werden, wird ein Fehler zurückgegeben
         if (supportedVideosResult.Value.Count > 1)
         {
-            return Result.Failure<SupportedVideo>($"Es wurden mehrere unterstützte Videodateien im Medienserver-Verzeichnis {mediaServerFilesDirectory} gefunden. Es wird nur eine Videodatei erwartet.");
+            return Result.Failure<Maybe<SupportedVideo>>($"Es wurden mehrere unterstützte Videodateien im Medienserver-Verzeichnis {mediaServerFilesDirectory} gefunden. Es wird nur eine Videodatei erwartet.");
         }
 
         // Integriere die Videodatei in die Infuse-Mediathek
@@ -52,11 +58,11 @@ internal class VideoIntegrator
         var integrationResult = await IntegrateVideoAsync(videoToIntegrate);
         if (integrationResult.IsFailure)
         {
-            return Result.Failure<SupportedVideo>($"Fehler beim Integrieren der Videodatei {videoToIntegrate} in die Infuse-Mediathek: {integrationResult.Error}");
+            return Result.Failure<Maybe<SupportedVideo>>($"Fehler beim Integrieren der Videodatei {videoToIntegrate} in die Infuse-Mediathek: {integrationResult.Error}");
         }
 
         // Hier wurde der Pfad der Videodatei aktualisiert
-        return videoToIntegrate;
+        return Result.Success(Maybe<SupportedVideo>.From(videoToIntegrate));
     }
 
     /// <summary>
