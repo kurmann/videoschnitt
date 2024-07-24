@@ -15,6 +15,7 @@ public class CustomProductionInfuseMetadata
 {
     public string Type { get; }
     public string Title { get; }
+    public string SortTitle { get; }
     public string? Description { get; }
     public string? Artist { get; }
     public string? Copyright { get; }
@@ -26,12 +27,13 @@ public class CustomProductionInfuseMetadata
     public List<string> Producers { get; }
     public List<string> Directors { get; }
 
-    private CustomProductionInfuseMetadata(string type, string title, string? description, string? artist, string? copyright,
+    private CustomProductionInfuseMetadata(string type, string title, string sortTitle, string? description, string? artist, string? copyright,
                         DateOnly? published, DateOnly? releaseDate, string? studio, string? keywords,
                         string? album, List<string> producers, List<string> directors)
     {
         Type = type;
         Title = title;
+        SortTitle = sortTitle;
         Description = description;
         Artist = artist;
         Copyright = copyright;
@@ -69,6 +71,7 @@ public class CustomProductionInfuseMetadata
             // Initialize variables with default values
             string type = "Other";
             string title = string.Empty;
+            string sortTitle = string.Empty;
             string description = string.Empty;
             string artist = string.Empty;
             string copyright = string.Empty;
@@ -81,7 +84,9 @@ public class CustomProductionInfuseMetadata
 
             if (format.TryGetProperty("tags", out JsonElement tags))
             {
-                title = tags.TryGetProperty("title", out var titleProp) ? titleProp.GetString() ?? string.Empty : string.Empty;
+                var titleWithLeadingDate = tags.TryGetProperty("title", out var titleProp) ? titleProp.GetString() ?? string.Empty : string.Empty;
+                title = GetTitle(titleWithLeadingDate, recordingDate);
+                sortTitle = tags.TryGetProperty("title", out var sortTitleProp) ? sortTitleProp.GetString() ?? string.Empty : string.Empty; // Titel entspricht dem Namen des Mediensets bspw. "2022-01-01 - Titel"
                 description = tags.TryGetProperty("com.apple.quicktime.description", out var descProp) ? descProp.GetString() ?? string.Empty : string.Empty;
                 artist = tags.TryGetProperty("artist", out var artistProp) ? artistProp.GetString() ?? string.Empty : string.Empty;
                 copyright = tags.TryGetProperty("copyright", out var copyrightProp) ? copyrightProp.GetString() ?? string.Empty : string.Empty;
@@ -98,7 +103,7 @@ public class CustomProductionInfuseMetadata
 
             DateOnly? published = recordingDate;
 
-            return new CustomProductionInfuseMetadata(type, title, description, artist, copyright, published, releaseDate, studio, keywords, album, producers, directors);
+            return new CustomProductionInfuseMetadata(type, title, sortTitle, description, artist, copyright, published, releaseDate, studio, keywords, album, producers, directors);
         }
         catch (Exception ex)
         {
@@ -106,11 +111,23 @@ public class CustomProductionInfuseMetadata
         }
     }
 
+    /// <summary>
+    /// Gibt den eigentlichen Titel zurück. Entspricht dem Titel mit Datum am Anfang, wobei das Datum entfernt wird.
+    /// </summary>
+    /// <param name="titleWithLeadingDate"></param>
+    /// <param name="recordingDate"></param>
+    /// <returns></returns>
+    private static string GetTitle(string titleWithLeadingDate, DateOnly recordingDate)
+    {
+        return titleWithLeadingDate.Replace(recordingDate.ToString("yyyy-MM-dd"),string.Empty).Trim();
+    }
+
     public XElement ToXml()
     {
         return new XElement("media",
             new XAttribute("type", Type),
             new XElement("title", Title),
+            new XElement("sorttitle", SortTitle),
             new XElement("description", Description),
             new XElement("artist", Artist),
             new XElement("copyright", Copyright),
