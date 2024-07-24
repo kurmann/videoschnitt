@@ -16,23 +16,23 @@ public interface IWorkflow
 
 internal class Workflow : IWorkflow
 {
-    private readonly ApplicationSettings _applicationSettings;
     private readonly ILogger<Workflow> _logger;
     private readonly LocalMediaSetDirectoryReader _localMediaSetDirectoryReader;
     private readonly MediaSetIntegrator _mediaSetIntegrator;
+    private readonly MediaSetOrganizerSettings _mediaSetOrganizerSettings;
 
-    public Workflow(IOptions<ApplicationSettings> applicationSettings, ILogger<Workflow> logger, 
+    public Workflow(ILogger<Workflow> logger, IOptions<MediaSetOrganizerSettings> mediaSetOrganizerSettings,
         LocalMediaSetDirectoryReader localMediaSetDirectoryReader, MediaSetIntegrator mediaSetIntegrator)
     {
-        _applicationSettings = applicationSettings.Value;
         _logger = logger;
         _localMediaSetDirectoryReader = localMediaSetDirectoryReader;
         _mediaSetIntegrator = mediaSetIntegrator;
+        _mediaSetOrganizerSettings = mediaSetOrganizerSettings.Value;
     }
 
     public async Task<Result> ExecuteAsync()
     {
-        var sourceDirectoryPath = _applicationSettings.MediaSetPathLocal;
+        var sourceDirectoryPath = _mediaSetOrganizerSettings.MediaSetPathLocal;
         var sourceDirectory = new DirectoryInfo(sourceDirectoryPath);
 
         // Prüfe ob das Verzeichnis exisitiert

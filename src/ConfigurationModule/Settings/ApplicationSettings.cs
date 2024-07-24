@@ -7,23 +7,7 @@ namespace Kurmann.Videoschnitt.ConfigurationModule.Settings
     {
         public const string SectionName = "Application";
 
-        public string MediaSetPathLocal { get; set; } = ExpandHomeDirectory(DefaultMediaSetPathLocal);
-        public const string MediaSetPathLocalConfigKey = $"{SectionName}:MediaSetPathLocal";
-        public const string DefaultMediaSetPathLocal = "~/Movies/MediaSets";
-        public bool IsDefaultMediaSetPathLocal => MediaSetPathLocal == DefaultMediaSetPathLocal;
-
-
         public ExternalToolsSettings ExternalTools { get; set; } = new ExternalToolsSettings();
-
-        public static string ExpandHomeDirectory(string path)
-        {
-            if (path.StartsWith('~'))
-            {
-                var homeDirectory = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-                return path.Replace("~", homeDirectory);
-            }
-            return path;
-        }
     }
 
     public class ExternalToolsSettings
