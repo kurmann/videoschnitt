@@ -15,6 +15,7 @@ public class CustomProductionInfuseMetadata
 {
     public string Type { get; }
     public string Title { get; }
+    public string SortTitle { get; }
     public string? Description { get; }
     public string? Artist { get; }
     public string? Copyright { get; }
@@ -26,12 +27,13 @@ public class CustomProductionInfuseMetadata
     public List<string> Producers { get; }
     public List<string> Directors { get; }
 
-    private CustomProductionInfuseMetadata(string type, string title, string? description, string? artist, string? copyright,
+    private CustomProductionInfuseMetadata(string type, string title, string sortTitle, string? description, string? artist, string? copyright,
                         DateOnly? published, DateOnly? releaseDate, string? studio, string? keywords,
                         string? album, List<string> producers, List<string> directors)
     {
         Type = type;
         Title = title;
+        SortTitle = sortTitle;
         Description = description;
         Artist = artist;
         Copyright = copyright;
@@ -101,7 +103,7 @@ public class CustomProductionInfuseMetadata
 
             DateOnly? published = recordingDate;
 
-            return new CustomProductionInfuseMetadata(type, title, description, artist, copyright, published, releaseDate, studio, keywords, album, producers, directors);
+            return new CustomProductionInfuseMetadata(type, title, sortTitle, description, artist, copyright, published, releaseDate, studio, keywords, album, producers, directors);
         }
         catch (Exception ex)
         {
@@ -125,6 +127,7 @@ public class CustomProductionInfuseMetadata
         return new XElement("media",
             new XAttribute("type", Type),
             new XElement("title", Title),
+            new XElement("sorttitle", SortTitle),
             new XElement("description", Description),
             new XElement("artist", Artist),
             new XElement("copyright", Copyright),
