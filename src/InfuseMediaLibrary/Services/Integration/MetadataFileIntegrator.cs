@@ -37,9 +37,9 @@ internal class MetadataFileIntegrator
             return Result.Failure($"Das Verzeichnis der Video-Datei {integratedVideo} konnte nicht ermittelt werden. Das Verzeichnis wird benötigt, um die Bild-Dateien in das Infuse-Mediathek-Verzeichnis zu verschieben.");
         }
 
-        // Ermittle den Ziel-Pfad für die Metadaten-Datei
+        // Ermittle den Ziel-Pfad für die Metadaten-Datei. Die XML-Datei hat den gleichen Namen wie die Videodatei, aber die Dateiendung .xml
         var metadataFile = mediaSetDirectory.MetadataFile.Value;
-        var targetPath = Path.Combine(videoTargetDirectory.FullName, metadataFile.Name);
+        var targetPath = Path.Combine(videoTargetDirectory.FullName, Path.GetFileNameWithoutExtension(integratedVideo.Name) + ".xml");
 
         // Kopiere die Metadaten-Datei in das Infuse-Mediathek-Verzeichnis und überschreibe die Datei, falls sie bereits existiert
         var copyResult = await _fileOperations.CopyFileAsync(metadataFile, targetPath, true, false);
