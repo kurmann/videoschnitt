@@ -6,6 +6,10 @@ using Kurmann.Videoschnitt.PresentationAssetsBuilder.Services;
 
 namespace Kurmann.Videoschnitt.PresentationAssetsBuilder;
 
+/// <summary>
+/// Erstellt die Infuse-XML-Dateien für die Mediensets. Diese Metadaten-Dateien sind kompatibel zur Infuse-Mediathek.
+/// Gleichzeitig dienen sie auch als kuratiertes Format für Metadaten, die über den Einsatzzweck als Infuse-Mediathek hinausgehen.
+/// </summary>
 public class MetadataXmlWorkflow
 {
     public const string WorkflowName = "MetadataXml";
