@@ -33,10 +33,6 @@ internal class Workflow : IWorkflow
     public async Task<Result> ExecuteAsync()
     {
         var sourceDirectoryPath = _applicationSettings.MediaSetPathLocal;
-
-        // todo: Hardcodierter Verzeichnispfad, später aus Konfiguration auslesen
-        sourceDirectoryPath = "/Users/patrickkurmann/Movies/Mediensets";
-
         var sourceDirectory = new DirectoryInfo(sourceDirectoryPath);
 
         // Prüfe ob das Verzeichnis exisitiert
