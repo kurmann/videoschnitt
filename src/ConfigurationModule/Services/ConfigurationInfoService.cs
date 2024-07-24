@@ -35,17 +35,6 @@ public class ConfigurationInfoService
 
     private void LogApplicationSettings()
     {
-        _logger.LogInformation("Application settings:");
-        if (_applicationSettings.IsDefaultInfuseMediaLibraryPath)
-        {
-            _logger.LogInformation("Kein Infuse Media Library Pfad konfiguriert. Verwende Standardwert: {path}", _applicationSettings.InfuseMediaLibraryPath);
-            _logger.LogInformation("Sie können den Infuse Media Library Pfad in der appsettings.json-Datei unter dem Schlüssel: {key} konfigurieren", ApplicationSettings.InfuseMediaLibraryPathConfigKey);
-        }
-        else
-        {
-            _logger.LogInformation("Verwende Infuse Media Library Pfad aus der Konfiguration: {path}", _applicationSettings.InfuseMediaLibraryPath);
-        }
-
         if (_applicationSettings.IsDefaultMediaSetPathLocal)
         {
             _logger.LogInformation("Kein lokales Medienset-Verzeichnis konfiguriert. Verwende Standardwert: {path}", _applicationSettings.MediaSetPathLocal);
@@ -54,23 +43,6 @@ public class ConfigurationInfoService
         else
         {
             _logger.LogInformation("Verwende lokales Medienset-Verzeichnis aus der Konfiguration: {path}", _applicationSettings.MediaSetPathLocal);
-        }
-
-        if (_applicationSettings.MediaSetPathRemote == null)
-        {
-            _logger.LogInformation("Kein externes Medienset-Verzeichnis konfiguriert.");
-            _logger.LogInformation("Ein externes Medienset-Verzeichnis ist optional und wird nur benötigt, wenn Mediensets auf einem externen Archiv oder Medienserver abgelegt werden.");
-            _logger.LogInformation("Konfigurieren Sie das externe Medienset-Verzeichnis in der appsettings.json-Datei unter dem Schlüssel: {key}", ApplicationSettings.MediaSetPathRemoteConfigKey);
-        }
-
-        if (_applicationSettings.IsDefaultInfuseMediaLibraryPathLocal)
-        {
-            _logger.LogInformation("Kein lokales Infuse Media Library-Verzeichnis konfiguriert. Verwende Standardwert: {path}", _applicationSettings.InfuseMediaLibraryPathLocal);
-            _logger.LogInformation("Sie können das lokale Infuse Media Library-Verzeichnis in der appsettings.json-Datei unter dem Schlüssel: {key} konfigurieren", ApplicationSettings.InfuseMediaLibraryPathLocalConfigKey);
-        }
-        else
-        {
-            _logger.LogInformation("Verwende lokales Infuse Media Library-Verzeichnis aus der Konfiguration: {path}", _applicationSettings.InfuseMediaLibraryPathLocal);
         }
     }
 

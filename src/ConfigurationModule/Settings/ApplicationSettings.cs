@@ -7,23 +7,11 @@ namespace Kurmann.Videoschnitt.ConfigurationModule.Settings
     {
         public const string SectionName = "Application";
 
-        public string InfuseMediaLibraryPath { get; set; } = ExpandHomeDirectory(DefaultInfuseMediaLibraryPath);
-        public const string InfuseMediaLibraryPathConfigKey = $"{SectionName}:InfuseMediaLibraryPath";
-        public const string DefaultInfuseMediaLibraryPath = "~/Movies/Infuse Media Library";
-        public bool IsDefaultInfuseMediaLibraryPath => InfuseMediaLibraryPath == DefaultInfuseMediaLibraryPath;
-
         public string MediaSetPathLocal { get; set; } = ExpandHomeDirectory(DefaultMediaSetPathLocal);
         public const string MediaSetPathLocalConfigKey = $"{SectionName}:MediaSetPathLocal";
         public const string DefaultMediaSetPathLocal = "~/Movies/MediaSets";
         public bool IsDefaultMediaSetPathLocal => MediaSetPathLocal == DefaultMediaSetPathLocal;
 
-        public string InfuseMediaLibraryPathLocal { get; set; } = ExpandHomeDirectory(DefaultInfuseMediaLibraryPathLocal);
-        public const string InfuseMediaLibraryPathLocalConfigKey = $"{SectionName}:InfuseMediaLibraryPathLocal";
-        public const string DefaultInfuseMediaLibraryPathLocal = "~/Movies/Infuse Media Library";
-        public bool IsDefaultInfuseMediaLibraryPathLocal => InfuseMediaLibraryPathLocal == DefaultInfuseMediaLibraryPathLocal;
-
-        public string? MediaSetPathRemote { get; set; }
-        public const string MediaSetPathRemoteConfigKey = $"{SectionName}:MediaSetPathRemote";
 
         public ExternalToolsSettings ExternalTools { get; set; } = new ExternalToolsSettings();
 
