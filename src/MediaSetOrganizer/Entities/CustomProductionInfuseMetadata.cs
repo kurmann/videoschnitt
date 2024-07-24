@@ -69,6 +69,7 @@ public class CustomProductionInfuseMetadata
             // Initialize variables with default values
             string type = "Other";
             string title = string.Empty;
+            string sortTitle = string.Empty;
             string description = string.Empty;
             string artist = string.Empty;
             string copyright = string.Empty;
@@ -81,7 +82,9 @@ public class CustomProductionInfuseMetadata
 
             if (format.TryGetProperty("tags", out JsonElement tags))
             {
-                title = tags.TryGetProperty("title", out var titleProp) ? titleProp.GetString() ?? string.Empty : string.Empty;
+                var titleWithLeadingDate = tags.TryGetProperty("title", out var titleProp) ? titleProp.GetString() ?? string.Empty : string.Empty;
+                title = GetTitle(titleWithLeadingDate, recordingDate);
+                sortTitle = tags.TryGetProperty("title", out var sortTitleProp) ? sortTitleProp.GetString() ?? string.Empty : string.Empty; // Titel entspricht dem Namen des Mediensets bspw. "2022-01-01 - Titel"
                 description = tags.TryGetProperty("com.apple.quicktime.description", out var descProp) ? descProp.GetString() ?? string.Empty : string.Empty;
                 artist = tags.TryGetProperty("artist", out var artistProp) ? artistProp.GetString() ?? string.Empty : string.Empty;
                 copyright = tags.TryGetProperty("copyright", out var copyrightProp) ? copyrightProp.GetString() ?? string.Empty : string.Empty;
@@ -104,6 +107,17 @@ public class CustomProductionInfuseMetadata
         {
             return Result.Failure<CustomProductionInfuseMetadata>($"Fehler beim Parsen der FFprobe-Metadaten: {ex.Message}");
         }
+    }
+
+    /// <summary>
+    /// Gibt den eigentlichen Titel zurück. Entspricht dem Titel mit Datum am Anfang, wobei das Datum entfernt wird.
+    /// </summary>
+    /// <param name="titleWithLeadingDate"></param>
+    /// <param name="recordingDate"></param>
+    /// <returns></returns>
+    private static string GetTitle(string titleWithLeadingDate, DateOnly recordingDate)
+    {
+        return titleWithLeadingDate.Replace(recordingDate.ToString("yyyy-MM-dd"),string.Empty).Trim();
     }
 
     public XElement ToXml()
