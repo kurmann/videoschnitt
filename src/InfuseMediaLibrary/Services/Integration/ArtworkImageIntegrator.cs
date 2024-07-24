@@ -82,6 +82,8 @@ internal class ArtworkImageIntegrator
         {
             // Informiere, dass wir anhand des Dateisuffixes das Poster- und Fanart-Bild identifiziert haben.
             _logger.LogInformation("Das Poster- und Fanart-Bild wurden anhand des Dateisuffixes identifiziert: Poster-Bild: '{posterImage.Name}', Fanart-Bild: '{fanartImage.Name}'", posterImage.Value.Name, fanartImage.Value.Name);
+            await IntegratePosterImage(integratedVideo, posterImage);
+            await IntegrateFanartImage(integratedVideo, fanartImage);
         }
 
         if (posterImage.HasValue && fanartImage.HasNoValue)
