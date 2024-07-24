@@ -22,6 +22,7 @@ internal class MediaSetIntegrator
 
     internal async Task<Result> IntegrateMediaSetAsync(MediaSetDirectory mediaSetDirectory)
     {
+        // Integriere die Medienserver-Datei aus dem Medienset in die Infuse-Mediathek
         var integratedVideoResult = await _videoIntegrator.IntegrateMediaServerFiles(mediaSetDirectory.MediaServerFilesDirectory.GetValueOrDefault());
         if (integratedVideoResult.IsFailure)
         {
@@ -30,18 +31,21 @@ internal class MediaSetIntegrator
         _logger.LogInformation("Videodatei {Video} wurde erfolgreich in die Infuse-Mediathek integriert.", integratedVideoResult.Value);
         var integratedVideo = integratedVideoResult.Value;
 
-        // Wenn keine Videodatei gefunden wurde, ergibt es keinen Sinn, die Artwork-Bilder zu integrieren
+        // Wenn keine Videodatei gefunden wurde, ergibt es keinen Sinn, weitere Integrationsschritte durchzuführen
         if (integratedVideo.HasNoValue)
         {
             return Result.Success();
         }
 
+        // Integriere die Titelbilder in die Infuse-Mediathek
         var integrateArtworkImagesTask = await _artworkImageIntegrator.IntegrateImagesAsync(mediaSetDirectory.ArtworkDirectory.GetValueOrDefault(), integratedVideo.Value);
         if (integrateArtworkImagesTask.IsFailure)
         {
             return Result.Failure($"Fehler beim Integrieren der Artwork-Bilder in die Infuse-Mediathek: {integrateArtworkImagesTask.Error}");
         }
         _logger.LogInformation("Artwork-Bilder für die Videodatei {Video} wurden erfolgreich in die Infuse-Mediathek integriert.", integratedVideo);
+
+        // Integriere die Metadaten-XML-Datei in die Infuse-Mediathek
 
         return Result.Success();
     }

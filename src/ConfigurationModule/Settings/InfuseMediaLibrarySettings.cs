@@ -2,6 +2,8 @@ namespace Kurmann.Videoschnitt.ConfigurationModule.Settings;
 
 public class InfuseMediaLibrarySettings
 {
+    public const string SectionName = "InfuseMediaLibrary";
+
     public string InfuseMediaLibraryPathLocal { get; set; } = ExpandHomeDirectory(DefaultInfuseMediaLibraryPathLocal);
     public const string InfuseMediaLibraryPathLocalConfigKey = $"{SectionName}:InfuseMediaLibraryPathLocal";
     public const string DefaultInfuseMediaLibraryPathLocal = "~/Movies/Infuse Media Library";
@@ -16,8 +18,6 @@ public class InfuseMediaLibrarySettings
         }
         return path;
     }
-
-    public const string SectionName = "InfuseMediaLibrary";
 
     /// <summary>
     /// Das Suffix des Dateinamens, das für die Banner-Datei verwendet wird für die Infuse-Mediathek als Titelbild.
