@@ -74,8 +74,26 @@ internal class LocalMediaSetDirectoryReader
                     .FirstOrDefault(d => d.Name == _mediaSetOrganizerSettings.MediaSet.ImageFilesSubDirectoryName);
                 var maybeArtworkDirectory = artworkDirectoryInfo != null ? new ArtworkDirectory(artworkDirectoryInfo, mediaSetName) : Maybe<ArtworkDirectory>.None;
                 var maybeMediaServerFilesDirectory = mediaServerFilesDirectory != null ? new MediaServerFilesDirectory(mediaServerFilesDirectory, mediaSetName) : Maybe<MediaServerFilesDirectory>.None;
-    
-                var localMediaSetDirectory = new MediaSetDirectory(mediaSetDirectory, mediaSetNameResult.Value, maybeArtworkDirectory, maybeMediaServerFilesDirectory);
+
+                // Suche im Wurzelverzeichnis des Mediensets nach einer Datei mit der Endung ".xml" oder ".XML" (Metadaten-Datei)
+                var xmlFile = mediaSetDirectory.GetFiles()
+                    .FirstOrDefault(f => f.Extension.Equals(".xml", StringComparison.OrdinalIgnoreCase));
+
+                Maybe<InfuseMetadataXmlFile> infuseMetadataXmlFile = Maybe<InfuseMetadataXmlFile>.None;
+                if (xmlFile != null)
+                {
+                    // Prüfe, ob die Datei eine gültige Infuse-Metadaten-Datei ist
+                    var isValidInfuseXmlFile = InfuseMetadataFileValidator.IsInfuseMetadataXmlFile(xmlFile);
+                    if (isValidInfuseXmlFile.IsFailure)
+                    {
+                        _logger.LogWarning("Die Datei '{InfuseMetadataXmlFile}' ist keine gültige Infuse-Metadaten-Datei: {Error}", xmlFile.FullName, isValidInfuseXmlFile.Error);
+                        _logger.LogInformation("Beim Medienset '{MediaSetName}' wird keine Infuse-Metadaten-Datei integriert.", mediaSetName);
+                        continue;
+                    }
+                    infuseMetadataXmlFile = new InfuseMetadataXmlFile(xmlFile, mediaSetName);
+                }
+
+                var localMediaSetDirectory = new MediaSetDirectory(mediaSetDirectory, mediaSetNameResult.Value, infuseMetadataXmlFile, maybeArtworkDirectory, maybeMediaServerFilesDirectory);
                 localMediaSetDirectories.Add(localMediaSetDirectory);
             }
 
@@ -85,8 +103,10 @@ internal class LocalMediaSetDirectoryReader
         {
             return Result.Failure<List<MediaSetDirectory>>($"Das Verzeichnis '{directoryInfo.FullName}' konnte nicht geöffnet werden.");
         }
-    
+
     }
+
+
 }
 
 /// <summary>
@@ -97,7 +117,8 @@ internal class LocalMediaSetDirectoryReader
 /// <param name="ArtworkDirectory"></param>
 /// <param name="MediaServerFilesDirectory"></param>
 /// <returns></returns>
-internal record MediaSetDirectory(DirectoryInfo DirectoryInfo, MediaSetName MediaSetName, Maybe<ArtworkDirectory> ArtworkDirectory, Maybe<MediaServerFilesDirectory> MediaServerFilesDirectory)
+internal record MediaSetDirectory(DirectoryInfo DirectoryInfo, MediaSetName MediaSetName, Maybe<InfuseMetadataXmlFile> MetadataFile,
+    Maybe<ArtworkDirectory> ArtworkDirectory, Maybe<MediaServerFilesDirectory> MediaServerFilesDirectory)
 {
     public string Name => MediaSetName;
 
@@ -109,6 +130,26 @@ internal record MediaSetDirectory(DirectoryInfo DirectoryInfo, MediaSetName Medi
     public static implicit operator DirectoryInfo(MediaSetDirectory localMediaSetDirectory)
     {
         return localMediaSetDirectory.DirectoryInfo;
+    }
+}
+
+internal record InfuseMetadataXmlFile(FileInfo FileInfo, MediaSetName MediaSetName)
+{
+    public string Name => FileInfo.Name;
+
+    public override string ToString()
+    {
+        return FileInfo.FullName;
+    }
+
+    public static implicit operator FileInfo(InfuseMetadataXmlFile infuseMetadataXmlFile)
+    {
+        return infuseMetadataXmlFile.FileInfo;
+    }
+
+    public static implicit operator string(InfuseMetadataXmlFile infuseMetadataXmlFile)
+    {
+        return infuseMetadataXmlFile.FileInfo.FullName;
     }
 }
 

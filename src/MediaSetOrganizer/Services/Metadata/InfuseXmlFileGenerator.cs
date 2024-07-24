@@ -2,7 +2,7 @@ using Microsoft.Extensions.Logging;
 using CSharpFunctionalExtensions;
 using Kurmann.Videoschnitt.Common.Services.Metadata;
 
-namespace Kurmann.Videoschnitt.PresentationAssetsBuilder.Services;
+namespace Kurmann.Videoschnitt.MediaSetOrganizer.Services.Metadata;
 
 /// <summary>
 /// Verantwortlich für das Erstellen von Infuse-XML-Dateien.

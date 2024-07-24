@@ -125,23 +125,6 @@ public class Program
                 }
             }
 
-            case MetadataXmlWorkflow.WorkflowName:
-                {
-                    logger.LogInformation("Starting MetadataXml workflow.");
-                    var workflow = scopedServices.GetRequiredService<MetadataXmlWorkflow>();
-                    var result = await workflow.ExecuteAsync();
-                    if (result.IsSuccess)
-                    {
-                        logger.LogInformation("MetadataXml workflow completed successfully.");
-                        return 0; // success
-                    }
-                    else
-                    {
-                        logger.LogError("Error in MetadataXml workflow: {Error}", result.Error);
-                        return 1; // error
-                    }
-                }
-
             case GenerateMediaSetIndexWorkflow.WorkflowName:
                 {
                     logger.LogInformation("Starting GenerateMediaSetIndex workflow.");

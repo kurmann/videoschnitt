@@ -7,6 +7,7 @@ using Kurmann.Videoschnitt.Common.Services.FileSystem;
 using Kurmann.Videoschnitt.Common.Services.FileSystem.Unix;
 using Kurmann.Videoschnitt.MediaSetOrganizer.Services.Imaging;
 using Kurmann.Videoschnitt.MediaSetOrganizer.Services.Integration;
+using Kurmann.Videoschnitt.MediaSetOrganizer.Services.Metadata;
 
 namespace Kurmann.Videoschnitt.MediaSetOrganizer;
 
@@ -26,6 +27,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ImageProcessorService>();
         services.AddScoped<PortraitAndLandscapeService>();
         services.AddScoped<SupportedImagesIntegrator>();
+        services.AddScoped<DirectoryInfuseXmlFileGenerator>();
+        services.AddScoped<InfuseXmlFileGenerator>();
 
         return services;
     }
