@@ -2,6 +2,21 @@ namespace Kurmann.Videoschnitt.ConfigurationModule.Settings;
 
 public class InfuseMediaLibrarySettings
 {
+    public string InfuseMediaLibraryPathLocal { get; set; } = ExpandHomeDirectory(DefaultInfuseMediaLibraryPathLocal);
+    public const string InfuseMediaLibraryPathLocalConfigKey = $"{SectionName}:InfuseMediaLibraryPathLocal";
+    public const string DefaultInfuseMediaLibraryPathLocal = "~/Movies/Infuse Media Library";
+    public bool IsDefaultInfuseMediaLibraryPathLocal => InfuseMediaLibraryPathLocal == DefaultInfuseMediaLibraryPathLocal;
+
+    public static string ExpandHomeDirectory(string path)
+    {
+        if (path.StartsWith('~'))
+        {
+            var homeDirectory = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            return path.Replace("~", homeDirectory);
+        }
+        return path;
+    }
+
     public const string SectionName = "InfuseMediaLibrary";
 
     /// <summary>

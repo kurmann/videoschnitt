@@ -7,7 +7,17 @@ public class MediaSetOrganizerSettings
     public MediaSetSettings MediaSet { get; set; } = new MediaSetSettings();
 
     /// <summary>
-    /// Das Verueichnis, in dem die Dateien liegen, die in Mediensets organisiert werden sollen.
+    /// Der Pfad zum lokalen Verzeichnis, in dem die Mediensets organisiert werden sollen.
+    /// Das lokale Verzeichnis dient als Arbeitsverzeichnis, in dem die Dateien organisiert werden.
+    /// </summary>
+    /// <returns></returns>
+    public string MediaSetPathLocal { get; set; } = ExpandHomeDirectory(DefaultMediaSetPathLocal);
+    public const string MediaSetPathLocalConfigKey = $"{SectionName}:MediaSetPathLocal";
+    public const string DefaultMediaSetPathLocal = "~/Movies/MediaSets";
+    public bool IsDefaultMediaSetPathLocal => MediaSetPathLocal == DefaultMediaSetPathLocal;
+
+    /// <summary>
+    /// Das Verzeichnis, in dem die Dateien liegen, die in Mediensets organisiert werden sollen.
     /// Üblicherweise sind dies die Dateien, die komprimiert wurden aus der Masterdatei.
     /// </summary>
     /// <returns></returns>

@@ -11,12 +11,12 @@ namespace Kurmann.Videoschnitt.InfuseMediaLibrary.Services.Integration;
 /// </summary>
 internal class TargetPathService
 {
-    private readonly ApplicationSettings _applicationSettings;
+    private readonly InfuseMediaLibrarySettings _infuseMediaLibrarySettings;
     private readonly VideoMetadataService _videoMetadataService;
 
-    public TargetPathService(IOptions<ApplicationSettings> applicationSettings, VideoMetadataService videoMetadataService)
+    public TargetPathService(IOptions<InfuseMediaLibrarySettings> infuseMediaLibrarySettings, VideoMetadataService videoMetadataService)
     {
-        _applicationSettings = applicationSettings.Value;
+        _infuseMediaLibrarySettings = infuseMediaLibrarySettings.Value;
         _videoMetadataService = videoMetadataService;
     }
 
@@ -51,7 +51,7 @@ internal class TargetPathService
             return Result.Failure<DirectoryInfo>($"Das Zielverzeichnis für die Video-Datei {videoFile} konnte aufgrund Fehler bei der Titel-Ermittlung nicht ermittelt werden: {mediaSetName.Error}");
         }
 
-        var targetDirectory = Path.Combine(_applicationSettings.InfuseMediaLibraryPathLocal, album.Value, mediaSetName.Value.Date.Year.ToString(), mediaSetName.Value);
+        var targetDirectory = Path.Combine(_infuseMediaLibrarySettings.InfuseMediaLibraryPathLocal, album.Value, mediaSetName.Value.Date.Year.ToString(), mediaSetName.Value);
 
         return new DirectoryInfo(targetDirectory);
     }
