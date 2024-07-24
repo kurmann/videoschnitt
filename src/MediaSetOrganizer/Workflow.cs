@@ -5,6 +5,7 @@ using Kurmann.Videoschnitt.Common.Models;
 using Kurmann.Videoschnitt.ConfigurationModule.Settings;
 using Kurmann.Videoschnitt.MediaSetOrganizer.Services.Imaging;
 using Microsoft.Extensions.Options;
+using Kurmann.Videoschnitt.MediaSetOrganizer.Services.Metadata;
 
 namespace Kurmann.Videoschnitt.MediaSetOrganizer;
 
@@ -21,11 +22,12 @@ public class Workflow
     private readonly FinalCutDirectoryIntegrator _finalCutDirectoryIntegrator;
     private readonly ImageProcessorService _imageProcessorService;
     private readonly MediaSetOrganizerSettings _mediaSetOrganizerSettings;
+    private readonly DirectoryInfuseXmlFileGenerator _directoryInfuseXmlFileGenerator;
 
     public Workflow(ILogger<Workflow> logger, MediaSetService mediaSetService,
         MediaPurposeOrganizer mediaPurposeOrganizer, InputDirectoryReaderService inputDirectoryReaderService,
         MediaSetDirectoryIntegrator mediaSetDirectoryIntegrator, FinalCutDirectoryIntegrator finalCutDirectoryIntegrator,
-        ImageProcessorService imageProcessorService, IOptions<MediaSetOrganizerSettings> mediaSetOrganizerSettings)
+        ImageProcessorService imageProcessorService, IOptions<MediaSetOrganizerSettings> mediaSetOrganizerSettings, DirectoryInfuseXmlFileGenerator directoryInfuseXmlFileGenerator)
     {
         _logger = logger;
         _mediaSetService = mediaSetService;
@@ -35,6 +37,7 @@ public class Workflow
         _finalCutDirectoryIntegrator = finalCutDirectoryIntegrator;
         _imageProcessorService = imageProcessorService;
         _mediaSetOrganizerSettings = mediaSetOrganizerSettings.Value;
+        _directoryInfuseXmlFileGenerator = directoryInfuseXmlFileGenerator;
     }
 
     public async Task<Result<List<MediaSet>>> ExecuteAsync()
@@ -89,6 +92,20 @@ public class Workflow
         }
 
         _logger.LogInformation("Medien erfolgreich in die lokalen Medienset-Verzeichnisse verschoben.");
+
+        // Erstelle die Infuse-XML-Dateien
+        var generateInfuseXmlFilesResult = await _directoryInfuseXmlFileGenerator.Generate(_mediaSetOrganizerSettings.MediaSetPathLocal);
+        if (generateInfuseXmlFilesResult.IsFailure)
+        {
+            return Result.Failure<List<MediaSet>>($"Fehler beim Erstellen der Infuse-XML-Dateien: {generateInfuseXmlFilesResult.Error}");
+        }
+
+        // Logge die erstellten Infuse-XML-Dateien
+        _logger.LogInformation("Folgende Infuse-XML-Dateien wurden erstellt:");
+        foreach (var infuseXmlFile in generateInfuseXmlFilesResult.Value.MetadataFiles)
+        {
+            _logger.LogInformation("{InfuseXmlFile}", infuseXmlFile.Name);
+        }
 
         _logger.LogInformation("Steuereinheit für die Metadaten-Verarbeitung beendet.");
         return Result.Success(mediaSets.Value);

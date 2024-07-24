@@ -3,7 +3,7 @@ using System.Xml.Linq;
 using CSharpFunctionalExtensions;
 using Kurmann.Videoschnitt.Common.Services.Metadata;
 
-namespace Kurmann.Videoschnitt.PresentationAssetsBuilder.Entities;
+namespace Kurmann.Videoschnitt.MediaSetOrganizer.Entities;
 
 /// <summary>
 /// Verantwortlich für das Erstellen von XML-Metadaten, die insbesonder von Infusse gelesen werden können und gleichzeitig auch allgemeine Metadaten enthalten.

@@ -2,11 +2,11 @@ using CSharpFunctionalExtensions;
 using Kurmann.Videoschnitt.Common.Models;
 using Kurmann.Videoschnitt.Common.Services.Metadata;
 using Kurmann.Videoschnitt.ConfigurationModule.Settings;
-using Kurmann.Videoschnitt.PresentationAssetsBuilder.Entities;
+using Kurmann.Videoschnitt.MediaSetOrganizer.Entities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Kurmann.Videoschnitt.PresentationAssetsBuilder.Services;
+namespace Kurmann.Videoschnitt.MediaSetOrganizer.Services.Metadata;
 
 /// <summary>
 /// Verantwortlich für das Erstellen von Infuse-XML-Dateien aus allen Videodateien eines Verzeichnisses.
@@ -91,4 +91,22 @@ public class DirectoryInfuseXmlFileGenerator
 
 public record GeneratedMetadataFiles(List<GeneratedMetadataFilesByMediaSet> MetadataFiles);
 
-public record GeneratedMetadataFilesByMediaSet(FileInfo FilePath, FFprobeMetadata Metadata);
+public record GeneratedMetadataFilesByMediaSet(FileInfo FilePath, FFprobeMetadata Metadata)
+{
+    public string Name => FilePath.Name;
+
+    public static implicit operator string(GeneratedMetadataFilesByMediaSet mediaSet)
+    {
+        return mediaSet.FilePath.FullName;
+    }
+
+    public static implicit operator FileInfo(GeneratedMetadataFilesByMediaSet mediaSet)
+    {
+        return mediaSet.FilePath;
+    }
+
+    public override string ToString()
+    {
+        return FilePath.FullName;
+    }
+}
