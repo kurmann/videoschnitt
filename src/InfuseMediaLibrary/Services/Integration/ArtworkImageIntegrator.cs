@@ -72,12 +72,14 @@ internal class ArtworkImageIntegrator
         var posterImage = GetPosterImage(supportedImages);
         var fanartImage = GetFanartImage(supportedImages);
 
+        // Keine Poster- und Fanart-Bilder identifiziert
         if (posterImage.HasNoValue && fanartImage.HasNoValue)
         {
             // Warne, dass wir bei zwei Bildern keine Poster- und Fanart-Bilder identifizieren konnten.
             _logger.LogWarning("Es wurden keine Poster- und Fanart-Bilder identifiziert. Es wurden zwei unterstützte Bilder gefunden, aber keines davon entspricht den Suffixen für Poster- und Fanart-Bilder.");
         }
 
+        // Poster- und Fanart-Bilder identifiziert
         if (posterImage.HasValue && fanartImage.HasValue)
         {
             // Informiere, dass wir anhand des Dateisuffixes das Poster- und Fanart-Bild identifiziert haben.
@@ -86,18 +88,23 @@ internal class ArtworkImageIntegrator
             await IntegrateFanartImage(integratedVideo, fanartImage);
         }
 
+        // Nur Poster-Bild identifiziert
         if (posterImage.HasValue && fanartImage.HasNoValue)
         {
-            // Informiere, dass wir anhand des Dateisuffixes nur das Poster-Bild identifiziert haben.
+            // Informiere, dass wir anhand des Dateisuffixes nur das Poster-Bild identifiziert haben. Es wird kein Fanart-Bild verwendet.
             _logger.LogInformation("Das Poster-Bild wurde anhand des Dateisuffixes identifiziert: Poster-Bild: '{posterImage.Name}'", posterImage.Value.Name);
+            _logger.LogInformation("Das Fanart-Bild wird nicht in die Infuse-Mediathek integriert, da kein passendes Bild gefunden wurde.");
             await IntegratePosterImage(integratedVideo, posterImage);
         }
 
+        // Nur Fanart-Bild identifiziert
         if (fanartImage.HasValue && posterImage.HasNoValue)
         {
-            // Informiere, dass wir anhand des Dateisuffixes nur das Fanart-Bild identifiziert haben.
+            // Informiere, dass wir anhand des Dateisuffixes nur das Fanart-Bild identifiziert haben. Dieses wird gleichzeitig auch für das Poster-Bild verwendet.
             _logger.LogInformation("Das Fanart-Bild wurde anhand des Dateisuffixes identifiziert: Fanart-Bild: '{fanartImage.Name}'", fanartImage.Value.Name);
+            _logger.LogInformation("Das Poster-Bild wird von dem Fanart-Bild abgeleitet.");
             await IntegrateFanartImage(integratedVideo, fanartImage);
+            await IntegratePosterImage(integratedVideo, fanartImage);
         }
 
         return Result.Success();
