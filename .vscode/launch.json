@@ -40,14 +40,14 @@
       "console": "integratedTerminal"
     },
     {
-      "name": ".NET Core Launch (MetadataXml)",
+      "name": ".NET Core Launch (MediaSetIndex)",
       "type": "coreclr",
       "request": "launch",
       "preLaunchTask": "build",
       "program": "${workspaceFolder}/src/ConsoleApp/bin/Debug/net9.0/osx-arm64/Kurmann.Videoschnitt.ConsoleApp.dll",
       "args": [
         "--workflow",
-        "MetadataXml",
+        "MediaSetIndex",
         "--environment",
         "Development"
       ],
