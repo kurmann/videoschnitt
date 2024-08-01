@@ -27,8 +27,15 @@ internal class VideoIntegrator
     /// </summary>
     /// <param name="mediaServerFilesDirectory"></param>
     /// <returns></returns>
-    public async Task<Result<Maybe<SupportedVideo>>> IntegrateMediaServerFiles(MediaServerFilesDirectory mediaServerFilesDirectory)
+    public async Task<Result<Maybe<SupportedVideo>>> IntegrateMediaServerFiles(MediaServerFilesDirectory? mediaServerFilesDirectory)
     {
+        if (mediaServerFilesDirectory == null)
+        {
+            _logger.LogInformation("Kein Medienserver-Verzeichnis vorhanden. Es gibt nichts zu integrieren.");
+            return Result.Success(Maybe<SupportedVideo>.None);
+        }
+
+
         _logger.LogInformation("Integriere die Dateien des Medienservers in die Infuse-Mediathek.");
         _logger.LogInformation("Medienserver-Verzeichnis: {mediaServerFilesDirectory}", mediaServerFilesDirectory);
 

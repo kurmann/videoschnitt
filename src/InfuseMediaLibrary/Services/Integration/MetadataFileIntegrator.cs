@@ -11,14 +11,12 @@ namespace Kurmann.Videoschnitt.InfuseMediaLibrary.Services.Integration;
 /// </summary>
 internal class MetadataFileIntegrator
 {
-    private readonly TargetPathService _targetPathService;
     private readonly IFileOperations _fileOperations;
     private readonly ILogger<MetadataFileIntegrator> _logger;
 
-    public MetadataFileIntegrator(IFileOperations fileOperations, TargetPathService targetPathService, ILogger<MetadataFileIntegrator> logger)
+    public MetadataFileIntegrator(IFileOperations fileOperations, ILogger<MetadataFileIntegrator> logger)
     {
         _fileOperations = fileOperations;
-        _targetPathService = targetPathService;
         _logger = logger;
     }
 
@@ -27,6 +25,7 @@ internal class MetadataFileIntegrator
         // Wenn keine Metadaten-Datei vorhanden ist, gibt es nichts zu integrieren
         if (mediaSetDirectory.MetadataFile.HasNoValue)
         {
+            _logger.LogInformation("Keine Metadaten-Datei vorhanden. Es gibt nichts zu integrieren.");
             return Result.Success();
         }
 

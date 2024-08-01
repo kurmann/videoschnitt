@@ -33,8 +33,15 @@ internal class ArtworkImageIntegrator
     /// <param name="artworkDirectory"></param>
     /// <param name="integratedVideo"></param>
     /// <returns></returns>
-    public Task<Result> IntegrateImagesAsync(ArtworkDirectory artworkDirectory, SupportedVideo integratedVideo)
+    public Task<Result> IntegrateImagesAsync(ArtworkDirectory? artworkDirectory, SupportedVideo integratedVideo)
     {
+        // Wenn kein Artwork-Verzeichnis vorhanden ist, wird mit einer Info geloggt und die Methode beendet.
+        if (artworkDirectory == null)
+        {
+            _logger.LogInformation("Es wurde kein Artwork-Verzeichnis für die Videodatei {integratedVideo} gefunden. Es werden keine unterstützten Bild-Dateien in die Infuse-Mediathek integriert.", integratedVideo);
+            return Task.FromResult(Result.Success());
+        }
+
         // Hole alle unterstützten Bild-Dateien aus dem Medienserver-Verzeichnis
         var supportedImagesResult = artworkDirectory.GetSupportedImages();
         if (supportedImagesResult.IsFailure)
