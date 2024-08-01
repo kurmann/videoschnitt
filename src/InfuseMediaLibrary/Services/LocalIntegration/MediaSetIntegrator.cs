@@ -2,7 +2,7 @@ using CSharpFunctionalExtensions;
 using Kurmann.Videoschnitt.InfuseMediaLibrary.Services.FileInspection;
 using Microsoft.Extensions.Logging;
 
-namespace Kurmann.Videoschnitt.InfuseMediaLibrary.Services.Integration;
+namespace Kurmann.Videoschnitt.InfuseMediaLibrary.Services.LocalIntegration;
 
 /// <summary>
 /// Verantwortlich für die Integration von Mediensets in die Infuse-Mediathek

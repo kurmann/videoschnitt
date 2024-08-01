@@ -1,8 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
 using Kurmann.Videoschnitt.Common.Services.FileSystem;
 using Kurmann.Videoschnitt.Common.Services.FileSystem.Unix;
-using Kurmann.Videoschnitt.InfuseMediaLibrary.Services.Integration;
 using Kurmann.Videoschnitt.InfuseMediaLibrary.Services.FileInspection;
+using Kurmann.Videoschnitt.InfuseMediaLibrary.Services.LocalIntegration;
 
 namespace Kurmann.Videoschnitt.InfuseMediaLibrary;
 

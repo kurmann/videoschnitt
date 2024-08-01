@@ -2,8 +2,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using CSharpFunctionalExtensions;
 using Kurmann.Videoschnitt.ConfigurationModule.Settings;
-using Kurmann.Videoschnitt.InfuseMediaLibrary.Services.Integration;
 using Kurmann.Videoschnitt.InfuseMediaLibrary.Services.FileInspection;
+using Kurmann.Videoschnitt.InfuseMediaLibrary.Services.LocalIntegration;
 
 namespace Kurmann.Videoschnitt.InfuseMediaLibrary;
 

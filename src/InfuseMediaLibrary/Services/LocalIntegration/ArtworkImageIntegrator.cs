@@ -7,7 +7,7 @@ using Kurmann.Videoschnitt.InfuseMediaLibrary.Services.FileInspection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Kurmann.Videoschnitt.InfuseMediaLibrary.Services.Integration;
+namespace Kurmann.Videoschnitt.InfuseMediaLibrary.Services.LocalIntegration;
 
 /// <summary>
 /// Verwantwortlich für die Integration von Bildern in die lokale Infuse-Mediathek für die Anzeige als Titelbilder auf dem Infuse-Medienserver.
