@@ -4,7 +4,7 @@ using Kurmann.Videoschnitt.Common.Services.FileSystem;
 using Kurmann.Videoschnitt.InfuseMediaLibrary.Services.FileInspection;
 using Microsoft.Extensions.Logging;
 
-namespace Kurmann.Videoschnitt.InfuseMediaLibrary.Services.Integration;
+namespace Kurmann.Videoschnitt.InfuseMediaLibrary.Services.LocalIntegration;
 
 /// <summary>
 /// Verantwortlich für die Integration von Metadaten-Dateien in die Infuse-Mediathek

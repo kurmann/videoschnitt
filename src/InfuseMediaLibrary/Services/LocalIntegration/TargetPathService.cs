@@ -4,7 +4,7 @@ using Kurmann.Videoschnitt.ConfigurationModule.Settings;
 using Kurmann.Videoschnitt.InfuseMediaLibrary.Services.FileInspection;
 using Microsoft.Extensions.Options;
 
-namespace Kurmann.Videoschnitt.InfuseMediaLibrary.Services.Integration;
+namespace Kurmann.Videoschnitt.InfuseMediaLibrary.Services.LocalIntegration;
 
 /// <summary>
 /// Verantwortlich für die Ermittlung des Zielverzeichnisses für die Integration anhand von Metadaten und Konfiguration.

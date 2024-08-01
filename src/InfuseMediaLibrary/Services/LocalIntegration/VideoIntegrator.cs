@@ -4,7 +4,7 @@ using Kurmann.Videoschnitt.Common.Services.FileSystem;
 using Kurmann.Videoschnitt.InfuseMediaLibrary.Services.FileInspection;
 using Microsoft.Extensions.Logging;
 
-namespace Kurmann.Videoschnitt.InfuseMediaLibrary.Services.Integration;
+namespace Kurmann.Videoschnitt.InfuseMediaLibrary.Services.LocalIntegration;
 
 /// <summary>
 /// Verantwortlich für die Integration von Videodateien in die Infuse-Mediathek
@@ -51,7 +51,7 @@ internal class VideoIntegrator
             // Informiere, dass keine unterstützten Videodateien gefunden wurden im entsprechenden Verzeichnis und fahre mit dem nächsten Mediensetverzeichnis fort
             _logger.LogInformation("Es wurden keine unterstützten Videodateien im Medienserver-Verzeichnis {mediaServerFilesDirectory} gefunden.", mediaServerFilesDirectory);
             return Result.Success(Maybe<SupportedVideo>.None);
-            
+
         }
 
         // Für Medienserver wird nur eine Videodatei erwartet, wenn mehrere Dateien gefunden werden, wird ein Fehler zurückgegeben
