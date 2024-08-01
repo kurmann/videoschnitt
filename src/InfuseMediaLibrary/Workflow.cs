@@ -32,6 +32,23 @@ internal class Workflow : IWorkflow
 
     public async Task<Result> ExecuteAsync()
     {
+        var localIntegrationResult = await ExecuteLocalIntegration();
+        if (localIntegrationResult.IsFailure)
+        {
+            return localIntegrationResult;
+        }
+        var remoteIntegrationResult = await ExecuteRemoteIntegration();
+        if (remoteIntegrationResult.IsFailure)
+        {
+            return remoteIntegrationResult;
+        }
+
+        _logger.LogInformation("InfuseMediaLibrary-Workflow wurde erfolgreich ausgeführt.");
+        return Result.Success();
+    }
+
+    private async Task<Result> ExecuteLocalIntegration()
+    {
         var sourceDirectoryPath = _mediaSetOrganizerSettings.MediaSetPathLocal;
         var sourceDirectory = new DirectoryInfo(sourceDirectoryPath);
 
@@ -68,6 +85,12 @@ internal class Workflow : IWorkflow
         }
 
         _logger.LogInformation("InfuseMediaLibrary-Workflow wurde erfolgreich ausgeführt.");
+        return Result.Success();
+    }
+
+    private async Task<Result> ExecuteRemoteIntegration()
+    {
+        _logger.LogWarning("Remote-Integration wird derzeit nicht unterstützt.");
         return Result.Success();
     }
 }
