@@ -22,6 +22,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<MediaSetIntegrator>();
         services.AddScoped<MetadataFileIntegrator>();
         services.AddScoped<InfuseMediaIntegrator>();
+        services.AddScoped<DirectoryCleanupService>();
 
         return services;
     }
