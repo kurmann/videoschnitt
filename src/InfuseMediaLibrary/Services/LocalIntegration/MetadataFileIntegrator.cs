@@ -52,4 +52,15 @@ internal class MetadataFileIntegrator
     }
 }
 
-internal record IntegratedMetadataFile(FileInfo MetadataFile);
+internal record IntegratedMetadataFile(FileInfo MetadataFile)
+{
+    public static implicit operator FileInfo(IntegratedMetadataFile integratedMetadataFile) => integratedMetadataFile.MetadataFile;
+
+    public static implicit operator IntegratedMetadataFile(FileInfo fileInfo) => new(fileInfo);
+
+    public static implicit operator string(IntegratedMetadataFile integratedMetadataFile) => integratedMetadataFile.MetadataFile.FullName;
+
+    public override string ToString() => MetadataFile.FullName;
+
+    public string Name => MetadataFile.Name;
+}

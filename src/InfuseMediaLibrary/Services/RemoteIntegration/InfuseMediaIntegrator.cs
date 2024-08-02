@@ -70,24 +70,39 @@ internal class InfuseMediaIntegrator
             _logger.LogInformation("Videodatei {VideoFile} wurde erfolgreich in das Infuse-Mediathek-Verzeichnis auf dem Medienserver (Netzwerkspeicher, bspw. NAS) verschoben.", sourceVideoFile);
 
             // Verschiebe die Titelbilder aus dem lokalen Infuse-Mediathek-Verzeichnis in das Infuse-Mediathek-Verzeichnis auf dem Medienserver (Netzwerkspeicher, bspw. NAS)
-            if (integratedLocalInfuseMediaSet.HasIntegratedArtworkImages)
+            if (integratedLocalInfuseMediaSet.IntegratedArtworkImages.HasValue)
             {
-                foreach (var sourceArtworkImage in integratedLocalInfuseMediaSet.ArtworkImages.Value)
+                // Verschiebe das Banner-Bild
+                if (integratedLocalInfuseMediaSet.IntegratedArtworkImages.Value.FanartImage.HasValue)
                 {
-                    var targetArtworkImagePath = Path.Combine(targetDirectoryPath, sourceArtworkImage.Name);
-                    var moveArtworkImageResult = await _fileOperations.MoveFileAsync(sourceArtworkImage, targetArtworkImagePath, true, true);
-                    if (moveArtworkImageResult.IsFailure)
+                    var sourceFanartImage = integratedLocalInfuseMediaSet.IntegratedArtworkImages.Value.FanartImage.Value;
+                    var targetFanartImagePath = Path.Combine(targetDirectoryPath, sourceFanartImage.Name);
+                    var moveFanartImageResult = await _fileOperations.MoveFileAsync(sourceFanartImage, targetFanartImagePath, true, true);
+                    if (moveFanartImageResult.IsFailure)
                     {
-                        return Result.Failure<IntegratedRemoteInfuseMediaSetDirectory>($"Fehler beim Verschieben des Titelbildes {sourceArtworkImage} in das Infuse-Mediathek-Verzeichnis auf dem Medienserver (Netzwerkspeicher, bspw. NAS): {moveArtworkImageResult.Error}");
+                        return Result.Failure<IntegratedRemoteInfuseMediaSetDirectory>($"Fehler beim Verschieben des Fanart-Bildes {sourceFanartImage} in das Infuse-Mediathek-Verzeichnis auf dem Medienserver (Netzwerkspeicher, bspw. NAS): {moveFanartImageResult.Error}");
                     }
-                    _logger.LogInformation("Titelbild {ArtworkImage} wurde erfolgreich in das Infuse-Mediathek-Verzeichnis auf dem Medienserver (Netzwerkspeicher, bspw. NAS) verschoben.", sourceArtworkImage);
+                    _logger.LogInformation("Fanart-Bild {FanartImage} wurde erfolgreich in das Infuse-Mediathek-Verzeichnis auf dem Medienserver (Netzwerkspeicher, bspw. NAS) verschoben.", sourceFanartImage);
+                }
+
+                // Verschiebe das Poster-Bild
+                if (integratedLocalInfuseMediaSet.IntegratedArtworkImages.Value.PosterImage.HasValue)
+                {
+                    var sourcePosterImage = integratedLocalInfuseMediaSet.IntegratedArtworkImages.Value.PosterImage.Value;
+                    var targetPosterImagePath = Path.Combine(targetDirectoryPath, sourcePosterImage.Name);
+                    var movePosterImageResult = await _fileOperations.MoveFileAsync(sourcePosterImage, targetPosterImagePath, true, true);
+                    if (movePosterImageResult.IsFailure)
+                    {
+                        return Result.Failure<IntegratedRemoteInfuseMediaSetDirectory>($"Fehler beim Verschieben des Poster-Bildes {sourcePosterImage} in das Infuse-Mediathek-Verzeichnis auf dem Medienserver (Netzwerkspeicher, bspw. NAS): {movePosterImageResult.Error}");
+                    }
+                    _logger.LogInformation("Poster-Bild {PosterImage} wurde erfolgreich in das Infuse-Mediathek-Verzeichnis auf dem Medienserver (Netzwerkspeicher, bspw. NAS) verschoben.", sourcePosterImage);
                 }
             }
 
             // Verschiebe die Metadaten-Datei aus dem lokalen Infuse-Mediathek-Verzeichnis in das Infuse-Mediathek-Verzeichnis auf dem Medienserver (Netzwerkspeicher, bspw. NAS)
-            if (integratedLocalInfuseMediaSet.HasIntegratedMetadataFile)
+            if (integratedLocalInfuseMediaSet.IntegratedMetadataFile.HasValue)
             {
-                var sourceMetadataFile = integratedLocalInfuseMediaSet.MetadataFile.Value;
+                var sourceMetadataFile = integratedLocalInfuseMediaSet.IntegratedMetadataFile.Value;
                 var targetMetadataFilePath = Path.Combine(targetDirectoryPath, sourceMetadataFile.Name);
                 var moveMetadataFileResult = await _fileOperations.MoveFileAsync(sourceMetadataFile, targetMetadataFilePath, true, true);
                 if (moveMetadataFileResult.IsFailure)

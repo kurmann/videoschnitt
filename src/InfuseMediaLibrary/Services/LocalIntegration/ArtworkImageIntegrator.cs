@@ -303,6 +303,8 @@ internal record IntegratedPosterImage(FileInfo FileInfo)
     {
         return integratedPosterImage.FileInfo.FullName;
     }
+
+    public string Name => FileInfo.Name;
 }
 
 internal record IntegratedFanartImage(FileInfo FileInfo)
@@ -321,4 +323,6 @@ internal record IntegratedFanartImage(FileInfo FileInfo)
     {
         return integratedFanartImage.FileInfo.FullName;
     }
+
+    public string Name => FileInfo.Name;
 }
