@@ -33,7 +33,7 @@ internal class MediaSetIntegrator
         }
 
         // Wenn keine Videodatei gefunden wurde, ergibt es keinen Sinn, weitere Integrationsschritte durchzuführen
-        var integratedVideo = Maybe<SupportedVideo>.None;
+        Maybe<IntegratedMediaServerVideo> integratedVideo;
         if (integratedVideoResult.Value.HasNoValue)
         {
             return Maybe<IntegratedLocalInfuseMediaSet>.None;
@@ -45,7 +45,7 @@ internal class MediaSetIntegrator
         }
 
         // Integriere die Titelbilder in die Infuse-Mediathek
-        var integrateArtworkImagesTask = await _artworkImageIntegrator.IntegrateImagesAsync(mediaSetDirectory.ArtworkDirectory.GetValueOrDefault(), integratedVideo.Value);
+        var integrateArtworkImagesTask = await _artworkImageIntegrator.IntegrateImagesAsync(mediaSetDirectory.ArtworkDirectory.GetValueOrDefault(), integratedVideo.Value.SupportedVideo);
         if (integrateArtworkImagesTask.IsFailure)
         {
             // Logge eine Warnung, aber fahre mit der Integration fort
@@ -57,7 +57,7 @@ internal class MediaSetIntegrator
         }
 
         // Integriere die Metadaten-XML-Datei in die Infuse-Mediathek
-        var integrateMetadataResult = await _metadataFileIntegrator.IntegrateMetadataFileAsync(mediaSetDirectory, integratedVideo.Value);
+        var integrateMetadataResult = await _metadataFileIntegrator.IntegrateMetadataFileAsync(mediaSetDirectory, integratedVideo.Value.SupportedVideo);
         if (integrateMetadataResult.IsFailure)
         {
             // Logge eine Warnung, aber fahre mit der Integration fort
@@ -74,4 +74,4 @@ internal class MediaSetIntegrator
     }
 }
 
-internal record IntegratedLocalInfuseMediaSet(Maybe<SupportedVideo> Video, Maybe<List<SupportedImage>> ArtworkImages, Maybe<InfuseMetadataXmlFile> MetadataFile);
+internal record IntegratedLocalInfuseMediaSet(Maybe<IntegratedMediaServerVideo> Video, Maybe<List<SupportedImage>> ArtworkImages, Maybe<InfuseMetadataXmlFile> MetadataFile);
