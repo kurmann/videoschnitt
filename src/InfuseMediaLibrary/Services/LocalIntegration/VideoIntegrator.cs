@@ -156,7 +156,7 @@ internal class VideoIntegrator
     }
 }
 
-internal record IntegratedMediaServerVideo(SupportedVideo SupportedVideo, DirectoryInfo TargetDirectory, InfuseMediaSubDirectory SubDirectory)
+internal record IntegratedMediaServerVideo(SupportedVideo SupportedVideo, DirectoryInfo Directory, InfuseMediaSubDirectory SubDirectory)
 {
     public override string ToString()
     {
@@ -170,7 +170,7 @@ internal record IntegratedMediaServerVideo(SupportedVideo SupportedVideo, Direct
 
     public static implicit operator DirectoryInfo(IntegratedMediaServerVideo integratedMediaServerVideo)
     {
-        return integratedMediaServerVideo.TargetDirectory;
+        return integratedMediaServerVideo.Directory;
     }
 
     public static implicit operator string(IntegratedMediaServerVideo integratedMediaServerVideo)
