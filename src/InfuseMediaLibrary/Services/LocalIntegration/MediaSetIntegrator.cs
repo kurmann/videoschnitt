@@ -1,4 +1,5 @@
 using CSharpFunctionalExtensions;
+using Kurmann.Videoschnitt.Common.Entities.MediaTypes;
 using Kurmann.Videoschnitt.InfuseMediaLibrary.Services.FileInspection;
 using Microsoft.Extensions.Logging;
 
@@ -22,39 +23,60 @@ internal class MediaSetIntegrator
         _metadataFileIntegrator = metadataFileIntegrator;
     }
 
-    internal async Task<Result> IntegrateMediaSetAsync(MediaSetDirectory mediaSetDirectory)
+    internal async Task<Result<Maybe<IntegratedLocalInfuseMediaSet>>> IntegrateMediaSetAsync(MediaSetDirectory mediaSetDirectory)
     {
         // Integriere die Medienserver-Datei aus dem Medienset in die Infuse-Mediathek
         var integratedVideoResult = await _videoIntegrator.IntegrateMediaServerFiles(mediaSetDirectory.MediaServerFilesDirectory.GetValueOrDefault());
         if (integratedVideoResult.IsFailure)
         {
-            return Result.Failure($"Fehler beim Integrieren der Videodatei in die Infuse-Mediathek: {integratedVideoResult.Error}");
+            return Result.Failure<Maybe<IntegratedLocalInfuseMediaSet>>($"Fehler beim Integrieren der Videodatei in die Infuse-Mediathek: {integratedVideoResult.Error}");
         }
-        _logger.LogInformation("Videodatei {Video} wurde erfolgreich in die Infuse-Mediathek integriert.", integratedVideoResult.Value);
-        var integratedVideo = integratedVideoResult.Value;
 
         // Wenn keine Videodatei gefunden wurde, ergibt es keinen Sinn, weitere Integrationsschritte durchzuführen
-        if (integratedVideo.HasNoValue)
+        Maybe<IntegratedMediaServerVideo> integratedVideo;
+        if (integratedVideoResult.Value.HasNoValue)
         {
-            return Result.Success();
+            return Maybe<IntegratedLocalInfuseMediaSet>.None;
+        }
+        else 
+        {
+            _logger.LogInformation("Videodatei {Video} wurde erfolgreich in die Infuse-Mediathek integriert.", integratedVideoResult.Value);
+            integratedVideo = integratedVideoResult.Value;
         }
 
         // Integriere die Titelbilder in die Infuse-Mediathek
-        var integrateArtworkImagesTask = await _artworkImageIntegrator.IntegrateImagesAsync(mediaSetDirectory.ArtworkDirectory.GetValueOrDefault(), integratedVideo.Value);
-        if (integrateArtworkImagesTask.IsFailure)
+        var integrateArtworkImagesResult = await _artworkImageIntegrator.IntegrateImagesAsync(mediaSetDirectory.ArtworkDirectory.GetValueOrDefault(), integratedVideo.Value.SupportedVideo);
+        if (integrateArtworkImagesResult.IsFailure)
         {
-            return Result.Failure($"Fehler beim Integrieren der Artwork-Bilder in die Infuse-Mediathek: {integrateArtworkImagesTask.Error}");
+            // Logge eine Warnung, aber fahre mit der Integration fort
+            _logger.LogWarning("Fehler beim Integrieren der Artwork-Bilder in die Infuse-Mediathek: {Error}", integrateArtworkImagesResult.Error);
         }
-        _logger.LogInformation("Artwork-Bilder für die Videodatei {Video} wurden erfolgreich in die Infuse-Mediathek integriert.", integratedVideo);
+        else
+        {
+            _logger.LogInformation("Artwork-Bilder für die Videodatei {Video} wurden erfolgreich in die Infuse-Mediathek integriert.", integratedVideo);
+        }
 
         // Integriere die Metadaten-XML-Datei in die Infuse-Mediathek
-        var integrateMetadataResult = await _metadataFileIntegrator.IntegrateMetadataFileAsync(mediaSetDirectory, integratedVideo.Value);
+        var integrateMetadataResult = await _metadataFileIntegrator.IntegrateMetadataFileAsync(mediaSetDirectory, integratedVideo.Value.SupportedVideo);
         if (integrateMetadataResult.IsFailure)
         {
-            return Result.Failure($"Fehler beim Integrieren der Metadaten-Datei in die Infuse-Mediathek: {integrateMetadataResult.Error}");
+            // Logge eine Warnung, aber fahre mit der Integration fort
+            _logger.LogWarning("Fehler beim Integrieren der Metadaten-XML-Datei in die Infuse-Mediathek: {Error}", integrateMetadataResult.Error);
         }
-        _logger.LogInformation("Infuse Metadaten-XML-Datei wurde erfolgreich in die Infuse-Mediathek integriert.");
+        else
+        {
+            _logger.LogInformation("Metadaten-XML-Datei für die Videodatei {Video} wurde erfolgreich in die Infuse-Mediathek integriert.", integratedVideo);
+        }
+        
 
-        return Result.Success();
+        var integratedLocalInfuseMedia = new IntegratedLocalInfuseMediaSet(integratedVideo, integrateArtworkImagesResult.Value, integrateMetadataResult.Value);
+        return Maybe<IntegratedLocalInfuseMediaSet>.From(integratedLocalInfuseMedia);
     }
+}
+
+internal record IntegratedLocalInfuseMediaSet(Maybe<IntegratedMediaServerVideo> IntegratedVideoDetails, Maybe<IntegratedArtWorkImages> IntegratedArtworkImages, Maybe<IntegratedMetadataFile> IntegratedMetadataFile)
+{
+    public bool HasIntegratedVideo => IntegratedVideoDetails.HasValue;
+    public Maybe<InfuseMediaSubDirectory> SubDirectory => HasIntegratedVideo ? IntegratedVideoDetails.Value.SubDirectory : Maybe<InfuseMediaSubDirectory>.None;
+    public Maybe<DirectoryInfo> Directory => HasIntegratedVideo ? IntegratedVideoDetails.Value.Directory : Maybe<DirectoryInfo>.None;
 }

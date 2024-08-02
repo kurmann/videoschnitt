@@ -4,10 +4,22 @@ public class InfuseMediaLibrarySettings
 {
     public const string SectionName = "InfuseMediaLibrary";
 
+    /// <summary>
+    /// Der Pfad zur lokalen Infuse-Mediathek. Dieser Pfad wird für die Integration der lokalen Mediathek in die Infuse-Mediathek verwendet.
+    /// </summary>
+    /// <returns></returns>
     public string InfuseMediaLibraryPathLocal { get; set; } = ExpandHomeDirectory(DefaultInfuseMediaLibraryPathLocal);
     public const string InfuseMediaLibraryPathLocalConfigKey = $"{SectionName}:InfuseMediaLibraryPathLocal";
     public const string DefaultInfuseMediaLibraryPathLocal = "~/Movies/Infuse Media Library";
     public bool IsDefaultInfuseMediaLibraryPathLocal => InfuseMediaLibraryPathLocal == DefaultInfuseMediaLibraryPathLocal;
+
+    /// <summary>
+    /// Der Pfad zur Infuse-Mediathek auf dem Medienserver (Netzwerkspeicher, bspw. NAS). Dieser Pfad wird für die Integration der lokalen Mediathek in die Infuse-Mediathek verwendet.
+    /// Hinweis: Hier existiert keine Default-Konfiguration, da dieser Pfad in der Regel nicht auf dem lokalen Rechner existiert.
+    /// </summary>
+    /// <value></value>
+    public string? InfuseMediaLibraryPathRemote { get; set; }
+    public const string InfuseMediaLibraryPathRemoteConfigKey = $"{SectionName}:InfuseMediaLibraryPathRemote";
 
     public static string ExpandHomeDirectory(string path)
     {
