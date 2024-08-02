@@ -38,29 +38,36 @@ internal class InfuseMediaIntegrator
         }
 
         // Verschiebe die Videodatei aus dem lokalen Infuse-Mediathek-Verzeichnis in das Infuse-Mediathek-Verzeichnis auf dem Medienserver (Netzwerkspeicher, bspw. NAS)
-        var sourceVideoFile = integratedLocalInfuseMediaSet.Video;
-        if (sourceVideoFile.HasNoValue)
+        if (!integratedLocalInfuseMediaSet.HasIntegratedVideo)
         {
-            return Result.Failure<IntegratedRemoteInfuseMediaSetDirectory>("Die Videodatei ist leer.");
+            return Result.Failure<IntegratedRemoteInfuseMediaSetDirectory>("Das Medienset enthält keine Videodatei. Es wird nichts verschoben.");
         }
-        var isVideoFileInUseResult = await _fileOperations.IsFileInUseAsync(sourceVideoFile.Value);
+        var sourceVideoFile = integratedLocalInfuseMediaSet.IntegratedVideoDetails.Value.SupportedVideo;
+        var isVideoFileInUseResult = await _fileOperations.IsFileInUseAsync(sourceVideoFile);
         if (isVideoFileInUseResult.IsFailure)
         {
-            return Result.Failure<IntegratedRemoteInfuseMediaSetDirectory>($"Fehler beim Prüfen, ob die Videodatei {sourceVideoFile.Value} in Benutzung ist: {isVideoFileInUseResult.Error}");
+            return Result.Failure<IntegratedRemoteInfuseMediaSetDirectory>($"Fehler beim Prüfen, ob die Videodatei {sourceVideoFile} in Benutzung ist: {isVideoFileInUseResult.Error}");
         }
         if (isVideoFileInUseResult.Value)
         {
-            _logger.LogInformation("Die Videodatei {VideoFile} ist in Benutzung. Die Datei wird nicht verschoben.", sourceVideoFile.Value);
+            _logger.LogInformation("Die Videodatei {VideoFile} ist in Benutzung. Die Datei wird nicht verschoben.", sourceVideoFile);
         }
         else
         {
-            var targetVideoPath = Path.Combine(remoteInfuseMediaDirectory.FullName, sourceVideoFile.Value);
-            var moveResult = await _fileOperations.MoveFileAsync(sourceVideoFile.Value, targetVideoPath, true, true);
+            // Erstelle das Zielverzeichnis, falls es nicht existiert
+            var targetDirectoryPath = Path.Combine(remoteInfuseMediaDirectory.FullName, integratedLocalInfuseMediaSet.IntegratedVideoDetails.Value.SubDirectory);
+            if (!Directory.Exists(targetDirectoryPath))
+            {
+                Directory.CreateDirectory(targetDirectoryPath);
+            }
+
+            var targetVideoPath = Path.Combine(targetDirectoryPath, sourceVideoFile.Name);
+            var moveResult = await _fileOperations.MoveFileAsync(sourceVideoFile, targetVideoPath, true, true);
             if (moveResult.IsFailure)
             {
-                return Result.Failure<IntegratedRemoteInfuseMediaSetDirectory>($"Fehler beim Verschieben der Videodatei {sourceVideoFile.Value} in das Infuse-Mediathek-Verzeichnis auf dem Medienserver (Netzwerkspeicher, bspw. NAS): {moveResult.Error}");
+                return Result.Failure<IntegratedRemoteInfuseMediaSetDirectory>($"Fehler beim Verschieben der Videodatei {sourceVideoFile} in das Infuse-Mediathek-Verzeichnis auf dem Medienserver (Netzwerkspeicher, bspw. NAS): {moveResult.Error}");
             }
-            _logger.LogInformation("Videodatei {VideoFile} wurde erfolgreich in das Infuse-Mediathek-Verzeichnis auf dem Medienserver (Netzwerkspeicher, bspw. NAS) verschoben.", sourceVideoFile.Value);
+            _logger.LogInformation("Videodatei {VideoFile} wurde erfolgreich in das Infuse-Mediathek-Verzeichnis auf dem Medienserver (Netzwerkspeicher, bspw. NAS) verschoben.", sourceVideoFile);
         }
 
         return new IntegratedRemoteInfuseMediaSetDirectory(remoteInfuseMediaDirectory);

@@ -74,11 +74,11 @@ internal class MediaSetIntegrator
     }
 }
 
-internal record IntegratedLocalInfuseMediaSet(Maybe<IntegratedMediaServerVideo> Video, Maybe<List<SupportedImage>> ArtworkImages, Maybe<InfuseMetadataXmlFile> MetadataFile)
+internal record IntegratedLocalInfuseMediaSet(Maybe<IntegratedMediaServerVideo> IntegratedVideoDetails, Maybe<List<SupportedImage>> ArtworkImages, Maybe<InfuseMetadataXmlFile> MetadataFile)
 {
-    public bool HasIntegratedVideo => Video.HasValue;
+    public bool HasIntegratedVideo => IntegratedVideoDetails.HasValue;
     public bool HasIntegratedArtworkImages => ArtworkImages.HasValue && ArtworkImages.Value.Count > 0;
     public bool HasIntegratedMetadataFile => MetadataFile.HasValue;
-    public Maybe<InfuseMediaSubDirectory> SubDirectory => HasIntegratedVideo ? Video.Value.SubDirectory : Maybe<InfuseMediaSubDirectory>.None;
-    public Maybe<DirectoryInfo> Directory => HasIntegratedVideo ? Video.Value.Directory : Maybe<DirectoryInfo>.None;
+    public Maybe<InfuseMediaSubDirectory> SubDirectory => HasIntegratedVideo ? IntegratedVideoDetails.Value.SubDirectory : Maybe<InfuseMediaSubDirectory>.None;
+    public Maybe<DirectoryInfo> Directory => HasIntegratedVideo ? IntegratedVideoDetails.Value.Directory : Maybe<DirectoryInfo>.None;
 }
