@@ -23,10 +23,11 @@ internal class Workflow : IWorkflow
     private readonly InfuseMediaIntegrator _infuseMediaIntegrator;
     private readonly MediaSetOrganizerSettings _mediaSetOrganizerSettings;
     private readonly InfuseMediaLibrarySettings _infuseMediaLibrarySettings;
+    private readonly DirectoryCleanupService _directoryCleanupService;
 
     public Workflow(ILogger<Workflow> logger, IOptions<MediaSetOrganizerSettings> mediaSetOrganizerSettings,
         IOptions<InfuseMediaLibrarySettings> infuseMediaLibrarySettings,
-        LocalMediaSetDirectoryReader localMediaSetDirectoryReader, MediaSetIntegrator mediaSetIntegrator, InfuseMediaIntegrator infuseMediaIntegrator)
+        LocalMediaSetDirectoryReader localMediaSetDirectoryReader, MediaSetIntegrator mediaSetIntegrator, InfuseMediaIntegrator infuseMediaIntegrator, DirectoryCleanupService fileCleanupService)
     {
         _logger = logger;
         _infuseMediaLibrarySettings = infuseMediaLibrarySettings.Value;
@@ -34,19 +35,30 @@ internal class Workflow : IWorkflow
         _mediaSetIntegrator = mediaSetIntegrator;
         _mediaSetOrganizerSettings = mediaSetOrganizerSettings.Value;
         _infuseMediaIntegrator = infuseMediaIntegrator;
+        _directoryCleanupService = fileCleanupService;
     }
 
     public async Task<Result> ExecuteAsync()
     {
+        // Führe die Integration der Mediensets in das lokale Infuse-Mediathek-Verzeichnis durch
         var localIntegrationResult = await ExecuteLocalIntegration();
         if (localIntegrationResult.IsFailure)
         {
             return localIntegrationResult;
         }
+
+        // Führe die Integration der Mediensets in das Infuse-Mediathek-Verzeichnis auf dem Netzlaufwerk durch
         var remoteIntegrationResult = await ExecuteRemoteIntegration(localIntegrationResult.Value);
         if (remoteIntegrationResult.IsFailure)
         {
             return remoteIntegrationResult;
+        }
+
+        // Bereinige Dateien und Verzeichnisse, die nicht mehr benötigt werden
+        var fileCleanupResult = _directoryCleanupService.CleanupFiles();
+        if (fileCleanupResult.IsFailure)
+        {
+            return Result.Failure($"Fehler beim Bereinigen der Dateien und Verzeichnisse: {fileCleanupResult.Error}");
         }
 
         _logger.LogInformation("InfuseMediaLibrary-Workflow wurde erfolgreich ausgeführt.");
