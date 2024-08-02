@@ -68,6 +68,34 @@ internal class InfuseMediaIntegrator
                 return Result.Failure<IntegratedRemoteInfuseMediaSetDirectory>($"Fehler beim Verschieben der Videodatei {sourceVideoFile} in das Infuse-Mediathek-Verzeichnis auf dem Medienserver (Netzwerkspeicher, bspw. NAS): {moveResult.Error}");
             }
             _logger.LogInformation("Videodatei {VideoFile} wurde erfolgreich in das Infuse-Mediathek-Verzeichnis auf dem Medienserver (Netzwerkspeicher, bspw. NAS) verschoben.", sourceVideoFile);
+
+            // Verschiebe die Titelbilder aus dem lokalen Infuse-Mediathek-Verzeichnis in das Infuse-Mediathek-Verzeichnis auf dem Medienserver (Netzwerkspeicher, bspw. NAS)
+            if (integratedLocalInfuseMediaSet.HasIntegratedArtworkImages)
+            {
+                foreach (var sourceArtworkImage in integratedLocalInfuseMediaSet.ArtworkImages.Value)
+                {
+                    var targetArtworkImagePath = Path.Combine(targetDirectoryPath, sourceArtworkImage.Name);
+                    var moveArtworkImageResult = await _fileOperations.MoveFileAsync(sourceArtworkImage, targetArtworkImagePath, true, true);
+                    if (moveArtworkImageResult.IsFailure)
+                    {
+                        return Result.Failure<IntegratedRemoteInfuseMediaSetDirectory>($"Fehler beim Verschieben des Titelbildes {sourceArtworkImage} in das Infuse-Mediathek-Verzeichnis auf dem Medienserver (Netzwerkspeicher, bspw. NAS): {moveArtworkImageResult.Error}");
+                    }
+                    _logger.LogInformation("Titelbild {ArtworkImage} wurde erfolgreich in das Infuse-Mediathek-Verzeichnis auf dem Medienserver (Netzwerkspeicher, bspw. NAS) verschoben.", sourceArtworkImage);
+                }
+            }
+
+            // Verschiebe die Metadaten-Datei aus dem lokalen Infuse-Mediathek-Verzeichnis in das Infuse-Mediathek-Verzeichnis auf dem Medienserver (Netzwerkspeicher, bspw. NAS)
+            if (integratedLocalInfuseMediaSet.HasIntegratedMetadataFile)
+            {
+                var sourceMetadataFile = integratedLocalInfuseMediaSet.MetadataFile.Value;
+                var targetMetadataFilePath = Path.Combine(targetDirectoryPath, sourceMetadataFile.Name);
+                var moveMetadataFileResult = await _fileOperations.MoveFileAsync(sourceMetadataFile, targetMetadataFilePath, true, true);
+                if (moveMetadataFileResult.IsFailure)
+                {
+                    return Result.Failure<IntegratedRemoteInfuseMediaSetDirectory>($"Fehler beim Verschieben der Metadaten-Datei {sourceMetadataFile} in das Infuse-Mediathek-Verzeichnis auf dem Medienserver (Netzwerkspeicher, bspw. NAS): {moveMetadataFileResult.Error}");
+                }
+                _logger.LogInformation("Metadaten-Datei {MetadataFile} wurde erfolgreich in das Infuse-Mediathek-Verzeichnis auf dem Medienserver (Netzwerkspeicher, bspw. NAS) verschoben.", sourceMetadataFile);
+            }
         }
 
         return new IntegratedRemoteInfuseMediaSetDirectory(remoteInfuseMediaDirectory);

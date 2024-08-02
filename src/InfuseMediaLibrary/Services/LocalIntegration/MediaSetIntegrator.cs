@@ -45,11 +45,11 @@ internal class MediaSetIntegrator
         }
 
         // Integriere die Titelbilder in die Infuse-Mediathek
-        var integrateArtworkImagesTask = await _artworkImageIntegrator.IntegrateImagesAsync(mediaSetDirectory.ArtworkDirectory.GetValueOrDefault(), integratedVideo.Value.SupportedVideo);
-        if (integrateArtworkImagesTask.IsFailure)
+        var integrateArtworkImagesResult = await _artworkImageIntegrator.IntegrateImagesAsync(mediaSetDirectory.ArtworkDirectory.GetValueOrDefault(), integratedVideo.Value.SupportedVideo);
+        if (integrateArtworkImagesResult.IsFailure)
         {
             // Logge eine Warnung, aber fahre mit der Integration fort
-            _logger.LogWarning("Fehler beim Integrieren der Artwork-Bilder in die Infuse-Mediathek: {Error}", integrateArtworkImagesTask.Error);
+            _logger.LogWarning("Fehler beim Integrieren der Artwork-Bilder in die Infuse-Mediathek: {Error}", integrateArtworkImagesResult.Error);
         }
         else
         {
