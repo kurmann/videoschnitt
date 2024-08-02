@@ -67,6 +67,7 @@ internal class MediaSetIntegrator
         {
             _logger.LogInformation("Metadaten-XML-Datei für die Videodatei {Video} wurde erfolgreich in die Infuse-Mediathek integriert.", integratedVideo);
         }
+        
 
         var integratedLocalInfuseMedia = new IntegratedLocalInfuseMediaSet(integratedVideo, Maybe<List<SupportedImage>>.None, Maybe<InfuseMetadataXmlFile>.None);
         return Maybe<IntegratedLocalInfuseMediaSet>.From(integratedLocalInfuseMedia);

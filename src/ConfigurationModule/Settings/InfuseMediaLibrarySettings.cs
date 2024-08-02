@@ -19,6 +19,7 @@ public class InfuseMediaLibrarySettings
     /// </summary>
     /// <value></value>
     public string? InfuseMediaLibraryPathRemote { get; set; }
+    public const string InfuseMediaLibraryPathRemoteConfigKey = $"{SectionName}:InfuseMediaLibraryPathRemote";
 
     public static string ExpandHomeDirectory(string path)
     {
