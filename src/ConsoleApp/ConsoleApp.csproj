@@ -26,6 +26,7 @@
     <ProjectReference Include="..\InfuseMediaLibrary\InfuseMediaLibrary.csproj" />
     <ProjectReference Include="..\PresentationAssetsBuilder\PresentationAssetsBuilder.csproj" />
     <ProjectReference Include="..\HealthCheck\HealthCheck.csproj" />
+    <ProjectReference Include="..\MediaArchiver\MediaArchiver.csproj" />
   </ItemGroup>
 
 </Project>
