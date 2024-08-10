@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Globalization;
+﻿using System.Globalization;
 using CommandLine;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
@@ -12,7 +11,6 @@ using Kurmann.Videoschnitt.Common;
 using Kurmann.Videoschnitt.MediaSetOrganizer;
 using Kurmann.Videoschnitt.InfuseMediaLibrary;
 using Kurmann.Videoschnitt.PresentationAssetsBuilder;
-using Kurmann.Videoschnitt.MediaArchiver;
 
 namespace Kurmann.Videoschnitt.ConsoleApp;
 
