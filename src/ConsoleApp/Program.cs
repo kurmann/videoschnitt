@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Globalization;
+﻿using System.Globalization;
 using CommandLine;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
@@ -138,6 +137,23 @@ public class Program
                     else
                     {
                         logger.LogError("Error in GenerateMediaSetIndex workflow: {Error}", result.Error);
+                        return 1; // error
+                    }
+                }
+
+            case MediaArchiver.IWorkflow.WorkflowName:
+                {
+                    logger.LogInformation("Starting MediaArchiver workflow.");
+                    var workflow = scopedServices.GetRequiredService<MediaArchiver.IWorkflow>();
+                    var result = await workflow.ExecuteAsync();
+                    if (result.IsSuccess)
+                    {
+                        logger.LogInformation("MediaArchiver workflow completed successfully.");
+                        return 0; // success
+                    }
+                    else
+                    {
+                        logger.LogError("Error in MediaArchiver workflow: {Error}", result.Error);
                         return 1; // error
                     }
                 }
