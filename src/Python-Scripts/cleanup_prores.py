@@ -37,23 +37,24 @@ def find_matching_prores_files(hevc_a_dir, prores_dir=None):
     # Suche nach allen HEVC-A Dateien im hevc_a_dir
     for root, _, files in os.walk(hevc_a_dir):
         for filename in files:
-            if filename.lower().endswith('.mov') and 'HEVC-A' in filename.upper() and not filename.startswith('.'):
+            if filename.lower().endswith(('.mov', '.MOV')) and 'HEVC-A' in filename.upper() and not filename.startswith('.'):
                 filepath = os.path.join(root, filename)
                 codec = get_video_codec(filepath)
                 if codec == 'hevc':
                     # Entferne "-HEVC-A" aus dem Dateinamen, um den Basisnamen zu erhalten
-                    base_name = filename.replace('-HEVC-A', '')
+                    base_name = filename.replace('-HEVC-A', '').replace('.mov', '').replace('.MOV', '')
                     hevc_a_files[base_name] = os.path.join(root, filename)
 
     # Suche nach entsprechenden ProRes-Dateien im prores_dir und lösche sie, falls ein HEVC-A-Pendant existiert
     for root, _, files in os.walk(prores_dir):
         for filename in files:
-            if filename.lower().endswith('.mov') and not filename.startswith('.'):
+            if filename.lower().endswith(('.mov', '.MOV')) and not filename.startswith('.'):
                 filepath = os.path.join(root, filename)
                 codec = get_video_codec(filepath)
+                base_name = filename.replace('.mov', '').replace('.MOV', '')
                 if codec == 'prores':
                     # Prüfe, ob ein HEVC-A-Pendant existiert
-                    if filename in hevc_a_files:
+                    if base_name in hevc_a_files:
                         try:
                             os.remove(filepath)
                             print(f"Deleted ProRes file: {filename}")
