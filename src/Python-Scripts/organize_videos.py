@@ -39,6 +39,11 @@ def organize_files_by_codec(directory):
         # Überprüfen, ob die Datei eine MOV-Datei ist, unabhängig von der Großschreibung
         if filename.lower().endswith('.mov'):
             filepath = os.path.join(directory, filename)
+            
+            # Überspringen, wenn die Datei bereits in einem der Zielverzeichnisse liegt
+            if os.path.dirname(filepath) in [prores_dir, hevc_dir, hevc_a_dir, other_dir]:
+                continue
+
             codec = get_video_codec(filepath)
 
             if codec == 'prores':
@@ -69,15 +74,28 @@ def organize_files_by_codec(directory):
             except FileNotFoundError:
                 print(f"File not found: {filepath}")
 
+def organize_directory_recursively(directory):
+    # Durchsucht rekursiv alle Unterverzeichnisse
+    for root, dirs, files in os.walk(directory):
+        # Prüfe, ob das aktuelle Verzeichnis bereits ein Zielverzeichnis ist
+        if os.path.basename(root) in ["ProRes", "HEVC", "HEVC-A", "Other"]:
+            continue
+
+        organize_files_by_codec(root)
+
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Usage: python3 organize_videos.py /path/to/directory")
+    if len(sys.argv) not in [2, 3]:
+        print("Usage: python3 organize_videos.py /path/to/directory [-r]")
         sys.exit(1)
 
     directory = sys.argv[1]
+    recursive = len(sys.argv) == 3 and sys.argv[2] == '-r'
 
     if not os.path.isdir(directory):
         print(f"Error: {directory} is not a valid directory")
         sys.exit(1)
 
-    organize_files_by_codec(directory)
+    if recursive:
+        organize_directory_recursively(directory)
+    else:
+        organize_files_by_codec(directory)
