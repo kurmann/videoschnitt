@@ -2,6 +2,8 @@ import os
 import sys
 import subprocess
 import json
+import shutil
+import re
 
 def get_video_codec(filepath):
     """
@@ -24,6 +26,8 @@ def find_matching_prores_files(hevc_a_dir, prores_dir=None):
     Findet und löscht alle ProRes-Dateien im prores_dir (oder im gesamten Verzeichnisbaum, wenn prores_dir None ist),
     die ein entsprechendes HEVC-A-Pendant im hevc_a_dir haben.
     """
+    print("Starting to find and delete matching ProRes files...")
+
     hevc_a_files = {}
 
     # Wenn kein zweites Verzeichnis angegeben ist, durchsuche das gesamte Verzeichnis
@@ -58,10 +62,30 @@ def find_matching_prores_files(hevc_a_dir, prores_dir=None):
                         except Exception as e:
                             print(f"Error deleting file {filepath}: {e}")
 
+def delete_transcoder_directories(directory):
+    """
+    Findet und löscht alle Verzeichnisse, die mit '(TranscoderService-Dokument sichern)' beginnen,
+    inklusive aufnummerierter Verzeichnisse wie '(TranscoderService-Dokument sichern 2)'.
+    """
+    print("Starting to find and delete TranscoderService-Dokument sichern directories...")
+
+    pattern = re.compile(r'^\(TranscoderService-Dokument sichern.*\)$')
+
+    for root, dirs, _ in os.walk(directory):
+        for dirname in dirs:
+            if pattern.match(dirname):
+                dirpath = os.path.join(root, dirname)
+                try:
+                    shutil.rmtree(dirpath)
+                    print(f"Deleted directory: {dirpath}")
+                except Exception as e:
+                    print(f"Error deleting directory {dirpath}: {e}")
+
 if __name__ == "__main__":
     if len(sys.argv) not in [2, 3]:
         print("Usage: python3 cleanup_prores_recursive.py /path/to/HEVC-A-dir [/path/to/ProRes-dir]")
         print("\nThis script finds and deletes all ProRes files in the specified ProRes directory (or the entire directory tree if no second directory is specified) that have a corresponding HEVC-A file in the specified HEVC-A directory.")
+        print("\nAdditionally, it will delete all directories starting with '(TranscoderService-Dokument sichern)' within the specified directory tree, including numbered directories.")
         print("\nA HEVC-A file is defined as a .mov file with the HEVC codec and 'HEVC-A' in its filename.")
         print("\nA ProRes file is defined as a .mov file with the ProRes codec.")
         print("\nA ProRes file is considered to have a corresponding HEVC-A file if the filenames match, except for the '-HEVC-A' suffix in the HEVC-A file.")
@@ -80,3 +104,4 @@ if __name__ == "__main__":
         sys.exit(1)
 
     find_matching_prores_files(hevc_a_dir, prores_dir)
+    delete_transcoder_directories(hevc_a_dir)
