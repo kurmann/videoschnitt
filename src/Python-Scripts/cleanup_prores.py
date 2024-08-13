@@ -19,55 +19,63 @@ def get_video_codec(filepath):
     else:
         return None
 
-def find_matching_prores_files(hevc_a_dir, prores_dir):
+def find_matching_prores_files(hevc_a_dir, prores_dir=None):
     """
-    Findet und löscht alle ProRes-Dateien im prores_dir, die ein entsprechendes HEVC-A-Pendant im hevc_a_dir haben.
+    Findet und löscht alle ProRes-Dateien im prores_dir (oder im gesamten Verzeichnisbaum, wenn prores_dir None ist),
+    die ein entsprechendes HEVC-A-Pendant im hevc_a_dir haben.
     """
     hevc_a_files = {}
-    
+
+    # Wenn kein zweites Verzeichnis angegeben ist, durchsuche das gesamte Verzeichnis
+    if prores_dir is None:
+        prores_dir = hevc_a_dir
+
     # Suche nach allen HEVC-A Dateien im hevc_a_dir
-    for filename in os.listdir(hevc_a_dir):
-        if filename.lower().endswith('.mov') and 'HEVC-A' in filename.upper():
-            filepath = os.path.join(hevc_a_dir, filename)
-            codec = get_video_codec(filepath)
-            if codec == 'hevc':
-                # Entferne "-HEVC-A" aus dem Dateinamen, um den Basisnamen zu erhalten
-                base_name = filename.replace('-HEVC-A', '')
-                hevc_a_files[base_name] = filename
-    
+    for root, _, files in os.walk(hevc_a_dir):
+        for filename in files:
+            if filename.lower().endswith('.mov') and 'HEVC-A' in filename.upper() and not filename.startswith('.'):
+                filepath = os.path.join(root, filename)
+                codec = get_video_codec(filepath)
+                if codec == 'hevc':
+                    # Entferne "-HEVC-A" aus dem Dateinamen, um den Basisnamen zu erhalten
+                    base_name = filename.replace('-HEVC-A', '')
+                    hevc_a_files[base_name] = os.path.join(root, filename)
+
     # Suche nach entsprechenden ProRes-Dateien im prores_dir und lösche sie, falls ein HEVC-A-Pendant existiert
-    for filename in os.listdir(prores_dir):
-        if filename.lower().endswith('.mov'):
-            filepath = os.path.join(prores_dir, filename)
-            codec = get_video_codec(filepath)
-            if codec == 'prores':
-                # Prüfe, ob ein HEVC-A-Pendant existiert
-                if filename in hevc_a_files:
-                    try:
-                        os.remove(filepath)
-                        print(f"Deleted ProRes file: {filename}")
-                    except FileNotFoundError:
-                        print(f"File not found: {filepath}")
-                    except Exception as e:
-                        print(f"Error deleting file {filepath}: {e}")
+    for root, _, files in os.walk(prores_dir):
+        for filename in files:
+            if filename.lower().endswith('.mov') and not filename.startswith('.'):
+                filepath = os.path.join(root, filename)
+                codec = get_video_codec(filepath)
+                if codec == 'prores':
+                    # Prüfe, ob ein HEVC-A-Pendant existiert
+                    if filename in hevc_a_files:
+                        try:
+                            os.remove(filepath)
+                            print(f"Deleted ProRes file: {filename}")
+                        except FileNotFoundError:
+                            print(f"File not found: {filepath}")
+                        except Exception as e:
+                            print(f"Error deleting file {filepath}: {e}")
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        print("Usage: python3 cleanup_prores.py /path/to/HEVC-A-dir /path/to/ProRes-dir")
-        print("\nThis script finds and deletes all ProRes files in the specified ProRes directory that have a corresponding HEVC-A file in the specified HEVC-A directory.")
+    if len(sys.argv) not in [2, 3]:
+        print("Usage: python3 cleanup_prores_recursive.py /path/to/HEVC-A-dir [/path/to/ProRes-dir]")
+        print("\nThis script finds and deletes all ProRes files in the specified ProRes directory (or the entire directory tree if no second directory is specified) that have a corresponding HEVC-A file in the specified HEVC-A directory.")
         print("\nA HEVC-A file is defined as a .mov file with the HEVC codec and 'HEVC-A' in its filename.")
         print("\nA ProRes file is defined as a .mov file with the ProRes codec.")
         print("\nA ProRes file is considered to have a corresponding HEVC-A file if the filenames match, except for the '-HEVC-A' suffix in the HEVC-A file.")
+        print("\nIf only one directory is specified, the script searches the entire directory tree for matching files.")
         sys.exit(1)
 
     hevc_a_dir = sys.argv[1]
-    prores_dir = sys.argv[2]
+    prores_dir = sys.argv[2] if len(sys.argv) == 3 else None
 
     if not os.path.isdir(hevc_a_dir):
         print(f"Error: {hevc_a_dir} is not a valid directory")
         sys.exit(1)
 
-    if not os.path.isdir(prores_dir):
+    if prores_dir and not os.path.isdir(prores_dir):
         print(f"Error: {prores_dir} is not a valid directory")
         sys.exit(1)
 
