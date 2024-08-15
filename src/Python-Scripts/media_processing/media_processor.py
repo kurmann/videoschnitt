@@ -67,8 +67,6 @@ def process_completed_hevca_and_delete_prores(comp_output_dir, comp_dir, origina
         base_name = filename.replace('-HEVC-A', '').replace('-hevc-a', '').replace('.mov', '')
         prores_path = os.path.join(comp_dir, f"{base_name}.mov")
 
-        print(f"DEBUG: Suche nach ProRes-Datei: {prores_path}")
-
         if os.path.exists(prores_path):
             print(f"Entsprechende ProRes-Datei gefunden: {prores_path}. Lösche die Datei.")
             delete_file(prores_path)

@@ -32,24 +32,13 @@ def move_file_with_postfix(source_file, destination_dir):
     return destination_path
 
 def move_and_rename_to_target(source_file, destination_dir, new_filename):
-    """Verschiebt eine Datei in das Zielverzeichnis und benennt sie um. Fügt einen Postfix hinzu, falls die Dateigrößen unterschiedlich sind."""
+    """Verschiebt eine Datei in das Zielverzeichnis und benennt sie um."""
     destination_path = os.path.join(destination_dir, new_filename)
-
-    # Prüfe, ob die Datei bereits existiert und ob die Dateigrößen gleich sind
-    if os.path.exists(destination_path):
-        if os.path.getsize(source_file) == os.path.getsize(destination_path):
-            print(f"Datei bereits vorhanden und identisch: {destination_path}. Überspringe Integration.")
-            return None  # Datei nicht integrieren, da sie bereits vorhanden und identisch ist
-        else:
-            # Wenn die Größen unterschiedlich sind, füge einen Postfix hinzu
-            name, ext = os.path.splitext(new_filename)
-            counter = 1
-            while os.path.exists(destination_path):
-                destination_path = os.path.join(destination_dir, f"{name}_{counter}{ext}")
-                counter += 1
+    file_size = os.path.getsize(source_file)
 
     try:
         os.makedirs(destination_dir, exist_ok=True)  # Stellt sicher, dass das Zielverzeichnis existiert
+        print(f"Verschiebe die Datei {source_file} ({file_size / (1024 * 1024):.2f} MB) nach {destination_path}")
         shutil.move(source_file, destination_path)
         print(f"Verschoben und umbenannt: {source_file} -> {destination_path}")
 
@@ -68,10 +57,47 @@ def move_and_rename_to_target(source_file, destination_dir, new_filename):
 def delete_file(filepath):
     """Löscht die angegebene Datei."""
     try:
-        if os.path.exists(filepath):
-            os.remove(filepath)
-            print(f"Gelöscht: {filepath}")
-        else:
-            print(f"Datei nicht gefunden: {filepath}")
+        os.remove(filepath)
+        print(f"Gelöscht: {filepath}")
     except Exception as e:
         print(f"Fehler beim Löschen der Datei {filepath}: {e}")
+
+def get_directory_size(directory):
+    """Berechnet die Gesamtgröße eines Verzeichnisses (rekursiv) in Bytes."""
+    total_size = 0
+    for dirpath, dirnames, filenames in os.walk(directory):
+        for filename in filenames:
+            filepath = os.path.join(dirpath, filename)
+            total_size += os.path.getsize(filepath)
+    return total_size
+
+def log_directory_sizes(source_dir, comp_dir):
+    """Loggt die Gesamtgröße der ProRes-Quelldateien und des Komprimierungsverzeichnisses."""
+    total_source_size = sum(
+        os.path.getsize(os.path.join(source_dir, filename)) 
+        for filename in os.listdir(source_dir) 
+        if filename.lower().endswith('.mov') and 'prores' in filename.lower()
+    )
+    total_source_size_gb = total_source_size / (1024 * 1024 * 1024)
+    
+    current_compression_size = get_directory_size(comp_dir)
+    current_compression_size_gb = current_compression_size / (1024 * 1024 * 1024)
+
+    print(f"Größe aller ProRes-Quelldateien: {total_source_size_gb:.2f} GB")
+    print(f"Größe des Komprimierungsverzeichnisses: {current_compression_size_gb:.2f} GB")
+
+def can_move_to_compression(comp_dir, source_file_size, max_gb):
+    """Überprüft, ob eine Datei ins Komprimierungsverzeichnis verschoben werden kann, ohne das Limit zu überschreiten."""
+    max_compression_size = max_gb * 1024 * 1024 * 1024  # Umrechnung von GB in Bytes
+    current_size = get_directory_size(comp_dir)
+    remaining_space = max_compression_size - current_size
+
+    if remaining_space <= 0:
+        print(f"Das Komprimierungsverzeichnis hat bereits das Limit von {max_gb} GB erreicht.")
+        return False
+
+    if source_file_size > remaining_space:
+        print(f"Überspringe Datei. Das Verschieben von {source_file_size / (1024 * 1024 * 1024):.2f} GB würde das verbleibende Limit überschreiten ({remaining_space / (1024 * 1024 * 1024):.2f} GB verfügbar).")
+        return False
+
+    return True
