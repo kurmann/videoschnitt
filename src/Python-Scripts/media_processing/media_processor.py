@@ -39,7 +39,7 @@ def process_file(source_file, comp_dir, original_media_dir, compressor_started=F
         creation_time = get_creation_datetime(source_file)
         date_path = creation_time.strftime('%Y/%Y-%m/%Y-%m-%d')
         new_filename = creation_time.strftime(f'%Y-%m-%d_%H%M%S-{codec.upper()}.mov')
-        destination_dir = os.path.join(original_media_dir, date_path, codec.upper())
+        destination_dir = os.path.join(original_media_dir, date_path)
         
         move_and_rename_to_target(source_file, destination_dir, new_filename)
 
@@ -77,6 +77,6 @@ def process_completed_hevca_and_delete_prores(comp_output_dir, comp_dir, origina
         creation_time = get_creation_datetime(hevc_a_path)
         date_path = creation_time.strftime('%Y/%Y-%m/%Y-%m-%d')
         new_filename = creation_time.strftime(f'%Y-%m-%d_%H%M%S-HEVC-A.mov')
-        destination_dir = os.path.join(original_media_dir, date_path, 'HEVC-A')
+        destination_dir = os.path.join(original_media_dir, date_path)
         
         move_and_rename_to_target(hevc_a_path, destination_dir, new_filename)
