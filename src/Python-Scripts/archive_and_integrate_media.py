@@ -1,16 +1,3 @@
-Vielen Dank für den Hinweis und das Beispiel! Um sicherzustellen, dass das Skript auch fertige HEVC-A-Dateien im Komprimierungsverzeichnis verschiebt, werden wir den Prozess erweitern:
-
-### Anpassungen:
-1. **Überprüfung, ob die HEVC-A-Datei fertig ist**:
-   - Das Skript durchsucht das Komprimierungsverzeichnis nach fertigen HEVC-A-Dateien (ohne ".sb"-Postfix).
-   - Es prüft, ob die Datei gerade verwendet wird. Wenn nicht, wird die Datei verschoben und in das Originalmedienverzeichnis integriert.
-
-2. **Ignorieren von temporären Dateien**:
-   - Dateien mit dem ".sb"-Postfix werden ignoriert, da sie Zwischenartefakte sind.
-
-### Aktualisiertes Python-Skript: `archive_and_integrate_media.py`
-
-```python
 import os
 import subprocess
 import shutil
