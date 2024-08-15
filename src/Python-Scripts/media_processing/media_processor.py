@@ -4,6 +4,22 @@ from video_utils import get_video_codec
 from date_utils import get_creation_datetime
 from compressor_utils import start_compressor
 
+def are_sb_files_present(hevc_a_path):
+    """
+    Überprüft, ob temporäre .sb-Dateien vorhanden sind, die auf eine laufende Komprimierung hinweisen.
+    Diese Prüfung erfolgt auf das Vorkommen von ".sb-" im Dateinamen.
+    """
+    directory = os.path.dirname(hevc_a_path)
+    base_name = os.path.basename(hevc_a_path).replace('.mov', '')
+
+    # Suche nach Dateien im gleichen Verzeichnis, die ".sb-" im Namen enthalten
+    for filename in os.listdir(directory):
+        if base_name in filename and ".sb-" in filename:
+            print(f"Temporäre Datei gefunden: {filename}. Warte auf Abschluss der Komprimierung.")
+            return True
+
+    return False
+
 def process_file(source_file, comp_dir, original_media_dir, compressor_started=False):
     """Verarbeitet eine Datei, verschiebt sie ins Komprimierungsverzeichnis oder integriert sie direkt."""
     codec = get_video_codec(source_file)
@@ -37,6 +53,10 @@ def process_completed_hevca_and_delete_prores(comp_output_dir, comp_dir, origina
             continue  # Versteckte Dateien oder nicht HEVC-A-Dateien überspringen
 
         hevc_a_path = os.path.join(comp_output_dir, filename)
+
+        # Prüfen, ob temporäre .sb-Dateien vorhanden sind, die auf eine laufende Komprimierung hinweisen
+        if are_sb_files_present(hevc_a_path):
+            continue  # Überspringe, wenn .sb-Dateien gefunden wurden
 
         # Prüfen, ob die Datei vollständig ist und nicht leer
         if os.path.getsize(hevc_a_path) == 0:
