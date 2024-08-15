@@ -1,7 +1,21 @@
+Vielen Dank für den Hinweis und das Beispiel! Um sicherzustellen, dass das Skript auch fertige HEVC-A-Dateien im Komprimierungsverzeichnis verschiebt, werden wir den Prozess erweitern:
+
+### Anpassungen:
+1. **Überprüfung, ob die HEVC-A-Datei fertig ist**:
+   - Das Skript durchsucht das Komprimierungsverzeichnis nach fertigen HEVC-A-Dateien (ohne ".sb"-Postfix).
+   - Es prüft, ob die Datei gerade verwendet wird. Wenn nicht, wird die Datei verschoben und in das Originalmedienverzeichnis integriert.
+
+2. **Ignorieren von temporären Dateien**:
+   - Dateien mit dem ".sb"-Postfix werden ignoriert, da sie Zwischenartefakte sind.
+
+### Aktualisiertes Python-Skript: `archive_and_integrate_media.py`
+
+```python
 import os
 import subprocess
 import shutil
 import sys
+import time
 from datetime import datetime
 
 def is_file_in_use(filepath):
@@ -33,6 +47,21 @@ def get_creation_datetime(filepath):
     else:
         print(f"Warnung: Konnte kein Aufnahmedatum für {filepath} extrahieren. Verwende das aktuelle Datum.")
         return datetime.now()
+
+def is_compressor_running():
+    """Überprüft, ob Apple Compressor läuft."""
+    try:
+        output = subprocess.check_output(['pgrep', '-x', 'Compressor'], text=True)
+        return bool(output.strip())
+    except subprocess.CalledProcessError:
+        return False
+
+def start_compressor():
+    """Startet Apple Compressor, falls es nicht läuft."""
+    if not is_compressor_running():
+        print("Apple Compressor wird gestartet...")
+        subprocess.Popen(['open', '-a', 'Compressor'])
+        time.sleep(3)  # 3 Sekunden warten, damit Compressor vollständig startet
 
 def move_file_with_postfix(source_file, destination_dir):
     """Verschiebt eine Datei ins Komprimierungsverzeichnis und fügt einen Postfix hinzu, wenn eine Datei mit demselben Namen existiert."""
@@ -85,12 +114,17 @@ def move_and_rename_to_target(source_file, original_media_dir, codec_type):
 
     return destination_path
 
-def process_file(source_file, comp_dir, original_media_dir):
+def process_file(source_file, comp_dir, original_media_dir, compressor_started=False):
     """Verarbeitet eine Datei, verschiebt sie ins Komprimierungsverzeichnis oder integriert sie direkt."""
     codec = get_video_codec(source_file)
     print(f"Verarbeitung der Datei {source_file} mit Codec {codec}")
 
     if codec == 'prores':
+        # Stelle sicher, dass Apple Compressor läuft
+        if not compressor_started:
+            start_compressor()
+            compressor_started = True
+
         # Verschiebe ProRes-Datei ins Komprimierungsverzeichnis
         print(f"Verschiebe ProRes-Datei in das Komprimierungsverzeichnis {comp_dir}")
         move_file_with_postfix(source_file, comp_dir)
@@ -120,6 +154,23 @@ def find_and_delete_prores(original_dir, creation_time):
     print("Keine passende ProRes-Datei gefunden.")
     return False
 
+def process_completed_hevca_files(comp_dir, original_media_dir):
+    """Überprüft das Komprimierungsverzeichnis auf fertige HEVC-A-Dateien und verschiebt sie."""
+    for filename in os.listdir(comp_dir):
+        if filename.startswith('.') or filename.endswith('.sb'):
+            continue  # Ignoriere versteckte Dateien und Zwischenartefakte
+
+        if filename.lower().endswith('-hevc-a.mov'):
+            file_path = os.path.join(comp_dir, filename)
+
+            if is_file_in_use(file_path):
+                print(f"HEVC-A-Datei {filename} wird noch verwendet. Überspringe.")
+                continue
+
+            # Verschiebe die fertige HEVC-A-Datei ins Originalmedien-Verzeichnis
+            print(f"Fertige HEVC-A-Datei gefunden: {filename}. Verschiebe sie ins Originalmedien-Verzeichnis.")
+            move_and_rename_to_target(file_path, original_media_dir, 'HEVC-A')
+
 if __name__ == "__main__":
     if len(sys.argv) != 4:
         print("Usage: python3 archive_and_integrate_media.py /path/to/source_directory /path/to/compression_directory /path/to/original_media_directory")
@@ -141,6 +192,12 @@ if __name__ == "__main__":
         print(f"Error: {original_media_dir} is not a valid directory")
         sys.exit(1)
 
+    compressor_started = False
+
+    # Zuerst prüfen, ob fertige HEVC-A-Dateien im Komprimierungsverzeichnis vorhanden sind
+    process_completed_hevca_files(comp_dir, original_media_dir)
+
+    # Verarbeite die Dateien im Quellverzeichnis
     for filename in os.listdir(source_dir):
         if filename.startswith('.') or not filename.lower().endswith('.mov'):
             continue  # Versteckte Dateien oder Dateien, die nicht MOV sind, überspringen
@@ -150,5 +207,4 @@ if __name__ == "__main__":
         if is_file_in_use(file_path):
             print(f"Datei {filename} wird noch verwendet. Überspringe.")
             continue
-
-        process_file(file_path, comp_dir, original_media_dir)
+        process_file(file_path, comp_dir, original_media_dir, compressor_started)
