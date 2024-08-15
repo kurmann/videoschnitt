@@ -1,7 +1,8 @@
 import os
 import sys
-from file_utils import is_file_in_use, move_file_with_postfix, move_and_rename_to_target
-from video_utils import get_video_codec, get_creation_datetime
+from file_utils import is_file_in_use, move_file_with_postfix, move_and_rename_to_target, delete_file
+from video_utils import get_video_codec
+from date_utils import get_creation_datetime
 from compressor_utils import start_compressor
 from hevca_integration import process_completed_hevca_files
 

@@ -1,50 +1,55 @@
 import os
-from file_utils import is_file_in_use, move_and_rename_to_target
-from video_utils import get_creation_datetime
+import shutil
+from file_utils import move_and_rename_to_target
+from date_utils import get_creation_datetime
 
 def process_completed_hevca_files(comp_output_dir, original_media_dir):
-    """Überprüft das Komprimierungs-Ausgabeverzeichnis auf fertige HEVC-A-Dateien und verschiebt sie."""
+    """
+    Verarbeitet fertig komprimierte HEVC-A-Dateien und integriert sie in das Originalmedien-Verzeichnis.
+    """
     for filename in os.listdir(comp_output_dir):
-        if filename.startswith('.') or filename.endswith('.sb'):
-            continue  # Ignoriere versteckte Dateien und Zwischenartefakte
+        if filename.startswith('.') or not filename.lower().endswith('.mov'):
+            continue  # Versteckte Dateien oder Dateien, die nicht MOV sind, überspringen
 
-        if filename.lower().endswith('-hevc-a.mov'):
-            file_path = os.path.join(comp_output_dir, filename)
+        if '-HEVC-A' not in filename:
+            continue  # Nur Dateien berücksichtigen, die als HEVC-A markiert sind
 
-            if is_file_in_use(file_path):
-                print(f"HEVC-A-Datei {filename} wird noch verwendet. Überspringe.")
-                continue
+        file_path = os.path.join(comp_output_dir, filename)
 
-            # Bereite das Zielverzeichnis und den neuen Dateinamen vor
-            creation_time = get_creation_datetime(file_path)
-            date_path = creation_time.strftime('%Y/%Y-%m/%Y-%m-%d')
-            new_filename = creation_time.strftime(f'%Y-%m-%d_%H%M%S-HEVC-A.mov')
-            destination_dir = os.path.join(original_media_dir, date_path, 'HEVC-A')
+        # Überprüfen, ob die Datei noch in Verwendung ist
+        if os.path.exists(file_path) and not os.path.getsize(file_path):
+            print(f"Datei {filename} wird noch verwendet. Überspringe.")
+            continue
 
-            # Verschiebe die fertige HEVC-A-Datei ins Originalmedien-Verzeichnis
-            print(f"Fertige HEVC-A-Datei gefunden: {filename}. Verschiebe sie ins Originalmedien-Verzeichnis.")
-            moved_file_path = move_and_rename_to_target(file_path, destination_dir, new_filename)
+        # Ermitteln des Aufnahmedatums
+        creation_time = get_creation_datetime(file_path)
+        date_path = creation_time.strftime('%Y/%Y-%m/%Y-%m-%d')
+        new_filename = creation_time.strftime('%Y-%m-%d_%H%M%S-HEVC-A.mov')
+        destination_dir = os.path.join(original_media_dir, date_path, 'HEVC-A')
 
-            if moved_file_path:
-                # Wenn die HEVC-A-Datei erfolgreich verschoben wurde, lösche die zugehörige ProRes-Datei
-                find_and_delete_prores(original_media_dir, creation_time)
+        try:
+            # Verschiebe und benenne die Datei um
+            move_and_rename_to_target(file_path, destination_dir, new_filename)
+            print(f"Verschoben und umbenannt: {file_path} -> {os.path.join(destination_dir, new_filename)}")
 
-def find_and_delete_prores(original_dir, creation_time):
-    """Findet und löscht die entsprechende ProRes-Datei basierend auf dem Aufnahmedatum."""
-    base_filename = creation_time.strftime('%Y-%m-%d_%H%M%S')
-    prores_filename = base_filename + ".mov"
-    
-    for root, _, files in os.walk(original_dir):
-        for filename in files:
-            if filename == prores_filename:
-                prores_path = os.path.join(root, filename)
-                print(f"ProRes-Datei gefunden: {prores_path}")
-                try:
-                    os.remove(prores_path)
-                    print(f"ProRes-Datei gelöscht: {prores_path}")
-                except Exception as e:
-                    print(f"Fehler beim Löschen der ProRes-Datei: {e}")
-                return True
+            # Überprüfen, ob die Datei erfolgreich verschoben wurde
+            if os.path.exists(os.path.join(destination_dir, new_filename)):
+                print(f"Bestätigt: Datei erfolgreich verschoben nach {os.path.join(destination_dir, new_filename)}")
+                # Hier könnte jetzt die Logik zur Löschung der zugehörigen ProRes-Datei ergänzt werden
+                delete_matching_prores_file(comp_output_dir, filename.replace('-HEVC-A', ''))
 
-    print(f"Keine passende ProRes-Datei gefunden für: {base_filename}")
-    return False
+        except Exception as e:
+            print(f"Fehler beim Verschieben der Datei {filename}: {e}")
+
+def delete_matching_prores_file(prores_dir, base_name):
+    """
+    Löscht die ProRes-Datei, die zu einer verschobenen HEVC-A-Datei gehört.
+    """
+    for filename in os.listdir(prores_dir):
+        if filename.lower().endswith('.mov') and filename.startswith(base_name):
+            file_path = os.path.join(prores_dir, filename)
+            try:
+                os.remove(file_path)
+                print(f"Gelöscht: ProRes-Datei {filename}")
+            except Exception as e:
+                print(f"Fehler beim Löschen der ProRes-Datei {filename}: {e}")
