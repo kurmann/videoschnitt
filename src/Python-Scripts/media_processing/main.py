@@ -1,15 +1,45 @@
 import os
 import sys
+import subprocess
 from file_utils import is_file_in_use, get_directory_size
 from video_utils import get_video_codec
 from media_processor import process_completed_hevca_and_delete_prores, process_file
 
-def main(source_dir, comp_dir, comp_output_dir, original_media_dir, max_gb_limit):
-    # Zuerst prüfen, ob alle Verzeichnisse gültig sind
-    for directory in [source_dir, comp_dir, comp_output_dir, original_media_dir]:
-        if not os.path.isdir(directory):
-            print(f"Error: {directory} is not a valid directory")
-            sys.exit(1)
+def send_macos_notification(title, message):
+    """Sendet eine macOS-Benachrichtigung."""
+    subprocess.run([
+        "osascript", "-e", f'display notification "{message}" with title "{title}"'
+    ])
+
+def main():
+    # Benachrichtigung, dass das Script gestartet wurde
+    send_macos_notification("Original Media Processor", "Das Script wurde gestartet und die Verarbeitung beginnt.")
+
+    if len(sys.argv) != 6:
+        print("Usage: python3 main.py /path/to/source_directory /path/to/compression_directory /path/to/compression_output_directory /path/to/original_media_directory max_gb_limit")
+        sys.exit(1)
+
+    source_dir = sys.argv[1]
+    comp_dir = sys.argv[2]
+    comp_output_dir = sys.argv[3]
+    original_media_dir = sys.argv[4]
+    max_gb_limit = float(sys.argv[5])  # Die maximal erlaubte Größe in GB für das Komprimierungsverzeichnis
+
+    if not os.path.isdir(source_dir):
+        print(f"Error: {source_dir} is not a valid directory")
+        sys.exit(1)
+
+    if not os.path.isdir(comp_dir):
+        print(f"Error: {comp_dir} is not a valid directory")
+        sys.exit(1)
+
+    if not os.path.isdir(comp_output_dir):
+        print(f"Error: {comp_output_dir} is not a valid directory")
+        sys.exit(1)
+
+    if not os.path.isdir(original_media_dir):
+        print(f"Error: {original_media_dir} is not a valid directory")
+        sys.exit(1)
 
     compressor_started = False
 
@@ -45,15 +75,4 @@ def main(source_dir, comp_dir, comp_output_dir, original_media_dir, max_gb_limit
         process_file(file_path, comp_dir, original_media_dir, compressor_started)
 
 if __name__ == "__main__":
-    if len(sys.argv) != 6:
-        print("Usage: python3 main.py /path/to/source_directory /path/to/compression_directory /path/to/compression_output_directory /path/to/original_media_directory max_gb_limit")
-        sys.exit(1)
-
-    # Parameter beim Aufruf
-    main(
-        source_dir=sys.argv[1],
-        comp_dir=sys.argv[2],
-        comp_output_dir=sys.argv[3],
-        original_media_dir=sys.argv[4],
-        max_gb_limit=float(sys.argv[5])  # Die maximal erlaubte Größe in GB für das Komprimierungsverzeichnis
-    )
+    main()
