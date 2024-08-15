@@ -52,13 +52,10 @@ def move_and_rename_to_target(source_file, destination_dir, new_filename):
 
     return destination_path
 
-def delete_file(file_path):
+def delete_file(filepath):
     """Löscht die angegebene Datei."""
     try:
-        if os.path.exists(file_path):
-            os.remove(file_path)
-            print(f"Datei gelöscht: {file_path}")
-        else:
-            print(f"Datei nicht gefunden: {file_path}")
+        os.remove(filepath)
+        print(f"Gelöscht: {filepath}")
     except Exception as e:
-        print(f"Fehler beim Löschen der Datei: {e}")
+        print(f"Fehler beim Löschen der Datei {filepath}: {e}")

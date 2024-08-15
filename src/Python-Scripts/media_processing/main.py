@@ -4,7 +4,6 @@ from file_utils import is_file_in_use, move_file_with_postfix, move_and_rename_t
 from video_utils import get_video_codec
 from date_utils import get_creation_datetime
 from compressor_utils import start_compressor
-from hevca_integration import process_completed_hevca_files
 
 def process_file(source_file, comp_dir, original_media_dir, compressor_started=False):
     """Verarbeitet eine Datei, verschiebt sie ins Komprimierungsverzeichnis oder integriert sie direkt."""
@@ -28,6 +27,33 @@ def process_file(source_file, comp_dir, original_media_dir, compressor_started=F
         destination_dir = os.path.join(original_media_dir, date_path, codec.upper())
         
         move_and_rename_to_target(source_file, destination_dir, new_filename)
+
+def process_completed_hevca_and_delete_prores(comp_output_dir, comp_dir):
+    """
+    Prüft, ob fertige HEVC-A-Dateien im Komprimierungs-Ausgabeverzeichnis vorhanden sind und löscht die passende ProRes-Datei.
+    """
+    for filename in os.listdir(comp_output_dir):
+        if filename.startswith('.') or not filename.lower().endswith('.mov') or '-hevc-a' not in filename.lower():
+            continue  # Versteckte Dateien oder nicht HEVC-A-Dateien überspringen
+
+        hevc_a_path = os.path.join(comp_output_dir, filename)
+
+        # Prüfen, ob die Datei vollständig ist und nicht leer
+        if os.path.getsize(hevc_a_path) == 0:
+            print(f"Überspringe leere Datei: {hevc_a_path}")
+            continue
+
+        # Ermittele den Basenamen der ProRes-Datei
+        base_name = filename.replace('-HEVC-A', '').replace('-hevc-a', '').replace('.mov', '')
+        prores_path = os.path.join(comp_dir, f"{base_name}.mov")
+
+        print(f"DEBUG: Suche nach ProRes-Datei: {prores_path}")
+
+        if os.path.exists(prores_path):
+            print(f"Entsprechende ProRes-Datei gefunden: {prores_path}. Lösche die Datei.")
+            delete_file(prores_path)
+        else:
+            print(f"DEBUG: ProRes-Datei nicht gefunden: {prores_path}")
 
 def main():
     if len(sys.argv) != 5:
@@ -57,8 +83,8 @@ def main():
 
     compressor_started = False
 
-    # Zuerst prüfen, ob fertige HEVC-A-Dateien im Komprimierungs-Ausgabeverzeichnis vorhanden sind
-    process_completed_hevca_files(comp_output_dir, original_media_dir)
+    # Zuerst prüfen, ob fertige HEVC-A-Dateien im Komprimierungs-Ausgabeverzeichnis vorhanden sind und die passende ProRes-Datei löschen
+    process_completed_hevca_and_delete_prores(comp_output_dir, comp_dir)
 
     # Verarbeite die Dateien im Quellverzeichnis
     for filename in os.listdir(source_dir):
