@@ -30,6 +30,10 @@ def is_hevc_a(source_file):
 def process_file(source_file, comp_dir, original_media_dir, compressor_started=False):
     """Verarbeitet eine Datei, verschiebt sie ins Komprimierungsverzeichnis oder integriert sie direkt."""
     codec = get_video_codec(source_file)
+    if codec is None:
+        print(f"Warnung: Konnte den Codec für {source_file} nicht ermitteln. Überspringe die Datei.")
+        return
+
     print(f"Verarbeitung der Datei {source_file} mit Codec {codec}")
 
     if codec == 'prores':
@@ -99,6 +103,9 @@ def process_media_files(source_dir, original_media_dir):
 
             if filename.lower().endswith(('.mov', '.mp4')):
                 codec = get_video_codec(file_path)
+                if codec is None:
+                    print(f"Warnung: Konnte den Codec für {filename} nicht ermitteln. Überspringe die Datei.")
+                    continue
                 if codec.lower() == "prores":
                     codec = "ProRes"
                 elif is_hevc_a(file_path):
