@@ -31,7 +31,7 @@ def signal_handler(sig, frame):
 
 def process_media_files(source_dir, original_media_dir):
     """Verschiebt QuickTime- und Bilddateien direkt ins Zielverzeichnis."""
-    for root, _, files in os.walk(source_dir):  # Das "_" ersetzt "dirs", da es nicht verwendet wird
+    for root, _, files in os.walk(source_dir):
         for filename in files:
             if filename.startswith('.') or not (filename.lower().endswith(('.mov', '.mp4', '.jpg', '.jpeg', '.png', '.heif', '.heic', '.dng'))):
                 continue  # Versteckte Dateien oder nicht unterstützte Formate überspringen
@@ -45,8 +45,20 @@ def process_media_files(source_dir, original_media_dir):
             # Ermittele das Erstellungsdatum der Datei
             creation_time = get_creation_datetime(file_path)
             date_path = creation_time.strftime('%Y/%Y-%m/%Y-%m-%d')
-            codec = get_video_codec(file_path)
-            new_filename = creation_time.strftime(f'%Y-%m-%d_%H%M%S-{codec.upper()}.mov') if codec else filename
+
+            # Bestimme das Dateiformat (Unterschied zwischen Video- und Bilddateien)
+            if filename.lower().endswith(('.mov', '.mp4')):
+                codec = get_video_codec(file_path)
+                # Spezielle Behandlung für "ProRes"
+                if codec.lower() == "prores":
+                    codec = "ProRes"
+                else:
+                    codec = codec.upper()
+                new_filename = creation_time.strftime(f'%Y-%m-%d_%H%M%S-{codec}.mov')
+            else:
+                # Für Bilddateien gibt es kein Codec-Suffix, nur das Datumsmuster
+                extension = os.path.splitext(filename)[1].lower()  # Behalte die Original-Erweiterung bei
+                new_filename = creation_time.strftime(f'%Y-%m-%d_%H%M%S{extension}')
 
             # Bestimme das relative Verzeichnis gegenüber dem Quellverzeichnis
             relative_dir = os.path.relpath(root, source_dir)
