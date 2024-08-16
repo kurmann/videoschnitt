@@ -6,7 +6,7 @@ import signal
 
 from file_utils import is_file_in_use, get_directory_size
 from media_processor import process_completed_hevca_and_delete_prores, process_file, process_media_files
-from date_utils import get_creation_datetime
+from video_utils import get_video_codec
 
 # Lock-Datei im Library/Caches Verzeichnis des Benutzers
 LOCK_FILE = os.path.expanduser("~/Library/Caches/original_media_processor.lock")
