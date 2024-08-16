@@ -1,12 +1,15 @@
-import datetime
 import os
 import sys
 import subprocess
+import atexit
+import signal
+
 from file_utils import is_file_in_use, get_directory_size
 from video_utils import get_video_codec
 from media_processor import process_completed_hevca_and_delete_prores, process_file
 
-LOCK_FILE = "/tmp/original_media_processor.lock"
+# Lock-Datei im Library/Caches Verzeichnis des Benutzers
+LOCK_FILE = os.path.expanduser("~/Library/Caches/original_media_processor.lock")
 
 def send_macos_notification(title, message):
     """Sendet eine macOS-Benachrichtigung."""
@@ -14,83 +17,93 @@ def send_macos_notification(title, message):
         "osascript", "-e", f'display notification "{message}" with title "{title}"'
     ])
 
+def remove_lock_file():
+    """Entfernt die Lock-Datei."""
+    if os.path.exists(LOCK_FILE):
+        os.remove(LOCK_FILE)
+        print("Lock-Datei entfernt.")
+
+def signal_handler(sig, frame):
+    """Signalhandler für saubere Beendigung."""
+    remove_lock_file()
+    sys.exit(0)
+
 def main():
-    
     # Überprüfe, ob das Script bereits ausgeführt wird
     if os.path.exists(LOCK_FILE):
         print("Das Script wird bereits ausgeführt. Beende Ausführung.")
         sys.exit(0)
 
-    try:
-        # Erstelle die Lock-Datei
-        open(LOCK_FILE, 'w').close()
+    # Erstelle die Lock-Datei
+    with open(LOCK_FILE, 'w') as lock_file:
+        lock_file.write(str(os.getpid()))  # Schreibe die PID des Prozesses in die Lock-Datei
 
-        # Benachrichtigung, dass das Script gestartet wurde
-        send_macos_notification("Original Media Processor", "Das Script wurde gestartet und die Verarbeitung beginnt.")
+    # Registriere die Entfernung der Lock-Datei für verschiedene Beendigungsarten
+    atexit.register(remove_lock_file)
+    signal.signal(signal.SIGINT, signal_handler)  # Für CTRL+C
+    signal.signal(signal.SIGTERM, signal_handler)  # Für externe Beendigungssignale
 
-        if len(sys.argv) != 6:
-            print("Usage: python3 main.py /path/to/source_directory /path/to/compression_directory /path/to/compression_output_directory /path/to/original_media_directory max_gb_limit")
-            sys.exit(1)
+    # Benachrichtigung, dass das Script gestartet wurde
+    send_macos_notification("Original Media Processor", "Das Script wurde gestartet und die Verarbeitung beginnt.")
 
-        source_dir = sys.argv[1]
-        comp_dir = sys.argv[2]
-        comp_output_dir = sys.argv[3]
-        original_media_dir = sys.argv[4]
-        max_gb_limit = float(sys.argv[5])  # Die maximal erlaubte Größe in GB für das Komprimierungsverzeichnis
+    if len(sys.argv) != 6:
+        print("Usage: python3 main.py /path/to/source_directory /path/to/compression_directory /path/to/compression_output_directory /path/to/original_media_directory max_gb_limit")
+        sys.exit(1)
 
-        if not os.path.isdir(source_dir):
-            print(f"Error: {source_dir} is not a valid directory")
-            sys.exit(1)
+    source_dir = sys.argv[1]
+    comp_dir = sys.argv[2]
+    comp_output_dir = sys.argv[3]
+    original_media_dir = sys.argv[4]
+    max_gb_limit = float(sys.argv[5])  # Die maximal erlaubte Größe in GB für das Komprimierungsverzeichnis
 
-        if not os.path.isdir(comp_dir):
-            print(f"Error: {comp_dir} is not a valid directory")
-            sys.exit(1)
+    if not os.path.isdir(source_dir):
+        print(f"Error: {source_dir} is not a valid directory")
+        sys.exit(1)
 
-        if not os.path.isdir(comp_output_dir):
-            print(f"Error: {comp_output_dir} is not a valid directory")
-            sys.exit(1)
+    if not os.path.isdir(comp_dir):
+        print(f"Error: {comp_dir} is not a valid directory")
+        sys.exit(1)
 
-        if not os.path.isdir(original_media_dir):
-            print(f"Error: {original_media_dir} is not a valid directory")
-            sys.exit(1)
+    if not os.path.isdir(comp_output_dir):
+        print(f"Error: {comp_output_dir} is not a valid directory")
+        sys.exit(1)
 
-        compressor_started = False
+    if not os.path.isdir(original_media_dir):
+        print(f"Error: {original_media_dir} is not a valid directory")
+        sys.exit(1)
 
-        # Zuerst prüfen, ob fertige HEVC-A-Dateien im Komprimierungs-Ausgabeverzeichnis vorhanden sind und die passende ProRes-Datei löschen
-        process_completed_hevca_and_delete_prores(comp_output_dir, comp_dir, original_media_dir)
+    compressor_started = False
 
-        # Berechne die aktuelle Größe des Komprimierungsverzeichnisses
-        initial_compression_size = get_directory_size(comp_dir) / (1024 * 1024 * 1024)  # Umrechnung in GB
+    # Zuerst prüfen, ob fertige HEVC-A-Dateien im Komprimierungs-Ausgabeverzeichnis vorhanden sind und die passende ProRes-Datei löschen
+    process_completed_hevca_and_delete_prores(comp_output_dir, comp_dir, original_media_dir)
 
-        # Verarbeite die Dateien im Quellverzeichnis
-        for filename in os.listdir(source_dir):
-            if filename.startswith('.') or not filename.lower().endswith('.mov'):
-                continue  # Versteckte Dateien oder Dateien, die nicht MOV sind, überspringen
+    # Berechne die aktuelle Größe des Komprimierungsverzeichnisses
+    initial_compression_size = get_directory_size(comp_dir) / (1024 * 1024 * 1024)  # Umrechnung in GB
 
-            file_path = os.path.join(source_dir, filename)
+    # Verarbeite die Dateien im Quellverzeichnis
+    for filename in os.listdir(source_dir):
+        if filename.startswith('.') or not filename.lower().endswith('.mov'):
+            continue  # Versteckte Dateien oder Dateien, die nicht MOV sind, überspringen
 
-            if is_file_in_use(file_path):
-                print(f"Datei {filename} wird noch verwendet. Überspringe.")
-                continue
+        file_path = os.path.join(source_dir, filename)
 
-            # Prüfe, ob die Datei eine ProRes-Datei ist und das Limit überschritten wird
-            codec = get_video_codec(file_path)
-            if codec == 'prores':
-                file_size_gb = os.path.getsize(file_path) / (1024 * 1024 * 1024)  # Dateigröße in GB
-                if initial_compression_size + file_size_gb > max_gb_limit:
-                    print(f"Das Komprimierungsverzeichnis hat bereits das Limit von {max_gb_limit} GB erreicht.")
-                    print(f"Überspringe Datei: {filename}, da das Limit für das Komprimierungsverzeichnis erreicht ist.")
-                    continue  # Überspringe diese Datei, da das Limit überschritten wird
+        if is_file_in_use(file_path):
+            print(f"Datei {filename} wird noch verwendet. Überspringe.")
+            continue
 
-                initial_compression_size += file_size_gb
+        # Prüfe, ob die Datei eine ProRes-Datei ist und das Limit überschritten wird
+        codec = get_video_codec(file_path)
+        if codec == 'prores':
+            file_size_gb = os.path.getsize(file_path) / (1024 * 1024 * 1024)  # Dateigröße in GB
+            if initial_compression_size + file_size_gb > max_gb_limit:
+                print(f"Das Komprimierungsverzeichnis hat bereits das Limit von {max_gb_limit} GB erreicht.")
+                print(f"Überspringe Datei: {filename}, da das Limit für das Komprimierungsverzeichnis erreicht ist.")
+                continue  # Überspringe diese Datei, da das Limit überschritten wird
 
-            # Prozessiere die Datei (verschiebe ins Komprimierungsverzeichnis oder direkt ins Ziel)
-            process_file(file_path, comp_dir, original_media_dir, compressor_started)
+            initial_compression_size += file_size_gb
 
-    finally:
-        # Entferne die Lock-Datei, wenn das Script beendet wird
-        if os.path.exists(LOCK_FILE):
-            os.remove(LOCK_FILE)
+        # Prozessiere die Datei (verschiebe ins Komprimierungsverzeichnis oder direkt ins Ziel)
+        process_file(file_path, comp_dir, original_media_dir, compressor_started)
 
 if __name__ == "__main__":
     main()
