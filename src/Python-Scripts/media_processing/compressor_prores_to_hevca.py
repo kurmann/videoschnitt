@@ -18,10 +18,10 @@ COMPRESSOR_PROFILE_PATH = "/Users/patrickkurmann/Library/Application Support/Com
 CHECK_INTERVAL = 60
 
 # Anzahl der Dateien, die pro Durchlauf gleichzeitig verarbeitet werden
-BATCH_SIZE = 10
+BATCH_SIZE = 3
 
 # Maximale Anzahl an Überprüfungen, um eine Endlosschleife zu verhindern
-MAX_CHECKS = 10
+MAX_CHECKS = 3
 
 def send_macos_notification(title, message):
     """Sendet eine macOS-Benachrichtigung."""
@@ -72,7 +72,7 @@ def compress_files(input_directory, output_directory):
             output_file = os.path.join(output_directory, f"{os.path.splitext(file)[0]}-HEVC-A.mov")
             files_to_process.append((input_file, output_file))
 
-            # Verarbeite Dateien in Batches von 10
+            # Verarbeite Dateien in Batches
             if len(files_to_process) == BATCH_SIZE:
                 process_batch(files_to_process)
                 files_to_process.clear()
@@ -85,16 +85,19 @@ def process_batch(files):
     """Verarbeitet einen Batch von Dateien und prüft periodisch, welche fertig komprimiert sind."""
     # Starte die Kompression für den gesamten Batch
     for input_file, output_file in files:
+        # Dynamischer Job-Titel
+        job_title = f"Kompression '{os.path.basename(input_file)}' zu HEVC-A"
+        
         command = [
             "/Applications/Compressor.app/Contents/MacOS/Compressor",
-            "-batchname", "ProRes-Archivierung nach HEVC-A",
+            "-batchname", job_title,
             "-jobpath", input_file,
             "-locationpath", output_file,
             "-settingpath", COMPRESSOR_PROFILE_PATH
         ]
         try:
             subprocess.run(command, check=False)
-            print(f"Kompression gestartet für: {input_file}")
+            print(f"Kompression gestartet für: {input_file} (Job-Titel: {job_title})")
         except subprocess.CalledProcessError as e:
             print(f"Fehler bei der Komprimierung von {input_file}: {e}")
 
