@@ -4,9 +4,8 @@ import subprocess
 import atexit
 import signal
 
-from file_utils import is_file_in_use, get_directory_size, move_and_rename_to_target
-from video_utils import get_video_codec
-from media_processor import process_completed_hevca_and_delete_prores, process_file
+from file_utils import is_file_in_use, get_directory_size
+from media_processor import process_completed_hevca_and_delete_prores, process_file, process_media_files
 from date_utils import get_creation_datetime
 
 # Lock-Datei im Library/Caches Verzeichnis des Benutzers
@@ -28,45 +27,6 @@ def signal_handler(sig, frame):
     """Signalhandler für saubere Beendigung."""
     remove_lock_file()
     sys.exit(0)
-
-def process_media_files(source_dir, original_media_dir):
-    """Verschiebt QuickTime- und Bilddateien direkt ins Zielverzeichnis."""
-    for root, _, files in os.walk(source_dir):
-        for filename in files:
-            if filename.startswith('.') or not (filename.lower().endswith(('.mov', '.mp4', '.jpg', '.jpeg', '.png', '.heif', '.heic', '.dng'))):
-                continue  # Versteckte Dateien oder nicht unterstützte Formate überspringen
-
-            file_path = os.path.join(root, filename)
-
-            if is_file_in_use(file_path):
-                print(f"Datei {filename} wird noch verwendet. Überspringe.")
-                continue
-
-            # Ermittele das Erstellungsdatum der Datei
-            creation_time = get_creation_datetime(file_path)
-            date_path = creation_time.strftime('%Y/%Y-%m/%Y-%m-%d')
-
-            # Bestimme das Dateiformat (Unterschied zwischen Video- und Bilddateien)
-            if filename.lower().endswith(('.mov', '.mp4')):
-                codec = get_video_codec(file_path)
-                # Spezielle Behandlung für "ProRes"
-                if codec.lower() == "prores":
-                    codec = "ProRes"
-                else:
-                    codec = codec.upper()
-                new_filename = creation_time.strftime(f'%Y-%m-%d_%H%M%S-{codec}.mov')
-            else:
-                # Für Bilddateien gibt es kein Codec-Suffix, nur das Datumsmuster
-                extension = os.path.splitext(filename)[1].lower()  # Behalte die Original-Erweiterung bei
-                new_filename = creation_time.strftime(f'%Y-%m-%d_%H%M%S{extension}')
-
-            # Bestimme das relative Verzeichnis gegenüber dem Quellverzeichnis
-            relative_dir = os.path.relpath(root, source_dir)
-            destination_dir = os.path.join(original_media_dir, date_path, relative_dir)
-
-            # Verschiebe und benenne die Datei um
-            from file_utils import move_and_rename_to_target
-            move_and_rename_to_target(file_path, destination_dir, new_filename)
 
 def main():
     # Überprüfe, ob das Script bereits ausgeführt wird
