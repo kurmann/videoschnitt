@@ -15,7 +15,7 @@ LOCK_FILE = os.path.expanduser("~/Library/Caches/compressor_prores_to_hevca.lock
 COMPRESSOR_PROFILE_PATH = "/Users/patrickkurmann/Library/Application Support/Compressor/Settings/HEVC-A.compressorsetting"
 
 # Zeitintervall für die Überprüfung (in Sekunden)
-CHECK_INTERVAL = 60
+CHECK_INTERVAL = 30
 
 # Anzahl der Dateien, die pro Durchlauf gleichzeitig verarbeitet werden
 BATCH_SIZE = 3
@@ -54,7 +54,7 @@ def compress_files(input_directory, output_directory):
     files_to_process = []
     
     # Durchlaufen aller Dateien im Eingabeverzeichnis
-    for root, dirs, files in os.walk(input_directory):
+    for root, _, files in os.walk(input_directory):
         for file in files:
             # Überspringe versteckte Dateien und prüfe, ob die Datei in Verwendung ist
             if file.startswith("._") or not file.lower().endswith(".mov") or is_file_in_use(os.path.join(root, file)):
@@ -97,7 +97,7 @@ def process_batch(files):
         ]
         try:
             subprocess.run(command, check=False)
-            print(f"Kompression gestartet für: {input_file} (Job-Titel: {job_title})")
+            print(f"Kompressionsauftrag erstellt für: {input_file} (Job-Titel: {job_title})")
         except subprocess.CalledProcessError as e:
             print(f"Fehler bei der Komprimierung von {input_file}: {e}")
 
@@ -109,9 +109,14 @@ def process_batch(files):
         for input_file, output_file in files[:]:  # Verwende eine Kopie der Liste, um sicher zu iterieren
             print(f"Prüfe Status für: {output_file}")
 
-            # Prüfen, ob die Datei vorhanden ist und keine .sb-Dateien im Verzeichnis existieren
-            if not os.path.exists(output_file) or are_sb_files_present(output_file):
-                print(f"Komprimierung läuft noch für: {output_file}")
+            # Prüfen, ob die Datei vorhanden ist (hat die Kompression begonnen?)
+            if not os.path.exists(output_file):
+                print(f"Komprimierung für: {output_file} noch nicht gestartet")
+                continue
+            
+            # Prüfen, ob temporäre .sb-Dateien vorhanden sind (läuft die Kompression noch?)
+            if are_sb_files_present(output_file):
+                print(f"Komprimierung für: {output_file} läuft noch")
                 continue
 
             # Prüfen, ob die komprimierte Datei den Codec "hevc" hat
