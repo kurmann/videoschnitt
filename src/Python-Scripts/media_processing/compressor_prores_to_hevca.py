@@ -106,8 +106,8 @@ def process_batch(files):
         for input_file, output_file in files[:]:  # Verwende eine Kopie der Liste, um sicher zu iterieren
             print(f"Prüfe Status für: {output_file}")
 
-            # Prüfen, ob die .sb-Dateien nicht mehr vorhanden sind
-            if are_sb_files_present(output_file):
+            # Prüfen, ob die Datei vorhanden ist und keine .sb-Dateien im Verzeichnis existieren
+            if not os.path.exists(output_file) or are_sb_files_present(output_file):
                 print(f"Komprimierung läuft noch für: {output_file}")
                 continue
 
