@@ -1,3 +1,4 @@
+import datetime
 import os
 import sys
 import subprocess
@@ -14,6 +15,7 @@ def send_macos_notification(title, message):
     ])
 
 def main():
+    
     # Überprüfe, ob das Script bereits ausgeführt wird
     if os.path.exists(LOCK_FILE):
         print("Das Script wird bereits ausgeführt. Beende Ausführung.")
