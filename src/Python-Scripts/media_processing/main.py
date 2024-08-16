@@ -1,9 +1,15 @@
 import os
 import sys
 import subprocess
+import atexit
+import signal
+
 from file_utils import is_file_in_use, get_directory_size
 from video_utils import get_video_codec
 from media_processor import process_completed_hevca_and_delete_prores, process_file
+
+# Lock-Datei im Library/Caches Verzeichnis des Benutzers
+LOCK_FILE = os.path.expanduser("~/Library/Caches/original_media_processor.lock")
 
 def send_macos_notification(title, message):
     """Sendet eine macOS-Benachrichtigung."""
@@ -11,7 +17,32 @@ def send_macos_notification(title, message):
         "osascript", "-e", f'display notification "{message}" with title "{title}"'
     ])
 
+def remove_lock_file():
+    """Entfernt die Lock-Datei."""
+    if os.path.exists(LOCK_FILE):
+        os.remove(LOCK_FILE)
+        print("Lock-Datei entfernt.")
+
+def signal_handler(sig, frame):
+    """Signalhandler für saubere Beendigung."""
+    remove_lock_file()
+    sys.exit(0)
+
 def main():
+    # Überprüfe, ob das Script bereits ausgeführt wird
+    if os.path.exists(LOCK_FILE):
+        print("Das Script wird bereits ausgeführt. Beende Ausführung.")
+        sys.exit(0)
+
+    # Erstelle die Lock-Datei
+    with open(LOCK_FILE, 'w') as lock_file:
+        lock_file.write(str(os.getpid()))  # Schreibe die PID des Prozesses in die Lock-Datei
+
+    # Registriere die Entfernung der Lock-Datei für verschiedene Beendigungsarten
+    atexit.register(remove_lock_file)
+    signal.signal(signal.SIGINT, signal_handler)  # Für CTRL+C
+    signal.signal(signal.SIGTERM, signal_handler)  # Für externe Beendigungssignale
+
     # Benachrichtigung, dass das Script gestartet wurde
     send_macos_notification("Original Media Processor", "Das Script wurde gestartet und die Verarbeitung beginnt.")
 
