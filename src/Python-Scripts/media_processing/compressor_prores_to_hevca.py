@@ -15,13 +15,13 @@ LOCK_FILE = os.path.expanduser("~/Library/Caches/compressor_prores_to_hevca.lock
 COMPRESSOR_PROFILE_PATH = "/Users/patrickkurmann/Library/Application Support/Compressor/Settings/HEVC-A.compressorsetting"
 
 # Zeitintervall für die Überprüfung (in Sekunden)
-CHECK_INTERVAL = 30
+CHECK_INTERVAL = 60
 
 # Anzahl der Dateien, die pro Durchlauf gleichzeitig verarbeitet werden
-BATCH_SIZE = 3
+BATCH_SIZE = 10
 
 # Maximale Anzahl an Überprüfungen, um eine Endlosschleife zu verhindern
-MAX_CHECKS = 3
+MAX_CHECKS = 10
 
 def send_macos_notification(title, message):
     """Sendet eine macOS-Benachrichtigung."""
@@ -103,9 +103,14 @@ def process_batch(files):
 
     # Warte und prüfe periodisch den Status der Kompression
     check_count = 0
+    total_wait_time = CHECK_INTERVAL * MAX_CHECKS  # Gesamtwartezeit in Sekunden
+    print(f"Das Skript wird insgesamt bis zu {total_wait_time // 60} Minuten (600 Sekunden) warten, um die Kompression zu überprüfen.")
+
     while files and check_count < MAX_CHECKS:
         time.sleep(CHECK_INTERVAL)
         check_count += 1
+        print(f"Überprüfung {check_count}/{MAX_CHECKS} nach {check_count * CHECK_INTERVAL} Sekunden...")
+        
         for input_file, output_file in files[:]:  # Verwende eine Kopie der Liste, um sicher zu iterieren
             print(f"Prüfe Status für: {output_file}")
 
@@ -130,11 +135,13 @@ def process_batch(files):
                 os.remove(input_file)
                 print(f"Originaldatei gelöscht: {input_file}")
                 files.remove((input_file, output_file))  # Entferne die Datei aus der Liste
+                check_count = 0  # Timer zurücksetzen, da eine Datei erfolgreich abgeschlossen wurde
             except Exception as e:
                 print(f"Fehler beim Löschen der Datei: {e}")
 
     if files:
         print(f"Maximale Überprüfungsanzahl erreicht. {len(files)} Dateien wurden nicht erfolgreich verarbeitet.")
+        print(f"Das Skript hat insgesamt {total_wait_time // 60} Minuten gewartet.")
 
 def main():
     # Überprüfe, ob das Skript bereits ausgeführt wird
