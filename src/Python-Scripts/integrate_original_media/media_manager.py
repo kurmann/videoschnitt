@@ -7,17 +7,10 @@ from video_utils import get_video_codec, is_hevc_a
 def move_file_to_target(source_file, base_source_dir, base_destination_dir):
     """
     Verschiebt eine Datei ins Zielverzeichnis, behält die Unterverzeichnisstruktur bei und organisiert nach Datum.
-    
-    Args:
-        source_file (str): Pfad zur Quelldatei.
-        base_source_dir (str): Basis-Quellverzeichnis, um den relativen Pfad zu bestimmen.
-        base_destination_dir (str): Basiszielverzeichnis, in das die Datei verschoben wird.
-        
-    Returns:
-        str: Der endgültige Zielpfad der verschobenen Datei, oder None bei einem Fehler.
+    Fügt die Zeitzone im Dateinamen hinzu.
     """
     try:
-        # Datum der Datei extrahieren
+        # Datum der Datei extrahieren, inklusive Zeitzone
         creation_time = get_creation_datetime(source_file)
         date_path = creation_time.strftime('%Y/%Y-%m/%Y-%m-%d')
 
@@ -29,11 +22,14 @@ def move_file_to_target(source_file, base_source_dir, base_destination_dir):
         
         # Dateiendung beibehalten und neuen Namen basierend auf dem Datum generieren
         extension = os.path.splitext(source_file)[1].lower()
-        codec = get_video_codec(source_file)
+        codec = get_video_codec(source_file) if extension == '.mov' or extension == '.mp4' else None
+
+        # Zeitzoneninformationen extrahieren
+        timezone_suffix = creation_time.strftime('%z')
 
         if codec is None:
-            print(f"Warnung: Konnte den Codec für {source_file} nicht ermitteln. Behalte den Dateinamen bei.")
-            filename = os.path.basename(source_file)
+            # Umbenennung für andere Dateitypen wie HEIC, JPG usw.
+            filename = creation_time.strftime(f'%Y-%m-%d_%H%M%S{timezone_suffix}{extension}')
         else:
             if codec.lower() == "prores":
                 codec = "ProRes"
@@ -42,8 +38,8 @@ def move_file_to_target(source_file, base_source_dir, base_destination_dir):
             else:
                 codec = ''
 
-            # Neuer Dateiname mit Datum und ggf. Codec
-            filename = creation_time.strftime(f'%Y-%m-%d_%H%M%S{f"-{codec}" if codec else ""}{extension}')
+            # Neuer Dateiname mit Datum, Zeitzone und ggf. Codec für MOV/MP4-Dateien
+            filename = creation_time.strftime(f'%Y-%m-%d_%H%M%S{timezone_suffix}{f"-{codec}" if codec else ""}{extension}')
 
         # Sicherstellen, dass das Zielverzeichnis existiert
         os.makedirs(destination_dir, exist_ok=True)
