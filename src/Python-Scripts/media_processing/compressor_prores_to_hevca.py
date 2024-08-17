@@ -18,7 +18,7 @@ COMPRESSOR_PROFILE_PATH = "/Users/patrickkurmann/Library/Application Support/Com
 CHECK_INTERVAL = 60
 
 # Anzahl der Dateien, die pro Durchlauf gleichzeitig verarbeitet werden
-BATCH_SIZE = 10
+BATCH_SIZE = 3
 
 # Maximale Anzahl an Überprüfungen, um eine Endlosschleife zu verhindern
 MAX_CHECKS = 10
