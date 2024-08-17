@@ -68,8 +68,15 @@ def compress_files(input_directory, output_directory):
                 print(f"Überspringe Datei (nicht ProRes): {input_file}")
                 continue
 
+            # Berechne den relativen Pfad vom Quellverzeichnis
+            relative_path = os.path.relpath(root, input_directory)
+            
+            # Generiere das entsprechende Ausgabe-Unterverzeichnis
+            output_subdirectory = os.path.join(output_directory, relative_path)
+            os.makedirs(output_subdirectory, exist_ok=True)
+
             # Generiere den Ausgabedateinamen im Ausgabeordner mit dem Postfix "-HEVC-A"
-            output_file = os.path.join(output_directory, f"{os.path.splitext(file)[0]}-HEVC-A.mov")
+            output_file = os.path.join(output_subdirectory, f"{os.path.splitext(file)[0]}-HEVC-A.mov")
             files_to_process.append((input_file, output_file))
 
             # Verarbeite Dateien in Batches
@@ -162,12 +169,15 @@ def main():
     send_macos_notification("Compressor Script", "Das Skript wurde gestartet und die Verarbeitung beginnt.")
 
     # Überprüfen der Argumente und Ausführen der entsprechenden Logik
-    if len(sys.argv) != 3:
-        print("Usage: python3 compressor_prores_to_hevca.py /path/to/source_directory /path/to/destination_directory")
+    if len(sys.argv) == 2:
+        input_directory = sys.argv[1]
+        output_directory = input_directory  # Quelle und Ziel sind identisch
+    elif len(sys.argv) == 3:
+        input_directory = sys.argv[1]
+        output_directory = sys.argv[2]
+    else:
+        print("Usage: python3 compressor_prores_to_hevca.py /path/to/source_directory [optional: /path/to/destination_directory]")
         sys.exit(1)
-
-    input_directory = sys.argv[1]
-    output_directory = sys.argv[2]
 
     if not os.path.isdir(input_directory):
         print(f"Error: {input_directory} ist kein gültiges Verzeichnis.")
