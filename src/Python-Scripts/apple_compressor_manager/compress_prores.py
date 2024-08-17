@@ -4,7 +4,7 @@ import subprocess
 import atexit
 import signal
 import time
-from media_processor import are_sb_files_present
+from compressor_utils import are_sb_files_present
 from file_utils import is_file_in_use
 from video_utils import get_video_codec
 
