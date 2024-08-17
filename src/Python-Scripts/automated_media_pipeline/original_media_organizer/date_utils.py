@@ -14,20 +14,36 @@ def get_creation_datetime(filepath):
         '%Y-%m-%dT%H:%M:%S%z',  # ISO-Format mit Zeitzone
         '%Y-%m-%dT%H:%M:%S',    # ISO-Format ohne Zeitzone
     ]
-    
+
     try:
-        # Verwende exiftool, um das "Create Date" und "Date/Time Original" zu extrahieren
-        cmd = ['exiftool', '-CreateDate', '-DateTimeOriginal', '-json', filepath]
+        # Verwende exiftool, um die relevanten Datumsfelder für Videos und Bilder auszulesen
+        cmd = [
+            'exiftool',
+            '-CreationDate',        # Für Videos (MOV/MP4 etc.)
+            '-ContentCreateDate',   # Für Videos (MOV/MP4 etc.)
+            '-DateTimeOriginal',    # Für Bilder (HEIC/JPG etc.)
+            '-CreateDate',          # Allgemein
+            '-json',
+            filepath
+        ]
         result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         exif_metadata = result.stdout.strip()
-        
+
         # Parsing der JSON-Daten
         exif_json = json.loads(exif_metadata)
         if exif_json and len(exif_json) > 0:
-            for date_key in ["CreateDate", "DateTimeOriginal"]:
+            # Priorisierte Reihenfolge der Felder für Videos und Bilder
+            preferred_fields = [
+                "CreationDate",
+                "ContentCreateDate",
+                "DateTimeOriginal",
+                "CreateDate"
+            ]
+
+            for date_key in preferred_fields:
                 if date_key in exif_json[0]:
                     creation_time_str = exif_json[0][date_key]
-                    
+
                     # Versuche, das Datum mit den möglichen Formaten zu parsen
                     for date_format in possible_formats:
                         try:
