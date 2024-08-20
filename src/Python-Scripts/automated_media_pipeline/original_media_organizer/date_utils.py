@@ -41,8 +41,7 @@ def get_creation_datetime(filepath):
             
             offset_time_original = exif_json[0].get("OffsetTimeOriginal")
 
-            print(f"Ausgelesenes Datum: {creation_time_str}")
-            print(f"Ausgelesenes OffsetTimeOriginal: {offset_time_original}")
+            print(f"Ausgelesenes Datum: {creation_time_str}, OffsetTimeOriginal: {offset_time_original}")
 
             if creation_time_str:
                 # Versuche verschiedene Formate zu parsen

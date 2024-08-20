@@ -48,8 +48,9 @@ def move_file_to_target(source_file, base_source_dir, base_destination_dir):
         destination_path = os.path.join(destination_dir, filename)
         
         # Verschiebe die Datei
+        print(f"Verschiebe Datei {source_file} ({os.path.getsize(source_file) / (1024 * 1024):.2f} MiB) nach {destination_dir}")
         shutil.move(source_file, destination_path)
-        print(f"Datei verschoben: {source_file} -> {destination_path}")
+        print(f"Datei verschoben nach {destination_path}")
         
         return destination_path
     except Exception as e:
