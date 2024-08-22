@@ -4,7 +4,7 @@ In diesem Kapitel erfährst du, wie du die Konfiguration für die einzelnen Pyth
 
 ### **1. Konfigurationsdatei in `Application Support`**
 
-Die Konfiguration der Verzeichnisse und Pfade erfolgt über eine YAML-Datei, die zentral in `Application Support` abgelegt wird. Diese Konfigurationsdatei definiert die Verzeichnispfade, die für die einzelnen Arbeitsflüsse relevant sind.
+Die Konfiguration der Verzeichnisse und Pfade erfolgt über eine YAML-Datei, die zentral in `Application Support` abgelegt wird. Diese Konfigurationsdatei definiert die Verzeichnispfade und andere Einstellungen, die für die einzelnen Arbeitsflüsse relevant sind.
 
 #### **Pfad zur Konfigurationsdatei:**
 
@@ -30,7 +30,38 @@ Beispielhafte Arbeitsflüsse:
 - **Final Cut Pro Export Verzeichnis:** Startet den Kompressionsprozess.
 - **Mediathek Eingang:** Startet den Integrationsprozess für neue Mediathekinhalte.
 
-### **3. Überschreiben von Konfigurationswerten über CLI-Parameter**
+### **3. Sicheres Speichern von Secrets mit `keyring` (macOS)**
+
+Für sensible Daten wie FTP-Zugangsdaten oder API-Schlüssel solltest du die `config.yaml` **nicht** verwenden, da diese im Klartext gespeichert werden. Stattdessen bietet sich auf macOS die Verwendung der nativen Keychain mit dem Python-Modul `keyring` an.
+
+#### **Installation von `keyring`:**
+
+```bash
+pip install keyring
+```
+
+#### **Speichern von Zugangsdaten in der Keychain:**
+
+Du kannst Secrets sicher in der Keychain speichern:
+
+```python
+import keyring
+
+# Speichern der Zugangsdaten in der Keychain
+keyring.set_password("kurmann_ftp", "username", "dein_ftp_passwort")
+```
+
+#### **Abrufen von Zugangsdaten aus der Keychain:**
+
+In deinem Python-Code kannst du dann auf die sicher gespeicherten Zugangsdaten zugreifen:
+
+```python
+import keyring
+
+ftp_password = keyring.get_password("kurmann_ftp", "username")
+```
+
+### **4. Überschreiben von Konfigurationswerten über CLI-Parameter**
 
 Es kann Situationen geben, in denen du die in der YAML-Datei definierten Verzeichnispfade oder andere Parameter manuell überschreiben möchtest. Dies kannst du direkt über CLI-Parameter tun.
 
@@ -44,12 +75,13 @@ kurmann-compress-fcp-export --directory /Users/patrickkurmann/Videoschnitt/Alter
 
 In diesem Beispiel wird der Pfad `--directory` verwendet, um den Standardpfad aus der YAML-Konfiguration zu überschreiben.
 
-### **4. Priorität der Konfigurationen**
+### **5. Priorität der Konfigurationen**
 
 Die Konfiguration folgt der folgenden Prioritätsregel:
 
 1. **CLI-Parameter haben Vorrang:** Alle über die Kommandozeile übergebenen Parameter überschreiben die Standardwerte aus der YAML-Konfigurationsdatei.
 2. **YAML-Datei als Fallback:** Wenn keine CLI-Parameter angegeben sind, werden die Verzeichnispfade und anderen Konfigurationswerte aus der YAML-Datei geladen.
+3. **Secrets über `keyring`:** Sensible Daten wie Passwörter oder Zugangsdaten werden sicher über `keyring` abgerufen und nicht in der YAML-Datei gespeichert.
 
 #### **Beispiel-Szenario:**
 
@@ -67,7 +99,7 @@ Die Konfiguration folgt der folgenden Prioritätsregel:
 
 In diesem Fall wird das Verzeichnis aus der CLI verwendet, und die YAML-Konfiguration wird ignoriert.
 
-### **5. Übersicht der verfügbaren CLI-Parameter**
+### **6. Übersicht der verfügbaren CLI-Parameter**
 
 Jedes Python-Paket bietet spezifische CLI-Parameter an, die du bei Bedarf überschreiben kannst. Hier eine Übersicht der wichtigsten Parameter:
 
@@ -90,7 +122,3 @@ Jedes Python-Paket bietet spezifische CLI-Parameter an, die du bei Bedarf übers
     ```bash
     kurmann-manage-mediasets --directory /Users/patrickkurmann/Videoschnitt/AlternativeMediathek
     ```
-
-### **6. Erweiterung der Konfiguration**
-
-Falls du neue Verzeichnisse oder Arbeitsflüsse hinzufügst, kannst du einfach die YAML-Datei anpassen. Der Prozessmanager liest die Konfigurationsdatei beim Start neu ein und wendet die Änderungen automatisch an.
