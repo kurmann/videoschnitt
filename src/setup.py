@@ -6,7 +6,7 @@ with open(os.path.join(os.path.dirname(__file__), '..', 'README.md'), 'r') as fh
 
 setup(
     name="kurmann_videoschnitt",
-    version="0.40.0",
+    version="0.41.0",
     description="Video editing automation tools for Kurmann Videoschnitt",
     long_description=long_description,
     long_description_content_type="text/markdown",
