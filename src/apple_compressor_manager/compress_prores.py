@@ -4,9 +4,9 @@ import subprocess
 import atexit
 import signal
 import time
-from compressor_utils import are_sb_files_present
-from file_utils import is_file_in_use
-from video_utils import get_video_codec
+from apple_compressor_manager.compressor_utils import are_sb_files_present
+from apple_compressor_manager.file_utils import is_file_in_use
+from apple_compressor_manager.video_utils import get_video_codec
 
 # Lock-Datei im Library/Caches Verzeichnis des Benutzers
 LOCK_FILE = os.path.expanduser("~/Library/Caches/compressor_prores_to_hevca.lock")
