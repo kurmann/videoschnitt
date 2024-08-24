@@ -20,10 +20,13 @@ def check_for_drive_and_count_files(target_directory):
         subprocess.run(["osascript", "-e", f'display notification "{error_message}" with title "Medien-Importer"'])
         sys.exit(1)  # Rückgabewert 1 bei Fehler
 
-if __name__ == "__main__":
+def main():
     if len(sys.argv) != 2:
-        print("Usage: python import_new_media.py <directory_path>")
+        print("Usage: import-new-media <directory_path>")
         sys.exit(1)
     else:
         target_directory = sys.argv[1]
         check_for_drive_and_count_files(target_directory)
+
+if __name__ == "__main__":
+    main()
