@@ -17,7 +17,7 @@ setup(
     entry_points={
         'console_scripts': [
             'import-new-media=new_media_importer.import_new_media:main',
-            'integrate-new-media=original_media_integrator.intergrate_new_media:main',
+            'integrate-new-media=original_media_integrator.integrate_new_media:main',
             'compress-prores=apple_compressor_manager.compress_prores:main',
         ],
     },
