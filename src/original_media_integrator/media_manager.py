@@ -1,8 +1,8 @@
 import os
 import shutil
-from date_utils import get_creation_datetime
-from file_utils import is_file_in_use
-from video_utils import get_video_codec, is_hevc_a
+from original_media_integrator.date_utils import get_creation_datetime
+from original_media_integrator.file_utils import is_file_in_use
+from original_media_integrator.video_utils import get_video_codec, is_hevc_a
 
 def move_file_to_target(source_file, base_source_dir, base_destination_dir):
     """
