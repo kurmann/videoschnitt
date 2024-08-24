@@ -1,7 +1,7 @@
 import subprocess
 import json
 import os
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 
 def get_creation_datetime(filepath):
     """

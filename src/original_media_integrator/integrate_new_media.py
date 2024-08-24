@@ -1,9 +1,8 @@
 import os
-import subprocess
 import sys
 import atexit
 import signal
-from media_manager import organize_media_files
+from original_media_integrator.media_manager import organize_media_files
 
 # Lock-Datei im Library/Caches Verzeichnis des Benutzers
 LOCK_FILE = os.path.expanduser("~/Library/Caches/media_organizer.lock")

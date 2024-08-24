@@ -1,5 +1,4 @@
 import os
-import shutil
 
 def is_file_in_use(filepath):
     """Überprüft, ob eine Datei in Verwendung ist."""
