@@ -41,7 +41,7 @@ local.settings.json
 mono_crash.*
 
 # Build results by Python
-kurmann_videoschnitt.egg-info
+*.egg-info
 
 # Build results
 [Dd]ebug/
