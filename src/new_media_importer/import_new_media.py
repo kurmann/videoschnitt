@@ -53,16 +53,21 @@ def main(argv=None):
     source_directory = config.get("source_directory", "")
     destination_directory = config.get("destination_directory", "")
     compress_prores = config.get("compress_prores", False)
+    compression_directory = config.get("compression_directory", "")
 
     # Übergeordnete Parameter haben Vorrang vor der Config
     if len(argv) >= 3:
         source_directory = argv[0]
         destination_directory = argv[1]
         compress_prores = argv[2].lower() == "true"
+        # Das vierte Argument ist optional
+        compression_directory = argv[3] if len(argv) >= 4 else ""
 
     print(f"Verwende Quellverzeichnis: {source_directory}")
     print(f"Verwende Zielverzeichnis: {destination_directory}")
     print(f"Kompression aktiviert: {compress_prores}")
+    if compress_prores:
+        print(f"Verwende Kompressionsverzeichnis: {compression_directory}")
 
     # Standard-Startup-Prozedur
     print("Das Skript wurde erfolgreich gestartet.", file=sys.stdout)
@@ -84,10 +89,19 @@ def main(argv=None):
     # Starte den Kompressionsvorgang, falls aktiviert
     if compress_prores:
         print("Starte Apple Compressor Manager...")
-        compress_files(source_directory, source_directory)
+        # Das output_directory ist das gleiche wie das source_directory ausser es ist ein Kompressionsverzeichnis angegeben
+        if compression_directory:
+            output_directory = compression_directory
+        else:
+            output_directory = source_directory
+        
+        compress_files(source_directory, output_directory)
 
     print("Starte die Integration der neuen Medien...")
+    # Wenn ein Kompressionsverzeichnis angegeben wurde, dann wird die Integration zwei Mal durchgeführt (einmal für das Quellverzeichnis und einmal für das Kompressionsverzeichnis)
     organize_media_files(source_directory, destination_directory)
+    print("Integration der neuen Medien abgeschlossen.")
+    organize_media_files(compression_directory, destination_directory)
 
     send_macos_notification("New Media Importer", "Die Verarbeitung wurde abgeschlossen.")
     remove_lock_file()
