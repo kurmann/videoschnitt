@@ -1,24 +1,21 @@
+from datetime import datetime
 import os
 import sys
 import atexit
 import signal
-from apple_compressor_manager.compressor_helpers import send_macos_notification, process_batch, final_cleanup
-from apple_compressor_manager.video_utils import get_video_codec
+from apple_compressor_manager.compress_prores import compress_files
+from original_media_integrator.integrate_new_media import organize_media_files
+
+log_file = "/Users/patrickkurmann/Code/videoschnitt/log.txt"
+with open(log_file, "a") as f:
+    f.write(f"Skript gestartet um {datetime.now()}\n")
 
 # Lock-Datei im Library/Caches Verzeichnis des Benutzers
-LOCK_FILE = os.path.expanduser("~/Library/Caches/compressor_prores_to_hevca.lock")
+LOCK_FILE = os.path.expanduser("~/Library/Caches/new_media_importer.lock")
 
-# Pfad zu deinem Compressor-Profil (HEVC-A)
-COMPRESSOR_PROFILE_PATH = "/Users/patrickkurmann/Library/Application Support/Compressor/Settings/HEVC-A.compressorsetting"
-
-# Zeitintervall für die Überprüfung (in Sekunden)
-CHECK_INTERVAL = 60
-
-# Anzahl der Dateien, die pro Durchlauf gleichzeitig verarbeitet werden
-BATCH_SIZE = 3
-
-# Maximale Anzahl an Überprüfungen, um eine Endlosschleife zu verhindern
-MAX_CHECKS = 10
+def send_macos_notification(title, message):
+    """Sendet eine macOS-Benachrichtigung."""
+    print(f"{title}: {message}")
 
 def remove_lock_file():
     """Entfernt die Lock-Datei."""
@@ -31,66 +28,11 @@ def signal_handler(sig, frame):
     remove_lock_file()
     sys.exit(0)
 
-def compress_files(input_directory, output_directory):
-    # Überprüfen, ob das Eingabeverzeichnis existiert
-    if not os.path.isdir(input_directory):
-        print(f"Fehler: Das Eingabeverzeichnis {input_directory} existiert nicht. Bitte prüfen und erneut versuchen.")
-        sys.exit(1)
-
-    # Überprüfen, ob das Ausgabeverzeichnis existiert
-    if not os.path.isdir(output_directory):
-        print(f"Fehler: Das Ausgabeverzeichnis {output_directory} existiert nicht. Bitte prüfen und erneut versuchen.")
-        sys.exit(1)
-
-    files_to_process = []
-
-    # Durchlaufen aller Dateien im Eingabeverzeichnis
-    for root, _, files in os.walk(input_directory):
-        for file in files:
-            # Überspringe versteckte Dateien und prüfe, ob die Datei in Verwendung ist
-            if file.startswith("._") or not file.lower().endswith(".mov"):
-                continue
-
-            input_file = os.path.join(root, file)
-
-            # Überprüfen, ob die Datei im ProRes-Codec vorliegt
-            codec = get_video_codec(input_file)
-            if codec != "prores":
-                print(f"Überspringe Datei (nicht ProRes): {input_file}")
-                continue
-
-            # Berechne den relativen Pfad vom Quellverzeichnis
-            relative_path = os.path.relpath(root, input_directory)
-
-            # Generiere das entsprechende Ausgabe-Unterverzeichnis
-            output_subdirectory = os.path.join(output_directory, relative_path)
-            os.makedirs(output_subdirectory, exist_ok=True)
-
-            # Generiere den Ausgabedateinamen im Ausgabeordner mit dem Postfix "-HEVC-A"
-            output_file = os.path.join(output_subdirectory, f"{os.path.splitext(file)[0]}-HEVC-A.mov")
-
-            # Prüfen, ob die HEVC-A-Datei bereits existiert und der Codec korrekt ist
-            if os.path.exists(output_file):
-                existing_codec = get_video_codec(output_file)
-                if existing_codec == "hevc":
-                    print(f"Überspringe Datei, HEVC-A existiert bereits: {output_file}")
-                    continue
-
-            files_to_process.append((input_file, output_file))
-
-            # Verarbeite Dateien in Batches
-            if len(files_to_process) == BATCH_SIZE:
-                process_batch(files_to_process, COMPRESSOR_PROFILE_PATH, CHECK_INTERVAL, MAX_CHECKS)
-                files_to_process.clear()
-
-    # Verarbeite die verbleibenden Dateien
-    if files_to_process:
-        process_batch(files_to_process, COMPRESSOR_PROFILE_PATH, CHECK_INTERVAL, MAX_CHECKS)
-
-    # Zusätzlicher Durchlauf zur abschließenden Überprüfung und Löschung
-    final_cleanup(input_directory, output_directory)
-
 def main():
+    
+    print("Das Skript wurde erfolgreich gestartet.", file=sys.stdout)
+    sys.stdout.flush()
+    
     # Überprüfe, ob das Skript bereits ausgeführt wird
     if os.path.exists(LOCK_FILE):
         print("Das Skript wird bereits ausgeführt. Beende Ausführung.")
@@ -106,29 +48,25 @@ def main():
     signal.signal(signal.SIGTERM, signal_handler)  # Für externe Beendigungssignale
 
     # Benachrichtigung, dass das Skript gestartet wurde
-    send_macos_notification("Compressor Script", "Das Skript wurde gestartet und die Verarbeitung beginnt.")
+    send_macos_notification("New Media Importer", "Das Skript wurde gestartet und die Verarbeitung beginnt.")
 
-    # Überprüfen der Argumente und Ausführen der entsprechenden Logik
-    if len(sys.argv) == 2:
-        input_directory = sys.argv[1]
-        output_directory = input_directory  # Quelle und Ziel sind identisch
-    elif len(sys.argv) == 3:
-        input_directory = sys.argv[1]
-        output_directory = sys.argv[2]
-    else:
-        print("Usage: python3 compressor_prores_to_hevca.py /path/to/source_directory [optional: /path/to/destination_directory]")
+    if len(sys.argv) != 4:
+        print("Usage: import-new-media /path/to/source_directory /path/to/destination_directory [true/false]")
         sys.exit(1)
 
-    if not os.path.isdir(input_directory):
-        print(f"Error: {input_directory} ist kein gültiges Verzeichnis.")
-        sys.exit(1)
+    source_directory = sys.argv[1]
+    destination_directory = sys.argv[2]
+    compress_flag = sys.argv[3].lower() == "true"
 
-    if not os.path.isdir(output_directory):
-        print(f"Error: {output_directory} ist kein gültiges Verzeichnis.")
-        sys.exit(1)
+    if compress_flag:
+        print("Starte Apple Compressor Manager...")
+        compress_files(source_directory, destination_directory)
 
-    # Starte die Kompression
-    compress_files(input_directory, output_directory)
+    print("Starte die Integration der neuen Medien...")
+    organize_media_files(source_directory, destination_directory)
+
+    send_macos_notification("New Media Importer", "Die Verarbeitung wurde abgeschlossen.")
+    remove_lock_file()
 
 if __name__ == "__main__":
     main()
