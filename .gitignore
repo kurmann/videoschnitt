@@ -42,6 +42,7 @@ mono_crash.*
 
 # Build results by Python
 *.egg-info
+src/build
 
 # Build results
 [Dd]ebug/
