@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="kurmann_videoschnitt",
-    version="0.42.0",
+    version="0.43.0",
     description="Video editing automation tools for Kurmann Videoschnitt",
     long_description="...",
     long_description_content_type="text/markdown",
