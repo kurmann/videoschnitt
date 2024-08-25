@@ -6,10 +6,6 @@ import signal
 from apple_compressor_manager.compress_prores import compress_files
 from original_media_integrator.integrate_new_media import organize_media_files
 
-log_file = "/Users/patrickkurmann/Code/videoschnitt/log.txt"
-with open(log_file, "a") as f:
-    f.write(f"Skript gestartet um {datetime.now()}\n")
-
 # Lock-Datei im Library/Caches Verzeichnis des Benutzers
 LOCK_FILE = os.path.expanduser("~/Library/Caches/new_media_importer.lock")
 
@@ -60,7 +56,7 @@ def main():
 
     if compress_flag:
         print("Starte Apple Compressor Manager...")
-        compress_files(source_directory, destination_directory)
+        compress_files(source_directory, source_directory)
 
     print("Starte die Integration der neuen Medien...")
     organize_media_files(source_directory, destination_directory)
