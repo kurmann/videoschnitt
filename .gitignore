@@ -6,6 +6,9 @@ docker-environment.txt
 # Python Virtual Environment
 .venv/
 
+# Python built files
+build/*
+
 # Production and Development appsettings.json
 appsettings.Production.json
 appsettings.Development.json
