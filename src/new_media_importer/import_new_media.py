@@ -84,7 +84,7 @@ def main(argv=None):
     # Starte den Kompressionsvorgang, falls aktiviert
     if compress_prores:
         print("Starte Apple Compressor Manager...")
-        compress_files(source_directory, destination_directory)
+        compress_files(source_directory, source_directory)
 
     print("Starte die Integration der neuen Medien...")
     organize_media_files(source_directory, destination_directory)
