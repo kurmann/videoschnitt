@@ -14,22 +14,19 @@ In unserem Beispiel haben wir verschiedene Python-Packages, die unabhängig vone
 
 ### Schritt 1: Direktes Aufrufen von Packages
 
-Stelle sicher, dass die Packages über PIP installiert und über CLI aufrufbar sind. Hier ein Beispiel für die `setup.py`:
+Stelle sicher, dass die Packages über PIP installiert und über CLI aufrufbar sind. Die Konfiguration erfolgt in der `pyproject.toml`-Datei, in der du die Einträge für die CLI-Befehle definierst:
 
-```python
-setup(
-    name="kurmann_videoschnitt",
-    version="0.42.0",
-    description="Video editing automation tools for Kurmann Videoschnitt",
-    packages=find_packages(),
-    entry_points={
-        'console_scripts': [
-            'import-new-media=new_media_importer.import_new_media:main',
-            'integrate-new-media=original_media_integrator.integrate_new_media:main',
-            'compress-prores=apple_compressor_manager.compress_prores:main',
-        ],
-    },
-)
+```toml
+[project]
+name = "kurmann_videoschnitt"
+version = "0.43.0"
+description = "Video editing automation tools for Kurmann Videoschnitt"
+dependencies = ["click"]
+
+[project.scripts]
+import-new-media = "new_media_importer.import_new_media:main"
+integrate-new-media = "original_media_integrator.integrate_new_media:main"
+compress-prores = "apple_compressor_manager.compress_prores:main"
 ```
 
 Mit dieser Konfiguration kannst du die Packages einfach mit Befehlen wie `import-new-media` ausführen.
