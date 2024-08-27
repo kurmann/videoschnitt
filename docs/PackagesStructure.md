@@ -1,112 +1,143 @@
-## **Erstellen und Strukturieren der Python-Packages**
+# Architektur und Struktur der Packages
 
-In diesem Kapitel wird erläutert, wie wir die Python-Packages für die verschiedenen Prozessschritte erstellen und organisieren. Jedes Package entspricht einem spezifischen Schritt in unserem Workflow und kann sowohl automatisch vom Prozessmanager als auch manuell über die Kommandozeile aufgerufen werden.
+Dieses Dokument beschreibt, wie du eine modulare Struktur für deine Python-Packages aufbaust, die sowohl eigenständig nutzbar als auch in einer übergeordneten CLI integriert werden können. Der Fokus liegt darauf, wie du mehrere unabhängige Packages und Sub-Packages organisierst und eine flexible CLI mit Click implementierst.
 
-### **1. Konzept: Jedes Package als eigenständiger Prozessschritt**
+## Organisieren von Packages und Sub-Packages
 
-Jedes Python-Package repräsentiert einen klar definierten Prozessschritt in unserem Workflow. Zum Beispiel:
-- **`kurmann-compress-fcp-export`:** Kompression der Final Cut Pro Exporte.
-- **`kurmann-manage-mediasets`:** Integration von neuen Mediathekinhalten.
+### Grundlegende Prinzipien der Package-Struktur
 
-Diese Trennung stellt sicher, dass jeder Prozessschritt unabhängig entwickelt und ausgeführt werden kann. Alle Packages sind so gestaltet, dass sie sowohl automatisiert (z.B. durch `watchdog`) als auch manuell über die Kommandozeile gestartet werden können.
+In größeren Projekten ist es sinnvoll, die Funktionalitäten in mehrere Packages und Sub-Packages zu unterteilen. Diese Struktur ermöglicht es, unabhängige Module zu entwickeln, die sowohl einzeln als auch in Kombination verwendet werden können.
 
-### **2. Struktur der Python-Packages**
+#### Vorteile der Modularisierung
 
-Die Struktur eines typischen Python-Packages sieht folgendermaßen aus:
+- **Wiederverwendbarkeit:** Module können in verschiedenen Projekten wiederverwendet werden.
+- **Unabhängigkeit:** Änderungen in einem Package beeinflussen nicht notwendigerweise andere Teile des Projekts.
+- **Flexibilität:** Verschiedene Module können eigenständig getestet und entwickelt werden.
+- **Einfache Erweiterung:** Neue Funktionalitäten lassen sich leicht hinzufügen, ohne die bestehende Struktur zu stören.
 
+### Beispiel für eine Verzeichnisstruktur mit Sub-Packages
+
+Angenommen, du hast ein Package, das die Medienintegration als Hauptaufgabe hat. Innerhalb dieses Packages gibt es mehrere Sub-Packages, die spezialisierte Aufgaben übernehmen:
+
+```plaintext
+kurmann_videoschnitt/
+├── src/
+│   ├── integrate_new_media/
+│   │   ├── __init__.py
+│   │   ├── neumedien_import/
+│   │   │   ├── __init__.py
+│   │   │   ├── cli.py
+│   │   │   └── importer.py
+│   │   ├── apple_compressor_manager/
+│   │   │   ├── __init__.py
+│   │   │   ├── cli.py
+│   │   │   └── compressor.py
+│   │   ├── prores_cleanup/
+│   │   │   ├── __init__.py
+│   │   │   ├── cli.py
+│   │   │   └── cleaner.py
+│   │   ├── original_media_integrator/
+│   │   │   ├── __init__.py
+│   │   │   ├── cli.py
+│   │   │   └── integrator.py
+│   │   └── cli.py  # Zentrale CLI, die die Sub-Packages orchestriert
+│   └── main.py
+├── docs/
+│   ├── manual/
+│   ├── reference/
+│   └── mkdocs.yml
+└── pyproject.toml
 ```
-~/bin/
-    ├── kurmann-compress-fcp-export  # Hauptskript für den Prozessschritt
-    └── kurmann-manage-mediasets     # Hauptskript für den Prozessschritt
-~/kurmann-videoschnitt/
-    ├── kurmann_compress_fcp_export/
-    │   ├── __init__.py
-    │   ├── main.py
-    │   └── helper.py
-    └── kurmann_manage_mediasets/
-        ├── __init__.py
-        ├── main.py
-        └── helper.py
-```
 
-- **`~/bin/`**: Hier befinden sich die ausführbaren Scripte, die direkt aufgerufen werden können. Diese Scripte sind die Einstiegspunkte für die jeweiligen Prozessschritte.
-- **`~/kurmann-videoschnitt/`**: Der eigentliche Code der Python-Packages ist in diesem Verzeichnis organisiert. Jedes Package hat eine klare Struktur und kann unabhängig entwickelt und getestet werden.
+#### Erläuterung der Struktur
 
-### **3. Erstellen des ausführbaren Scripts im `bin`-Verzeichnis**
+- **Hauptpackage:** `integrate_new_media` gruppiert verwandte Sub-Packages.
+- **Sub-Packages:** Jedes Sub-Package (`neumedien_import`, `apple_compressor_manager`, `prores_cleanup`, `original_media_integrator`) ist eigenständig und verfügt über seine eigene CLI, Logik und Tests.
+- **Zentrale CLI:** Die Datei `cli.py` im `integrate_new_media`-Package bietet eine zentrale CLI, die die Sub-Packages orchestriert.
 
-Um ein Python-Package direkt aus dem `bin`-Verzeichnis starten zu können, erstellen wir ein ausführbares Skript mit dem entsprechenden Shebang. Der Shebang ist eine spezielle Zeile am Anfang des Skripts, die dem System mitteilt, mit welchem Interpreter (in diesem Fall Python) das Skript ausgeführt werden soll.
+## CLI-Design und die Verwendung von Click
 
-#### **Beispiel für das ausführbare Script `kurmann-compress-fcp-export`:**
+### Aufbau einer flexiblen CLI mit Click
+
+[Click](https://click.palletsprojects.com/) ist ein beliebtes Python-Framework, um benutzerfreundliche Kommandozeilen-Interfaces (CLI) zu erstellen. Es bietet viele eingebaute Features wie Eingabevalidierung, Hilfe-Generierung und einfache Subcommand-Strukturen.
+
+#### Struktur einer CLI mit Click
+
+Click erlaubt es, sowohl eigenständige CLIs pro Package zu erstellen als auch eine zentrale CLI, die alle Sub-Packages orchestriert.
+
+**Beispiel einer CLI-Struktur:**
 
 ```python
-#!/usr/bin/env python3
+# src/integrate_new_media/cli.py
 
-from kurmann_compress_fcp_export.main import run
+import click
+from integrate_new_media.neumedien_import.cli import cli as neumedien_import_cli
+from integrate_new_media.apple_compressor_manager.cli import cli as compressor_cli
+from integrate_new_media.prores_cleanup.cli import cli as cleanup_cli
+from integrate_new_media.original_media_integrator.cli import cli as integrator_cli
+
+@click.group()
+def cli():
+    """Zentrale CLI für die Medienintegration."""
+    pass
+
+# Subcommands aus den Sub-Packages hinzufügen
+cli.add_command(neumedien_import_cli, name="import-new-media")
+cli.add_command(compressor_cli, name="compress-media")
+cli.add_command(cleanup_cli, name="cleanup-media")
+cli.add_command(integrator_cli, name="integrate-original-media")
 
 if __name__ == "__main__":
-    run()
+    cli()
 ```
 
-- **`#!/usr/bin/env python3`**: Der Shebang gibt an, dass das Skript mit Python 3 ausgeführt werden soll. Das System nutzt den Python-Interpreter, der in der Umgebung verfügbar ist.
-- **Import der Logik**: Das Skript importiert die Hauptfunktion (`run`) aus dem entsprechenden Modul. Diese Funktion enthält die Logik für den Prozessschritt.
+In diesem Beispiel wird eine zentrale CLI erstellt, die die Subcommands der einzelnen Sub-Packages zusammenführt. Jeder Befehl wie `import-new-media`, `compress-media` etc. kann dann unabhängig ausgeführt werden.
 
-#### **Shebang und Ausführbarkeit**
+#### CLI in den Sub-Packages
 
-Der Shebang sorgt dafür, dass das Skript ohne explizites Aufrufen von Python gestartet werden kann. Damit dies funktioniert, muss das Skript ausführbar gemacht werden:
-
-```bash
-chmod +x ~/bin/kurmann-compress-fcp-export
-```
-
-Nach dem Setzen der Berechtigungen kann das Skript direkt über die Kommandozeile aufgerufen werden:
-
-```bash
-kurmann-compress-fcp-export
-```
-
-#### **Wichtig: Keine Dateierweiterung für Hauptscripts**
-
-Um die Benutzerfreundlichkeit zu maximieren, verwenden wir für die ausführbaren Scripts im `bin`-Verzeichnis **keine Dateierweiterung** wie `.py`. Dadurch können die Scripts wie reguläre Befehle genutzt werden, was den Aufruf intuitiver und kürzer macht.
-
-**Warum lassen wir die Dateierweiterung weg?**
-1. **Klarheit und Benutzerfreundlichkeit:** Befehle wie `kurmann-compress-fcp-export` sind intuitiver und kürzer als z.B. `kurmann-compress-fcp-export.py`. Viele Unix-Programme wie `git`, `python` oder `ls` folgen diesem Prinzip.
-2. **Systemintegration:** Das Weglassen der Dateierweiterung signalisiert, dass es sich um ein ausführbares Skript oder Programm handelt, das wie ein regulärer Befehl verwendet wird.
-3. **Flexibilität:** Falls sich der Code in der Zukunft ändert oder eine andere Sprache verwendet wird, bleibt der Befehl unverändert. Die Benutzer müssen sich keine neuen Namen merken.
-
-### **4. Deployment der Packages in das `bin`-Verzeichnis**
-
-Um sicherzustellen, dass die ausführbaren Scripte immer aktuell sind, verwenden wir Vscode Tasks zum Deployment. Jedes Mal, wenn Änderungen am Code vorgenommen werden, können die Scripte automatisch ins `bin`-Verzeichnis kopiert und bereitgestellt werden.
-
-### **5. CLI-Parameter für die Pakete**
-
-Jedes Package kann spezifische CLI-Parameter verarbeiten, die entweder die Konfiguration aus der YAML-Datei überschreiben oder zusätzliche Optionen bieten.
-
-#### **Beispiel für die Verarbeitung von CLI-Parametern:**
+Die Sub-Packages haben ihre eigene CLI, die eigenständig funktioniert:
 
 ```python
-import argparse
+# src/integrate_new_media/neumedien_import/cli.py
 
-def run():
-    parser = argparse.ArgumentParser(description="Kompression von Final Cut Pro Exporten")
-    parser.add_argument("--directory", "-d", type=str, help="Verzeichnis für die Exporte")
-    
-    args = parser.parse_args()
-    
-    # Standardverzeichnis aus der Konfiguration laden, falls kein Parameter übergeben wurde
-    directory = args.directory or "/Standardpfad/zum/Verzeichnis"
-    
-    # Logik für den Prozessschritt
-    print(f"Starte Kompression im Verzeichnis: {directory}")
+import click
+from .importer import import_media
+
+@click.command()
+@click.argument('source_directory', type=click.Path(exists=True))
+def cli(source_directory):
+    """Importiert neue Medien aus dem Quellverzeichnis."""
+    import_media(source_directory)
 ```
 
-In diesem Beispiel kann das Verzeichnis über den CLI-Parameter `--directory` überschrieben werden.
+### Validierung und CLI-Design
 
-### **6. Vorteile dieser Struktur**
+Click bietet eingebaute Validierungen für Pfade, Auswahlmöglichkeiten und vieles mehr. Es ist wichtig, die Validierung so zu strukturieren, dass grundlegende Überprüfungen in Click stattfinden, während geschäftslogik-spezifische Validierungen in den Methoden selbst durchgeführt werden.
 
-- **Modularität:** Jedes Package ist unabhängig und kann für sich selbst stehen. Dadurch wird die Entwicklung und Wartung vereinfacht.
-- **Flexibilität:** Die Pakete können sowohl automatisiert als auch manuell gestartet werden, ohne dass Anpassungen nötig sind.
-- **Einfache Erweiterbarkeit:** Neue Prozessschritte können durch Hinzufügen eines neuen Python-Packages und eines entsprechenden Scripts im `bin`-Verzeichnis leicht integriert werden.
+#### Validierungen in Click
 
-### **7. Zusammenfassung**
+Click eignet sich für:
 
-Mit dieser Struktur erreichst du eine saubere Trennung der Prozesslogik und eine einfache Möglichkeit, jedes Package separat aufzurufen. Die Verwendung des Python-Shebangs in Kombination mit den ausführbaren Scripten im `bin`-Verzeichnis ermöglicht eine nahtlose Integration in den Workflow und die Systemumgebung. Die Entscheidung, keine Dateierweiterung für die ausführbaren Scripts zu verwenden, sorgt für eine benutzerfreundliche und intuitive Bedienung.
+- **Pfadüberprüfungen:** Überprüfen, ob ein Verzeichnis oder eine Datei existiert.
+- **Typüberprüfungen:** Sicherstellen, dass Eingaben dem erwarteten Datentyp entsprechen.
+- **Wahlmöglichkeiten:** Validieren, ob ein Wert in einer vorgegebenen Liste von Optionen liegt.
+
+```python
+@click.command()
+@click.argument('directory', type=click.Path(exists=True, file_okay=False))
+@click.option('--level', type=click.Choice(['low', 'medium', 'high']), default='medium')
+def cli(directory, level):
+    """Ein Beispielbefehl mit Validierungen."""
+    # Logik folgt
+```
+
+#### Validierungen in den Methoden
+
+Geschäftslogik-spezifische Validierungen sollten in der Methode selbst durchgeführt werden:
+
+```python
+def validate_and_process(directory):
+    if not os.listdir(directory):
+        raise ValueError("Das Verzeichnis ist leer.")
+    # Weiterverarbeitung
+```
