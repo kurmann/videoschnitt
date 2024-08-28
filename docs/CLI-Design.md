@@ -2,7 +2,7 @@
 
 ### Übersicht
 
-Das `kurmann-videoschnitt` CLI-Tool ist ein flexibles und erweiterbares Werkzeug zur Verwaltung und Verarbeitung von Videos. Es ist modular aufgebaut und ermöglicht durch Subkommandos die einfache Erweiterung und Organisation von Funktionen. 
+Das `kurmann-videoschnitt` CLI-Tool ist ein flexibles und erweiterbares Werkzeug zur Verwaltung und Verarbeitung von Videos. Es ist modular aufgebaut und ermöglicht durch Subkommandos die einfache Erweiterung und Organisation von Funktionen.
 
 ### Struktur und Hierarchie
 
@@ -12,7 +12,7 @@ Das CLI-Tool folgt einer klar definierten Hierarchie:
 
 2. **Subkommandos**: Diese gruppieren verwandte Kommandos logisch zusammen. Beispiele:
    - **`compressor`**: Kommandos für den Apple Compressor Manager, wie `compress-prores` und `cleanup-prores`.
-   - **`integrator`**: Kommandos für den Original Media Integrator, wie `integrate`.
+   - **`original-media-manager`**: Kommandos für die Verwaltung von Originalmedien, wie `integrate-new-media`.
 
 3. **Kommandos**: Die eigentlichen Aktionen, die vom Benutzer ausgeführt werden. Diese können spezifische Parameter und Optionen haben.
 
@@ -22,18 +22,36 @@ Beispiel:
 kurmann-videoschnitt compressor compress-prores --output-dir /path/to/output
 ```
 
+### Interaktiver Modus
+
+Das `kurmann-videoschnitt` CLI-Tool unterstützt **zukünftig** einen **interaktiven Modus**, in dem Benutzer Schritt für Schritt durch die Eingabe der notwendigen Parameter geführt werden. Dies ist besonders nützlich, wenn Benutzer die Parameter nicht auswendig kennen oder wenn komplexe Eingaben erforderlich sind.
+
+- **Einfache Interaktivität mit `Click.prompt`**: Der interaktive Modus wird durch die Verwendung von `Click.prompt` umgesetzt, um Benutzereingaben abzufragen. Diese Methode ist einfach und direkt in das `Click`-Framework integriert.
+
+- **Andere Optionen**: Für erweiterte interaktive Erfahrungen könnten theoretisch auch spezialisierte Bibliotheken wie `questionary` oder `InquirerPy` verwendet werden. In diesem Projekt wird jedoch ausschließlich `Click.prompt` verwendet, um den interaktiven Modus umzusetzen.
+
+Beispiel für den Aufruf im interaktiven Modus:
+
+```bash
+kurmann-videoschnitt compressor compress-prores --interactive
+```
+
+In diesem Modus werden Benutzer durch Eingabeaufforderungen geleitet, um alle erforderlichen Informationen für die Ausführung des Kommandos einzugeben.
+
 ### Konfigurationsmanagement
 
-Das CLI-Tool unterstützt eine Konfigurationsdatei im TOML-Format, die Standardwerte für Kommandos definiert. Diese Konfigurationsdatei kann:
+Das CLI-Tool unterstützt eine Konfigurationsdatei im TOML-Format, die Standardwerte für Kommandos definiert. Diese Konfigurationsdatei wird standardmäßig im **Application Support-Verzeichnis** unter `~/Library/Application Support/Kurmann/Videoschnitt/config.toml` gespeichert. 
 
-- **Standardmäßig geladen werden**: Das CLI sucht nach einer `kurmann_videoschnitt_config.toml` im aktuellen Verzeichnis und verwendet diese als Basis.
+Die Konfigurationsdatei kann:
+
+- **Standardmäßig geladen werden**: Das CLI lädt die `config.toml`-Datei aus dem Standardverzeichnis.
 - **Überschrieben werden**: Der Pfad zu einer alternativen Konfigurationsdatei kann mit `--config` angegeben werden.
 - **Dynamisch durch Parameter überschrieben werden**: Kommandospezifische Optionen, die auf der Kommandozeile angegeben werden, überschreiben die in der Konfigurationsdatei festgelegten Werte.
 
 Beispiel:
 
 ```bash
-kurmann-videoschnitt --config /pfad/zur/config.toml compressor compress-prores --output-dir /pfad/zum/anderen/output
+kurmann-videoschnitt --config /pfad/zur/anderen/config.toml compressor compress-prores --output-dir /pfad/zum/anderen/output
 ```
 
 ### Dokumentation
@@ -68,29 +86,10 @@ Beispiel für einen automatisierten Task in VSCode:
     {
       "label": "Publish Project",
       "type": "shell",
-      "command": "your-publish-command-here",
+      "command": "Publish",
       "dependsOn": ["Generate CLI Documentation"],
       "problemMatcher": []
     }
   ]
 }
 ```
-
-### Erweiterbarkeit
-
-Das Tool ist darauf ausgelegt, leicht erweiterbar zu sein. Neue Subkommandos und Kommandos können einfach hinzugefügt werden, indem neue Module erstellt und in die bestehende CLI-Struktur integriert werden. Dies ermöglicht es, das Tool nach Bedarf zu skalieren und neue Funktionen hinzuzufügen, ohne die bestehende Struktur zu beeinträchtigen.
-
-### Qualitätssicherung
-
-- **Unit-Tests**: Tests für jedes Kommando und Subkommando gewährleisten die Korrektheit und Stabilität des Tools.
-- **Integrationstests**: Tests des gesamten Workflows stellen sicher, dass alle Komponenten zusammenarbeiten und die Konfigurationsdatei korrekt verarbeitet wird.
-
-### Versionsverwaltung und Veröffentlichung
-
-- **Semantische Versionierung**: Das Tool verwendet eine semantische Versionierung, um Änderungen klar zu kommunizieren.
-- **Veröffentlichung auf PyPI**: Das Tool kann auf PyPI veröffentlicht werden, um die Installation und Verbreitung zu erleichtern.
-- **Automatische Changelog-Erstellung**: Ein Changelog wird bei jedem Release automatisch erstellt, basierend auf den Git-Commits.
-
-### Fazit
-
-Das `kurmann-videoschnitt` CLI-Tool ist ein durchdachtes, modulares und benutzerfreundliches Werkzeug, das durch klare Hierarchien, flexible Konfigurationsmöglichkeiten und eine robuste Dokumentation überzeugt. Es ist leicht erweiterbar und kann nahtlos in verschiedene Entwicklungsumgebungen integriert werden.
