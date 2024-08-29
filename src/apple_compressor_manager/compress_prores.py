@@ -2,7 +2,6 @@ import os
 import asyncio
 import subprocess
 from pathlib import Path
-from apple_compressor_manager.compressor_helpers import send_macos_notification
 from apple_compressor_manager.video_utils import get_video_codec
 from apple_compressor_manager.compressor_utils import are_sb_files_present
 from apple_compressor_manager.cleanup_prores import delete_prores_if_hevc_a_exists
