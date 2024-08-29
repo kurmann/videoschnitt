@@ -25,17 +25,16 @@ async def compress_file(input_file, output_file, semaphore, callback=None, delet
             "-settingpath", COMPRESSOR_PROFILE_PATH
         ]
 
-        # Verwende subprocess.run für den Aufruf
         result = subprocess.run(command, check=False)
 
         print(f"Kompressionsauftrag erstellt für: {input_file} (Job-Titel: {job_title})")
 
         if result.returncode == 0:
-            await monitor_compression(output_file, callback, delete_prores, input_file)
+            await monitor_compression(output_file, callback, delete_prores)
         else:
             print(f"Fehler bei der Komprimierung von {input_file}: {result.stderr}")
 
-async def monitor_compression(output_file, callback=None, delete_prores=False, prores_file=None):
+async def monitor_compression(output_file, callback=None, delete_prores=False):
     """Überwacht die Komprimierung und überprüft periodisch den Fortschritt."""
     check_count = 0
 
@@ -60,13 +59,14 @@ async def monitor_compression(output_file, callback=None, delete_prores=False, p
             print(f"Komprimierung abgeschlossen: {output_file}")
             if callback:
                 callback(output_file)  # Aufruf der Callback-Funktion
-            if delete_prores and prores_file:
-                delete_prores_if_hevc_a_exists(Path(output_file), Path(prores_file).parent)
+            if delete_prores:
+                prores_dir = os.path.dirname(output_file)
+                delete_prores_if_hevc_a_exists(Path(output_file), Path(prores_dir))
             break
         else:
             print(f"Fehlerhafter Codec für: {output_file}. Erwartet: 'hevc', erhalten: '{codec}'")
 
-async def compress_files(input_directory, output_directory, callback=None, delete_prores=False):
+async def compress_files(input_directory, output_directory, delete_prores=False, callback=None):
     """Komprimiert alle Dateien im Eingangsverzeichnis unter Berücksichtigung der maximalen Anzahl gleichzeitiger Jobs."""
     semaphore = asyncio.Semaphore(MAX_CONCURRENT_JOBS)
     tasks = []
@@ -103,4 +103,4 @@ def run_compress(input_directory, output_directory=None, delete_prores=False, ca
     if output_directory is None:
         output_directory = input_directory
 
-    asyncio.run(compress_files(input_directory, output_directory, callback, delete_prores))
+    asyncio.run(compress_files(input_directory, output_directory, delete_prores, callback))
