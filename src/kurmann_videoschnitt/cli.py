@@ -9,7 +9,7 @@ def cli():
 
 # Integriere die CLI-Befehle des Apple Compressor Managers
 cli.add_command(apple_compressor_manager_cli, name='compressor')
-cli.add_command(original_media_integrator_cli, name='original-media-integrator')
+cli.add_command(original_media_integrator_cli, name='integrator')
 
 if __name__ == "__main__":
     cli()
