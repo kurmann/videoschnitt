@@ -21,7 +21,7 @@ def import_and_compress_media(source_dir, destination_dir, compression_dir=None,
     # Steuerung der Löschoption basierend auf dem Parameter keep_original_prores
     delete_prores = not keep_original_prores
 
-    # Wenn ein Kompressionsverzeichnis angegeben ist, führe die Komprimierung dort durch
+    # Wenn ein Kompressionsverzeichnis angegeben ist, verwende es als `output_directory`
     if compression_dir:
         run_compress(source_dir, compression_dir, delete_prores, callback=on_compression_complete)
         
@@ -30,7 +30,7 @@ def import_and_compress_media(source_dir, destination_dir, compression_dir=None,
         organize_media_files(compression_dir, destination_dir)
     else:
         # Wenn kein Kompressionsverzeichnis angegeben ist, komprimiere direkt im Quellverzeichnis
-        run_compress(source_dir, destination_dir, delete_prores, callback=on_compression_complete)
+        run_compress(source_dir, source_dir, delete_prores, callback=on_compression_complete)
     
     # Organisiere alle übrigen Dateien aus dem Quellverzeichnis im Zielverzeichnis
     print(f"Organisiere übrige Dateien aus: {source_dir}")
