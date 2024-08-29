@@ -1,31 +1,72 @@
 import os
-import sys
-import atexit
-import signal
-import click
-from apple_compressor_manager.compressor_helpers import send_macos_notification, process_batch, final_cleanup
+import asyncio
+import subprocess
+from pathlib import Path
+from apple_compressor_manager.compressor_helpers import send_macos_notification
 from apple_compressor_manager.video_utils import get_video_codec
+from apple_compressor_manager.compressor_utils import are_sb_files_present
 
-LOCK_FILE = os.path.expanduser("~/Library/Caches/compressor_prores_to_hevca.lock")
 COMPRESSOR_PROFILE_PATH = "/Users/patrickkurmann/Library/Application Support/Compressor/Settings/HEVC-A.compressorsetting"
 CHECK_INTERVAL = 60
-BATCH_SIZE = 3
+MAX_CONCURRENT_JOBS = 3
 MAX_CHECKS = 10
 
-def remove_lock_file():
-    """Entfernt die Lock-Datei."""
-    if os.path.exists(LOCK_FILE):
-        os.remove(LOCK_FILE)
-        print("Lock-Datei entfernt.")
+async def compress_file(input_file, output_file, semaphore, callback=None):
+    """Startet die Komprimierung einer einzelnen Datei und überwacht den Prozess."""
+    async with semaphore:
+        job_title = f"Kompression '{os.path.basename(input_file)}' zu HEVC-A"
 
-def signal_handler(sig, frame):
-    """Signalhandler für saubere Beendigung."""
-    remove_lock_file()
-    sys.exit(0)
+        command = [
+            "/Applications/Compressor.app/Contents/MacOS/Compressor",
+            "-batchname", job_title,
+            "-jobpath", input_file,
+            "-locationpath", output_file,
+            "-settingpath", COMPRESSOR_PROFILE_PATH
+        ]
 
-def compress_files(input_directory, output_directory):
-    """Logik für das Komprimieren der Dateien."""
-    files_to_process = []
+        # Verwende subprocess.run für den Aufruf
+        result = subprocess.run(command, check=False)
+
+        print(f"Kompressionsauftrag erstellt für: {input_file} (Job-Titel: {job_title})")
+
+        if result.returncode == 0:
+            await monitor_compression(output_file, callback)
+        else:
+            print(f"Fehler bei der Komprimierung von {input_file}: {result.stderr}")
+
+async def monitor_compression(output_file, callback=None):
+    """Überwacht die Komprimierung und überprüft periodisch den Fortschritt."""
+    check_count = 0
+
+    while check_count < MAX_CHECKS:
+        await asyncio.sleep(CHECK_INTERVAL)
+        check_count += 1
+        print(f"Überprüfung {check_count}/{MAX_CHECKS} für {output_file}...")
+
+        # Überprüfen, ob die .sb-Dateien vorhanden sind (Kompression läuft noch)
+        if are_sb_files_present(output_file):
+            print(f"Komprimierung für: {output_file} läuft noch.")
+            continue
+
+        # Prüfen, ob die Datei existiert
+        if not os.path.exists(output_file):
+            print(f"Komprimierung für: {output_file} noch nicht abgeschlossen.")
+            continue
+
+        # Prüfen, ob die komprimierte Datei den Codec "hevc" hat
+        codec = get_video_codec(output_file)
+        if codec == "hevc":
+            print(f"Komprimierung abgeschlossen: {output_file}")
+            if callback:
+                callback(output_file)  # Aufruf der Callback-Funktion
+            break
+        else:
+            print(f"Fehlerhafter Codec für: {output_file}. Erwartet: 'hevc', erhalten: '{codec}'")
+
+async def compress_files(input_directory, output_directory, callback=None):
+    """Komprimiert alle Dateien im Eingangsverzeichnis unter Berücksichtigung der maximalen Anzahl gleichzeitiger Jobs."""
+    semaphore = asyncio.Semaphore(MAX_CONCURRENT_JOBS)
+    tasks = []
 
     for root, _, files in os.walk(input_directory):
         for file in files:
@@ -50,35 +91,13 @@ def compress_files(input_directory, output_directory):
                     print(f"Überspringe Datei, HEVC-A existiert bereits: {output_file}")
                     continue
 
-            files_to_process.append((input_file, output_file))
+            tasks.append(compress_file(input_file, output_file, semaphore, callback))
 
-            if len(files_to_process) == BATCH_SIZE:
-                process_batch(files_to_process, COMPRESSOR_PROFILE_PATH, CHECK_INTERVAL, MAX_CHECKS)
-                files_to_process.clear()
+    await asyncio.gather(*tasks)
 
-    if files_to_process:
-        process_batch(files_to_process, COMPRESSOR_PROFILE_PATH, CHECK_INTERVAL, MAX_CHECKS)
-
-    final_cleanup(input_directory, output_directory)
-
-def compress_files_using_lockfile(input_directory, output_directory=None):
-    """Startet den Kompressionsprozess von ProRes zu HEVC-A mit Lockfile-Handling."""
-    
-    # Lock-File-Logik bleibt unverändert
-    if os.path.exists(LOCK_FILE):
-        print("Das Skript wird bereits ausgeführt. Beende Ausführung.")
-        sys.exit(0)
-
-    with open(LOCK_FILE, 'w') as lock_file:
-        lock_file.write(str(os.getpid()))
-
-    atexit.register(remove_lock_file)
-    signal.signal(signal.SIGINT, signal_handler)
-    signal.signal(signal.SIGTERM, signal_handler)
-
-    send_macos_notification("Compressor Script", "Das Skript wurde gestartet und die Verarbeitung beginnt.")
-
+def run_compress(input_directory, output_directory=None, callback=None):
+    """Startet den Kompressionsprozess für ProRes zu HEVC-A."""
     if output_directory is None:
         output_directory = input_directory
 
-    compress_files(input_directory, output_directory)
+    asyncio.run(compress_files(input_directory, output_directory, callback))
