@@ -1,6 +1,8 @@
 import os
 import asyncio
 import subprocess
+from pathlib import Path
+from apple_compressor_manager.compressor_helpers import send_macos_notification
 from apple_compressor_manager.video_utils import get_video_codec
 from apple_compressor_manager.compressor_utils import are_sb_files_present
 
@@ -22,21 +24,17 @@ async def compress_file(input_file, output_file, semaphore, callback=None):
             "-settingpath", COMPRESSOR_PROFILE_PATH
         ]
 
-        process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        # Verwende subprocess.run für den Aufruf
+        result = subprocess.run(command, check=False)
 
-        print(f"Kompressionsauftrag gestartet für: {input_file} (Job-Titel: {job_title})")
-        await monitor_compression(output_file)
+        print(f"Kompressionsauftrag erstellt für: {input_file} (Job-Titel: {job_title})")
 
-        process.wait()
-
-        if process.returncode == 0:
-            print(f"Kompression erfolgreich abgeschlossen: {output_file}")
-            if callback:
-                callback(output_file)  # Aufruf der Callback-Funktion
+        if result.returncode == 0:
+            await monitor_compression(output_file, callback)
         else:
-            print(f"Fehler bei der Komprimierung von {input_file}: {process.stderr.read().decode()}")
+            print(f"Fehler bei der Komprimierung von {input_file}: {result.stderr}")
 
-async def monitor_compression(output_file):
+async def monitor_compression(output_file, callback=None):
     """Überwacht die Komprimierung und überprüft periodisch den Fortschritt."""
     check_count = 0
 
@@ -58,6 +56,9 @@ async def monitor_compression(output_file):
         # Prüfen, ob die komprimierte Datei den Codec "hevc" hat
         codec = get_video_codec(output_file)
         if codec == "hevc":
+            print(f"Komprimierung abgeschlossen: {output_file}")
+            if callback:
+                callback(output_file)  # Aufruf der Callback-Funktion
             break
         else:
             print(f"Fehlerhafter Codec für: {output_file}. Erwartet: 'hevc', erhalten: '{codec}'")
