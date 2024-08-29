@@ -63,10 +63,13 @@ async def monitor_compression(output_file, callback=None, delete_prores=False, p
         else:
             print(f"Fehlerhafter Codec für: {output_file}. Erwartet: 'hevc', erhalten: '{codec}'")
 
-async def compress_files(input_directory, output_directory, delete_prores=False, callback=None):
+async def compress_files(input_directory, output_directory=None, delete_prores=False, callback=None):
     """Komprimiert alle Dateien im Eingangsverzeichnis unter Berücksichtigung der maximalen Anzahl gleichzeitiger Jobs."""
     semaphore = asyncio.Semaphore(MAX_CONCURRENT_JOBS)
     tasks = []
+
+    if output_directory is None:
+        output_directory = input_directory
 
     for root, _, files in os.walk(input_directory):
         for file in files:
@@ -91,14 +94,10 @@ async def compress_files(input_directory, output_directory, delete_prores=False,
                     print(f"Überspringe Datei, HEVC-A existiert bereits: {output_file}")
                     continue
 
-            # Übergebe das Quellverzeichnis, um ProRes-Dateien im richtigen Verzeichnis zu löschen
             tasks.append(compress_file(input_file, output_file, semaphore, callback, delete_prores, input_directory))
 
     await asyncio.gather(*tasks)
 
 def run_compress(input_directory, output_directory=None, delete_prores=False, callback=None):
     """Startet den Kompressionsprozess für ProRes zu HEVC-A."""
-    if output_directory is None:
-        output_directory = input_directory
-
     asyncio.run(compress_files(input_directory, output_directory, delete_prores, callback))
