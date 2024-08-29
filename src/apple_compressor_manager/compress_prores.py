@@ -11,7 +11,7 @@ CHECK_INTERVAL = 60
 MAX_CONCURRENT_JOBS = 3
 MAX_CHECKS = 10
 
-async def compress_file(input_file, output_file, semaphore, callback=None, delete_prores=False):
+async def compress_file(input_file, output_file, semaphore, callback=None, delete_prores=False, prores_dir=None):
     """Startet die Komprimierung einer einzelnen Datei und überwacht den Prozess."""
     async with semaphore:
         job_title = f"Kompression '{os.path.basename(input_file)}' zu HEVC-A"
@@ -29,11 +29,11 @@ async def compress_file(input_file, output_file, semaphore, callback=None, delet
         print(f"Kompressionsauftrag erstellt für: {input_file} (Job-Titel: {job_title})")
 
         if result.returncode == 0:
-            await monitor_compression(output_file, callback, delete_prores)
+            await monitor_compression(output_file, callback, delete_prores, prores_dir)
         else:
             print(f"Fehler bei der Komprimierung von {input_file}: {result.stderr}")
 
-async def monitor_compression(output_file, callback=None, delete_prores=False):
+async def monitor_compression(output_file, callback=None, delete_prores=False, prores_dir=None):
     """Überwacht die Komprimierung und überprüft periodisch den Fortschritt."""
     check_count = 0
 
@@ -42,24 +42,22 @@ async def monitor_compression(output_file, callback=None, delete_prores=False):
         check_count += 1
         print(f"Überprüfung {check_count}/{MAX_CHECKS} für {output_file}...")
 
-        # Überprüfen, ob die .sb-Dateien vorhanden sind (Kompression läuft noch)
         if are_sb_files_present(output_file):
             print(f"Komprimierung für: {output_file} läuft noch.")
             continue
 
-        # Prüfen, ob die Datei existiert
         if not os.path.exists(output_file):
             print(f"Komprimierung für: {output_file} noch nicht abgeschlossen.")
             continue
 
-        # Prüfen, ob die komprimierte Datei den Codec "hevc" hat
         codec = get_video_codec(output_file)
         if codec == "hevc":
             print(f"Komprimierung abgeschlossen: {output_file}")
             if callback:
-                callback(output_file)  # Aufruf der Callback-Funktion
+                callback(output_file)
             if delete_prores:
-                prores_dir = os.path.dirname(output_file)
+                if prores_dir is None:
+                    prores_dir = os.path.dirname(output_file)
                 delete_prores_if_hevc_a_exists(Path(output_file), Path(prores_dir))
             break
         else:
@@ -93,7 +91,8 @@ async def compress_files(input_directory, output_directory, delete_prores=False,
                     print(f"Überspringe Datei, HEVC-A existiert bereits: {output_file}")
                     continue
 
-            tasks.append(compress_file(input_file, output_file, semaphore, callback, delete_prores))
+            # Übergebe das Quellverzeichnis, um ProRes-Dateien im richtigen Verzeichnis zu löschen
+            tasks.append(compress_file(input_file, output_file, semaphore, callback, delete_prores, input_directory))
 
     await asyncio.gather(*tasks)
 
