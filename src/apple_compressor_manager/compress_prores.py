@@ -5,13 +5,14 @@ from pathlib import Path
 from apple_compressor_manager.compressor_helpers import send_macos_notification
 from apple_compressor_manager.video_utils import get_video_codec
 from apple_compressor_manager.compressor_utils import are_sb_files_present
+from apple_compressor_manager.cleanup_prores import delete_prores_if_hevc_a_exists
 
 COMPRESSOR_PROFILE_PATH = "/Users/patrickkurmann/Library/Application Support/Compressor/Settings/HEVC-A.compressorsetting"
 CHECK_INTERVAL = 60
 MAX_CONCURRENT_JOBS = 3
 MAX_CHECKS = 10
 
-async def compress_file(input_file, output_file, semaphore, callback=None):
+async def compress_file(input_file, output_file, semaphore, callback=None, delete_prores=False):
     """Startet die Komprimierung einer einzelnen Datei und überwacht den Prozess."""
     async with semaphore:
         job_title = f"Kompression '{os.path.basename(input_file)}' zu HEVC-A"
@@ -30,11 +31,11 @@ async def compress_file(input_file, output_file, semaphore, callback=None):
         print(f"Kompressionsauftrag erstellt für: {input_file} (Job-Titel: {job_title})")
 
         if result.returncode == 0:
-            await monitor_compression(output_file, callback)
+            await monitor_compression(output_file, callback, delete_prores, input_file)
         else:
             print(f"Fehler bei der Komprimierung von {input_file}: {result.stderr}")
 
-async def monitor_compression(output_file, callback=None):
+async def monitor_compression(output_file, callback=None, delete_prores=False, prores_file=None):
     """Überwacht die Komprimierung und überprüft periodisch den Fortschritt."""
     check_count = 0
 
@@ -59,11 +60,13 @@ async def monitor_compression(output_file, callback=None):
             print(f"Komprimierung abgeschlossen: {output_file}")
             if callback:
                 callback(output_file)  # Aufruf der Callback-Funktion
+            if delete_prores and prores_file:
+                delete_prores_if_hevc_a_exists(Path(output_file), Path(prores_file).parent)
             break
         else:
             print(f"Fehlerhafter Codec für: {output_file}. Erwartet: 'hevc', erhalten: '{codec}'")
 
-async def compress_files(input_directory, output_directory, callback=None):
+async def compress_files(input_directory, output_directory, callback=None, delete_prores=False):
     """Komprimiert alle Dateien im Eingangsverzeichnis unter Berücksichtigung der maximalen Anzahl gleichzeitiger Jobs."""
     semaphore = asyncio.Semaphore(MAX_CONCURRENT_JOBS)
     tasks = []
@@ -91,13 +94,13 @@ async def compress_files(input_directory, output_directory, callback=None):
                     print(f"Überspringe Datei, HEVC-A existiert bereits: {output_file}")
                     continue
 
-            tasks.append(compress_file(input_file, output_file, semaphore, callback))
+            tasks.append(compress_file(input_file, output_file, semaphore, callback, delete_prores))
 
     await asyncio.gather(*tasks)
 
-def run_compress(input_directory, output_directory=None, callback=None):
+def run_compress(input_directory, output_directory=None, delete_prores=False, callback=None):
     """Startet den Kompressionsprozess für ProRes zu HEVC-A."""
     if output_directory is None:
         output_directory = input_directory
 
-    asyncio.run(compress_files(input_directory, output_directory, callback))
+    asyncio.run(compress_files(input_directory, output_directory, callback, delete_prores))
