@@ -12,7 +12,7 @@ def cli():
 @click.argument('prores_dir', type=click.Path(exists=True, file_okay=False), required=False)
 @click.option('--verbose', is_flag=True, help="Aktiviere detaillierte Ausgaben.")
 def cleanup_prores_command(hevc_a_dir, prores_dir=None, verbose=False):
-    """Bereinigt ProRes-Dateien mit einem passenden HEVC-A-Pendant."""
+    """Bereinigt ProRes-Dateien mit einem HEVC-A-Pendant."""
     run_cleanup(hevc_a_dir, prores_dir, verbose)
 
 @cli.command(name="compress-prores")
