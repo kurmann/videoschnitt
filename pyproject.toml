@@ -1,0 +1,51 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kurmann-videoschnitt"
+version = "0.44.1"
+requires-python = ">=3.7"
+description = "CLI-Tool zur Verwaltung und Bereinigung von Apple Compressor ProRes-Dateien"
+readme = "README.md"
+license = {text = "MIT"}
+dependencies = [
+  "click>=8.0"
+]
+
+authors = [
+  {name = "Patrick Kurmann", email = "kurmannwillisau@gmail.com"}
+]
+
+maintainers = [
+  {name = "Patrick Kurmann", email = "kurmannwillisau@gmail.com"}
+]
+
+keywords = ["video", "compression", "Apple Compressor", "ProRes"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.7",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent"
+]
+
+[project.optional-dependencies]
+cli = ["click"]
+
+[project.urls]
+Documentation = "https://github.com/kurmann/videoschnitt/docs"
+Repository = "https://github.com/kurmann/videoschnitt"
+"Bug Tracker" = "https://github.com/kurmann/videoschnitt/issues"
+Changelog = "https://github.com/kurmann/videoschnitt/releases"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[project.scripts]
+kurmann-videoschnitt = "kurmann_videoschnitt.cli:cli"
+apple-compressor-manager = "apple_compressor_manager.cli:cli"
+
+[tool.setuptools]
+package-data = { "apple_compressor_manager" = ["*.py"] }
