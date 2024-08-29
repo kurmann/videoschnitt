@@ -22,14 +22,15 @@ def organize_media_files_command(source_dir, destination_dir):
 @cli.command(name="import-new-media")
 @click.argument('source_dir', type=click.Path(exists=True, file_okay=False))
 @click.argument('destination_dir', type=click.Path(file_okay=False))
-def new_media_import_command(source_dir, destination_dir):
+@click.option('--compress-dir', type=click.Path(file_okay=False), help="Optionales Verzeichnis für die Komprimierung. Wenn nicht angegeben, wird das Zielverzeichnis verwendet.")
+def new_media_import_command(source_dir, destination_dir, compress_dir=None):
     """
     Importiert neue Medien aus SOURCE_DIR nach DESTINATION_DIR und verarbeitet diese.
 
     Diese Funktion führt den Neumedien-Import durch, startet den Kompressionsprozess 
-    und organisiert anschließend die Mediendateien.
+    (optional in einem separaten Verzeichnis) und organisiert anschließend die Mediendateien.
     """
-    new_media_import(source_dir, destination_dir)
+    new_media_import(source_dir, destination_dir, compress_dir)
 
 if __name__ == "__main__":
     cli()
