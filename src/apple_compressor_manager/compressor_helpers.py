@@ -3,7 +3,6 @@ import subprocess
 import time
 from datetime import timedelta
 from apple_compressor_manager.compressor_utils import are_sb_files_present
-from apple_compressor_manager.file_utils import is_file_in_use
 from apple_compressor_manager.video_utils import get_video_codec
 
 def send_macos_notification(title, message):

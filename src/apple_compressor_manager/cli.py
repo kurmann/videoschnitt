@@ -1,0 +1,26 @@
+import click
+from .cleanup_prores import run_cleanup
+from .compress_prores import compress_files
+
+@click.group()
+def cli():
+    """Apple Compressor Manager CLI"""
+    pass
+
+@cli.command()
+@click.argument('hevc_a_dir', type=click.Path(exists=True, file_okay=False))
+@click.argument('prores_dir', type=click.Path(exists=True, file_okay=False), required=False)
+@click.option('--verbose', is_flag=True, help="Aktiviere detaillierte Ausgaben.")
+def cleanup_prores_command(hevc_a_dir, prores_dir=None, verbose=False):
+    """Bereinigt ProRes-Dateien mit einem passenden HEVC-A-Pendant."""
+    run_cleanup(hevc_a_dir, prores_dir, verbose)
+
+@cli.command()
+@click.argument('input_dir', type=click.Path(exists=True, file_okay=False))
+@click.option('--output', type=click.Path(file_okay=False), help="Das Verzeichnis, in dem die Ausgabedateien gespeichert werden sollen.")
+def compress_prores_command(input_dir, output):
+    """Komprimiert ProRes-Dateien."""
+    compress_files(input_dir, output)
+
+if __name__ == "__main__":
+    cli()
