@@ -18,11 +18,12 @@ def cleanup_prores_command(hevc_a_dir, prores_dir=None, verbose=False):
 @cli.command(name="compress-prores")
 @click.argument('input_dir', type=click.Path(exists=True, file_okay=False))
 @click.option('--output', type=click.Path(file_okay=False), help="Das Verzeichnis, in dem die Ausgabedateien gespeichert werden sollen.")
-def compress_prores_command(input_dir, output=None):
+@click.option('--delete-prores', is_flag=True, help="Lösche ProRes-Dateien nach erfolgreicher Komprimierung.")
+def compress_prores_command(input_dir, output=None, delete_prores=False):
     """Komprimiert ProRes-Dateien."""
     if output is None:
         output = input_dir  # Standardmäßig wird das input_dir als output_dir verwendet
-    run_compress(input_dir, output)
+    run_compress(input_dir, output, delete_prores=delete_prores)
 
 if __name__ == "__main__":
     cli()
