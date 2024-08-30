@@ -6,6 +6,10 @@ from apple_compressor_manager.video_utils import get_video_codec
 from apple_compressor_manager.compressor_utils import are_sb_files_present
 from apple_compressor_manager.cleanup_prores import delete_prores_if_hevc_a_exists
 
+# Modulkonstanten
+MIN_PRORES_SIZE_MB = 50  # ProRes-Dateien unter 50 MB werden nicht komprimiert
+MIN_HEVC_SIZE_KB = 100   # HEVC-A-Dateien unter 100 KB werden als nicht abgeschlossen betrachtet
+
 COMPRESSOR_PROFILE_PATH = "/Users/patrickkurmann/Library/Application Support/Compressor/Settings/HEVC-A.compressorsetting"
 CHECK_INTERVAL = 60
 MAX_CONCURRENT_JOBS = 3
@@ -14,6 +18,11 @@ MAX_CHECKS = 10
 async def compress_file(input_file, output_file, semaphore, callback_per_file=None, callback_all_done=None, delete_prores=False, prores_dir=None):
     """Startet die Komprimierung einer einzelnen Datei und überwacht den Prozess."""
     async with semaphore:
+        # Überspringe Dateien, die kleiner als die definierte Mindestgröße sind
+        if os.path.getsize(input_file) < MIN_PRORES_SIZE_MB * 1024 * 1024:
+            print(f"Überspringe Datei (zu klein für Komprimierung): {input_file}")
+            return
+
         job_title = f"Kompression '{os.path.basename(input_file)}' zu HEVC-A"
 
         command = [
@@ -29,11 +38,11 @@ async def compress_file(input_file, output_file, semaphore, callback_per_file=No
         print(f"Kompressionsauftrag erstellt für: {input_file} (Job-Titel: {job_title})")
 
         if result.returncode == 0:
-            await monitor_compression(output_file, callback_per_file, delete_prores, prores_dir)
+            await monitor_compression(output_file, input_file, callback_per_file, delete_prores, prores_dir)
         else:
             print(f"Fehler bei der Komprimierung von {input_file}: {result.stderr}")
 
-async def monitor_compression(output_file, callback_per_file=None, delete_prores=False, prores_dir=None):
+async def monitor_compression(output_file, input_file, callback_per_file=None, delete_prores=False, prores_dir=None):
     """Überwacht die Komprimierung und überprüft periodisch den Fortschritt."""
     check_count = 0
 
@@ -50,8 +59,13 @@ async def monitor_compression(output_file, callback_per_file=None, delete_prores
             print(f"Komprimierung für: {output_file} noch nicht abgeschlossen.")
             continue
 
+        # Überspringe Dateien, die kleiner als die definierte Mindestgröße sind
+        if os.path.getsize(output_file) < MIN_HEVC_SIZE_KB * 1024:
+            print(f"HEVC-A-Datei {output_file} ist zu klein und wird als nicht abgeschlossen betrachtet.")
+            continue
+
         codec = get_video_codec(output_file)
-        if codec == "hevc":
+        if codec == "hevc" and os.path.getsize(output_file) > MIN_HEVC_SIZE_KB * 1024:
             print(f"Komprimierung abgeschlossen: {output_file}")
             if callback_per_file:
                 callback_per_file(output_file)  # Aufruf der Callback-Funktion für jede fertige Datei
@@ -59,7 +73,7 @@ async def monitor_compression(output_file, callback_per_file=None, delete_prores
                 delete_prores_if_hevc_a_exists(Path(output_file), Path(prores_dir))
             break
         else:
-            print(f"Fehlerhafter Codec für: {output_file}. Erwartet: 'hevc', erhalten: '{codec}'")
+            print(f"Fehlerhafter Codec oder Datei zu klein für: {output_file}. Codec: '{codec}', Grösse: {os.path.getsize(output_file)} KB")
 
 async def compress_files(input_directory, output_directory, delete_prores=False, callback_per_file=None, callback_all_done=None):
     """Komprimiert alle Dateien im Eingangsverzeichnis unter Berücksichtigung der maximalen Anzahl gleichzeitiger Jobs."""
