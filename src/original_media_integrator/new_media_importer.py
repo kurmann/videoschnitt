@@ -1,4 +1,3 @@
-import os
 from apple_compressor_manager.compress_prores import run_compress
 from original_media_integrator.media_manager import organize_media_files
 
@@ -35,6 +34,9 @@ def import_and_compress_media(source_dir, destination_dir, compression_dir=None,
     # Organisiere alle übrigen Dateien aus dem Quellverzeichnis im Zielverzeichnis
     print(f"Organisiere übrige Dateien aus: {source_dir}")
     organize_media_files(source_dir, destination_dir)
+    
+    # Teile dem Benutzer mit, dass der Vorgang abgeschlossen ist
+    print("Import und Kompression abgeschlossen.")
 
 if __name__ == "__main__":
     # Beispielaufruf
