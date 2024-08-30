@@ -17,26 +17,20 @@ def import_and_compress_media(source_dir, destination_dir, compression_dir=None,
     # Definiere einen Callback für die Kompression, der aufgerufen wird, wenn eine Datei komprimiert wurde
     def on_compression_complete(hevc_a_file):
         print(f"Kompression abgeschlossen für: {hevc_a_file}")
-        # Organisiere die komprimierte Datei sofort ins Zielverzeichnis
-        organize_media_files(os.path.dirname(hevc_a_file), destination_dir)
-
-    # Definiere einen Callback, wenn alle Dateien fertig komprimiert sind
-    def on_all_compression_done():
-        print("Alle Dateien wurden erfolgreich komprimiert.")
 
     # Steuerung der Löschoption basierend auf dem Parameter keep_original_prores
     delete_prores = not keep_original_prores
 
-    # Wenn ein Kompressionsverzeichnis angegeben ist, führe die Komprimierung dort durch
+    # Wenn ein Kompressionsverzeichnis angegeben ist, verwende es als `output_directory`
     if compression_dir:
-        run_compress(source_dir, compression_dir, delete_prores, callback_per_file=on_compression_complete, callback_all_done=on_all_compression_done)
+        run_compress(source_dir, compression_dir, delete_prores, callback=on_compression_complete)
         
         # Wenn die Kompression abgeschlossen ist, organisiere die HEVC-A-Dateien aus dem Kompressionsverzeichnis
         print(f"Organisiere komprimierte Dateien aus: {compression_dir}")
         organize_media_files(compression_dir, destination_dir)
     else:
         # Wenn kein Kompressionsverzeichnis angegeben ist, komprimiere direkt im Quellverzeichnis
-        run_compress(source_dir, source_dir, delete_prores, callback_per_file=on_compression_complete, callback_all_done=on_all_compression_done)
+        run_compress(source_dir, source_dir, delete_prores, callback=on_compression_complete)
     
     # Organisiere alle übrigen Dateien aus dem Quellverzeichnis im Zielverzeichnis
     print(f"Organisiere übrige Dateien aus: {source_dir}")
