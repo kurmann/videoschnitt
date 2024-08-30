@@ -7,7 +7,7 @@ from apple_compressor_manager.compressor_utils import are_sb_files_present
 from apple_compressor_manager.cleanup_prores import delete_prores_if_hevc_a_exists
 
 # Modulkonstanten
-MIN_PRORES_SIZE_MB = 50  # ProRes-Dateien unter 50 MB werden nicht komprimiert
+MIN_PRORES_SIZE_MB = 25  # ProRes-Dateien unter 50 MB werden nicht komprimiert
 MIN_HEVC_SIZE_KB = 100   # HEVC-A-Dateien unter 100 KB werden als nicht abgeschlossen betrachtet
 
 COMPRESSOR_PROFILE_PATH = "/Users/patrickkurmann/Library/Application Support/Compressor/Settings/HEVC-A.compressorsetting"
