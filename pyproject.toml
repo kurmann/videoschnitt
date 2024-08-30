@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "kurmann-videoschnitt"
-version = "0.45.0"
+version = "0.45.1"
 requires-python = ">=3.7"
 description = "CLI-Tool zur Verwaltung und Bereinigung von Apple Compressor ProRes-Dateien"
 readme = "README.md"
