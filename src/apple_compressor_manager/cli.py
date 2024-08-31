@@ -1,6 +1,6 @@
 import click
 from .cleanup_prores import run_cleanup
-from .compress import run_compress
+from .compress_filelist import run_compress
 
 @click.group()
 def cli():

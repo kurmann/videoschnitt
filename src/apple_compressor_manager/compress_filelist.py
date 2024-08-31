@@ -1,0 +1,52 @@
+import os
+import asyncio
+from apple_compressor_manager.video_utils import get_video_codec
+from compress_file import compress_prores_file, get_output_suffix
+
+MAX_CONCURRENT_JOBS = 3
+
+async def compress_prores_files(file_list, output_directory=None, compressor_profile_path=None, delete_prores=False, callback=None):
+    """
+    Komprimiert alle ProRes-Dateien in der übergebenen Liste unter Berücksichtigung der maximalen Anzahl gleichzeitiger Jobs.
+
+    Argumente:
+    - file_list: Eine Liste von Pfaden zu den ProRes-Eingabedateien.
+    - output_directory: Das Verzeichnis, in das die komprimierten Dateien gespeichert werden sollen. Wenn None, werden die Dateien im Quellverzeichnis gespeichert.
+    - compressor_profile_path: Der Pfad zur Compressor-Settings-Datei.
+    - delete_prores: Boolean, der angibt, ob die ursprünglichen ProRes-Dateien nach erfolgreicher Komprimierung gelöscht werden sollen.
+    - callback: Eine optionale Rückruffunktion, die nach erfolgreicher Komprimierung jeder Datei aufgerufen wird.
+
+    Hinweis:
+    - Nur ProRes-Dateien werden komprimiert. Andere Dateiformate werden übersprungen.
+    - Wenn output_directory=None ist, werden die komprimierten Dateien im gleichen Verzeichnis wie die Originaldateien gespeichert.
+    - Das Suffix der Ausgabedatei wird auf Basis des Compressor-Settings-Namens erstellt.
+    - Wenn eine komprimierte Datei bereits existiert, wird diese Datei übersprungen.
+    """
+    semaphore = asyncio.Semaphore(MAX_CONCURRENT_JOBS)
+    tasks = []
+
+    output_suffix = get_output_suffix(compressor_profile_path)
+
+    for input_file in file_list:
+        if not input_file.lower().endswith(".mov"):
+            print(f"Überspringe Datei (nicht MOV-Format): {input_file}")
+            continue
+
+        if get_video_codec(input_file) != "prores":
+            print(f"Überspringe Datei (nicht ProRes): {input_file}")
+            continue
+
+        if output_directory is None:
+            output_directory = os.path.dirname(input_file)
+
+        output_file = os.path.join(output_directory, f"{os.path.splitext(os.path.basename(input_file))[0]}{output_suffix}.mov")
+
+        if os.path.exists(output_file):
+            existing_codec = get_video_codec(output_file)
+            if existing_codec == "hevc":
+                print(f"Überspringe Datei, komprimierte Version existiert bereits: {output_file}")
+                continue
+
+        tasks.append(compress_prores_file(input_file, output_file, compressor_profile_path, semaphore, callback, delete_prores, output_directory))
+
+    await asyncio.gather(*tasks)
