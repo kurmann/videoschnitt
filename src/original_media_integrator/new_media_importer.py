@@ -1,4 +1,4 @@
-from apple_compressor_manager.compress_prores import run_compress
+from apple_compressor_manager.compress import run_compress
 from original_media_integrator.media_manager import organize_media_files
 
 def import_and_compress_media(source_dir, destination_dir, compression_dir=None, keep_original_prores=False):
