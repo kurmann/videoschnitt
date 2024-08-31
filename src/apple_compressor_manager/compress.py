@@ -15,14 +15,27 @@ MAX_CONCURRENT_JOBS = 3
 MAX_CHECKS = 10
 
 async def compress_prores_file(input_file, output_file, compressor_profile_path, semaphore, callback=None, delete_prores=False, prores_dir=None):
-    """Startet die Komprimierung einer einzelnen ProRes-Datei und überwacht den Prozess."""
+    """
+    Startet die Komprimierung einer einzelnen ProRes-Datei und überwacht den Prozess.
+
+    Argumente:
+    - input_file: Der Pfad zur ProRes-Eingabedatei.
+    - output_file: Der Pfad zur komprimierten Ausgabedatei.
+    - compressor_profile_path: Der Pfad zur Compressor-Settings-Datei.
+    - semaphore: Ein asyncio.Semaphore-Objekt zur Begrenzung der gleichzeitigen Jobs.
+    - callback: Eine optionale Rückruffunktion, die nach erfolgreicher Komprimierung aufgerufen wird.
+    - delete_prores: Boolean, der angibt, ob die ursprüngliche ProRes-Datei nach erfolgreicher Komprimierung gelöscht werden soll.
+    - prores_dir: Das Verzeichnis, in dem die ursprüngliche ProRes-Datei gespeichert ist. Wird verwendet, wenn delete_prores=True gesetzt ist.
+
+    Hinweis:
+    - Die Datei wird nur komprimiert, wenn sie das ProRes-Format hat und größer ist als die definierte Mindestgröße.
+    - Tritt ein Fehler bei der Komprimierung auf, wird dies in der Konsole angezeigt.
+    """
     async with semaphore:
-        # Überspringe Dateien, die kleiner als die definierte Mindestgröße sind
         if os.path.getsize(input_file) < MIN_PRORES_SIZE_MB * 1024 * 1024:
             print(f"Überspringe Datei (zu klein für Komprimierung): {input_file}")
             return
 
-        # Prüfe, ob die Datei wirklich ProRes ist
         if get_video_codec(input_file) != "prores":
             print(f"Überspringe Datei (nicht ProRes): {input_file}")
             return
@@ -47,7 +60,19 @@ async def compress_prores_file(input_file, output_file, compressor_profile_path,
             print(f"Fehler bei der Komprimierung von {input_file}: {result.stderr}")
 
 async def monitor_compression(output_file, callback=None, delete_prores=False, prores_dir=None):
-    """Überwacht die Komprimierung und überprüft periodisch den Fortschritt."""
+    """
+    Überwacht die Komprimierung und überprüft periodisch den Fortschritt.
+
+    Argumente:
+    - output_file: Der Pfad zur komprimierten Ausgabedatei.
+    - callback: Eine optionale Rückruffunktion, die nach erfolgreicher Komprimierung aufgerufen wird.
+    - delete_prores: Boolean, der angibt, ob die ursprüngliche ProRes-Datei nach erfolgreicher Komprimierung gelöscht werden soll.
+    - prores_dir: Das Verzeichnis, in dem die ursprüngliche ProRes-Datei gespeichert ist. Wird verwendet, wenn delete_prores=True gesetzt ist.
+
+    Hinweis:
+    - Die Methode überprüft, ob die Komprimierung noch läuft, abgeschlossen ist oder ob Fehler aufgetreten sind.
+    - Wenn delete_prores=True gesetzt ist und die Komprimierung erfolgreich war, wird die Original-ProRes-Datei gelöscht.
+    """
     check_count = 0
 
     while check_count < MAX_CHECKS:
@@ -63,7 +88,6 @@ async def monitor_compression(output_file, callback=None, delete_prores=False, p
             print(f"Komprimierung für: {output_file} noch nicht abgeschlossen.")
             continue
 
-        # Überspringe Dateien, die kleiner als die definierte Mindestgröße sind
         if os.path.getsize(output_file) < MIN_OUTPUT_SIZE_KB * 1024:
             print(f"Ausgabedatei {output_file} ist zu klein und wird als nicht abgeschlossen betrachtet.")
             continue
@@ -82,7 +106,21 @@ async def monitor_compression(output_file, callback=None, delete_prores=False, p
             print(f"Fehlerhafter Codec oder Datei zu klein für: {output_file}. Codec: '{codec}', Grösse: {os.path.getsize(output_file)} KB")
 
 async def compress_prores_files(file_list, output_directory=None, compressor_profile_path=None, delete_prores=False, callback=None):
-    """Komprimiert alle ProRes-Dateien in der übergebenen Liste unter Berücksichtigung der maximalen Anzahl gleichzeitiger Jobs."""
+    """
+    Komprimiert alle ProRes-Dateien in der übergebenen Liste unter Berücksichtigung der maximalen Anzahl gleichzeitiger Jobs.
+
+    Argumente:
+    - file_list: Eine Liste von Pfaden zu den ProRes-Eingabedateien.
+    - output_directory: Das Verzeichnis, in das die komprimierten Dateien gespeichert werden sollen. Wenn None, werden die Dateien im Quellverzeichnis gespeichert.
+    - compressor_profile_path: Der Pfad zur Compressor-Settings-Datei.
+    - delete_prores: Boolean, der angibt, ob die ursprünglichen ProRes-Dateien nach erfolgreicher Komprimierung gelöscht werden sollen.
+    - callback: Eine optionale Rückruffunktion, die nach erfolgreicher Komprimierung jeder Datei aufgerufen wird.
+
+    Hinweis:
+    - Nur ProRes-Dateien werden komprimiert. Andere Dateiformate werden übersprungen.
+    - Wenn output_directory=None ist, werden die komprimierten Dateien im gleichen Verzeichnis wie die Originaldateien gespeichert.
+    - Wenn eine komprimierte Datei bereits existiert, wird diese Datei übersprungen.
+    """
     semaphore = asyncio.Semaphore(MAX_CONCURRENT_JOBS)
     tasks = []
 
@@ -111,5 +149,17 @@ async def compress_prores_files(file_list, output_directory=None, compressor_pro
     await asyncio.gather(*tasks)
 
 def run_compress_prores(file_list, output_directory=None, compressor_profile_path=None, delete_prores=False, callback=None):
-    """Startet den Kompressionsprozess für die übergebene Liste von ProRes-Dateien."""
+    """
+    Startet den Kompressionsprozess für die übergebene Liste von ProRes-Dateien.
+
+    Argumente:
+    - file_list: Eine Liste von Pfaden zu den ProRes-Eingabedateien.
+    - output_directory: Das Verzeichnis, in das die komprimierten Dateien gespeichert werden sollen. Wenn None, werden die Dateien im Quellverzeichnis gespeichert.
+    - compressor_profile_path: Der Pfad zur Compressor-Settings-Datei.
+    - delete_prores: Boolean, der angibt, ob die ursprünglichen ProRes-Dateien nach erfolgreicher Komprimierung gelöscht werden sollen.
+    - callback: Eine optionale Rückruffunktion, die nach erfolgreicher Komprimierung jeder Datei aufgerufen wird.
+
+    Hinweis:
+    - Diese Methode bündelt die Kompression mehrerer ProRes-Dateien und steuert die Ausführung der Jobs.
+    """
     asyncio.run(compress_prores_files(file_list, output_directory, compressor_profile_path, delete_prores, callback))
