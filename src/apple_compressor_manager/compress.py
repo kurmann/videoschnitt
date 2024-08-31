@@ -7,30 +7,34 @@ from apple_compressor_manager.compressor_utils import are_sb_files_present
 from apple_compressor_manager.cleanup_prores import delete_prores_if_hevc_a_exists
 
 # Modulkonstanten
-MIN_PRORES_SIZE_MB = 25  # ProRes-Dateien unter 50 MB werden nicht komprimiert
-MIN_HEVC_SIZE_KB = 100   # HEVC-A-Dateien unter 100 KB werden als nicht abgeschlossen betrachtet
+MIN_PRORES_SIZE_MB = 25  # ProRes-Dateien unter 25 MB werden nicht komprimiert
+MIN_OUTPUT_SIZE_KB = 100  # Output-Dateien unter 100 KB werden als nicht abgeschlossen betrachtet
 
-COMPRESSOR_PROFILE_PATH = "/Users/patrickkurmann/Library/Application Support/Compressor/Settings/HEVC-A.compressorsetting"
 CHECK_INTERVAL = 60
 MAX_CONCURRENT_JOBS = 3
 MAX_CHECKS = 10
 
-async def compress_file(input_file, output_file, semaphore, callback=None, delete_prores=False, prores_dir=None):
-    """Startet die Komprimierung einer einzelnen Datei und überwacht den Prozess."""
+async def compress_prores_file(input_file, output_file, compressor_profile_path, semaphore, callback=None, delete_prores=False, prores_dir=None):
+    """Startet die Komprimierung einer einzelnen ProRes-Datei und überwacht den Prozess."""
     async with semaphore:
         # Überspringe Dateien, die kleiner als die definierte Mindestgröße sind
         if os.path.getsize(input_file) < MIN_PRORES_SIZE_MB * 1024 * 1024:
             print(f"Überspringe Datei (zu klein für Komprimierung): {input_file}")
             return
 
-        job_title = f"Kompression '{os.path.basename(input_file)}' zu HEVC-A"
+        # Prüfe, ob die Datei wirklich ProRes ist
+        if get_video_codec(input_file) != "prores":
+            print(f"Überspringe Datei (nicht ProRes): {input_file}")
+            return
+
+        job_title = f"Kompression '{os.path.basename(input_file)}'"
 
         command = [
             "/Applications/Compressor.app/Contents/MacOS/Compressor",
             "-batchname", job_title,
             "-jobpath", input_file,
             "-locationpath", output_file,
-            "-settingpath", COMPRESSOR_PROFILE_PATH
+            "-settingpath", compressor_profile_path
         ]
 
         result = subprocess.run(command, check=False)
@@ -60,12 +64,12 @@ async def monitor_compression(output_file, callback=None, delete_prores=False, p
             continue
 
         # Überspringe Dateien, die kleiner als die definierte Mindestgröße sind
-        if os.path.getsize(output_file) < MIN_HEVC_SIZE_KB * 1024:
-            print(f"HEVC-A-Datei {output_file} ist zu klein und wird als nicht abgeschlossen betrachtet.")
+        if os.path.getsize(output_file) < MIN_OUTPUT_SIZE_KB * 1024:
+            print(f"Ausgabedatei {output_file} ist zu klein und wird als nicht abgeschlossen betrachtet.")
             continue
 
         codec = get_video_codec(output_file)
-        if codec == "hevc" and os.path.getsize(output_file) > MIN_HEVC_SIZE_KB * 1024:
+        if os.path.getsize(output_file) > MIN_OUTPUT_SIZE_KB * 1024:
             print(f"Komprimierung abgeschlossen: {output_file}")
             if callback:
                 callback(output_file)
@@ -77,41 +81,35 @@ async def monitor_compression(output_file, callback=None, delete_prores=False, p
         else:
             print(f"Fehlerhafter Codec oder Datei zu klein für: {output_file}. Codec: '{codec}', Grösse: {os.path.getsize(output_file)} KB")
 
-async def compress_files(input_directory, output_directory=None, delete_prores=False, callback=None):
-    """Komprimiert alle Dateien im Eingangsverzeichnis unter Berücksichtigung der maximalen Anzahl gleichzeitiger Jobs."""
+async def compress_prores_files(file_list, output_directory=None, compressor_profile_path=None, delete_prores=False, callback=None):
+    """Komprimiert alle ProRes-Dateien in der übergebenen Liste unter Berücksichtigung der maximalen Anzahl gleichzeitiger Jobs."""
     semaphore = asyncio.Semaphore(MAX_CONCURRENT_JOBS)
     tasks = []
 
-    if output_directory is None:
-        output_directory = input_directory
+    for input_file in file_list:
+        if not input_file.lower().endswith(".mov"):
+            print(f"Überspringe Datei (nicht MOV-Format): {input_file}")
+            continue
 
-    for root, _, files in os.walk(input_directory):
-        for file in files:
-            if file.startswith("._") or not file.lower().endswith(".mov"):
+        if get_video_codec(input_file) != "prores":
+            print(f"Überspringe Datei (nicht ProRes): {input_file}")
+            continue
+
+        if output_directory is None:
+            output_directory = os.path.dirname(input_file)
+
+        output_file = os.path.join(output_directory, f"{os.path.splitext(os.path.basename(input_file))[0]}-compressed.mov")
+
+        if os.path.exists(output_file):
+            existing_codec = get_video_codec(output_file)
+            if existing_codec == "hevc":
+                print(f"Überspringe Datei, komprimierte Version existiert bereits: {output_file}")
                 continue
 
-            input_file = os.path.join(root, file)
-            codec = get_video_codec(input_file)
-            if codec != "prores":
-                print(f"Überspringe Datei (nicht ProRes): {input_file}")
-                continue
-
-            relative_path = os.path.relpath(root, input_directory)
-            output_subdirectory = os.path.join(output_directory, relative_path)
-            os.makedirs(output_subdirectory, exist_ok=True)
-
-            output_file = os.path.join(output_subdirectory, f"{os.path.splitext(file)[0]}-HEVC-A.mov")
-
-            if os.path.exists(output_file):
-                existing_codec = get_video_codec(output_file)
-                if existing_codec == "hevc":
-                    print(f"Überspringe Datei, HEVC-A existiert bereits: {output_file}")
-                    continue
-
-            tasks.append(compress_file(input_file, output_file, semaphore, callback, delete_prores, input_directory))
+        tasks.append(compress_prores_file(input_file, output_file, compressor_profile_path, semaphore, callback, delete_prores, output_directory))
 
     await asyncio.gather(*tasks)
 
-def run_compress(input_directory, output_directory=None, delete_prores=False, callback=None):
-    """Startet den Kompressionsprozess für ProRes zu HEVC-A."""
-    asyncio.run(compress_files(input_directory, output_directory, delete_prores, callback))
+def run_compress_prores(file_list, output_directory=None, compressor_profile_path=None, delete_prores=False, callback=None):
+    """Startet den Kompressionsprozess für die übergebene Liste von ProRes-Dateien."""
+    asyncio.run(compress_prores_files(file_list, output_directory, compressor_profile_path, delete_prores, callback))

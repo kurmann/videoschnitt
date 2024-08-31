@@ -4,7 +4,7 @@ import sys
 import atexit
 import signal
 import yaml
-from apple_compressor_manager.compress_prores import compress_files
+from apple_compressor_manager.compress import compress_files
 from original_media_integrator.integrate_new_media import organize_media_files
 
 # Pfad zur Config-Datei
