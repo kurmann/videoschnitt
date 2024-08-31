@@ -8,7 +8,7 @@ from apple_compressor_manager.cleanup_prores import delete_prores_if_hevc_a_exis
 
 MIN_PRORES_SIZE_MB = 25  # ProRes-Dateien unter 25 MB werden nicht komprimiert
 MIN_OUTPUT_SIZE_KB = 100  # Output-Dateien unter 100 KB werden als nicht abgeschlossen betrachtet
-MAX_CHECKS = 10  # Maximale Anzahl von Überprüfungen, bevor die Komprimierung als nicht abgeschlossen betrachtet wird
+MAX_CHECKS = 20  # Maximale Anzahl von Überprüfungen, bevor die Komprimierung als nicht abgeschlossen betrachtet wird
 CHECK_INTERVAL = 120  # Intervall in Sekunden zwischen den Überprüfungen
 
 def get_output_suffix(compressor_profile_path):
