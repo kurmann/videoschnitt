@@ -35,7 +35,7 @@ def import_and_compress_media(source_dir, destination_dir, compression_dir=None,
 
     # Wenn ein Kompressionsverzeichnis angegeben ist, verwende es als `output_directory`
     if compression_dir:
-        run_compress_prores(prores_files, compression_dir, COMPRESSOR_PROFILE_PATH, delete_prores, callback=on_compression_complete)
+        run_compress_prores(prores_files, compression_dir, COMPRESSOR_PROFILE_PATH, delete_prores, callback=on_compression_complete, prores_dir=source_dir)
         
         # Wenn die Kompression abgeschlossen ist, organisiere die HEVC-A-Dateien aus dem Kompressionsverzeichnis
         print(f"Organisiere komprimierte Dateien aus: {compression_dir}")

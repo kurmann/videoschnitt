@@ -57,11 +57,11 @@ async def compress_prores_file(input_file, output_file, compressor_profile_path,
         print(f"Kompressionsauftrag erstellt für: {input_file} (Job-Titel: {job_title})")
 
         if result.returncode == 0:
-            await monitor_compression(output_file, callback, delete_prores, prores_dir)
+            await monitor_compression(output_file, compressor_profile_path, callback, delete_prores, prores_dir)
         else:
             print(f"Fehler bei der Komprimierung von {input_file}: {result.stderr}")
 
-async def monitor_compression(output_file, callback=None, delete_prores=False, prores_dir=None):
+async def monitor_compression(output_file, compressor_profile_path, callback=None, delete_prores=False, prores_dir=None):
     """
     Überwacht die Komprimierung und überprüft periodisch den Fortschritt.
 
@@ -102,7 +102,8 @@ async def monitor_compression(output_file, callback=None, delete_prores=False, p
             if delete_prores:
                 if prores_dir is None:
                     prores_dir = os.path.dirname(output_file)
-                delete_prores_if_hevc_a_exists(Path(output_file), Path(prores_dir))
+                prores_file = Path(prores_dir) / Path(output_file).name.replace(get_output_suffix(compressor_profile_path), "")
+                delete_prores_if_hevc_a_exists(prores_file, Path(prores_dir))
             break
         else:
             print(f"Fehlerhafter Codec oder Datei zu klein für: {output_file}. Codec: '{codec}', Grösse: {os.path.getsize(output_file)} KB")
