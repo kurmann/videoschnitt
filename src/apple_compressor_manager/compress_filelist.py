@@ -1,7 +1,7 @@
 import os
 import asyncio
-from apple_compressor_manager.video_utils import get_video_codec
-from compress_file import compress_prores_file, get_output_suffix
+from .video_utils import get_video_codec
+from .compress_file import compress_prores_file, get_output_suffix
 
 MAX_CONCURRENT_JOBS = 3
 
@@ -50,3 +50,19 @@ async def compress_prores_files(file_list, output_directory=None, compressor_pro
         tasks.append(compress_prores_file(input_file, output_file, compressor_profile_path, semaphore, callback, delete_prores, output_directory))
 
     await asyncio.gather(*tasks)
+    
+def run_compress_prores(file_list, output_directory=None, compressor_profile_path=None, delete_prores=False, callback=None):
+    """
+    Startet den Kompressionsprozess für eine Liste von ProRes-Dateien.
+
+    Argumente:
+    - file_list: Eine Liste von Pfaden zu den ProRes-Eingabedateien.
+    - output_directory: Das Verzeichnis, in das die komprimierten Dateien gespeichert werden sollen. Wenn None, werden die Dateien im Quellverzeichnis gespeichert.
+    - compressor_profile_path: Der Pfad zur Compressor-Settings-Datei.
+    - delete_prores: Boolean, der angibt, ob die ursprünglichen ProRes-Dateien nach erfolgreicher Komprimierung gelöscht werden sollen.
+    - callback: Eine optionale Rückruffunktion, die nach erfolgreicher Komprimierung jeder Datei aufgerufen wird.
+
+    Hinweis:
+    - Diese Methode kapselt den asynchronen Kompressionsprozess, damit er synchron aufgerufen werden kann.
+    """
+    asyncio.run(compress_prores_files(file_list, output_directory, compressor_profile_path, delete_prores, callback))
