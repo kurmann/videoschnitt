@@ -3,7 +3,7 @@ import asyncio
 from .video_utils import get_video_codec
 from .compress_file import compress_prores_file, get_output_suffix
 
-MAX_CONCURRENT_JOBS = 2
+MAX_CONCURRENT_JOBS = 5
 
 async def compress_prores_files(file_list, output_directory=None, compressor_profile_path=None, delete_prores=False, callback=None):
     """
