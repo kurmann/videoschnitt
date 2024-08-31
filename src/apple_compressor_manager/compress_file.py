@@ -16,7 +16,7 @@ def get_output_suffix(compressor_profile_path):
     setting_name = os.path.splitext(os.path.basename(compressor_profile_path))[0]
     return f"-{setting_name}"
 
-async def compress_prores_file(input_file, output_file, compressor_profile_path, semaphore, callback=None, delete_prores=False, prores_dir=None):
+async def compress_prores_file(input_file, output_file, compressor_profile_path, callback=None, delete_prores=False, prores_dir=None):
     """
     Startet die Komprimierung einer einzelnen ProRes-Datei und überwacht den Prozess.
 
@@ -24,7 +24,6 @@ async def compress_prores_file(input_file, output_file, compressor_profile_path,
     - input_file: Der Pfad zur ProRes-Eingabedatei.
     - output_file: Der Pfad zur komprimierten Ausgabedatei.
     - compressor_profile_path: Der Pfad zur Compressor-Settings-Datei.
-    - semaphore: Ein asyncio.Semaphore-Objekt zur Begrenzung der gleichzeitigen Jobs.
     - callback: Eine optionale Rückruffunktion, die nach erfolgreicher Komprimierung aufgerufen wird.
     - delete_prores: Boolean, der angibt, ob die ursprüngliche ProRes-Datei nach erfolgreicher Komprimierung gelöscht werden soll.
     - prores_dir: Das Verzeichnis, in dem die ursprüngliche ProRes-Datei gespeichert ist. Wird verwendet, wenn delete_prores=True gesetzt ist.
@@ -33,33 +32,32 @@ async def compress_prores_file(input_file, output_file, compressor_profile_path,
     - Die Datei wird nur komprimiert, wenn sie das ProRes-Format hat und größer ist als die definierte Mindestgröße.
     - Tritt ein Fehler bei der Komprimierung auf, wird dies in der Konsole angezeigt.
     """
-    async with semaphore:
-        if os.path.getsize(input_file) < MIN_PRORES_SIZE_MB * 1024 * 1024:
-            print(f"Überspringe Datei (zu klein für Komprimierung): {input_file}")
-            return
+    if os.path.getsize(input_file) < MIN_PRORES_SIZE_MB * 1024 * 1024:
+        print(f"Überspringe Datei (zu klein für Komprimierung): {input_file}")
+        return
 
-        if get_video_codec(input_file) != "prores":
-            print(f"Überspringe Datei (nicht ProRes): {input_file}")
-            return
+    if get_video_codec(input_file) != "prores":
+        print(f"Überspringe Datei (nicht ProRes): {input_file}")
+        return
 
-        job_title = f"Kompression '{os.path.basename(input_file)}'"
+    job_title = f"Kompression '{os.path.basename(input_file)}'"
 
-        command = [
-            "/Applications/Compressor.app/Contents/MacOS/Compressor",
-            "-batchname", job_title,
-            "-jobpath", input_file,
-            "-locationpath", output_file,
-            "-settingpath", compressor_profile_path
-        ]
+    command = [
+        "/Applications/Compressor.app/Contents/MacOS/Compressor",
+        "-batchname", job_title,
+        "-jobpath", input_file,
+        "-locationpath", output_file,
+        "-settingpath", compressor_profile_path
+    ]
 
-        result = subprocess.run(command, check=False)
+    result = subprocess.run(command, check=False)
 
-        print(f"Kompressionsauftrag erstellt für: {input_file} (Job-Titel: {job_title})")
+    print(f"Kompressionsauftrag erstellt für: {input_file} (Job-Titel: {job_title})")
 
-        if result.returncode == 0:
-            await monitor_compression(output_file, compressor_profile_path, callback, delete_prores, prores_dir)
-        else:
-            print(f"Fehler bei der Komprimierung von {input_file}: {result.stderr}")
+    if result.returncode == 0:
+        await monitor_compression(output_file, compressor_profile_path, callback, delete_prores, prores_dir)
+    else:
+        print(f"Fehler bei der Komprimierung von {input_file}: {result.stderr}")
 
 async def monitor_compression(output_file, compressor_profile_path, callback=None, delete_prores=False, prores_dir=None):
     """
@@ -128,4 +126,4 @@ def run_compress_file(input_file, output_directory=None, compressor_profile_path
     output_suffix = get_output_suffix(compressor_profile_path)
     output_file = os.path.join(output_directory, f"{os.path.splitext(os.path.basename(input_file))[0]}{output_suffix}.mov")
 
-    asyncio.run(compress_prores_file(input_file, output_file, compressor_profile_path, asyncio.Semaphore(1), callback, delete_prores))
+    asyncio.run(compress_prores_file(input_file, output_file, compressor_profile_path, callback, delete_prores))

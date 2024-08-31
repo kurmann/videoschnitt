@@ -48,9 +48,13 @@ async def compress_prores_files(file_list, output_directory=None, compressor_pro
                 print(f"Überspringe Datei, komprimierte Version existiert bereits: {output_file}")
                 continue
 
-        tasks.append(compress_prores_file(input_file, output_file, compressor_profile_path, semaphore, callback, delete_prores, prores_dir))
+        tasks.append(compress_file_with_semaphore(input_file, output_file, compressor_profile_path, semaphore, callback, delete_prores, prores_dir))
 
     await asyncio.gather(*tasks)
+
+async def compress_file_with_semaphore(input_file, output_file, compressor_profile_path, semaphore, callback, delete_prores, prores_dir):
+    async with semaphore:
+        await compress_prores_file(input_file, output_file, compressor_profile_path, callback, delete_prores, prores_dir)
 
 def run_compress_prores(file_list, output_directory=None, compressor_profile_path=None, delete_prores=False, callback=None, prores_dir=None):
     """
