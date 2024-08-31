@@ -8,8 +8,8 @@ from apple_compressor_manager.cleanup_prores import delete_prores_if_hevc_a_exis
 
 MIN_PRORES_SIZE_MB = 25  # ProRes-Dateien unter 25 MB werden nicht komprimiert
 MIN_OUTPUT_SIZE_KB = 100  # Output-Dateien unter 100 KB werden als nicht abgeschlossen betrachtet
-CHECK_INTERVAL = 60 # Überprüfungsintervall in Sekunden
-MAX_CHECKS = 40 # Maximale Anzahl von Überprüfungen bis eine Komprimierung als fehlgeschlagen betrachtet wird
+MAX_CHECKS = 10  # Maximale Anzahl von Überprüfungen, bevor die Komprimierung als nicht abgeschlossen betrachtet wird
+CHECK_INTERVAL = 5  # Intervall in Sekunden zwischen den Überprüfungen
 
 def get_output_suffix(compressor_profile_path):
     """Ermittelt das Suffix für die Ausgabedatei basierend auf dem Compressor-Setting-Namen."""
@@ -106,3 +106,25 @@ async def monitor_compression(output_file, callback=None, delete_prores=False, p
             break
         else:
             print(f"Fehlerhafter Codec oder Datei zu klein für: {output_file}. Codec: '{codec}', Grösse: {os.path.getsize(output_file)} KB")
+
+def run_compress_file(input_file, output_directory=None, compressor_profile_path=None, delete_prores=False, callback=None):
+    """
+    Startet den Kompressionsprozess für eine einzelne ProRes-Datei.
+
+    Argumente:
+    - input_file: Der Pfad zur ProRes-Eingabedatei.
+    - output_directory: Das Verzeichnis, in das die komprimierte Datei gespeichert werden soll. Wenn None, wird die Datei im Quellverzeichnis gespeichert.
+    - compressor_profile_path: Der Pfad zur Compressor-Settings-Datei.
+    - delete_prores: Boolean, der angibt, ob die ursprüngliche ProRes-Datei nach erfolgreicher Komprimierung gelöscht werden soll.
+    - callback: Eine optionale Rückruffunktion, die nach erfolgreicher Komprimierung aufgerufen wird.
+
+    Hinweis:
+    - Diese Methode startet die Kompression für eine einzelne Datei und verwendet dabei das gewählte Compressor-Setting.
+    """
+    if output_directory is None:
+        output_directory = os.path.dirname(input_file)
+
+    output_suffix = get_output_suffix(compressor_profile_path)
+    output_file = os.path.join(output_directory, f"{os.path.splitext(os.path.basename(input_file))[0]}{output_suffix}.mov")
+
+    asyncio.run(compress_prores_file(input_file, output_file, compressor_profile_path, asyncio.Semaphore(1), callback, delete_prores))
