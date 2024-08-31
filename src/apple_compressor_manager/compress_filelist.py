@@ -32,9 +32,6 @@ async def compress_prores_files(file_list, output_directory=None, compressor_pro
     output_suffix = get_output_suffix(compressor_profile_path)
 
     for input_file in file_list:
-        if not input_file.lower().endswith(".mov"):
-            print(f"Überspringe Datei (nicht MOV-Format): {input_file}")
-            continue
 
         if get_video_codec(input_file) != "prores":
             print(f"Überspringe Datei (nicht ProRes): {input_file}")
