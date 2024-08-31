@@ -14,6 +14,11 @@ CHECK_INTERVAL = 60
 MAX_CONCURRENT_JOBS = 3
 MAX_CHECKS = 10
 
+def get_output_suffix(compressor_profile_path):
+    """Ermittelt das Suffix für die Ausgabedatei basierend auf dem Compressor-Setting-Namen."""
+    setting_name = os.path.splitext(os.path.basename(compressor_profile_path))[0]
+    return f"-{setting_name}"
+
 async def compress_prores_file(input_file, output_file, compressor_profile_path, semaphore, callback=None, delete_prores=False, prores_dir=None):
     """
     Startet die Komprimierung einer einzelnen ProRes-Datei und überwacht den Prozess.
@@ -119,10 +124,13 @@ async def compress_prores_files(file_list, output_directory=None, compressor_pro
     Hinweis:
     - Nur ProRes-Dateien werden komprimiert. Andere Dateiformate werden übersprungen.
     - Wenn output_directory=None ist, werden die komprimierten Dateien im gleichen Verzeichnis wie die Originaldateien gespeichert.
+    - Das Suffix der Ausgabedatei wird auf Basis des Compressor-Settings-Namens erstellt.
     - Wenn eine komprimierte Datei bereits existiert, wird diese Datei übersprungen.
     """
     semaphore = asyncio.Semaphore(MAX_CONCURRENT_JOBS)
     tasks = []
+
+    output_suffix = get_output_suffix(compressor_profile_path)
 
     for input_file in file_list:
         if not input_file.lower().endswith(".mov"):
@@ -136,7 +144,7 @@ async def compress_prores_files(file_list, output_directory=None, compressor_pro
         if output_directory is None:
             output_directory = os.path.dirname(input_file)
 
-        output_file = os.path.join(output_directory, f"{os.path.splitext(os.path.basename(input_file))[0]}-compressed.mov")
+        output_file = os.path.join(output_directory, f"{os.path.splitext(os.path.basename(input_file))[0]}{output_suffix}.mov")
 
         if os.path.exists(output_file):
             existing_codec = get_video_codec(output_file)
@@ -161,5 +169,6 @@ def run_compress_prores(file_list, output_directory=None, compressor_profile_pat
 
     Hinweis:
     - Diese Methode bündelt die Kompression mehrerer ProRes-Dateien und steuert die Ausführung der Jobs.
+    - Das Suffix der Ausgabedatei wird auf Basis des Compressor-Settings-Namens erstellt.
     """
     asyncio.run(compress_prores_files(file_list, output_directory, compressor_profile_path, delete_prores, callback))
