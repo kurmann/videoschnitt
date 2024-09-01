@@ -48,6 +48,16 @@ def import_and_compress_media(source_dir, destination_dir, compression_dir=None,
     print(f"Organisiere übrige Dateien aus: {source_dir}")
     organize_media_files(source_dir, destination_dir)
     
+    # Warte noch 10 Minuten, falls noch nicht alle Kompressionsjobs abgeschlossen sind
+    print("Warte auf Abschluss der Kompressionsjobs...")
+    import time
+    time.sleep(600)
+    
+    # Organisiere die restlichen Dateien aus dem Kompressionsverzeichnis
+    if compression_dir:
+        print(f"Organisiere übrige Dateien aus: {compression_dir}")
+        organize_media_files(compression_dir, destination_dir)
+    
     # Teile dem Benutzer mit, dass der Vorgang abgeschlossen ist
     print("Import und Kompression abgeschlossen.")
 
