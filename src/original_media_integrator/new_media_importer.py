@@ -1,5 +1,10 @@
-from apple_compressor_manager.compress_prores import run_compress
+import os
+from apple_compressor_manager.compress_filelist import run_compress_prores
 from original_media_integrator.media_manager import organize_media_files
+from apple_compressor_manager.video_utils import get_video_codec
+
+# Modulkonstante für den Pfad zum HEVC-A Compressor-Profil
+COMPRESSOR_PROFILE_PATH = "/Users/patrickkurmann/Library/Application Support/Compressor/Settings/HEVC-A.compressorsetting"
 
 def import_and_compress_media(source_dir, destination_dir, compression_dir=None, keep_original_prores=False):
     """
@@ -20,20 +25,38 @@ def import_and_compress_media(source_dir, destination_dir, compression_dir=None,
     # Steuerung der Löschoption basierend auf dem Parameter keep_original_prores
     delete_prores = not keep_original_prores
 
+    # Filtere nur ProRes-Dateien aus dem Quellverzeichnis
+    prores_files = [
+        os.path.join(root, file)
+        for root, _, files in os.walk(source_dir)
+        for file in files
+        if file.lower().endswith(".mov") and get_video_codec(os.path.join(root, file)) == "prores"
+    ]
+
     # Wenn ein Kompressionsverzeichnis angegeben ist, verwende es als `output_directory`
     if compression_dir:
-        run_compress(source_dir, compression_dir, delete_prores, callback=on_compression_complete)
+        run_compress_prores(prores_files, compression_dir, COMPRESSOR_PROFILE_PATH, delete_prores, callback=on_compression_complete, prores_dir=source_dir)
         
         # Wenn die Kompression abgeschlossen ist, organisiere die HEVC-A-Dateien aus dem Kompressionsverzeichnis
         print(f"Organisiere komprimierte Dateien aus: {compression_dir}")
         organize_media_files(compression_dir, destination_dir)
     else:
         # Wenn kein Kompressionsverzeichnis angegeben ist, komprimiere direkt im Quellverzeichnis
-        run_compress(source_dir, source_dir, delete_prores, callback=on_compression_complete)
+        run_compress_prores(prores_files, source_dir, COMPRESSOR_PROFILE_PATH, delete_prores, callback=on_compression_complete)
     
     # Organisiere alle übrigen Dateien aus dem Quellverzeichnis im Zielverzeichnis
     print(f"Organisiere übrige Dateien aus: {source_dir}")
     organize_media_files(source_dir, destination_dir)
+    
+    # Warte noch 10 Minuten, falls noch nicht alle Kompressionsjobs abgeschlossen sind
+    print("Warte auf Abschluss der Kompressionsjobs...")
+    import time
+    time.sleep(600)
+    
+    # Organisiere die restlichen Dateien aus dem Kompressionsverzeichnis
+    if compression_dir:
+        print(f"Organisiere übrige Dateien aus: {compression_dir}")
+        organize_media_files(compression_dir, destination_dir)
     
     # Teile dem Benutzer mit, dass der Vorgang abgeschlossen ist
     print("Import und Kompression abgeschlossen.")
