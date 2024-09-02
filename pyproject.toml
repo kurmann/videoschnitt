@@ -22,6 +22,7 @@ maintainers = [
 
 [tool.poetry]
 name = "kurmann-videoschnitt"
+authors = ["Patrick Kurmann <kurmannwillisau@gmail.com>"]
 version = "0.46.1"
 description = "Sammlung von Werkzeugen zur Automatisierungen im privaten Videoschnitt"
 
