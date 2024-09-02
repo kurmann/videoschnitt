@@ -1,31 +1,8 @@
-[build-system]
-requires = ["setuptools", "wheel"]
-build-backend = "setuptools.build_meta"
-
-[project]
-name = "kurmann-videoschnitt"
-version = "0.46.1"
-requires-python = ">=3.7"
-description = "Sammlung von Werkzeugen zur Automatisierungen im privaten Videoschnitt"
-dependencies = [
-  "click>=8.0",
-  "python-dotenv>=0.19.0"
-]
-
-authors = [
-  {name = "Patrick Kurmann", email = "kurmannwillisau@gmail.com"}
-]
-
-maintainers = [
-  {name = "Patrick Kurmann", email = "kurmannwillisau@gmail.com"}
-]
-
 [tool.poetry]
 name = "kurmann-videoschnitt"
 authors = ["Patrick Kurmann <kurmannwillisau@gmail.com>"]
-version = "0.46.1"
+version = "0.46.2"
 description = "Sammlung von Werkzeugen zur Automatisierungen im privaten Videoschnitt"
-
 readme = "README.md"
 license = "Apache-2.0"
 
@@ -34,22 +11,10 @@ python = ">=3.8,<4.0"
 click = "^8.1.7"
 python-dotenv = "^1.0.1"
 
-[project.optional-dependencies]
-cli = ["click"]
-
-[project.urls]
-Documentation = "https://github.com/kurmann/videoschnitt/docs"
-Repository = "https://github.com/kurmann/videoschnitt"
-"Bug Tracker" = "https://github.com/kurmann/videoschnitt/issues"
-Changelog = "https://github.com/kurmann/videoschnitt/releases"
-
 [tool.setuptools.packages.find]
 where = ["src"]
 
-[project.scripts]
+[tool.poetry.scripts]
 kurmann-videoschnitt = "kurmann_videoschnitt.cli:cli"
 apple-compressor-manager = "apple_compressor_manager.cli:cli"
 emby-integrator = "emby_integrator.cli:cli"
-
-[tool.setuptools]
-package-data = { "apple_compressor_manager" = ["*.py"] }
