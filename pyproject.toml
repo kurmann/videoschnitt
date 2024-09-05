@@ -5,16 +5,18 @@ version = "0.46.2"
 description = "Sammlung von Werkzeugen zur Automatisierungen im privaten Videoschnitt"
 readme = "README.md"
 license = "Apache-2.0"
+packages = [{include = "kurmann_videoschnitt", from="src"}]
 
 [tool.poetry.dependencies]
 python = ">=3.8,<4.0"
 click = "^8.1.7"
 python-dotenv = "^1.0.1"
+typer = "^0.12.5"
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.poetry.scripts]
-kurmann-videoschnitt = "kurmann_videoschnitt.cli:cli"
-apple-compressor-manager = "apple_compressor_manager.cli:cli"
-emby-integrator = "emby_integrator.cli:cli"
+apple-compressor-manager = "apple_compressor_manager.app:app"
+original-media-integrator = "original_media_integrator.app:app"
+emby-integrator = "emby_integrator.app:app"
