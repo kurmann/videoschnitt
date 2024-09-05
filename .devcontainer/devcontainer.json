@@ -2,10 +2,8 @@
     "name": "Python 3",
     "image": "mcr.microsoft.com/devcontainers/python:1-3.12-bullseye",
 
-    // Installiere Poetry und führe die notwendigen Befehle aus
-    "postCreateCommand": "curl -sSL https://install.python-poetry.org | python3 - && poetry install",
+    "postCreateCommand": "poetry export -f requirements.txt --output requirements.txt --without-hashes && echo '-e .' >> requirements.txt && pip install -r requirements.txt",
 
-    // Automatisch VSCode Extensions installieren
     "customizations": {
         "vscode": {
             "extensions": [
@@ -15,19 +13,5 @@
                 "tamasfe.even-better-toml"
             ]
         }
-    },
-
-    // Führt Poetry in der Shell aus, wenn der Container startet
-    "remoteEnv": {
-        "POETRY_VIRTUALENVS_CREATE": "false"
-    },
-
-    // Befehle ausführen nach dem Containerstart
-    "remoteUser": "vscode",
-
-    // Verwende die VSCode-Settings zur Aktivierung der Poetry-Shell beim Start
-    "settings": {
-        "terminal.integrated.defaultProfile.linux": "bash",
-        "python.terminal.activateEnvironment": true
     }
 }
