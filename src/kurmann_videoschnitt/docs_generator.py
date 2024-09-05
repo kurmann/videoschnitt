@@ -1,23 +1,41 @@
 import subprocess
+import re
+import os
 
-def generate_cli_docs(cli_command, output_file, title):
-    """Generiert die Dokumentation für einen Click CLI-Befehl."""
-    with open(output_file, 'a') as f:
-        # Schreibe den Titel der Sektion in die Markdown-Datei
-        f.write(f"# {title} CLI-Dokumentation\n\n")
-        
-        # Führe den CLI-Befehl mit der --help Option aus und schreibe die Ausgabe in die Datei
-        result = subprocess.run(cli_command + ['--help'], capture_output=True, text=True)
-        f.write("## Befehlsübersicht\n\n")
-        f.write(f"```\n{result.stdout}\n```\n")
+def generate_cli_docs(cli_command, title):
+    """Generiert die CLI-Dokumentation für einen Click-Befehl."""
+    result = subprocess.run(cli_command + ['--help'], capture_output=True, text=True)
+    return f"### {title}\n\n```\n{result.stdout}\n```\n"
 
-# Lösche den Inhalt der Datei vor der Neugenerierung
-open("kurmann_videoschnitt_cli_docs.md", 'w').close()
+def update_readme_with_cli_docs(cli_docs):
+    """Aktualisiert das README.md im Wurzelverzeichnis, indem der alte CLI-Dokumentationsabschnitt ersetzt wird."""
+    # Definiere den Pfad zur README.md im Wurzelverzeichnis
+    root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
+    readme_path = os.path.join(root_dir, "README.md")
+    
+    # Lies die aktuelle README-Datei
+    with open(readme_path, 'r') as file:
+        readme_content = file.read()
 
-# Generiere die Dokumentation für die Haupt-CLI
-generate_cli_docs(['kurmann-videoschnitt'], 'kurmann_videoschnitt_cli_docs.md', 'Kurmann Videoschnitt')
+    # Suchmuster für den CLI-Dokumentationsabschnitt
+    cli_docs_pattern = re.compile(r"(## CLI-Dokumentation\n)(.*?)(\n##|$)", re.DOTALL)
+    
+    # Ersetze den alten CLI-Dokumentationsabschnitt durch die neue Dokumentation
+    if cli_docs_pattern.search(readme_content):
+        updated_readme_content = cli_docs_pattern.sub(f"## CLI-Dokumentation\n{cli_docs}\n##", readme_content)
+    else:
+        # Falls das CLI-Dokumentationskapitel nicht vorhanden ist, hänge es am Ende an
+        updated_readme_content = f"{readme_content}\n## CLI-Dokumentation\n{cli_docs}\n"
 
-# Generiere die Dokumentation für die Sub-CLIs
-generate_cli_docs(['kurmann-videoschnitt', 'compressor'], 'kurmann_videoschnitt_cli_docs.md', 'Apple Compressor Manager')
-generate_cli_docs(['kurmann-videoschnitt', 'integrator'], 'kurmann_videoschnitt_cli_docs.md', 'Original Media Integrator')
-generate_cli_docs(['kurmann-videoschnitt', 'emby'], 'kurmann_videoschnitt_cli_docs.md', 'Emby Integrator')
+    # Schreibe die aktualisierte README-Datei
+    with open(readme_path, 'w') as file:
+        file.write(updated_readme_content)
+
+# Generiere die CLI-Dokumentation für alle Befehle
+cli_docs = generate_cli_docs(['kurmann-videoschnitt'], 'Haupt-CLI')
+cli_docs += generate_cli_docs(['kurmann-videoschnitt', 'compressor'], 'Apple Compressor Manager CLI')
+cli_docs += generate_cli_docs(['kurmann-videoschnitt', 'integrator'], 'Original Media Integrator CLI')
+cli_docs += generate_cli_docs(['kurmann-videoschnitt', 'emby'], 'Emby Integrator CLI')
+
+# Aktualisiere das README.md mit der neuen CLI-Dokumentation
+update_readme_with_cli_docs(cli_docs)
