@@ -62,19 +62,24 @@ Die Anwendung bietet eine Reihe von Funktionen, die speziell für den Videoschni
 ### Haupt-CLI
 
 ```
-Usage: kurmann-videoschnitt [OPTIONS] COMMAND [ARGS]...
-
-  Kurmann Videoschnitt - Zentrale CLI
-
-Options:
-  --help  Show this message and exit.
-
-Commands:
-  compressor  Apple Compressor Manager CLI
-  emby        FileManager CLI für Emby Integrator
-  integrator  Original Media Integrator CLI
 
 ```
+### Apple Compressor Manager CLI
+
+```
+
+```
+### Original Media Integrator CLI
+
+```
+
+```
+### Emby Integrator CLI
+
+```
+
+```
+
 ### Apple Compressor Manager CLI
 
 ```
