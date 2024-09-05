@@ -18,3 +18,7 @@ where = ["src"]
 kurmann-videoschnitt = "kurmann_videoschnitt.cli:cli"
 apple-compressor-manager = "apple_compressor_manager.cli:cli"
 emby-integrator = "emby_integrator.cli:cli"
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
