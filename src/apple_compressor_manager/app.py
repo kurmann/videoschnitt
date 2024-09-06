@@ -1,7 +1,7 @@
 import typer
-from .cleanup_prores import run_cleanup
-from .compress_filelist import run_compress_prores as run_compress_files
-from .compress_file import run_compress_file
+from apple_compressor_manager.cleanup_prores import run_cleanup
+from apple_compressor_manager.compress_filelist import run_compress_prores as run_compress_files
+from apple_compressor_manager.compress_file import run_compress_file
 
 app = typer.Typer(help="Apple Compressor Manager CLI")
 
