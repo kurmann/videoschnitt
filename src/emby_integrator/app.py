@@ -1,5 +1,5 @@
 import typer
-from .file_manager import FileManager
+from emby_integrator.file_manager import FileManager
 
 # Erstelle eine Instanz von FileManager
 file_manager = FileManager()
