@@ -1,7 +1,7 @@
 import os
 import asyncio
-from .video_utils import get_video_codec
-from .compress_file import compress_prores_file, get_output_suffix
+from apple_compressor_manager.video_utils import get_video_codec
+from apple_compressor_manager.compress_file import compress_prores_file, get_output_suffix
 
 MAX_CONCURRENT_JOBS = 3
 
