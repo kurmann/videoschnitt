@@ -11,18 +11,26 @@ file_manager = FileManager()
 app = typer.Typer(help="FileManager CLI für Emby Integrator")
 
 @app.command()
-def list_mediaserver_files(source_dir: str):
+def list_mediaserver_files(source_dir: str, json_output: bool = typer.Option(False, help="Gebe die Ausgabe im JSON-Format aus")):
     """
     Liste die Mediaserver-Dateien aus einem Verzeichnis auf und gruppiere sie nach Mediensets.
     """
     media_sets = file_manager.get_mediaserver_files(source_dir)
     
-    # Formatiere die Ausgabe in einem menschenlesbaren Format
-    for set_name, data in media_sets.items():
-        print(f"Medienset: {set_name}")
-        print(f"  Videos: {', '.join(data['videos']) if data['videos'] else 'Keine Videodateien gefunden.'}")
-        print(f"  Titelbild: {data['image'] if data['image'] else 'Kein Titelbild gefunden.'}")
-        print("-" * 40)
+    if json_output:
+        # JSON-Ausgabe
+        print(json.dumps(media_sets, indent=4))
+    else:
+        # Bündige Ausgabe der Informationen
+        max_label_length = 10  # Feste Länge für die Labels "Videos" und "Titelbild"
+        
+        for set_name, data in media_sets.items():
+            print(f"Medienset: {set_name}")
+            # Label "Videos" auf eine feste Breite setzen
+            print(f"{'Videos:':<{max_label_length}} {', '.join(data['videos']) if data['videos'] else 'Keine Videodateien gefunden.'}")
+            # Label "Titelbild" ebenfalls auf die gleiche Breite setzen
+            print(f"{'Titelbild:':<{max_label_length}} {data['image'] if data['image'] else 'Kein Titelbild gefunden.'}")
+            print("-" * 40)
 
 @app.command()
 def compress_masterfile(
