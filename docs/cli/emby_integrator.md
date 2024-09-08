@@ -17,13 +17,17 @@ $ emby-integrator [OPTIONS] COMMAND [ARGS]...
 **Commands**:
 
 * `compress-masterfile`: Komprimiere eine Master-Datei.
-* `convert-image-to-adobe-rgb`: Konvertiere ein Bild in das Adobe...
+* `convert-image-to-adobe-rgb`: Erstelle Adobe RGB-JPG-Datei
+* `convert-images-to-adobe-rgb`: Konvertiere eine Liste von PNG-Bildern in...
 * `get-images-for-artwork`: Rufe geeignete Bilder für Artwork aus...
 * `get-mediaserver-files`: Rufe die Mediaserver-Dateien aus einem...
 
 ## `emby-integrator compress-masterfile`
 
 Komprimiere eine Master-Datei.
+
+Diese Methode startet die Kompression der angegebenen Datei und bietet die Möglichkeit, 
+nach Abschluss der Komprimierung die Originaldatei zu löschen.
 
 **Usage**:
 
@@ -42,7 +46,7 @@ $ emby-integrator compress-masterfile [OPTIONS] INPUT_FILE
 
 ## `emby-integrator convert-image-to-adobe-rgb`
 
-Konvertiere ein Bild in das Adobe RGB-Profil und speichere es als JPEG.
+Erstelle Adobe RGB-JPG-Datei
 
 **Usage**:
 
@@ -53,6 +57,25 @@ $ emby-integrator convert-image-to-adobe-rgb [OPTIONS] IMAGE_FILE
 **Arguments**:
 
 * `IMAGE_FILE`: [required]
+
+**Options**:
+
+* `--help`: Show this message and exit.
+
+## `emby-integrator convert-images-to-adobe-rgb`
+
+Konvertiere eine Liste von PNG-Bildern in Adobe RGB, falls eine passende Videodatei existiert.
+:param media_dir: Verzeichnis, das sowohl die PNG-Bilder als auch die Videodateien enthält
+
+**Usage**:
+
+```console
+$ emby-integrator convert-images-to-adobe-rgb [OPTIONS] MEDIA_DIR
+```
+
+**Arguments**:
+
+* `MEDIA_DIR`: [required]
 
 **Options**:
 
