@@ -7,7 +7,7 @@ from original_media_integrator.video_utils import get_video_codec, is_hevc_a
 def move_file_to_target(source_file, base_source_dir, base_destination_dir):
     """
     Verschiebt eine Datei ins Zielverzeichnis, behält die Unterverzeichnisstruktur bei und organisiert nach Datum.
-    Fügt die Zeitzone im Dateinamen hinzu.
+    Fügt die Zeitzone im Dateinamen hinzu. Wenn der Dateiname "_edited" enthält, wird dies als "-edited" im neuen Dateinamen übernommen.
     """
     try:
         # Datum der Datei extrahieren, inklusive Zeitzone
@@ -19,18 +19,25 @@ def move_file_to_target(source_file, base_source_dir, base_destination_dir):
 
         # Zielverzeichnis basierend auf Datum und Unterverzeichnisstruktur erstellen
         destination_dir = os.path.join(base_destination_dir, date_path, relative_dir)
-        
-        # Dateiendung beibehalten und neuen Namen basierend auf dem Datum generieren
+
+        # Dateiendung und Dateiname ohne Endung bestimmen
         extension = os.path.splitext(source_file)[1].lower()
-        codec = get_video_codec(source_file) if extension == '.mov' or extension == '.mp4' else None
+        filename_without_extension = os.path.splitext(os.path.basename(source_file))[0]
 
         # Zeitzoneninformationen extrahieren
         timezone_suffix = creation_time.strftime('%z')
 
+        # Prüfen, ob der Dateiname "_edited" enthält
+        edited_suffix = "-edited" if "_edited" in filename_without_extension else ""
+
+        # Codec-Überprüfung für MOV/MP4-Dateien
+        codec = get_video_codec(source_file) if extension == '.mov' or extension == '.mp4' else None
+
         if codec is None:
             # Umbenennung für andere Dateitypen wie HEIC, JPG usw.
-            filename = creation_time.strftime(f'%Y-%m-%d_%H%M%S{timezone_suffix}{extension}')
+            filename = creation_time.strftime(f'%Y-%m-%d_%H%M%S{timezone_suffix}{edited_suffix}{extension}')
         else:
+            # Spezifische Codecs hinzufügen, falls vorhanden (z.B. ProRes oder HEVC-A)
             if codec.lower() == "prores":
                 codec = "ProRes"
             elif is_hevc_a(source_file):
@@ -38,20 +45,20 @@ def move_file_to_target(source_file, base_source_dir, base_destination_dir):
             else:
                 codec = ''
 
-            # Neuer Dateiname mit Datum, Zeitzone und ggf. Codec für MOV/MP4-Dateien
-            filename = creation_time.strftime(f'%Y-%m-%d_%H%M%S{timezone_suffix}{f"-{codec}" if codec else ""}{extension}')
+            # Neuer Dateiname mit Datum, Zeitzone, Codec und ggf. -edited
+            filename = creation_time.strftime(f'%Y-%m-%d_%H%M%S{timezone_suffix}{f"-{codec}" if codec else ""}{edited_suffix}{extension}')
 
         # Sicherstellen, dass das Zielverzeichnis existiert
         os.makedirs(destination_dir, exist_ok=True)
-        
+
         # Vollständiger Pfad der Zieldatei
         destination_path = os.path.join(destination_dir, filename)
-        
+
         # Verschiebe die Datei
         print(f"Verschiebe Datei {source_file} ({os.path.getsize(source_file) / (1024 * 1024):.2f} MiB) nach {destination_dir}")
         shutil.move(source_file, destination_path)
         print(f"Datei verschoben nach {destination_path}")
-        
+
         return destination_path
     except Exception as e:
         print(f"Fehler beim Verschieben der Datei {source_file}: {e}")
