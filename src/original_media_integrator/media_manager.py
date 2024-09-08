@@ -1,6 +1,6 @@
 import os
 import shutil
-from original_media_integrator.date_utils import get_creation_datetime
+from original_media_integrator.exif_utils import get_creation_datetime
 from original_media_integrator.file_utils import is_file_in_use
 from original_media_integrator.video_utils import get_video_codec, is_hevc_a
 
