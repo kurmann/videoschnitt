@@ -105,13 +105,6 @@ class FileManager:
             # Überprüfe, ob es sich um eine Bilddatei handelt (JPG)
             elif any(file.lower().endswith(ext) for ext in self.SUPPORTED_IMAGE_FORMATS):
                 media_sets[base_name]["image"] = file
-        
-        # Ausgabe der Mediensets
-        for set_name, data in media_sets.items():
-            print(f"Medienset: {set_name}")
-            print(f"  Videos: {', '.join(data['videos']) if data['videos'] else 'Keine Videodateien gefunden.'}")
-            print(f"  Titelbild: {data['image'] if data['image'] else 'Kein Titelbild gefunden.'}")
-            print("-" * 40)  # Trennlinie für die Übersicht
 
         return media_sets
 

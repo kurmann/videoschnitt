@@ -1,3 +1,4 @@
+import json
 import os
 import typer
 from emby_integrator.file_manager import FileManager
@@ -9,7 +10,19 @@ file_manager = FileManager()
 # Erstelle die Typer-App
 app = typer.Typer(help="FileManager CLI für Emby Integrator")
 
-app.command()(file_manager.get_mediaserver_files)
+@app.command()
+def list_mediaserver_files(source_dir: str):
+    """
+    Liste die Mediaserver-Dateien aus einem Verzeichnis auf und gruppiere sie nach Mediensets.
+    """
+    media_sets = file_manager.get_mediaserver_files(source_dir)
+    
+    # Formatiere die Ausgabe in einem menschenlesbaren Format
+    for set_name, data in media_sets.items():
+        print(f"Medienset: {set_name}")
+        print(f"  Videos: {', '.join(data['videos']) if data['videos'] else 'Keine Videodateien gefunden.'}")
+        print(f"  Titelbild: {data['image'] if data['image'] else 'Kein Titelbild gefunden.'}")
+        print("-" * 40)
 
 @app.command()
 def compress_masterfile(
