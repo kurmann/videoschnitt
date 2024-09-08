@@ -25,15 +25,17 @@ def import_and_compress_media(source_dir, destination_dir, compression_dir=None,
     # Steuerung der Löschoption basierend auf dem Parameter keep_original_prores
     delete_prores = not keep_original_prores
 
-    # Gib jede gefundene ProRes-Datei schrittweise aus
+    # Alle gefundenen Dateien werden direkt iterativ ausgegeben
+    print("Gefundene Dateien:")
     prores_files = []
-    print("Gefundene ProRes-Dateien:")
     for root, _, files in os.walk(source_dir):
         for file in files:
-            if file.lower().endswith(".mov") and get_video_codec(os.path.join(root, file)) == "prores":
-                prores_file = os.path.join(root, file)
-                print(prores_file)  # Schreibt jede Datei direkt in die Konsole
-                prores_files.append(prores_file)
+            file_path = os.path.join(root, file)
+            print(file_path)  # Gibt jede Datei direkt aus
+
+            # Wenn es sich um eine ProRes-Datei handelt, füge sie der Liste hinzu
+            if file.lower().endswith(".mov") and get_video_codec(file_path) == "prores":
+                prores_files.append(file_path)
 
     # Wenn ein Kompressionsverzeichnis angegeben ist, verwende es als `output_directory`
     if compression_dir:
