@@ -1,3 +1,4 @@
+import os
 import typer
 from emby_integrator.file_manager import FileManager
 
@@ -17,7 +18,12 @@ def compress_masterfile(
     input_file: str, 
     delete_master_file: bool = typer.Option(False, help="Lösche die Master-Datei nach der Komprimierung.")
 ):
-    """Komprimiere eine Master-Datei."""
+    """
+    Komprimiere eine Master-Datei.
+
+    Diese Methode startet die Kompression der angegebenen Datei und bietet die Möglichkeit, 
+    nach Abschluss der Komprimierung die Originaldatei zu löschen.
+    """
     
     # Definiere einen Callback, der eine Benachrichtigung sendet, wenn die Komprimierung abgeschlossen ist
     def notify_completion(input_file, output_file):
@@ -27,8 +33,19 @@ def compress_masterfile(
 
 @app.command()
 def convert_image_to_adobe_rgb(image_file: str):
-    """Konvertiere ein Bild in das Adobe RGB-Profil und speichere es als JPEG."""
-    file_manager.convert_image_to_adobe_rgb(image_file)
+    """Erstelle Adobe RGB-JPG-Datei"""
+    # Ausgabedatei auf Basis des Eingabedateinamens (im selben Verzeichnis mit .jpg)
+    output_file = f"{os.path.splitext(image_file)[0]}.jpg"
+    file_manager.convert_image_to_adobe_rgb(image_file, output_file)
+
+@app.command()
+def convert_images_to_adobe_rgb(media_dir: str):
+    """
+    Konvertiere eine Liste von PNG-Bildern in Adobe RGB, falls eine passende Videodatei existiert.
+    :param media_dir: Verzeichnis, das sowohl die PNG-Bilder als auch die Videodateien enthält
+    """
+    image_files = [os.path.join(media_dir, f) for f in os.listdir(media_dir) if f.lower().endswith(".png")]
+    file_manager.convert_images_to_adobe_rgb(image_files, media_dir)
 
 @app.command()
 def get_images_for_artwork(directory: str):
