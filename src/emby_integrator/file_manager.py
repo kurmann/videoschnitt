@@ -1,16 +1,20 @@
 import os
-import time
 import subprocess
 from dotenv import load_dotenv
 from collections import defaultdict
-from apple_compressor_manager.compressor_helpers import process_batch, send_macos_notification
+from apple_compressor_manager.compressor_helpers import process_batch
+import typer
 
 # Lade die .env Datei
 load_dotenv()
 
+# Erstelle eine Typer-App
+app = typer.Typer()
+
 # Modulvariablen
 ADOBE_RGB_PROFILE = "/System/Library/ColorSync/Profiles/AdobeRGB1998.icc"
 COMPRESSOR_PROFILE_PATH = "/Users/patrickkurmann/Library/Application Support/Compressor/Settings/4K60-Medienserver.compressorsetting"
+
 
 class FileManager:
     SUPPORTED_VIDEO_FORMATS = [".mp4", ".mov"]

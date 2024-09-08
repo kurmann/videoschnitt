@@ -2,16 +2,14 @@ import os
 import typer
 from emby_integrator.file_manager import FileManager
 
+
 # Erstelle eine Instanz von FileManager
 file_manager = FileManager()
 
 # Erstelle die Typer-App
 app = typer.Typer(help="FileManager CLI für Emby Integrator")
 
-@app.command()
-def get_mediaserver_files(source_dir: str):
-    """Rufe die Mediaserver-Dateien aus einem Verzeichnis ab."""
-    file_manager.get_mediaserver_files(source_dir)
+app.command()(file_manager.get_mediaserver_files)
 
 @app.command()
 def compress_masterfile(

@@ -20,7 +20,7 @@ $ emby-integrator [OPTIONS] COMMAND [ARGS]...
 * `convert-image-to-adobe-rgb`: Erstelle Adobe RGB-JPG-Datei
 * `convert-images-to-adobe-rgb`: Konvertiere eine Liste von PNG-Bildern in...
 * `get-images-for-artwork`: Rufe geeignete Bilder für Artwork aus...
-* `get-mediaserver-files`: Rufe die Mediaserver-Dateien aus einem...
+* `get-mediaserver-files`: Gruppiere Mediendateien nach Mediensets...
 
 ## `emby-integrator compress-masterfile`
 
@@ -101,7 +101,26 @@ $ emby-integrator get-images-for-artwork [OPTIONS] DIRECTORY
 
 ## `emby-integrator get-mediaserver-files`
 
-Rufe die Mediaserver-Dateien aus einem Verzeichnis ab.
+Gruppiere Mediendateien nach Mediensets und überprüfe, ob passende Titelbilder existieren.
+
+Args:
+    source_dir (str): Das Verzeichnis, in dem nach Mediendateien und Bildern gesucht wird.
+
+Returns:
+    dict: Ein Dictionary, das Mediensets als Schlüssel enthält und die zugehörigen 
+        Videos und optionalen Titelbilder als Wert hat.
+
+        Beispiel:
+        {
+            "Medienset_Name": {
+                "videos": ["video1.mp4", "video2.mov"],
+                "image": "titelbild.jpg"  # oder None, wenn kein Bild vorhanden ist
+            }
+        }
+
+Raises:
+    FileNotFoundError: Wenn das angegebene Verzeichnis nicht existiert.
+    ValueError: Wenn keine Mediendateien gefunden werden.
 
 **Usage**:
 
