@@ -25,37 +25,40 @@ def import_and_compress_media(source_dir, destination_dir, compression_dir=None,
     # Steuerung der Löschoption basierend auf dem Parameter keep_original_prores
     delete_prores = not keep_original_prores
 
-    # Alle gefundenen Dateien werden direkt iterativ ausgegeben
-    print("Gefundene Dateien:")
-    prores_files = []
-    for root, _, files in os.walk(source_dir):
-        for file in files:
-            file_path = os.path.join(root, file)
-            print(file_path)  # Gibt jede Datei direkt aus
+    # Filtere nur ProRes-Dateien aus dem Quellverzeichnis
+    prores_files = [
+        os.path.join(root, file)
+        for root, _, files in os.walk(source_dir)
+        for file in files
+        if file.lower().endswith(".mov") and get_video_codec(os.path.join(root, file)) == "prores"
+    ]
 
-            # Wenn es sich um eine ProRes-Datei handelt, füge sie der Liste hinzu
-            if file.lower().endswith(".mov") and get_video_codec(file_path) == "prores":
-                prores_files.append(file_path)
+    # Gib alle gefundenen ProRes-Dateien als Liste aus
+    print("Gefundene ProRes-Dateien:")
+    for prores_file in prores_files:
+        print(prores_file)
 
-    # Wenn ein Kompressionsverzeichnis angegeben ist, verwende es als `output_directory`
-    if compression_dir:
-        run_compress_prores(prores_files, compression_dir, COMPRESSOR_PROFILE_PATH, delete_prores, callback=on_compression_complete, prores_dir=source_dir)
-        
-        # Wenn die Kompression abgeschlossen ist, organisiere die HEVC-A-Dateien aus dem Kompressionsverzeichnis
-        print(f"Organisiere komprimierte Dateien aus: {compression_dir}")
-        organize_media_files(compression_dir, destination_dir)
-    else:
-        # Wenn kein Kompressionsverzeichnis angegeben ist, komprimiere direkt im Quellverzeichnis
-        run_compress_prores(prores_files, source_dir, COMPRESSOR_PROFILE_PATH, delete_prores, callback=on_compression_complete)
-    
+    # Wenn ProRes-Dateien gefunden wurden, führe die Kompression durch
+    if prores_files:
+        if compression_dir:
+            run_compress_prores(prores_files, compression_dir, COMPRESSOR_PROFILE_PATH, delete_prores, callback=on_compression_complete, prores_dir=source_dir)
+
+            # Organisiere die komprimierten HEVC-A-Dateien aus dem Kompressionsverzeichnis
+            print(f"Organisiere komprimierte Dateien aus: {compression_dir}")
+            organize_media_files(compression_dir, destination_dir)
+        else:
+            # Wenn kein Kompressionsverzeichnis angegeben ist, komprimiere direkt im Quellverzeichnis
+            run_compress_prores(prores_files, source_dir, COMPRESSOR_PROFILE_PATH, delete_prores, callback=on_compression_complete)
+
     # Organisiere alle übrigen Dateien aus dem Quellverzeichnis im Zielverzeichnis
     print(f"Organisiere übrige Dateien aus: {source_dir}")
     organize_media_files(source_dir, destination_dir)
-    
-    # Warte noch 10 Minuten, falls noch nicht alle Kompressionsjobs abgeschlossen sind
-    print("Warte auf Abschluss der Kompressionsjobs...")
-    import time
-    time.sleep(600)
+
+    # Nur warten, wenn tatsächlich ProRes-Dateien komprimiert wurden
+    if prores_files:
+        print("Warte auf Abschluss der Kompressionsjobs...")
+        import time
+        time.sleep(600)  # 10 Minuten warten
     
     # Organisiere die restlichen Dateien aus dem Kompressionsverzeichnis
     if compression_dir:
