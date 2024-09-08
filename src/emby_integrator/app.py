@@ -18,7 +18,12 @@ def compress_masterfile(
     delete_master_file: bool = typer.Option(False, help="Lösche die Master-Datei nach der Komprimierung.")
 ):
     """Komprimiere eine Master-Datei."""
-    file_manager.compress_masterfile(input_file, delete_master_file)
+    
+    # Definiere einen Callback, der eine Benachrichtigung sendet, wenn die Komprimierung abgeschlossen ist
+    def notify_completion(input_file, output_file):
+        print(f"Komprimierung abgeschlossen für: {input_file}")
+    
+    file_manager.compress_masterfile(input_file, delete_master_file, callback=notify_completion)
 
 @app.command()
 def convert_image_to_adobe_rgb(image_file: str):
