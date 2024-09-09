@@ -2,7 +2,7 @@ import json
 import os
 import typer
 from emby_integrator.mediaset_manager import get_mediaserver_files
-from emby_integrator.metadata_manager import get_metadata
+from emby_integrator.metadata_manager import get_metadata, parse_recording_date
 from emby_integrator.video_manager import compress_masterfile
 from emby_integrator.image_manager import convert_images_to_adobe_rgb
 
@@ -155,6 +155,23 @@ def list_metadata(
                 print(f"{key}: {value}")
     except (FileNotFoundError, ValueError) as e:
         typer.secho(str(e), fg=typer.colors.RED)
+
+@app.command(name="get-recording-date")
+def get_recording_date_command(file_path: str):
+    """
+    Gibt das Aufnahmedatum aus dem Dateinamen in einem deutschen Datumsformat mit Wochentag aus.
+
+    Args:
+        file_path (str): Pfad zur Datei, deren Aufnahmedatum im Dateinamen enthalten sein soll.
+    """
+    recording_date = parse_recording_date(file_path)
+    
+    if recording_date:
+        # Datumsformat auf Deutsch: "Montag, 27. August 2024"
+        formatted_date = recording_date.strftime("%A, %d. %B %Y")
+        typer.secho(f"Aufnahmedatum: {formatted_date}", fg=typer.colors.GREEN)
+    else:
+        typer.secho(f"Kein gültiges Aufnahmedatum im Dateinamen gefunden: {file_path}", fg=typer.colors.RED)
 
 if __name__ == '__main__':
     app()

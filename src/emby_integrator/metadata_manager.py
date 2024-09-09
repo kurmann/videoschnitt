@@ -5,8 +5,8 @@ import os
 # Liste der benötigten Metadaten
 METADATA_KEYS = [
     "FileName", "Directory", "FileSize", "FileModificationDateTime", "FileType", "MIMEType", 
-    "CreateDate", "Duration", "AudioFormat", "ImageWidth", "ImageHeight", "CompressorName", 
-    "BitDepth", "VideoFrameRate", "Title", "Album", "Description", "Copyright", 
+    "CreateDate", "Duration", "AudioFormat", "ImageWidth", "ImageHeight", "CompressorID",
+    "CompressorName", "BitDepth", "VideoFrameRate", "Title", "Album", "Description", "Copyright", 
     "Author", "Keywords", "AvgBitrate"
 ]
 
@@ -49,3 +49,27 @@ def get_metadata(file_path: str) -> dict:
             f"Vollständiger Befehl: {command}"
         )
         raise ValueError(error_message)
+    
+import re
+from datetime import datetime
+import os
+
+def parse_recording_date(file_path: str) -> datetime | None:
+    """
+    Extrahiert das Aufnahmedatum aus dem Dateinamen.
+
+    Der Dateiname muss im Format 'YYYY-MM-DD <Rest des Dateinamens>' vorliegen.
+    Wenn kein Datum im Dateinamen gefunden wird, wird None zurückgegeben.
+
+    Args:
+        file_path (str): Pfad zur Datei, deren Dateiname das Datum enthalten soll.
+
+    Returns:
+        datetime | None: Das extrahierte Datum als datetime-Objekt, oder None, wenn kein Datum gefunden wurde.
+    """
+    file_name = os.path.basename(file_path)
+    match = re.search(r"\d{4}-\d{2}-\d{2}", file_name)
+    if match:
+        date_str = match.group()
+        return datetime.strptime(date_str, "%Y-%m-%d")
+    return None
