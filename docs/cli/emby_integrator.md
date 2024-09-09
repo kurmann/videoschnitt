@@ -17,9 +17,7 @@ $ emby-integrator [OPTIONS] COMMAND [ARGS]...
 **Commands**:
 
 * `compress-masterfile`: Komprimiere eine Master-Datei.
-* `convert-image-to-adobe-rgb`: Erstelle Adobe RGB-JPG-Datei
 * `convert-images-to-adobe-rgb`: Konvertiere eine Liste von PNG-Bildern in...
-* `get-images-for-artwork`: Rufe geeignete Bilder für Artwork aus...
 * `list-mediaserver-files`: Liste die Mediaserver-Dateien aus einem...
 
 ## `emby-integrator compress-masterfile`
@@ -28,6 +26,16 @@ Komprimiere eine Master-Datei.
 
 Diese Methode startet die Kompression der angegebenen Datei und bietet die Möglichkeit, 
 nach Abschluss der Komprimierung die Originaldatei zu löschen.
+
+Args:
+    input_file (str): Der Pfad zur Master-Datei, die komprimiert werden soll.
+    delete_master_file (bool): Optional. Gibt an, ob die Master-Datei nach der Komprimierung gelöscht werden soll. Standard ist `False`.
+
+Returns:
+    None
+
+Beispiel:
+    $ emby-integrator compress-masterfile /path/to/masterfile.mov --delete-master-file
 
 **Usage**:
 
@@ -44,28 +52,21 @@ $ emby-integrator compress-masterfile [OPTIONS] INPUT_FILE
 * `--delete-master-file / --no-delete-master-file`: Lösche die Master-Datei nach der Komprimierung.  [default: no-delete-master-file]
 * `--help`: Show this message and exit.
 
-## `emby-integrator convert-image-to-adobe-rgb`
-
-Erstelle Adobe RGB-JPG-Datei
-
-**Usage**:
-
-```console
-$ emby-integrator convert-image-to-adobe-rgb [OPTIONS] IMAGE_FILE
-```
-
-**Arguments**:
-
-* `IMAGE_FILE`: [required]
-
-**Options**:
-
-* `--help`: Show this message and exit.
-
 ## `emby-integrator convert-images-to-adobe-rgb`
 
 Konvertiere eine Liste von PNG-Bildern in Adobe RGB, falls eine passende Videodatei existiert.
-:param media_dir: Verzeichnis, das sowohl die PNG-Bilder als auch die Videodateien enthält
+
+Diese Methode durchsucht das angegebene Verzeichnis nach PNG-Bildern und konvertiert sie in das 
+Adobe RGB-Farbprofil, falls eine passende Videodatei im gleichen Verzeichnis existiert.
+
+Args:
+    media_dir (str): Der Pfad zu dem Verzeichnis, das nach PNG-Bildern und passenden Videodateien durchsucht wird.
+
+Returns:
+    None
+
+Beispiel:
+    $ emby-integrator convert-images-to-adobe-rgb /path/to/mediadirectory
 
 **Usage**:
 
@@ -76,24 +77,6 @@ $ emby-integrator convert-images-to-adobe-rgb [OPTIONS] MEDIA_DIR
 **Arguments**:
 
 * `MEDIA_DIR`: [required]
-
-**Options**:
-
-* `--help`: Show this message and exit.
-
-## `emby-integrator get-images-for-artwork`
-
-Rufe geeignete Bilder für Artwork aus einem Verzeichnis ab.
-
-**Usage**:
-
-```console
-$ emby-integrator get-images-for-artwork [OPTIONS] DIRECTORY
-```
-
-**Arguments**:
-
-* `DIRECTORY`: [required]
 
 **Options**:
 

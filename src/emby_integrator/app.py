@@ -3,7 +3,7 @@ import os
 import typer
 from emby_integrator.mediaset_manager import get_mediaserver_files
 from emby_integrator.video_manager import compress_masterfile
-from emby_integrator.image_manager import convert_image_to_adobe_rgb, convert_images_to_adobe_rgb, get_images_for_artwork
+from emby_integrator.image_manager import convert_images_to_adobe_rgb
 
 # Erstelle die Typer-App
 app = typer.Typer(help="FileManager CLI für Emby Integrator")
@@ -45,7 +45,6 @@ def list_mediaserver_files(
         FileNotFoundError: Wenn das angegebene Verzeichnis nicht existiert.
     """
     media_sets = get_mediaserver_files(source_dir)
-
     
     if json_output:
         # JSON-Ausgabe
@@ -56,11 +55,10 @@ def list_mediaserver_files(
         
         for set_name, data in media_sets.items():
             print(f"Medienset: {set_name}")
-            # Label "Videos" auf eine feste Breite setzen
             print(f"{'Videos:':<{max_label_length}} {', '.join(data['videos']) if data['videos'] else 'Keine Videodateien gefunden.'}")
-            # Label "Titelbild" ebenfalls auf die gleiche Breite setzen
             print(f"{'Titelbild:':<{max_label_length}} {data['image'] if data['image'] else 'Kein Titelbild gefunden.'}")
             print("-" * 40)
+
 
 @app.command(name="compress-masterfile")
 def compress_masterfile_command(
@@ -72,6 +70,16 @@ def compress_masterfile_command(
 
     Diese Methode startet die Kompression der angegebenen Datei und bietet die Möglichkeit, 
     nach Abschluss der Komprimierung die Originaldatei zu löschen.
+
+    Args:
+        input_file (str): Der Pfad zur Master-Datei, die komprimiert werden soll.
+        delete_master_file (bool): Optional. Gibt an, ob die Master-Datei nach der Komprimierung gelöscht werden soll. Standard ist `False`.
+
+    Returns:
+        None
+    
+    Beispiel:
+        $ emby-integrator compress-masterfile /path/to/masterfile.mov --delete-master-file
     """
     
     # Definiere einen Callback, der eine Benachrichtigung sendet, wenn die Komprimierung abgeschlossen ist
@@ -80,26 +88,27 @@ def compress_masterfile_command(
     
     compress_masterfile(input_file, delete_master_file, callback=notify_completion)
 
-@app.command(name="convert-image-to-adobe-rgb")
-def convert_image_to_adobe_rgb_command(image_file: str):
-    """Erstelle Adobe RGB-JPG-Datei"""
-    # Ausgabedatei auf Basis des Eingabedateinamens (im selben Verzeichnis mit .jpg)
-    output_file = f"{os.path.splitext(image_file)[0]}.jpg"
-    convert_image_to_adobe_rgb(image_file, output_file)
 
 @app.command(name="convert-images-to-adobe-rgb")
 def convert_images_to_adobe_rgb_command(media_dir: str):
     """
     Konvertiere eine Liste von PNG-Bildern in Adobe RGB, falls eine passende Videodatei existiert.
-    :param media_dir: Verzeichnis, das sowohl die PNG-Bilder als auch die Videodateien enthält
+
+    Diese Methode durchsucht das angegebene Verzeichnis nach PNG-Bildern und konvertiert sie in das 
+    Adobe RGB-Farbprofil, falls eine passende Videodatei im gleichen Verzeichnis existiert.
+
+    Args:
+        media_dir (str): Der Pfad zu dem Verzeichnis, das nach PNG-Bildern und passenden Videodateien durchsucht wird.
+
+    Returns:
+        None
+    
+    Beispiel:
+        $ emby-integrator convert-images-to-adobe-rgb /path/to/mediadirectory
     """
     image_files = [os.path.join(media_dir, f) for f in os.listdir(media_dir) if f.lower().endswith(".png")]
     convert_images_to_adobe_rgb(image_files, media_dir)
 
-@app.command(name="get-images-for-artwork")
-def get_images_for_artwork_command(directory: str):
-    """Rufe geeignete Bilder für Artwork aus einem Verzeichnis ab."""
-    get_images_for_artwork(directory)
 
 if __name__ == '__main__':
     app()
