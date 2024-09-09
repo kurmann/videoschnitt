@@ -1,13 +1,9 @@
 import json
 import os
 import typer
-from emby_integrator.file_manager import FileManager
-from emby_integrator.image_manager import ImageManager
-
-
-# Erstelle eine Instanz von FileManager
-file_manager = FileManager()
-image_manager = ImageManager()
+from emby_integrator.mediaset_manager import get_mediaserver_files
+from emby_integrator.video_manager import compress_masterfile
+from emby_integrator.image_manager import convert_image_to_adobe_rgb, convert_images_to_adobe_rgb, get_images_for_artwork
 
 # Erstelle die Typer-App
 app = typer.Typer(help="FileManager CLI für Emby Integrator")
@@ -48,7 +44,8 @@ def list_mediaserver_files(
     Raises:
         FileNotFoundError: Wenn das angegebene Verzeichnis nicht existiert.
     """
-    media_sets = file_manager.get_mediaserver_files(source_dir)
+    media_sets = get_mediaserver_files(source_dir)
+
     
     if json_output:
         # JSON-Ausgabe
@@ -65,8 +62,8 @@ def list_mediaserver_files(
             print(f"{'Titelbild:':<{max_label_length}} {data['image'] if data['image'] else 'Kein Titelbild gefunden.'}")
             print("-" * 40)
 
-@app.command()
-def compress_masterfile(
+@app.command(name="compress-masterfile")
+def compress_masterfile_command(
     input_file: str, 
     delete_master_file: bool = typer.Option(False, help="Lösche die Master-Datei nach der Komprimierung.")
 ):
@@ -81,28 +78,28 @@ def compress_masterfile(
     def notify_completion(input_file, output_file):
         print(f"Komprimierung abgeschlossen für: {input_file}")
     
-    file_manager.compress_masterfile(input_file, delete_master_file, callback=notify_completion)
+    compress_masterfile(input_file, delete_master_file, callback=notify_completion)
 
-@app.command()
-def convert_image_to_adobe_rgb(image_file: str):
+@app.command(name="convert-image-to-adobe-rgb")
+def convert_image_to_adobe_rgb_command(image_file: str):
     """Erstelle Adobe RGB-JPG-Datei"""
     # Ausgabedatei auf Basis des Eingabedateinamens (im selben Verzeichnis mit .jpg)
     output_file = f"{os.path.splitext(image_file)[0]}.jpg"
-    image_manager.convert_image_to_adobe_rgb(image_file, output_file)
+    convert_image_to_adobe_rgb(image_file, output_file)
 
-@app.command()
-def convert_images_to_adobe_rgb(media_dir: str):
+@app.command(name="convert-images-to-adobe-rgb")
+def convert_images_to_adobe_rgb_command(media_dir: str):
     """
     Konvertiere eine Liste von PNG-Bildern in Adobe RGB, falls eine passende Videodatei existiert.
     :param media_dir: Verzeichnis, das sowohl die PNG-Bilder als auch die Videodateien enthält
     """
     image_files = [os.path.join(media_dir, f) for f in os.listdir(media_dir) if f.lower().endswith(".png")]
-    image_manager.convert_images_to_adobe_rgb(image_files, media_dir)
+    convert_images_to_adobe_rgb(image_files, media_dir)
 
-@app.command()
-def get_images_for_artwork(directory: str):
+@app.command(name="get-images-for-artwork")
+def get_images_for_artwork_command(directory: str):
     """Rufe geeignete Bilder für Artwork aus einem Verzeichnis ab."""
-    image_manager.get_images_for_artwork(directory)
+    get_images_for_artwork(directory)
 
 if __name__ == '__main__':
     app()
