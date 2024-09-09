@@ -2,6 +2,7 @@ import json
 import os
 import typer
 from emby_integrator.mediaset_manager import get_mediaserver_files
+from emby_integrator.metadata_manager import get_metadata
 from emby_integrator.video_manager import compress_masterfile
 from emby_integrator.image_manager import convert_images_to_adobe_rgb
 
@@ -108,7 +109,52 @@ def convert_images_to_adobe_rgb_command(media_dir: str):
     """
     image_files = [os.path.join(media_dir, f) for f in os.listdir(media_dir) if f.lower().endswith(".png")]
     convert_images_to_adobe_rgb(image_files, media_dir)
+    
+@app.command()
+def list_metadata(
+    file_path: str, 
+    json_output: bool = typer.Option(False, help="Gebe die Ausgabe im JSON-Format aus")
+):
+    """
+    Extrahiere die Metadaten aus einer Datei und gebe sie aus.
 
+    Diese Methode extrahiert relevante Metadaten wie Dateiname, Größe, Erstellungsdatum, Dauer, Videoformat 
+    und andere Informationen aus der Datei mithilfe von ExifTool. Falls das Flag `--json-output` gesetzt wird, 
+    wird die Ausgabe im JSON-Format zurückgegeben.
+
+    Args:
+        file_path (str): Der Pfad zur Datei, aus der die Metadaten extrahiert werden sollen.
+        json_output (bool): Optional. Wenn gesetzt, wird die Ausgabe im JSON-Format dargestellt. Standard ist `False`.
+
+    Returns:
+        None: Gibt die extrahierten Metadaten in einer menschenlesbaren Form oder als JSON zurück, je nach dem Wert von `json_output`.
+    
+    Beispiel:
+        $ emby-integrator get-metadata /path/to/video.mov
+
+        Ausgabe:
+        FileName: video.mov
+        Directory: /path/to
+        FileSize: 123456 bytes
+        FileModificationDateTime: 2024-08-10 10:30:00
+        ...
+    
+    Raises:
+        FileNotFoundError: Wenn die angegebene Datei nicht existiert.
+        ValueError: Wenn keine Metadaten extrahiert werden konnten.
+    """
+    try:
+        metadata = get_metadata(file_path)
+        
+        if json_output:
+            # JSON-Ausgabe
+            print(json.dumps(metadata, indent=4))
+        else:
+            # Menschenlesbare Ausgabe
+            for key, value in metadata.items():
+                print(f"{key}: {value}")
+    except (FileNotFoundError, ValueError) as e:
+        typer.secho(str(e), fg=typer.colors.RED)
 
 if __name__ == '__main__':
     app()
