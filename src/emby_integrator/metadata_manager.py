@@ -5,8 +5,8 @@ import os
 # Liste der benötigten Metadaten
 METADATA_KEYS = [
     "FileName", "Directory", "FileSize", "FileModificationDateTime", "FileType", "MIMEType", 
-    "CreateDate", "Duration", "AudioFormat", "ImageWidth", "ImageHeight", "CompressorName", 
-    "BitDepth", "VideoFrameRate", "Title", "Album", "Description", "Copyright", 
+    "CreateDate", "Duration", "AudioFormat", "ImageWidth", "ImageHeight", "CompressorID",
+    "CompressorName", "BitDepth", "VideoFrameRate", "Title", "Album", "Description", "Copyright", 
     "Author", "Keywords", "AvgBitrate"
 ]
 
