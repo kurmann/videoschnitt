@@ -18,7 +18,9 @@ $ emby-integrator [OPTIONS] COMMAND [ARGS]...
 
 * `compress-masterfile`: Komprimiere eine Master-Datei.
 * `convert-images-to-adobe-rgb`: Konvertiere eine Liste von PNG-Bildern in...
+* `get-recording-date`: Gibt das Aufnahmedatum aus dem Dateinamen...
 * `list-mediaserver-files`: Liste die Mediaserver-Dateien aus einem...
+* `list-metadata`: Extrahiere die Metadaten aus einer Datei...
 
 ## `emby-integrator compress-masterfile`
 
@@ -82,6 +84,27 @@ $ emby-integrator convert-images-to-adobe-rgb [OPTIONS] MEDIA_DIR
 
 * `--help`: Show this message and exit.
 
+## `emby-integrator get-recording-date`
+
+Gibt das Aufnahmedatum aus dem Dateinamen in einem deutschen Datumsformat mit Wochentag aus.
+
+Args:
+    file_path (str): Pfad zur Datei, deren Aufnahmedatum im Dateinamen enthalten sein soll.
+
+**Usage**:
+
+```console
+$ emby-integrator get-recording-date [OPTIONS] FILE_PATH
+```
+
+**Arguments**:
+
+* `FILE_PATH`: [required]
+
+**Options**:
+
+* `--help`: Show this message and exit.
+
 ## `emby-integrator list-mediaserver-files`
 
 Liste die Mediaserver-Dateien aus einem Verzeichnis auf und gruppiere sie nach Mediensets.
@@ -123,6 +146,50 @@ $ emby-integrator list-mediaserver-files [OPTIONS] SOURCE_DIR
 **Arguments**:
 
 * `SOURCE_DIR`: [required]
+
+**Options**:
+
+* `--json-output / --no-json-output`: Gebe die Ausgabe im JSON-Format aus  [default: no-json-output]
+* `--help`: Show this message and exit.
+
+## `emby-integrator list-metadata`
+
+Extrahiere die Metadaten aus einer Datei und gebe sie aus.
+
+Diese Methode extrahiert relevante Metadaten wie Dateiname, Größe, Erstellungsdatum, Dauer, Videoformat 
+und andere Informationen aus der Datei mithilfe von ExifTool. Falls das Flag `--json-output` gesetzt wird, 
+wird die Ausgabe im JSON-Format zurückgegeben.
+
+Args:
+    file_path (str): Der Pfad zur Datei, aus der die Metadaten extrahiert werden sollen.
+    json_output (bool): Optional. Wenn gesetzt, wird die Ausgabe im JSON-Format dargestellt. Standard ist `False`.
+
+Returns:
+    None: Gibt die extrahierten Metadaten in einer menschenlesbaren Form oder als JSON zurück, je nach dem Wert von `json_output`.
+
+Beispiel:
+    $ emby-integrator get-metadata /path/to/video.mov
+
+    Ausgabe:
+    FileName: video.mov
+    Directory: /path/to
+    FileSize: 123456 bytes
+    FileModificationDateTime: 2024-08-10 10:30:00
+    ...
+
+Raises:
+    FileNotFoundError: Wenn die angegebene Datei nicht existiert.
+    ValueError: Wenn keine Metadaten extrahiert werden konnten.
+
+**Usage**:
+
+```console
+$ emby-integrator list-metadata [OPTIONS] FILE_PATH
+```
+
+**Arguments**:
+
+* `FILE_PATH`: [required]
 
 **Options**:
 
