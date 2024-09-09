@@ -2,6 +2,8 @@ import os
 from collections import defaultdict
 from emby_integrator.video_manager import is_video_file, remove_suffix
 
+SUPPORTED_IMAGE_FORMATS = [".jpg"]
+
 def get_mediaserver_files(source_dir: str):
     """
     Gruppiere Mediendateien nach Mediensets und überprüfe, ob passende Titelbilder existieren.
@@ -22,7 +24,7 @@ def get_mediaserver_files(source_dir: str):
             }
 
     Raises:
-        FileNotFoundError: Wenn das angegebene Verzeichnis nicht existiert.
+        FileNotFoundError: Wenn das Verzeichnis nicht existiert.
         ValueError: Wenn keine Mediendateien gefunden werden.
     """
     if not os.path.exists(source_dir):
@@ -31,13 +33,21 @@ def get_mediaserver_files(source_dir: str):
     media_sets = defaultdict(lambda: {"videos": [], "image": None})
 
     # Dateien im Verzeichnis durchsuchen
-    for file in os.listdir(source_dir):
-        file_path = os.path.join(source_dir, file)
+    files_in_directory = os.listdir(source_dir)
+
+    for file in files_in_directory:
         base_name = remove_suffix(file)
 
         # Überprüfe, ob es sich um eine Videodatei handelt
         if is_video_file(file):
             media_sets[base_name]["videos"].append(file)
+
+    # Suche nach den zugehörigen JPG-Dateien
+    for file in files_in_directory:
+        if any(file.lower().endswith(ext) for ext in SUPPORTED_IMAGE_FORMATS):
+            base_name = os.path.splitext(file)[0]
+            if base_name in media_sets:
+                media_sets[base_name]["image"] = file
 
     if not media_sets:
         raise ValueError(f"Keine Mediendateien im Verzeichnis '{source_dir}' gefunden.")
