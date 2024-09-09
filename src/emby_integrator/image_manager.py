@@ -44,7 +44,13 @@ def convert_image_to_adobe_rgb(input_file: str, output_file: str) -> None:
     if not input_file.lower().endswith(".png"):
         raise ValueError("Eingabedatei muss eine PNG-Datei sein.")
     
-    command = ["sips", "-m", ADOBE_RGB_PROFILE, input_file, "--out", output_file]
+    if not output_file.lower().endswith(".jpg"):
+        raise ValueError("Ausgabedatei muss eine JPG-Datei sein.")
+    
+    # Verwende SIPS, um das Format zu ändern und das Farbprofil anzupassen
+    command = [
+        "sips", "-s", "format", "jpeg", "-m", ADOBE_RGB_PROFILE, input_file, "--out", output_file
+    ]
     
     try:
         subprocess.run(command, check=True)
