@@ -57,7 +57,11 @@ Die Anwendung bietet eine Reihe von Funktionen, die speziell für den Videoschni
    ```bash
    kurmann-videoschnitt --help
    ```
-## CLI-Dokumentation
+## CLI
+
+Grundlage für die CLI ist das [CLI-Design](/docs/CLI-Design.md)
+
+### CLI-Dokumentation
 
 - [Apple Compressor Manager](docs/cli/apple_compressor_manager.md)
 - [Original Media Integrator](docs/cli/original_media_integrator.md)
