@@ -1,22 +1,5 @@
 # CLI-Design
 
-## Inhaltsverzeichnis
-
-# CLI-Design
-
-## Inhaltsverzeichnis
-
-1. [Einleitung](#einleitung)
-2. [Benennungen und Konsistenz](#benennungen-und-konsistenz)
-3. [Modularer Ansatz](#modularer-ansatz)
-4. [CLI-Ausgabe und Rückgabewerte](#CLI-Methoden)
-5. [Fehlerbehandlung](#fehlerbehandlung)
-6. [Logging und Transparenz](#logging-und-transparenz)
-7. [CLI-Methoden vs. Modul-Methoden](#cli-methoden-vs-modul-methoden)
-8. [Konsistenz bei Schreiboperationen](#konsistenz-bei-schreiboperationen)
-9. [Best Practices für Dateimanipulation](#best-practices-für-dateimanipulation)
-10. [Konsistenz und Wartbarkeit](#konsistenz-und-wartbarkeit)
-
 ## 1. Einleitung
 
 Eine **Command-Line Interface** (CLI) ermöglicht es Benutzern, Softwareanwendungen über einfache Textbefehle zu steuern. Dies ist besonders nützlich in der Automatisierung und im Skripting, wo Benutzer spezifische Aufgaben schnell und wiederholbar ausführen können, ohne eine grafische Benutzeroberfläche (GUI) zu benötigen. 
