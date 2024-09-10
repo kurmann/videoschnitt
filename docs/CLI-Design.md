@@ -9,7 +9,7 @@
 1. [Einleitung](#einleitung)
 2. [Benennungen und Konsistenz](#benennungen-und-konsistenz)
 3. [Modularer Ansatz](#modularer-ansatz)
-4. [CLI-Ausgabe und Rückgabewerte](#cli-ausgabe-und-rückgabewerte)
+4. [CLI-Ausgabe und Rückgabewerte](#CLI-Methoden)
 5. [Fehlerbehandlung](#fehlerbehandlung)
 6. [Logging und Transparenz](#logging-und-transparenz)
 7. [CLI-Methoden vs. Modul-Methoden](#cli-methoden-vs-modul-methoden)
