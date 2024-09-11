@@ -289,14 +289,17 @@ Dieses Kapitel beschreibt, wie Schreiboperationen in der CLI strukturiert und be
 
 ### 5.1 Benennung von Schreiboperationen
 
-Im Gegensatz zu Leseoperationen, bei denen die Verwendung von Begriffen wie **`get`** oder **`list`** vorherrscht, sollten Schreiboperationen in der CLI explizit benannt werden, um dem Benutzer klar zu machen, dass eine **Veränderung** vorgenommen wird. Typische Begriffe für Schreiboperationen sind:
+Im Gegensatz zu Leseoperationen, bei denen die Verwendung von Begriffen wie *get* oder *list* vorherrscht, sollten Schreiboperationen in der CLI explizit benannt werden, um dem Benutzer klar zu machen, dass eine Veränderung vorgenommen wird. Typische Begriffe für Schreiboperationen sind:
 
-- **`create`**: Erstelle ein neues Element oder eine Ressource.
-- **`update`**: Aktualisiere ein bestehendes Element oder eine Ressource.
-- **`delete`**: Lösche ein Element oder eine Ressource.
-- **`integrate`**: Füge eine Datei oder ein Element in ein anderes System oder Verzeichnis ein.
-- **`compress`**: Komprimiere eine Datei oder einen Ordner.
-- **`convert`**: Wandle eine Datei von einem Format in ein anderes um.
+- **create**: Erstelle ein neues Element oder eine Ressource.
+- **update**: Aktualisiere ein bestehendes Element oder eine Ressource.
+- **delete**: Lösche ein Element oder eine Ressource.
+- **integrate**: Füge eine Datei oder ein Element in ein anderes System oder Verzeichnis ein. Dies kann das Verschieben oder Kopieren einer Datei beinhalten, häufig in Kombination mit der Funktionalität, den genauen Ort zu finden, an dem die Datei integriert werden soll.
+- **move**: Verschiebe ein Element von A nach B, ohne dass dabei eine Kopie erstellt wird.
+- **compress**: Komprimiere eine Datei oder einen Ordner, um Speicherplatz zu sparen.
+- **convert**: Wandle eine Datei von einem Format in ein anderes um.
+
+Diese Begriffe sind klar und beschreibend, sodass der Benutzer sofort versteht, welche Auswirkungen der Befehl haben wird.
 
 Die **Wahl der richtigen Begriffe** ist entscheidend, um dem Benutzer die Wirkung des Befehls klar zu machen. Die Benennung sollte deutlich machen, welche Art von Veränderung vorgenommen wird, und im besten Fall das Ergebnis des Befehls beschreiben.
 
@@ -864,7 +867,7 @@ Eine der wichtigsten Säulen der Konsistenz in einer **CLI** ist die Einheitlich
 
 ##### 10.1.1 Einheitliche Benennungen
 
-- **Verben für Befehle**: Befehle sollten mit einem Verb beginnen, um klar zu machen, dass eine Aktion ausgeführt wird. Beispiele: `list`, `get`, `create`, `delete`, `update`, `integrate`.
+- **Verben für Befehle**: Befehle sollten mit einem Verb beginnen, um klar zu machen, dass eine Aktion ausgeführt wird. Beispiele: `list`, `get`, `create`, `delete`, `update`, `move`, `integrate`.
 - **Eindeutige und verständliche Benennungen**: Verwende Begriffe, die leicht zu verstehen sind und keine Mehrdeutigkeiten verursachen.
 - **Optionen und Argumente**: Halte die Benennung von Optionen und Argumenten konsistent. Beispielsweise sollten Dateipfade immer als `--file` oder `--path` benannt werden.
 
