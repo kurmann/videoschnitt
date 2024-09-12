@@ -16,9 +16,28 @@ $ apple-compressor-manager [OPTIONS] COMMAND [ARGS]...
 
 **Commands**:
 
+* `add-tag`: Fügt der Datei das Tag 'An Apple...
 * `cleanup-prores`: Bereinigt ProRes-Dateien mit einem...
 * `compress-prores-file`: Komprimiert eine einzelne ProRes-Datei.
 * `compress-prores-files`: Komprimiert ProRes-Dateien in einem...
+
+## `apple-compressor-manager add-tag`
+
+Fügt der Datei das Tag 'An Apple Kompressor übergeben' hinzu.
+
+**Usage**:
+
+```console
+$ apple-compressor-manager add-tag [OPTIONS] FILE_PATH
+```
+
+**Arguments**:
+
+* `FILE_PATH`: Pfad zur Datei, die getaggt werden soll  [required]
+
+**Options**:
+
+* `--help`: Show this message and exit.
 
 ## `apple-compressor-manager cleanup-prores`
 
@@ -47,12 +66,13 @@ Komprimiert eine einzelne ProRes-Datei.
 **Usage**:
 
 ```console
-$ apple-compressor-manager compress-prores-file [OPTIONS] INPUT_FILE
+$ apple-compressor-manager compress-prores-file [OPTIONS] INPUT_FILE COMPRESSOR_PROFILE_PATH
 ```
 
 **Arguments**:
 
 * `INPUT_FILE`: Pfad zur ProRes-Datei  [required]
+* `COMPRESSOR_PROFILE_PATH`: Pfad zur Compressor-Settings-Datei  [required]
 
 **Options**:
 
@@ -67,12 +87,13 @@ Komprimiert ProRes-Dateien in einem Verzeichnis.
 **Usage**:
 
 ```console
-$ apple-compressor-manager compress-prores-files [OPTIONS] INPUT_DIR
+$ apple-compressor-manager compress-prores-files [OPTIONS] INPUT_DIR COMPRESSOR_PROFILE_PATH
 ```
 
 **Arguments**:
 
 * `INPUT_DIR`: Pfad zum Quellverzeichnis der ProRes-Dateien  [required]
+* `COMPRESSOR_PROFILE_PATH`: Pfad zur Compressor-Settings-Datei  [required]
 
 **Options**:
 
