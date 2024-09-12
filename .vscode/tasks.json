@@ -41,7 +41,7 @@
             "command": "bash",
             "args": [
                 "-c",
-                "typer ${workspaceFolder}/src/apple_compressor_manager/app.py utils docs --name apple-compressor-manager --output ${workspaceFolder}/docs/cli/apple_compressor_manager.md && typer ${workspaceFolder}/src/original_media_integrator/app.py utils docs --name original-media-integrator --output ${workspaceFolder}/docs/cli/original_media_integrator.md && typer ${workspaceFolder}/src/emby_integrator/app.py utils docs --name emby-integrator --output ${workspaceFolder}/docs/cli/emby_integrator.md"
+                "typer ${workspaceFolder}/src/kurmann_videoschnitt/app.py utils docs --name kurmann-videoschnitt --output ${workspaceFolder}/docs/cli/kurmann_videoschnitt.md"
             ],
             "problemMatcher": [],
             "group": {
