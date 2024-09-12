@@ -1,3 +1,5 @@
+# appple_compressor_manager/cleanup_prores.py
+
 import os
 import subprocess
 import json

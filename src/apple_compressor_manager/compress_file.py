@@ -9,7 +9,6 @@ from apple_compressor_manager.compression_monitor import monitor_compression
 from apple_compressor_manager.file_utils import add_compression_tag 
 
 MIN_PRORES_SIZE_MB = 25  # ProRes-Dateien unter 25 MB werden nicht komprimiert
-MIN_OUTPUT_SIZE_KB = 100  # Output-Dateien unter 100 KB werden als nicht abgeschlossen betrachtet
 
 async def compress_prores_file(input_file, output_file, compressor_profile_path, callback=None, delete_prores=False, prores_dir=None, add_tag=True):
     """
@@ -51,7 +50,7 @@ async def compress_prores_file(input_file, output_file, compressor_profile_path,
     print(f"Kompressionsauftrag erstellt für: {input_file} (Job-Titel: {job_title})")
 
     if result.returncode == 0:
-        if add_tag:  # Überprüfen, ob das Tag hinzugefügt werden soll
+        if add_tag:
             add_compression_tag(input_file)  # Tag hinzufügen über file_utils
         await monitor_compression(output_file, compressor_profile_path, callback, delete_prores, prores_dir)
     else:
@@ -63,15 +62,18 @@ def run_compress_file(input_file, output_directory=None, compressor_profile_path
 
     Argumente:
     - input_file: Der Pfad zur ProRes-Eingabedatei.
-    - output_directory: Das Verzeichnis, in das die komprimierte Datei gespeichert werden soll. Wenn None, wird die Datei im Quellverzeichnis gespeichert.
+    - output_directory: Das Verzeichnis, in das die komprimierte Datei gespeichert werden soll.
     - compressor_profile_path: Der Pfad zur Compressor-Settings-Datei.
     - delete_prores: Boolean, der angibt, ob die ursprüngliche ProRes-Datei nach erfolgreicher Komprimierung gelöscht werden soll.
     - callback: Eine optionale Rückruffunktion, die nach erfolgreicher Komprimierung aufgerufen wird.
     - add_tag: Boolean, der angibt, ob das Tag 'An Apple Kompressor übergeben' hinzugefügt werden soll (Standard: True).
-
+    
     Hinweis:
     - Diese Methode startet die Kompression für eine einzelne Datei und verwendet dabei das gewählte Compressor-Setting.
     """
+    if compressor_profile_path is None:
+        raise ValueError("Ein gültiger compressor_profile_path muss angegeben werden.")
+
     if output_directory is None:
         output_directory = os.path.dirname(input_file)
 
