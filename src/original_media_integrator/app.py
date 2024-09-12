@@ -3,7 +3,7 @@
 import typer
 from original_media_integrator.new_media_importer import import_and_compress_media
 
-app = typer.Typer()
+app = typer.Typer(help="Original Media Integrator")
 
 @app.command()
 def import_media(

@@ -7,7 +7,7 @@ from emby_integrator.video_manager import compress_masterfile
 from emby_integrator.image_manager import convert_images_to_adobe_rgb
 
 # Erstelle die Typer-App
-app = typer.Typer(help="FileManager CLI für Emby Integrator")
+app = typer.Typer(help="Emby Integrator")
 
 @app.command()
 def list_mediaserver_files(

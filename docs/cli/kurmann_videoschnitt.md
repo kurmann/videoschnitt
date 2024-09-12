@@ -1,11 +1,11 @@
-# `emby-integrator`
+# `kurmann-videoschnitt`
 
-FileManager CLI für Emby Integrator
+Kurmann Videoschnitt CLI
 
 **Usage**:
 
 ```console
-$ emby-integrator [OPTIONS] COMMAND [ARGS]...
+$ kurmann-videoschnitt [OPTIONS] COMMAND [ARGS]...
 ```
 
 **Options**:
@@ -16,13 +16,134 @@ $ emby-integrator [OPTIONS] COMMAND [ARGS]...
 
 **Commands**:
 
+* `compressor`: Apple Compressor Manager
+* `emby`: Emby Integrator
+* `original-media`: Original Media Integrator
+
+## `kurmann-videoschnitt compressor`
+
+Apple Compressor Manager
+
+**Usage**:
+
+```console
+$ kurmann-videoschnitt compressor [OPTIONS] COMMAND [ARGS]...
+```
+
+**Options**:
+
+* `--help`: Show this message and exit.
+
+**Commands**:
+
+* `add-tag`: Fügt der Datei das Tag 'An Apple...
+* `cleanup-prores`: Bereinigt ProRes-Dateien mit einem...
+* `compress-prores-file`: Komprimiert eine einzelne ProRes-Datei.
+* `compress-prores-files`: Komprimiert ProRes-Dateien in einem...
+
+### `kurmann-videoschnitt compressor add-tag`
+
+Fügt der Datei das Tag 'An Apple Kompressor übergeben' hinzu.
+
+**Usage**:
+
+```console
+$ kurmann-videoschnitt compressor add-tag [OPTIONS] FILE_PATH
+```
+
+**Arguments**:
+
+* `FILE_PATH`: Pfad zur Datei, die getaggt werden soll  [required]
+
+**Options**:
+
+* `--help`: Show this message and exit.
+
+### `kurmann-videoschnitt compressor cleanup-prores`
+
+Bereinigt ProRes-Dateien mit einem HEVC-A-Pendant.
+
+**Usage**:
+
+```console
+$ kurmann-videoschnitt compressor cleanup-prores [OPTIONS] HEVC_A_DIR [PRORES_DIR]
+```
+
+**Arguments**:
+
+* `HEVC_A_DIR`: Pfad zum HEVC-A-Verzeichnis  [required]
+* `[PRORES_DIR]`: Pfad zum ProRes-Verzeichnis
+
+**Options**:
+
+* `--verbose`: Aktiviere detaillierte Ausgaben.
+* `--help`: Show this message and exit.
+
+### `kurmann-videoschnitt compressor compress-prores-file`
+
+Komprimiert eine einzelne ProRes-Datei.
+
+**Usage**:
+
+```console
+$ kurmann-videoschnitt compressor compress-prores-file [OPTIONS] INPUT_FILE COMPRESSOR_PROFILE_PATH
+```
+
+**Arguments**:
+
+* `INPUT_FILE`: Pfad zur ProRes-Datei  [required]
+* `COMPRESSOR_PROFILE_PATH`: Pfad zur Compressor-Settings-Datei  [required]
+
+**Options**:
+
+* `--output TEXT`: Das Verzeichnis, in dem die Ausgabedatei gespeichert werden soll
+* `--delete-prores`: Lösche die ProRes-Datei nach erfolgreicher Komprimierung
+* `--help`: Show this message and exit.
+
+### `kurmann-videoschnitt compressor compress-prores-files`
+
+Komprimiert ProRes-Dateien in einem Verzeichnis.
+
+**Usage**:
+
+```console
+$ kurmann-videoschnitt compressor compress-prores-files [OPTIONS] INPUT_DIR COMPRESSOR_PROFILE_PATH
+```
+
+**Arguments**:
+
+* `INPUT_DIR`: Pfad zum Quellverzeichnis der ProRes-Dateien  [required]
+* `COMPRESSOR_PROFILE_PATH`: Pfad zur Compressor-Settings-Datei  [required]
+
+**Options**:
+
+* `--output TEXT`: Das Verzeichnis, in dem die Ausgabedateien gespeichert werden sollen
+* `--delete-prores`: Lösche ProRes-Dateien nach erfolgreicher Komprimierung
+* `--help`: Show this message and exit.
+
+## `kurmann-videoschnitt emby`
+
+Emby Integrator
+
+**Usage**:
+
+```console
+$ kurmann-videoschnitt emby [OPTIONS] COMMAND [ARGS]...
+```
+
+**Options**:
+
+* `--help`: Show this message and exit.
+
+**Commands**:
+
 * `compress-masterfile`: Komprimiere eine Master-Datei.
 * `convert-images-to-adobe-rgb`: Konvertiere eine Liste von PNG-Bildern in...
 * `get-recording-date`: Gibt das Aufnahmedatum aus dem Dateinamen...
 * `list-mediaserver-files`: Liste die Mediaserver-Dateien aus einem...
 * `list-metadata`: Extrahiere die Metadaten aus einer Datei...
 
-## `emby-integrator compress-masterfile`
+### `kurmann-videoschnitt emby compress-masterfile`
 
 Komprimiere eine Master-Datei.
 
@@ -42,7 +163,7 @@ Beispiel:
 **Usage**:
 
 ```console
-$ emby-integrator compress-masterfile [OPTIONS] INPUT_FILE
+$ kurmann-videoschnitt emby compress-masterfile [OPTIONS] INPUT_FILE
 ```
 
 **Arguments**:
@@ -54,7 +175,7 @@ $ emby-integrator compress-masterfile [OPTIONS] INPUT_FILE
 * `--delete-master-file / --no-delete-master-file`: Lösche die Master-Datei nach der Komprimierung.  [default: no-delete-master-file]
 * `--help`: Show this message and exit.
 
-## `emby-integrator convert-images-to-adobe-rgb`
+### `kurmann-videoschnitt emby convert-images-to-adobe-rgb`
 
 Konvertiere eine Liste von PNG-Bildern in Adobe RGB, falls eine passende Videodatei existiert.
 
@@ -73,7 +194,7 @@ Beispiel:
 **Usage**:
 
 ```console
-$ emby-integrator convert-images-to-adobe-rgb [OPTIONS] MEDIA_DIR
+$ kurmann-videoschnitt emby convert-images-to-adobe-rgb [OPTIONS] MEDIA_DIR
 ```
 
 **Arguments**:
@@ -84,7 +205,7 @@ $ emby-integrator convert-images-to-adobe-rgb [OPTIONS] MEDIA_DIR
 
 * `--help`: Show this message and exit.
 
-## `emby-integrator get-recording-date`
+### `kurmann-videoschnitt emby get-recording-date`
 
 Gibt das Aufnahmedatum aus dem Dateinamen in einem deutschen Datumsformat mit Wochentag aus.
 
@@ -94,7 +215,7 @@ Args:
 **Usage**:
 
 ```console
-$ emby-integrator get-recording-date [OPTIONS] FILE_PATH
+$ kurmann-videoschnitt emby get-recording-date [OPTIONS] FILE_PATH
 ```
 
 **Arguments**:
@@ -105,7 +226,7 @@ $ emby-integrator get-recording-date [OPTIONS] FILE_PATH
 
 * `--help`: Show this message and exit.
 
-## `emby-integrator list-mediaserver-files`
+### `kurmann-videoschnitt emby list-mediaserver-files`
 
 Liste die Mediaserver-Dateien aus einem Verzeichnis auf und gruppiere sie nach Mediensets.
 
@@ -140,7 +261,7 @@ Raises:
 **Usage**:
 
 ```console
-$ emby-integrator list-mediaserver-files [OPTIONS] SOURCE_DIR
+$ kurmann-videoschnitt emby list-mediaserver-files [OPTIONS] SOURCE_DIR
 ```
 
 **Arguments**:
@@ -152,7 +273,7 @@ $ emby-integrator list-mediaserver-files [OPTIONS] SOURCE_DIR
 * `--json-output / --no-json-output`: Gebe die Ausgabe im JSON-Format aus  [default: no-json-output]
 * `--help`: Show this message and exit.
 
-## `emby-integrator list-metadata`
+### `kurmann-videoschnitt emby list-metadata`
 
 Extrahiere die Metadaten aus einer Datei und gebe sie aus.
 
@@ -184,7 +305,7 @@ Raises:
 **Usage**:
 
 ```console
-$ emby-integrator list-metadata [OPTIONS] FILE_PATH
+$ kurmann-videoschnitt emby list-metadata [OPTIONS] FILE_PATH
 ```
 
 **Arguments**:
@@ -194,4 +315,46 @@ $ emby-integrator list-metadata [OPTIONS] FILE_PATH
 **Options**:
 
 * `--json-output / --no-json-output`: Gebe die Ausgabe im JSON-Format aus  [default: no-json-output]
+* `--help`: Show this message and exit.
+
+## `kurmann-videoschnitt original-media`
+
+Original Media Integrator
+
+**Usage**:
+
+```console
+$ kurmann-videoschnitt original-media [OPTIONS] COMMAND [ARGS]...
+```
+
+**Options**:
+
+* `--help`: Show this message and exit.
+
+**Commands**:
+
+* `import-media`: CLI-Kommando zum Importieren und...
+
+### `kurmann-videoschnitt original-media import-media`
+
+CLI-Kommando zum Importieren und Komprimieren von Medien.
+
+Dieser Befehl ruft die import_and_compress_media Funktion auf, die neue Dateien komprimiert
+und organisiert.
+
+**Usage**:
+
+```console
+$ kurmann-videoschnitt original-media import-media [OPTIONS] SOURCE_DIR DESTINATION_DIR
+```
+
+**Arguments**:
+
+* `SOURCE_DIR`: Pfad zum Quellverzeichnis  [required]
+* `DESTINATION_DIR`: Pfad zum Zielverzeichnis  [required]
+
+**Options**:
+
+* `--compression-dir TEXT`: Optionales Komprimierungsverzeichnis
+* `--keep-original-prores / --no-keep-original-prores`: Behalte die Original-ProRes-Dateien nach der Komprimierung.  [default: no-keep-original-prores]
 * `--help`: Show this message and exit.
