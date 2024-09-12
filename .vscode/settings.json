@@ -1,7 +1,0 @@
-{
-    "csharpextensions.useFileScopedNamespace": true,
-    "docomment.advanced": {
-        "dotnet.server.useOmnisharp": true
-    },
-    "csharp.inlayHints.enableInlayHintsForTypes": true
-}

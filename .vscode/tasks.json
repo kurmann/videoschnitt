@@ -2,40 +2,6 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "build",
-            "command": "dotnet",
-            "type": "process",
-            "args": [
-                "build",
-                "${workspaceFolder}/src/ConsoleApp/ConsoleApp.csproj",
-                "/property:GenerateFullPaths=true",
-                "/consoleloggerparameters:NoSummary;ForceNoAlign"
-            ],
-            "problemMatcher": "$msCompile"
-        },
-        {
-            "label": "publish",
-            "command": "bash",
-            "type": "process",
-            "args": [
-                "${workspaceFolder}/.vscode/publish.sh",
-                "${workspaceFolder}"
-            ],
-            "problemMatcher": []
-        },
-        {
-            "label": "watch",
-            "command": "dotnet",
-            "type": "process",
-            "args": [
-                "watch",
-                "run",
-                "--project",
-                "${workspaceFolder}/src/ConsoleApp/ConsoleApp.csproj"
-            ],
-            "problemMatcher": "$msCompile"
-        },
-        {
             "label": "generate-cli-docs",
             "type": "shell",
             "command": "bash",
