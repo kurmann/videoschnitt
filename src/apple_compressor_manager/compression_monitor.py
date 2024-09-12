@@ -55,3 +55,8 @@ async def monitor_compression(output_file, compressor_profile_path, callback=Non
             break
         else:
             print(f"Fehlerhafter Codec oder Datei zu klein für: {output_file}. Codec: '{codec}', Grösse: {os.path.getsize(output_file)} KB")
+            
+def get_output_suffix(compressor_profile_path):
+    """Ermittelt das Suffix für die Ausgabedatei basierend auf dem Compressor-Setting-Namen."""
+    setting_name = os.path.splitext(os.path.basename(compressor_profile_path))[0]
+    return f"-{setting_name}"
