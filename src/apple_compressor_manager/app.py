@@ -4,7 +4,7 @@ from apple_compressor_manager.compress_filelist import run_compress_prores as ru
 from apple_compressor_manager.compress_file import run_compress_file
 from apple_compressor_manager.file_utils import add_compression_tag  # Die Funktion direkt importieren
 
-app = typer.Typer(help="Apple Compressor Manager CLI")
+app = typer.Typer(help="Apple Compressor Manager")
 
 # Beispiel für ein weiteres Kommando direkt in der Haupt-CLI
 @app.command("cleanup-prores")
