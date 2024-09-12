@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "kurmann-videoschnitt"
 authors = ["Patrick Kurmann <kurmannwillisau@gmail.com>"]
-version = "0.49.1"
+version = "0.51.0"
 description = "Sammlung von Werkzeugen zur Automatisierungen im privaten Videoschnitt"
 readme = "README.md"
 license = "Apache-2.0"
@@ -17,6 +17,4 @@ osxmetadata = {version = "^1.3.5", python = ">=3.8,<3.13"}
 where = ["src"]
 
 [tool.poetry.scripts]
-apple-compressor-manager = "apple_compressor_manager.app:app"
-original-media-integrator = "original_media_integrator.app:app"
-emby-integrator = "emby_integrator.app:app"
+kurmann-videoschnitt = "kurmann_videoschnitt.app:app"
