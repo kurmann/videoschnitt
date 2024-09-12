@@ -63,9 +63,7 @@ Grundlage für die CLI ist das [CLI-Design](/docs/CLI-Design.md)
 
 ### CLI-Dokumentation
 
-- [Apple Compressor Manager](docs/cli/apple_compressor_manager.md)
-- [Original Media Integrator](docs/cli/original_media_integrator.md)
-- [Emby Integrator](docs/cli/emby_integrator.md)
+- [Kurmann Videoschnit CLI](/docs/cli/kurmann_videoschnitt.md)
 
 ## Mitwirken
 
