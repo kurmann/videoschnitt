@@ -1,3 +1,5 @@
+# apple_compressor_manager/compress_file.py
+
 import os
 import asyncio
 import subprocess

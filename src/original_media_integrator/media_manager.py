@@ -1,3 +1,5 @@
+# original_media_integrator/media_manager.py
+
 import os
 import shutil
 from original_media_integrator.exif_utils import get_creation_datetime

@@ -1,3 +1,5 @@
+# apple_compressor_manager/compression_monitor.py
+
 import os
 import asyncio
 from pathlib import Path
