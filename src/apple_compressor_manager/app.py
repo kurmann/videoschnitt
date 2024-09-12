@@ -1,13 +1,12 @@
-# apple_compressor_manager/app.py
-
 import typer
-import os
 from apple_compressor_manager.cleanup_prores import run_cleanup
 from apple_compressor_manager.compress_filelist import run_compress_prores as run_compress_files
 from apple_compressor_manager.compress_file import run_compress_file
+from apple_compressor_manager.file_utils import add_compression_tag  # Die Funktion direkt importieren
 
 app = typer.Typer(help="Apple Compressor Manager CLI")
 
+# Beispiel für ein weiteres Kommando direkt in der Haupt-CLI
 @app.command("cleanup-prores")
 def cleanup_prores_command(
     hevc_a_dir: str = typer.Argument(..., help="Pfad zum HEVC-A-Verzeichnis"),
@@ -16,6 +15,12 @@ def cleanup_prores_command(
 ):
     """Bereinigt ProRes-Dateien mit einem HEVC-A-Pendant."""
     run_cleanup(hevc_a_dir, prores_dir, verbose)
+
+# Methode für das Tagging direkt im Hauptkontext hinzufügen
+@app.command("add-tag")
+def add_tag_command(file_path: str = typer.Argument(..., help="Pfad zur Datei, die getaggt werden soll")):
+    """Fügt der Datei das Tag 'An Apple Kompressor übergeben' hinzu."""
+    add_compression_tag(file_path)
 
 @app.command("compress-prores-files")
 def compress_prores_files_command(
@@ -31,7 +36,7 @@ def compress_prores_files_command(
 
     if output is None:
         output = input_dir  # Standardmäßig wird das input_dir als output_dir verwendet
-    run_compress_files(input_dir, output, compressor_profile_path, delete_prores=delete_prores, callback=on_completion)
+    run_compress_files(input_dir, output, compressor_profile_path, delete_prores=delete_prores)
 
 @app.command("compress-prores-file")
 def compress_prores_file_command(
@@ -47,7 +52,7 @@ def compress_prores_file_command(
 
     if output is None:
         output = os.path.dirname(input_file)
-    run_compress_file(input_file, output_directory=output, compressor_profile_path=compressor_profile_path, delete_prores=delete_prores, callback=on_completion)
+    run_compress_file(input_file, output_directory=output, compressor_profile_path=compressor_profile_path, delete_prores=delete_prores)
 
 if __name__ == "__main__":
     app()
