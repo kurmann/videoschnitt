@@ -1,7 +1,7 @@
 # apple_compressor_manager/app.py
 
-import os
 import typer
+import os
 from apple_compressor_manager.cleanup_prores import run_cleanup
 from apple_compressor_manager.compress_filelist import run_compress_prores as run_compress_files
 from apple_compressor_manager.compress_file import run_compress_file
@@ -25,9 +25,13 @@ def compress_prores_files_command(
     delete_prores: bool = typer.Option(False, "--delete-prores", help="Lösche ProRes-Dateien nach erfolgreicher Komprimierung")
 ):
     """Komprimiert ProRes-Dateien in einem Verzeichnis."""
+    
+    def on_completion(output_file):
+        print(f"Komprimierung abgeschlossen für Datei: {output_file}")
+
     if output is None:
         output = input_dir  # Standardmäßig wird das input_dir als output_dir verwendet
-    run_compress_files(input_dir, output, compressor_profile_path, delete_prores=delete_prores)
+    run_compress_files(input_dir, output, compressor_profile_path, delete_prores=delete_prores, callback=on_completion)
 
 @app.command("compress-prores-file")
 def compress_prores_file_command(
@@ -37,9 +41,13 @@ def compress_prores_file_command(
     delete_prores: bool = typer.Option(False, "--delete-prores", help="Lösche die ProRes-Datei nach erfolgreicher Komprimierung")
 ):
     """Komprimiert eine einzelne ProRes-Datei."""
+    
+    def on_completion(output_file):
+        print(f"Komprimierung abgeschlossen für Datei: {output_file}")
+
     if output is None:
         output = os.path.dirname(input_file)
-    run_compress_file(input_file, output_directory=output, compressor_profile_path=compressor_profile_path, delete_prores=delete_prores)
+    run_compress_file(input_file, output_directory=output, compressor_profile_path=compressor_profile_path, delete_prores=delete_prores, callback=on_completion)
 
 if __name__ == "__main__":
     app()
