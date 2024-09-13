@@ -1,13 +1,16 @@
+import os
+import re
 import subprocess
 import json
-import os
+import xml.etree.ElementTree as ET
+from datetime import datetime
 
 # Liste der benötigten Metadaten
 METADATA_KEYS = [
     "FileName", "Directory", "FileSize", "FileModificationDateTime", "FileType", "MIMEType", 
     "CreateDate", "Duration", "AudioFormat", "ImageWidth", "ImageHeight", "CompressorID",
     "CompressorName", "BitDepth", "VideoFrameRate", "Title", "Album", "Description", "Copyright", 
-    "Author", "Keywords", "AvgBitrate"
+    "Author", "Keywords", "AvgBitrate", "Producer", "Studio"
 ]
 
 def get_metadata(file_path: str) -> dict:
@@ -19,10 +22,6 @@ def get_metadata(file_path: str) -> dict:
 
     Rückgabewert:
     - Ein Dictionary, das die relevanten Metadaten enthält.
-    
-    Raises:
-    - FileNotFoundError: Wenn die Datei nicht gefunden wird.
-    - ValueError: Wenn keine Metadaten extrahiert werden können.
     """
     if not os.path.exists(file_path):
         raise FileNotFoundError(f"Die Datei '{file_path}' wurde nicht gefunden.")
@@ -49,10 +48,6 @@ def get_metadata(file_path: str) -> dict:
             f"Vollständiger Befehl: {command}"
         )
         raise ValueError(error_message)
-    
-import re
-from datetime import datetime
-import os
 
 def parse_recording_date(file_path: str) -> datetime | None:
     """
@@ -73,3 +68,99 @@ def parse_recording_date(file_path: str) -> datetime | None:
         date_str = match.group()
         return datetime.strptime(date_str, "%Y-%m-%d")
     return None
+
+class CustomProductionInfuseMetadata:
+    def __init__(self, type, title, sorttitle, description, artist, copyright, published, releasedate,
+                 studio, keywords, album, producers, directors):
+        self.type = type
+        self.title = title
+        self.sorttitle = sorttitle
+        self.description = description
+        self.artist = artist
+        self.copyright = copyright
+        self.published = published  # datetime Objekt oder None
+        self.releasedate = releasedate  # datetime Objekt oder None
+        self.studio = studio
+        self.keywords = keywords
+        self.album = album
+        self.producers = producers  # Liste von Namen
+        self.directors = directors  # Liste von Namen
+
+    @classmethod
+    def create_from_metadata(cls, metadata, recording_date):
+        if not metadata:
+            raise ValueError("Die Metadaten sind leer.")
+
+        # Initialisierung mit Standardwerten
+        type = "Other"
+        title = ''
+        sorttitle = ''
+        description = ''
+        artist = ''
+        copyright = ''
+        releasedate = None
+        studio = ''
+        keywords = ''
+        album = ''
+        producers = ['']
+        directors = []
+
+        # Metadaten auslesen
+        title_with_leading_date = metadata.get('Title', '')
+        title = cls.get_title(title_with_leading_date, recording_date)
+        sorttitle = metadata.get('Title', '')
+        description = metadata.get('Description', '')
+        artist = metadata.get('Author', '')
+        copyright = metadata.get('Copyright', '')
+        releasedate_str = metadata.get('CreateDate', None)
+        if releasedate_str and releasedate_str != 'N/A':
+            try:
+                releasedate = datetime.strptime(releasedate_str, '%Y:%m:%d %H:%M:%S')
+            except ValueError:
+                releasedate = None
+        studio = metadata.get('Studio', '')
+        keywords = metadata.get('Keywords', '')
+        album = metadata.get('Album', '')
+        producers = [metadata.get('Producer', '')] if metadata.get('Producer', '') else ['']
+        # Directors können ähnlich gehandhabt werden, falls vorhanden
+
+        published = recording_date
+
+        return cls(type, title, sorttitle, description, artist, copyright, published, releasedate,
+                   studio, keywords, album, producers, directors)
+
+    @staticmethod
+    def get_title(title_with_leading_date, recording_date):
+        date_str = recording_date.strftime('%Y-%m-%d')
+        return title_with_leading_date.replace(date_str, '').strip()
+
+    def to_xml(self):
+        media = ET.Element('media', {'type': self.type})
+        ET.SubElement(media, 'title').text = self.title
+        ET.SubElement(media, 'sorttitle').text = self.sorttitle
+        ET.SubElement(media, 'description').text = self.description
+        ET.SubElement(media, 'artist').text = self.artist
+        ET.SubElement(media, 'copyright').text = self.copyright
+        ET.SubElement(media, 'published').text = self.published.strftime('%Y-%m-%d') if self.published else ''
+        ET.SubElement(media, 'releasedate').text = self.releasedate.strftime('%Y-%m-%d') if self.releasedate else ''
+        ET.SubElement(media, 'studio').text = self.studio
+        ET.SubElement(media, 'keywords').text = self.keywords
+        ET.SubElement(media, 'album').text = self.album
+
+        producers_elem = ET.SubElement(media, 'producers')
+        for producer in self.producers:
+            ET.SubElement(producers_elem, 'name').text = producer
+
+        directors_elem = ET.SubElement(media, 'directors')
+        for director in self.directors:
+            ET.SubElement(directors_elem, 'name').text = director
+
+        return media
+
+    def write_to_file(self, file_path):
+        media_elem = self.to_xml()
+        tree = ET.ElementTree(media_elem)
+        tree.write(file_path, encoding='utf-8', xml_declaration=True)
+
+    def __str__(self):
+        return f"Title: {self.title}, Published: {self.published}, Album: {self.album}"

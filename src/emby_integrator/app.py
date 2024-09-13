@@ -1,12 +1,17 @@
+# ember-integrator/app.py
 import json
 import os
 import typer
+import xml.etree.ElementTree as ET
 from emby_integrator.mediaset_manager import get_mediaserver_files
-from emby_integrator.metadata_manager import get_metadata, parse_recording_date
+from emby_integrator.metadata_manager import (
+    get_metadata, 
+    parse_recording_date, 
+    CustomProductionInfuseMetadata
+)
 from emby_integrator.video_manager import compress_masterfile
 from emby_integrator.image_manager import convert_images_to_adobe_rgb
 
-# Erstelle die Typer-App
 app = typer.Typer(help="Emby Integrator")
 
 @app.command()
@@ -172,6 +177,55 @@ def get_recording_date_command(file_path: str):
         typer.secho(f"Aufnahmedatum: {formatted_date}", fg=typer.colors.GREEN)
     else:
         typer.secho(f"Kein gültiges Aufnahmedatum im Dateinamen gefunden: {file_path}", fg=typer.colors.RED)
+
+@app.command()
+def generate_nfo_xml(file_path: str):
+    """
+    Generiert die NFO-Metadatendatei und gibt das XML aus.
+
+    Args:
+        file_path (str): Pfad zur Videodatei.
+    """
+    try:
+        metadata = get_metadata(file_path)
+        recording_date = parse_recording_date(file_path)
+        if recording_date is None:
+            raise ValueError(f"Konnte kein Aufnahmedatum aus dem Dateinamen '{file_path}' extrahieren.")
+
+        custom_metadata = CustomProductionInfuseMetadata.create_from_metadata(metadata, recording_date)
+        xml_element = custom_metadata.to_xml()
+
+        # XML als String ausgeben
+        xml_str = ET.tostring(xml_element, encoding='utf-8', method='xml').decode('utf-8')
+
+        # XML-Deklaration hinzufügen
+        xml_declaration = '<?xml version="1.0" encoding="utf-8"?>\n'
+        full_xml = xml_declaration + xml_str
+
+        print(full_xml)
+    except Exception as e:
+        typer.secho(f"Fehler beim Generieren des NFO-XML: {e}", fg=typer.colors.RED)
+
+@app.command()
+def write_nfo_file(file_path: str):
+    """
+    Generiert die NFO-Metadatendatei und schreibt sie in eine Datei.
+
+    Args:
+        file_path (str): Pfad zur Videodatei.
+    """
+    try:
+        metadata = get_metadata(file_path)
+        recording_date = parse_recording_date(file_path)
+        if recording_date is None:
+            raise ValueError(f"Konnte kein Aufnahmedatum aus dem Dateinamen '{file_path}' extrahieren.")
+
+        custom_metadata = CustomProductionInfuseMetadata.create_from_metadata(metadata, recording_date)
+        nfo_file_path = os.path.splitext(file_path)[0] + '.nfo'
+        custom_metadata.write_to_file(nfo_file_path)
+        typer.secho(f"NFO-Datei wurde erfolgreich erstellt: {nfo_file_path}", fg=typer.colors.GREEN)
+    except Exception as e:
+        typer.secho(f"Fehler beim Schreiben der NFO-Datei: {e}", fg=typer.colors.RED)
 
 if __name__ == '__main__':
     app()
