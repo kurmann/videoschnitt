@@ -5,7 +5,7 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry]
 name = "kurmann-videoschnitt"
 authors = ["Patrick Kurmann <kurmannwillisau@gmail.com>"]
-version = "0.53.1"
+version = "0.54.0"
 description = "Sammlung von Werkzeugen zur Automatisierungen im privaten Videoschnitt"
 readme = "README.md"
 license = "Apache-2.0"

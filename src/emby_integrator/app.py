@@ -191,27 +191,12 @@ def generate_nfo_xml(file_path: str):
     """
     Generiert die NFO-Metadatendatei und gibt das XML aus.
 
-    Diese Methode extrahiert die Metadaten aus der angegebenen Videodatei und generiert eine NFO-Metadatendatei im XML-Format für den Emby-Medienserver. Das erzeugte XML wird auf der Konsole ausgegeben.
-
     Args:
         file_path (str): Pfad zur Videodatei.
-
-    Returns:
-        None
-
-    Beispiel:
-        $ kurmann-videoschnitt emby generate-nfo-xml '/pfad/zur/videodatei.mov'
-
-    Raises:
-        ValueError: Wenn das Aufnahmedatum nicht aus dem Dateinamen extrahiert werden kann.
     """
     try:
         metadata = get_metadata(file_path)
-        recording_date = parse_recording_date(file_path)
-        if recording_date is None:
-            raise ValueError(f"Konnte kein Aufnahmedatum aus dem Dateinamen '{file_path}' extrahieren.")
-
-        custom_metadata = CustomProductionInfuseMetadata.create_from_metadata(metadata, recording_date)
+        custom_metadata = CustomProductionInfuseMetadata.create_from_metadata(metadata, file_path)
         xml_element = custom_metadata.to_xml()
 
         # XML-Elemente einrücken
@@ -233,27 +218,12 @@ def write_nfo_file(file_path: str):
     """
     Generiert die NFO-Metadatendatei und schreibt sie in eine Datei.
 
-    Diese Methode extrahiert die Metadaten aus der angegebenen Videodatei und erstellt eine NFO-Metadatendatei im XML-Format für den Emby-Medienserver. Die NFO-Datei wird im selben Verzeichnis wie die Videodatei gespeichert.
-
     Args:
         file_path (str): Pfad zur Videodatei.
-
-    Returns:
-        None
-
-    Beispiel:
-        $ kurmann-videoschnitt emby write-nfo-file '/pfad/zur/videodatei.mov'
-
-    Raises:
-        ValueError: Wenn das Aufnahmedatum nicht aus dem Dateinamen extrahiert werden kann.
     """
     try:
         metadata = get_metadata(file_path)
-        recording_date = parse_recording_date(file_path)
-        if recording_date is None:
-            raise ValueError(f"Konnte kein Aufnahmedatum aus dem Dateinamen '{file_path}' extrahieren.")
-
-        custom_metadata = CustomProductionInfuseMetadata.create_from_metadata(metadata, recording_date)
+        custom_metadata = CustomProductionInfuseMetadata.create_from_metadata(metadata, file_path)
         nfo_file_path = os.path.splitext(file_path)[0] + '.nfo'
 
         # XML-Elemente einrücken

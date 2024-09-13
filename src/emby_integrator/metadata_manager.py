@@ -3,7 +3,7 @@
 """
 Das 'metadata_manager' Modul ist verantwortlich für das Auslesen von Metadaten aus Dateien.
 Es stellt Funktionen zur Verfügung, um Metadaten mithilfe von ExifTool zu extrahieren und
-das Aufnahmedatum aus Dateinamen zu parsen.
+das Aufnahmedatum aus Titeln oder Dateinamen zu parsen.
 """
 
 import os
@@ -14,24 +14,15 @@ from datetime import datetime
 
 # Liste der benötigten Metadaten
 METADATA_KEYS = [
-    "FileName", "Directory", "FileSize", "FileModificationDateTime", "FileType", "MIMEType", 
+    "FileName", "Directory", "FileSize", "FileModificationDateTime", "FileType", "MIMEType",
     "CreateDate", "Duration", "AudioFormat", "ImageWidth", "ImageHeight", "CompressorID",
-    "CompressorName", "BitDepth", "VideoFrameRate", "Title", "Album", "Description", "Copyright", 
+    "CompressorName", "BitDepth", "VideoFrameRate", "Title", "Album", "Description", "Copyright",
     "Author", "Keywords", "AvgBitrate", "Producer", "Studio"
 ]
+
 def get_metadata(file_path: str) -> dict:
     """
     Extrahiert die Metadaten aus einer Datei mithilfe von ExifTool und gibt ein strukturiertes Dictionary zurück.
-
-    Args:
-        file_path (str): Der Pfad zur Datei, aus der die Metadaten extrahiert werden sollen.
-
-    Returns:
-        dict: Ein Dictionary, das die relevanten Metadaten enthält.
-
-    Raises:
-        FileNotFoundError: Wenn die Datei nicht gefunden wird.
-        ValueError: Wenn keine Metadaten extrahiert werden können.
     """
     if not os.path.exists(file_path):
         raise FileNotFoundError(f"Die Datei '{file_path}' wurde nicht gefunden.")
@@ -59,13 +50,26 @@ def get_metadata(file_path: str) -> dict:
             f"Vollständiger Befehl: {command}"
         )
         raise ValueError(error_message)
-    
+
+def parse_date_from_string(text: str) -> datetime | None:
+    """
+    Extrahiert ein Datum im ISO-Format (YYYY-MM-DD) aus einem gegebenen String.
+
+    Args:
+        text (str): Der Text, aus dem das Datum extrahiert werden soll.
+
+    Returns:
+        datetime | None: Das extrahierte Datum als datetime-Objekt, oder None, wenn kein Datum gefunden wurde.
+    """
+    match = re.search(r"\d{4}-\d{2}-\d{2}", text)
+    if match:
+        date_str = match.group()
+        return datetime.strptime(date_str, "%Y-%m-%d")
+    return None
+
 def parse_recording_date(file_path: str) -> datetime | None:
     """
     Extrahiert das Aufnahmedatum aus dem Dateinamen.
-
-    Der Dateiname muss im Format 'YYYY-MM-DD <Rest des Dateinamens>' vorliegen.
-    Wenn kein Datum im Dateinamen gefunden wird, wird None zurückgegeben.
 
     Args:
         file_path (str): Pfad zur Datei, deren Dateiname das Datum enthalten soll.
@@ -74,8 +78,4 @@ def parse_recording_date(file_path: str) -> datetime | None:
         datetime | None: Das extrahierte Datum als datetime-Objekt, oder None, wenn kein Datum gefunden wurde.
     """
     file_name = os.path.basename(file_path)
-    match = re.search(r"\d{4}-\d{2}-\d{2}", file_name)
-    if match:
-        date_str = match.group()
-        return datetime.strptime(date_str, "%Y-%m-%d")
-    return None
+    return parse_date_from_string(file_name)
