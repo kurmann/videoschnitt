@@ -10,6 +10,7 @@ import os
 import xml.etree.ElementTree as ET
 from datetime import datetime
 from emby_integrator.xml_utils import indent
+from emby_integrator.metadata_manager import parse_date_from_string
 
 class CustomProductionInfuseMetadata:
     """
@@ -34,10 +35,10 @@ class CustomProductionInfuseMetadata:
         self.directors = directors  # Liste von Namen
 
     @classmethod
-    def create_from_metadata(cls, metadata, recording_date):
+    def create_from_metadata(cls, metadata, file_path):
         """
         Erstellt eine Instanz von 'CustomProductionInfuseMetadata' basierend auf den gegebenen Metadaten
-        und dem Aufnahmedatum.
+        und dem Dateipfad.
         """
         if not metadata:
             raise ValueError("Die Metadaten sind leer.")
@@ -46,7 +47,7 @@ class CustomProductionInfuseMetadata:
         type = "Other"
         title = ''
         sorttitle = ''
-        plot = ''  # 'description' geändert zu 'plot'
+        plot = ''
         artist = ''
         copyright = ''
         releasedate = None
@@ -61,7 +62,19 @@ class CustomProductionInfuseMetadata:
             return value if value != 'N/A' else ''
 
         title_with_leading_date = clean_value(metadata.get('Title', ''))
+
+        # Versuch, das Aufnahmedatum aus dem Titel zu extrahieren
+        recording_date = parse_date_from_string(title_with_leading_date)
+
+        # Wenn kein Datum im Titel gefunden wurde, aus dem Dateinamen extrahieren
+        if recording_date is None:
+            recording_date = parse_date_from_string(os.path.basename(file_path))
+            if recording_date is None:
+                raise ValueError(f"Konnte kein Aufnahmedatum aus dem Titel oder Dateinamen '{file_path}' extrahieren.")
+
+        # Titel ohne Datum
         title = cls.get_title(title_with_leading_date, recording_date)
+
         sorttitle = title  # Sorttitle ist gleich dem bereinigten Titel
         plot = clean_value(metadata.get('Description', ''))
         artist = clean_value(metadata.get('Author', ''))
@@ -90,7 +103,11 @@ class CustomProductionInfuseMetadata:
         Entfernt das Aufnahmedatum aus dem Titel, um den eigentlichen Titel zu erhalten.
         """
         date_str = recording_date.strftime('%Y-%m-%d')
-        return title_with_leading_date.replace(date_str, '').strip()
+        if title_with_leading_date.startswith(date_str):
+            title = title_with_leading_date[len(date_str):].lstrip()
+        else:
+            title = title_with_leading_date
+        return title
 
     def to_xml(self):
         """
@@ -99,7 +116,7 @@ class CustomProductionInfuseMetadata:
         media = ET.Element('media', {'type': self.type})
         ET.SubElement(media, 'title').text = self.title
         ET.SubElement(media, 'sorttitle').text = self.sorttitle
-        ET.SubElement(media, 'plot').text = self.plot  # 'description' geändert zu 'plot'
+        ET.SubElement(media, 'plot').text = self.plot
         ET.SubElement(media, 'artist').text = self.artist
         ET.SubElement(media, 'copyright').text = self.copyright
         ET.SubElement(media, 'published').text = self.published.strftime('%Y-%m-%d') if self.published else ''
