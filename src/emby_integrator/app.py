@@ -1,4 +1,11 @@
-# ember-integrator/app.py
+# app.py
+
+"""
+Das 'app' Modul enthält die CLI-Befehle für den Emby Integrator.
+Es ermöglicht die Interaktion mit der Anwendung über die Kommandozeile und nutzt die Funktionen
+und Klassen der anderen Module.
+"""
+
 import json
 import os
 import typer
@@ -6,11 +13,12 @@ import xml.etree.ElementTree as ET
 from emby_integrator.mediaset_manager import get_mediaserver_files
 from emby_integrator.metadata_manager import (
     get_metadata, 
-    parse_recording_date, 
-    CustomProductionInfuseMetadata
+    parse_recording_date
 )
+from emby_integrator.nfo_generator import CustomProductionInfuseMetadata
 from emby_integrator.video_manager import compress_masterfile
 from emby_integrator.image_manager import convert_images_to_adobe_rgb
+from emby_integrator.xml_utils import indent
 
 app = typer.Typer(help="Emby Integrator")
 
@@ -195,6 +203,9 @@ def generate_nfo_xml(file_path: str):
         custom_metadata = CustomProductionInfuseMetadata.create_from_metadata(metadata, recording_date)
         xml_element = custom_metadata.to_xml()
 
+        # XML-Elemente einrücken
+        indent(xml_element, space="  ")
+
         # XML als String ausgeben
         xml_str = ET.tostring(xml_element, encoding='utf-8', method='xml').decode('utf-8')
 
@@ -222,7 +233,13 @@ def write_nfo_file(file_path: str):
 
         custom_metadata = CustomProductionInfuseMetadata.create_from_metadata(metadata, recording_date)
         nfo_file_path = os.path.splitext(file_path)[0] + '.nfo'
-        custom_metadata.write_to_file(nfo_file_path)
+
+        # XML-Elemente einrücken
+        xml_element = custom_metadata.to_xml()
+        indent(xml_element, space="  ")
+        tree = ET.ElementTree(xml_element)
+        tree.write(nfo_file_path, encoding='utf-8', xml_declaration=True)
+
         typer.secho(f"NFO-Datei wurde erfolgreich erstellt: {nfo_file_path}", fg=typer.colors.GREEN)
     except Exception as e:
         typer.secho(f"Fehler beim Schreiben der NFO-Datei: {e}", fg=typer.colors.RED)
