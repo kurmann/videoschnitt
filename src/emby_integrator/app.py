@@ -1,4 +1,4 @@
-# app.py
+# emby_integrator/app.py
 
 """
 Das 'app' Modul enthält die CLI-Befehle für den Emby Integrator.
@@ -191,8 +191,19 @@ def generate_nfo_xml(file_path: str):
     """
     Generiert die NFO-Metadatendatei und gibt das XML aus.
 
+    Diese Methode extrahiert die Metadaten aus der angegebenen Videodatei und generiert eine NFO-Metadatendatei im XML-Format für den Emby-Medienserver. Das erzeugte XML wird auf der Konsole ausgegeben.
+
     Args:
         file_path (str): Pfad zur Videodatei.
+
+    Returns:
+        None
+
+    Beispiel:
+        $ kurmann-videoschnitt emby generate-nfo-xml '/pfad/zur/videodatei.mov'
+
+    Raises:
+        ValueError: Wenn das Aufnahmedatum nicht aus dem Dateinamen extrahiert werden kann.
     """
     try:
         metadata = get_metadata(file_path)
@@ -222,8 +233,19 @@ def write_nfo_file(file_path: str):
     """
     Generiert die NFO-Metadatendatei und schreibt sie in eine Datei.
 
+    Diese Methode extrahiert die Metadaten aus der angegebenen Videodatei und erstellt eine NFO-Metadatendatei im XML-Format für den Emby-Medienserver. Die NFO-Datei wird im selben Verzeichnis wie die Videodatei gespeichert.
+
     Args:
         file_path (str): Pfad zur Videodatei.
+
+    Returns:
+        None
+
+    Beispiel:
+        $ kurmann-videoschnitt emby write-nfo-file '/pfad/zur/videodatei.mov'
+
+    Raises:
+        ValueError: Wenn das Aufnahmedatum nicht aus dem Dateinamen extrahiert werden kann.
     """
     try:
         metadata = get_metadata(file_path)
