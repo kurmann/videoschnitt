@@ -1,6 +1,6 @@
 # `kurmann-videoschnitt`
 
-Kurmann Videoschnitt CLI
+Kurmann Videoschnitt CLI Version 0.53.1
 
 **Usage**:
 
@@ -139,9 +139,11 @@ $ kurmann-videoschnitt emby [OPTIONS] COMMAND [ARGS]...
 
 * `compress-masterfile`: Komprimiere eine Master-Datei.
 * `convert-images-to-adobe-rgb`: Konvertiere eine Liste von PNG-Bildern in...
+* `generate-nfo-xml`: Generiert die NFO-Metadatendatei und gibt...
 * `get-recording-date`: Gibt das Aufnahmedatum aus dem Dateinamen...
 * `list-mediaserver-files`: Liste die Mediaserver-Dateien aus einem...
 * `list-metadata`: Extrahiere die Metadaten aus einer Datei...
+* `write-nfo-file`: Generiert die NFO-Metadatendatei und...
 
 ### `kurmann-videoschnitt emby compress-masterfile`
 
@@ -200,6 +202,38 @@ $ kurmann-videoschnitt emby convert-images-to-adobe-rgb [OPTIONS] MEDIA_DIR
 **Arguments**:
 
 * `MEDIA_DIR`: [required]
+
+**Options**:
+
+* `--help`: Show this message and exit.
+
+### `kurmann-videoschnitt emby generate-nfo-xml`
+
+Generiert die NFO-Metadatendatei und gibt das XML aus.
+
+Diese Methode extrahiert die Metadaten aus der angegebenen Videodatei und generiert eine NFO-Metadatendatei im XML-Format für den Emby-Medienserver. Das erzeugte XML wird auf der Konsole ausgegeben.
+
+Args:
+    file_path (str): Pfad zur Videodatei.
+
+Returns:
+    None
+
+Beispiel:
+    $ kurmann-videoschnitt emby generate-nfo-xml '/pfad/zur/videodatei.mov'
+
+Raises:
+    ValueError: Wenn das Aufnahmedatum nicht aus dem Dateinamen extrahiert werden kann.
+
+**Usage**:
+
+```console
+$ kurmann-videoschnitt emby generate-nfo-xml [OPTIONS] FILE_PATH
+```
+
+**Arguments**:
+
+* `FILE_PATH`: [required]
 
 **Options**:
 
@@ -315,6 +349,38 @@ $ kurmann-videoschnitt emby list-metadata [OPTIONS] FILE_PATH
 **Options**:
 
 * `--json-output / --no-json-output`: Gebe die Ausgabe im JSON-Format aus  [default: no-json-output]
+* `--help`: Show this message and exit.
+
+### `kurmann-videoschnitt emby write-nfo-file`
+
+Generiert die NFO-Metadatendatei und schreibt sie in eine Datei.
+
+Diese Methode extrahiert die Metadaten aus der angegebenen Videodatei und erstellt eine NFO-Metadatendatei im XML-Format für den Emby-Medienserver. Die NFO-Datei wird im selben Verzeichnis wie die Videodatei gespeichert.
+
+Args:
+    file_path (str): Pfad zur Videodatei.
+
+Returns:
+    None
+
+Beispiel:
+    $ kurmann-videoschnitt emby write-nfo-file '/pfad/zur/videodatei.mov'
+
+Raises:
+    ValueError: Wenn das Aufnahmedatum nicht aus dem Dateinamen extrahiert werden kann.
+
+**Usage**:
+
+```console
+$ kurmann-videoschnitt emby write-nfo-file [OPTIONS] FILE_PATH
+```
+
+**Arguments**:
+
+* `FILE_PATH`: [required]
+
+**Options**:
+
 * `--help`: Show this message and exit.
 
 ## `kurmann-videoschnitt original-media`
