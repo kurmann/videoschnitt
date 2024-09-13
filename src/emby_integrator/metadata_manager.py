@@ -1,45 +1,55 @@
+# metadata_manager.py
+
+"""
+Das 'metadata_manager' Modul ist verantwortlich für das Auslesen von Metadaten aus Dateien.
+Es stellt Funktionen zur Verfügung, um Metadaten mithilfe von ExifTool zu extrahieren und
+das Aufnahmedatum aus Dateinamen zu parsen.
+"""
+
+import os
+import re
 import subprocess
 import json
-import os
+from datetime import datetime
 
 # Liste der benötigten Metadaten
 METADATA_KEYS = [
     "FileName", "Directory", "FileSize", "FileModificationDateTime", "FileType", "MIMEType", 
     "CreateDate", "Duration", "AudioFormat", "ImageWidth", "ImageHeight", "CompressorID",
     "CompressorName", "BitDepth", "VideoFrameRate", "Title", "Album", "Description", "Copyright", 
-    "Author", "Keywords", "AvgBitrate"
+    "Author", "Keywords", "AvgBitrate", "Producer", "Studio"
 ]
-
 def get_metadata(file_path: str) -> dict:
     """
-    Extrahiert die Metadaten aus einer Datei mithilfe des Exif-Tools und gibt ein strukturiertes Dictionary zurück.
+    Extrahiert die Metadaten aus einer Datei mithilfe von ExifTool und gibt ein strukturiertes Dictionary zurück.
 
-    Argumente:
-    - file_path: Der Pfad zur Datei, aus der die Metadaten extrahiert werden sollen.
+    Args:
+        file_path (str): Der Pfad zur Datei, aus der die Metadaten extrahiert werden sollen.
 
-    Rückgabewert:
-    - Ein Dictionary, das die relevanten Metadaten enthält.
-    
+    Returns:
+        dict: Ein Dictionary, das die relevanten Metadaten enthält.
+
     Raises:
-    - FileNotFoundError: Wenn die Datei nicht gefunden wird.
-    - ValueError: Wenn keine Metadaten extrahiert werden können.
+        FileNotFoundError: Wenn die Datei nicht gefunden wird.
+        ValueError: Wenn keine Metadaten extrahiert werden können.
     """
     if not os.path.exists(file_path):
         raise FileNotFoundError(f"Die Datei '{file_path}' wurde nicht gefunden.")
-    
+
     # Der Dateipfad muss in Anführungszeichen gesetzt werden, um Sonderzeichen zu behandeln
     command = f'exiftool -json "{file_path}"'
     try:
         result = subprocess.run(command, shell=True, capture_output=True, text=True, check=True)
         if not result.stdout:
             raise ValueError(f"Keine Ausgabe von ExifTool für '{file_path}'. Möglicherweise enthält die Datei keine Metadaten.")
-        
+
         metadata_list = json.loads(result.stdout)
         metadata = metadata_list[0]  # Wir nehmen an, dass nur eine Datei übergeben wird
 
         # Filtern der gewünschten Metadaten
-        filtered_metadata = {key: metadata.get(key, "N/A") for key in METADATA_KEYS}
-        
+        # Standardwert von 'N/A' zu '' geändert
+        filtered_metadata = {key: metadata.get(key, '') for key in METADATA_KEYS}
+
         return filtered_metadata
     except subprocess.CalledProcessError as e:
         error_message = (
@@ -50,10 +60,6 @@ def get_metadata(file_path: str) -> dict:
         )
         raise ValueError(error_message)
     
-import re
-from datetime import datetime
-import os
-
 def parse_recording_date(file_path: str) -> datetime | None:
     """
     Extrahiert das Aufnahmedatum aus dem Dateinamen.
