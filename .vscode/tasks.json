@@ -4,12 +4,24 @@
         {
             "label": "generate-cli-docs",
             "type": "shell",
-            "command": "bash",
+            "command": "poetry",
             "args": [
-                "-c",
-                "typer ${workspaceFolder}/src/kurmann_videoschnitt/app.py utils docs --name kurmann-videoschnitt --output ${workspaceFolder}/docs/cli/kurmann_videoschnitt.md"
+                "run",
+                "typer",
+                "${workspaceFolder}/src/kurmann_videoschnitt/app.py",
+                "utils",
+                "docs",
+                "--name",
+                "kurmann-videoschnitt",
+                "--output",
+                "${workspaceFolder}/docs/cli/kurmann_videoschnitt.md"
             ],
             "problemMatcher": [],
+            "options": {
+                "env": {
+                    "PYTHONPATH": "${workspaceFolder}/src"
+                }
+            },
             "group": {
                 "kind": "build",
                 "isDefault": true
