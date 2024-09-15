@@ -1,3 +1,5 @@
+# apple_compressor_manager/file_utils.py
+
 import os
 import osxmetadata
 from osxmetadata import Tag  # Importiere das Tag namedtuple
