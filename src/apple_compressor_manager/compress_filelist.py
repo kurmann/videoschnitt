@@ -1,4 +1,4 @@
-# apple_compressor_manager.compress_filelist.py
+# apple_compressor_manager/compress_filelist.py
 
 import os
 import asyncio
@@ -7,9 +7,9 @@ from apple_compressor_manager.compress_file import compress_prores_file, get_out
 
 MAX_CONCURRENT_JOBS = 3
 
-async def compress_prores_files(file_list, output_directory=None, compressor_profile_path=None, delete_prores=False, callback=None, prores_dir=None):
+async def compress_prores_files_async(file_list, output_directory=None, compressor_profile_path=None, delete_prores=False, callback=None, prores_dir=None):
     """
-    Komprimiert alle ProRes-Dateien in der übergebenen Liste unter Berücksichtigung der maximalen Anzahl gleichzeitiger Jobs.
+    Asynchrone Funktion zur Komprimierung von ProRes-Dateien.
 
     Argumente:
     - file_list: Eine Liste von Pfaden zu den ProRes-Eingabedateien.
@@ -18,9 +18,6 @@ async def compress_prores_files(file_list, output_directory=None, compressor_pro
     - delete_prores: Boolean, der angibt, ob die ursprünglichen ProRes-Dateien nach erfolgreicher Komprimierung gelöscht werden sollen.
     - callback: Eine optionale Rückruffunktion, die nach erfolgreicher Komprimierung jeder Datei aufgerufen wird.
     - prores_dir: Das Verzeichnis, in dem die ursprünglichen ProRes-Dateien gespeichert sind.
-
-    Hinweis:
-    - Wenn output_directory=None ist, werden die komprimierten Dateien im gleichen Verzeichnis wie die Originaldateien gespeichert.
     """
     if not compressor_profile_path:
         raise ValueError("Ein gültiger compressor_profile_path muss angegeben werden.")
@@ -41,13 +38,39 @@ async def compress_prores_files(file_list, output_directory=None, compressor_pro
 
         output_file = os.path.join(output_directory, f"{os.path.splitext(os.path.basename(input_file))[0]}{output_suffix}.mov")
 
-        if os.path.exists(output_file):
-            print(f"Überspringe Datei, komprimierte Version existiert bereits: {output_file}")
+        if is_output_file_valid(output_file):
+            print(f"Überspringe Datei, komprimierte Version existiert bereits und ist gültig: {output_file}")
             continue
+        else:
+            print(f"Vorhandene Ausgabedatei ist ungültig oder existiert nicht. Komprimiere Datei: {input_file}")
 
         tasks.append(compress_file_with_semaphore(input_file, output_file, compressor_profile_path, semaphore, callback, delete_prores, prores_dir))
 
     await asyncio.gather(*tasks)
+
+async def compress_file_with_semaphore(input_file, output_file, compressor_profile_path, semaphore, callback, delete_prores, prores_dir):
+    async with semaphore:
+        await compress_prores_file(input_file, output_file, compressor_profile_path, callback, delete_prores, prores_dir)
+
+def run_compress_prores_async(file_list, output_directory=None, compressor_profile_path=None, delete_prores=False, callback=None, prores_dir=None):
+    """
+    Wrapper-Funktion zum Starten der asynchronen Komprimierung.
+
+    Hinweis:
+    - Diese Funktion sollte innerhalb einer asynchronen Funktion mit 'await' aufgerufen werden.
+    """
+    return compress_prores_files_async(file_list, output_directory, compressor_profile_path, delete_prores, callback, prores_dir)
+
+def is_output_file_valid(output_file):
+    """Prüft, ob die Ausgabedatei gültig ist."""
+    if not os.path.exists(output_file):
+        return False
+    if os.path.getsize(output_file) < 100 * 1024:  # Beispielwert: 100 KB
+        return False
+    codec = get_video_codec(output_file)
+    if codec != "hevc":
+        return False
+    return True
 
 async def compress_file_with_semaphore(input_file, output_file, compressor_profile_path, semaphore, callback, delete_prores, prores_dir):
     async with semaphore:

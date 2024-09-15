@@ -33,7 +33,7 @@ def move_file_to_target(source_file, base_source_dir, base_destination_dir):
         edited_suffix = "-edited" if "_edited" in filename_without_extension else ""
 
         # Codec-Überprüfung für MOV/MP4-Dateien
-        codec = get_video_codec(source_file) if extension == '.mov' or extension == '.mp4' else None
+        codec = get_video_codec(source_file) if extension in ['.mov', '.mp4'] else None
 
         if codec is None:
             # Umbenennung für andere Dateitypen wie HEIC, JPG usw.
@@ -57,7 +57,7 @@ def move_file_to_target(source_file, base_source_dir, base_destination_dir):
         destination_path = os.path.join(destination_dir, filename)
 
         # Verschiebe die Datei
-        print(f"Verschiebe Datei {source_file} ({os.path.getsize(source_file) / (1024 * 1024):.2f} MiB) nach {destination_dir}")
+        print(f"Verschiebe Datei {source_file} ({os.path.getsize(source_file) / (1024 * 1024):.2f} MiB) nach {destination_path}")
         shutil.move(source_file, destination_path)
         print(f"Datei verschoben nach {destination_path}")
 

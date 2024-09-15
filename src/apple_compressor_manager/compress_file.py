@@ -6,7 +6,7 @@ import subprocess
 
 from apple_compressor_manager.video_utils import get_video_codec
 from apple_compressor_manager.compression_monitor import monitor_compression
-from apple_compressor_manager.file_utils import add_compression_tag 
+from apple_compressor_manager.file_utils import add_compression_tag
 
 MIN_PRORES_SIZE_MB = 25  # ProRes-Dateien unter 25 MB werden nicht komprimiert
 
@@ -22,10 +22,6 @@ async def compress_prores_file(input_file, output_file, compressor_profile_path,
     - delete_prores: Boolean, der angibt, ob die ursprüngliche ProRes-Datei nach erfolgreicher Komprimierung gelöscht werden soll.
     - prores_dir: Das Verzeichnis, in dem die ursprüngliche ProRes-Datei gespeichert ist. Wird verwendet, wenn delete_prores=True gesetzt ist.
     - add_tag: Boolean, der angibt, ob das Tag 'An Apple Kompressor übergeben' hinzugefügt werden soll (Standard: True).
-
-    Hinweis:
-    - Die Datei wird nur komprimiert, wenn sie das ProRes-Format hat und größer ist als die definierte Mindestgröße.
-    - Tritt ein Fehler bei der Komprimierung auf, wird dies in der Konsole angezeigt.
     """
     if os.path.getsize(input_file) < MIN_PRORES_SIZE_MB * 1024 * 1024:
         print(f"Überspringe Datei (zu klein für Komprimierung): {input_file}")
@@ -45,16 +41,27 @@ async def compress_prores_file(input_file, output_file, compressor_profile_path,
         "-settingpath", compressor_profile_path
     ]
 
-    result = subprocess.run(command, check=False)
+    try:
+        result = subprocess.run(command, check=True)
+    except subprocess.CalledProcessError as e:
+        print(f"Fehler beim Starten der Komprimierung für {input_file}: Rückgabecode {e.returncode}, Fehlerausgabe: {e.stderr}")
+        return
+    except Exception as e:
+        print(f"Unerwarteter Fehler bei der Komprimierung von {input_file}: {e}")
+        return
 
     print(f"Kompressionsauftrag erstellt für: {input_file} (Job-Titel: {job_title})")
 
-    if result.returncode == 0:
-        if add_tag:
-            add_compression_tag(input_file)  # Tag hinzufügen über file_utils
-        await monitor_compression(output_file, compressor_profile_path, callback, delete_prores, prores_dir)
-    else:
-        print(f"Fehler bei der Komprimierung von {input_file}: {result.stderr}")
+    if add_tag:
+        add_compression_tag(input_file)  # Tag hinzufügen
+
+    # Warte auf Abschluss der Komprimierung
+    await monitor_compression(output_file, compressor_profile_path, callback, delete_prores, prores_dir)
+
+def get_output_suffix(compressor_profile_path):
+    """Ermittelt das Suffix für die Ausgabedatei basierend auf dem Compressor-Setting-Namen."""
+    setting_name = os.path.splitext(os.path.basename(compressor_profile_path))[0]
+    return f"-{setting_name}"
 
 def run_compress_file(input_file, output_directory=None, compressor_profile_path=None, delete_prores=False, callback=None, add_tag=True):
     """
