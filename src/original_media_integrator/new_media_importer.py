@@ -44,20 +44,35 @@ async def import_and_compress_media_async(source_dir, destination_dir, compressi
     if prores_files:
         if compression_dir:
             print("Starte asynchrone Komprimierung der ProRes-Dateien...")
-            await run_compress_prores_async(prores_files, compression_dir, COMPRESSOR_PROFILE_PATH, delete_prores, callback=on_compression_complete, prores_dir=source_dir)
+            await run_compress_prores_async(
+                prores_files,
+                base_source_dir=source_dir,
+                output_directory=compression_dir,
+                compressor_profile_path=COMPRESSOR_PROFILE_PATH,
+                delete_prores=delete_prores,
+                callback=on_compression_complete,
+                prores_dir=source_dir
+            )
             # Organisiere die komprimierten Dateien nach Abschluss der Kompression
             print(f"Organisiere komprimierte Dateien aus: {compression_dir}")
-            organize_media_files(compression_dir, destination_dir)
+            organize_media_files(compression_dir, destination_dir, base_source_dir=compression_dir)
         else:
             # Wenn kein Kompressionsverzeichnis angegeben ist, komprimiere direkt im Quellverzeichnis
             print("Starte asynchrone Komprimierung der ProRes-Dateien im Quellverzeichnis...")
-            await run_compress_prores_async(prores_files, source_dir, COMPRESSOR_PROFILE_PATH, delete_prores, callback=on_compression_complete)
+            await run_compress_prores_async(
+                prores_files,
+                base_source_dir=source_dir,
+                output_directory=source_dir,
+                compressor_profile_path=COMPRESSOR_PROFILE_PATH,
+                delete_prores=delete_prores,
+                callback=on_compression_complete
+            )
             # Organisiere die komprimierten Dateien
-            organize_media_files(source_dir, destination_dir)
+            organize_media_files(source_dir, destination_dir, base_source_dir=source_dir)
     else:
         print("Keine ProRes-Dateien zum Komprimieren gefunden.")
         # Organisiere die übrigen Dateien
-        organize_media_files(source_dir, destination_dir)
+        organize_media_files(source_dir, destination_dir, base_source_dir=source_dir)
 
     # Teile dem Benutzer mit, dass der Vorgang abgeschlossen ist
     print("Import und Kompression abgeschlossen.")

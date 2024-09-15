@@ -8,8 +8,31 @@ from original_media_integrator.video_utils import get_video_codec, is_hevc_a
 
 def move_file_to_target(source_file, base_source_dir, base_destination_dir):
     """
-    Verschiebt eine Datei ins Zielverzeichnis, behält die Unterverzeichnisstruktur bei und organisiert nach Datum.
-    Fügt die Zeitzone im Dateinamen hinzu. Wenn der Dateiname "_edited" enthält, wird dies als "-edited" im neuen Dateinamen übernommen.
+    Verschiebt eine Datei ins Zielverzeichnis, behält die Unterverzeichnisstruktur vom Quellverzeichnis bei und organisiert nach Datum.
+
+    Details:
+    - Wenn die Datei in einem Unterverzeichnis des Quellverzeichnisses liegt, wird dieses Unterverzeichnis im Zielverzeichnis unterhalb der Datumsstruktur beibehalten.
+    - Dateien im Wurzelverzeichnis des Quellverzeichnisses werden direkt in die Datumsstruktur des Zielverzeichnisses verschoben.
+    - Der Dateiname wird anhand des Erstellungsdatums der Datei generiert und enthält die Zeitzone.
+    - Wenn der Dateiname "_edited" enthält, wird dies als "-edited" im neuen Dateinamen übernommen.
+    - Für Videodateien (MOV/MP4) wird der Codec ermittelt und ggf. im Dateinamen hinzugefügt (z.B. "-ProRes" oder "-HEVC-A").
+
+    Argumente:
+    - source_file (str): Der vollständige Pfad zur Quelldatei.
+    - base_source_dir (str): Das Wurzelverzeichnis der Quelle. Dient zur Berechnung des relativen Pfads.
+    - base_destination_dir (str): Das Wurzelverzeichnis des Ziels, in das die Datei verschoben wird.
+
+    Rückgabewert:
+    - str: Der vollständige Pfad der verschobenen Datei im Zielverzeichnis.
+    - None: Wenn ein Fehler auftritt.
+
+    Ausnahmen:
+    - Fängt alle Ausnahmen ab und gibt eine Fehlermeldung aus, ohne die Ausführung zu unterbrechen.
+
+    Beispiel:
+    >>> move_file_to_target('/Volumes/Samsung2TB/BlackMagic/Aufnahmen von Patrick/video.mov', '/Volumes/Samsung2TB/BlackMagic', '/Volumes/Originalmedien')
+    Verschiebe Datei /Volumes/Samsung2TB/BlackMagic/Aufnahmen von Patrick/video.mov nach /Volumes/Originalmedien/2023/2023-09/2023-09-15/Aufnahmen von Patrick/2023-09-15_123456+0200-HEVC-A.mov
+    Datei verschoben nach /Volumes/Originalmedien/2023/2023-09/2023-09-15/Aufnahmen von Patrick/2023-09-15_123456+0200-HEVC-A.mov
     """
     try:
         # Datum der Datei extrahieren, inklusive Zeitzone
@@ -66,8 +89,23 @@ def move_file_to_target(source_file, base_source_dir, base_destination_dir):
         print(f"Fehler beim Verschieben der Datei {source_file}: {e}")
         return None
 
-def organize_media_files(source_dir, destination_dir):
-    base_source_dir = os.path.abspath(source_dir)  # Setze base_source_dir auf den absoluten Pfad des Quellverzeichnisses
+def organize_media_files(source_dir, destination_dir, base_source_dir=None):
+    """
+    Organisiert Medien aus dem Quellverzeichnis ins Zielverzeichnis.
+
+    Argumente:
+    - source_dir (str): Das Verzeichnis, das die zu organisierenden Dateien enthält.
+    - destination_dir (str): Das Zielverzeichnis, in das die Dateien verschoben werden.
+    - base_source_dir (str): Das Wurzelverzeichnis zur Berechnung des relativen Pfads. 
+                             Wenn None, wird source_dir verwendet.
+
+    Diese Funktion durchläuft rekursiv das source_dir und verschiebt gültige Dateien
+    ins destination_dir, wobei die Unterverzeichnisstruktur beibehalten wird.
+    """
+    if base_source_dir is None:
+        base_source_dir = os.path.abspath(source_dir)  # Verwende source_dir als base_source_dir
+    else:
+        base_source_dir = os.path.abspath(base_source_dir)
 
     for root, _, files in os.walk(source_dir):
         for filename in files:
