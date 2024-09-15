@@ -97,23 +97,3 @@ def is_output_file_valid(output_file):
 async def compress_file_with_semaphore(input_file, output_file, compressor_profile_path, semaphore, callback, delete_prores, prores_dir):
     async with semaphore:
         await compress_prores_file(input_file, output_file, compressor_profile_path, callback, delete_prores, prores_dir)
-
-def run_compress_prores(file_list, output_directory=None, compressor_profile_path=None, delete_prores=False, callback=None, prores_dir=None):
-    """
-    Startet den Kompressionsprozess für eine Liste von ProRes-Dateien.
-
-    Argumente:
-    - file_list: Eine Liste von Pfaden zu den ProRes-Eingabedateien.
-    - output_directory: Das Verzeichnis, in das die komprimierten Dateien gespeichert werden sollen.
-    - compressor_profile_path: Der Pfad zur Compressor-Settings-Datei.
-    - delete_prores: Boolean, der angibt, ob die ursprünglichen ProRes-Dateien nach erfolgreicher Komprimierung gelöscht werden sollen.
-    - callback: Eine optionale Rückruffunktion, die nach erfolgreicher Komprimierung jeder Datei aufgerufen wird.
-    - prores_dir: Das Verzeichnis, in dem die ursprünglichen ProRes-Dateien gespeichert sind.
-
-    Hinweis:
-    - Diese Methode kapselt den asynchronen Kompressionsprozess, damit er synchron aufgerufen werden kann.
-    """
-    if not compressor_profile_path:
-        raise ValueError("Ein gültiger compressor_profile_path muss angegeben werden.")
-
-    asyncio.run(compress_prores_files(file_list, output_directory, compressor_profile_path, delete_prores, callback, prores_dir))
