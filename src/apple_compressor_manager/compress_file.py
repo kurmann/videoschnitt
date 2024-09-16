@@ -10,11 +10,19 @@ from apple_compressor_manager.file_utils import add_compression_tag
 
 MIN_PRORES_SIZE_MB = 25  # ProRes-Dateien unter 25 MB werden nicht komprimiert
 
-async def compress_prores_file(input_file, output_file, compressor_profile_path, callback=None, delete_prores=False, add_tag=True):
+async def compress_prores_file(input_file, output_file, compressor_profile_path, callback=None, delete_prores=False, prores_dir=None, add_tag=True):
     """
     Startet die Komprimierung einer einzelnen ProRes-Datei und überwacht den Prozess.
+
+    Argumente:
+    - input_file: Der Pfad zur ProRes-Eingabedatei.
+    - output_file: Der Pfad zur komprimierten Ausgabedatei.
+    - compressor_profile_path: Der Pfad zur Compressor-Settings-Datei.
+    - callback: Eine optionale Rückruffunktion, die nach erfolgreicher Komprimierung aufgerufen wird.
+    - delete_prores: Boolean, der angibt, ob die ursprüngliche ProRes-Datei nach erfolgreicher Komprimierung gelöscht werden soll.
+    - prores_dir: Das Verzeichnis, in dem die ursprüngliche ProRes-Datei gespeichert ist.
+    - add_tag: Boolean, der angibt, ob das Tag 'An Apple Kompressor übergeben' hinzugefügt werden soll (Standard: True).
     """
-    # Vorabprüfungen zur Dateigröße und Codec
     if os.path.getsize(input_file) < MIN_PRORES_SIZE_MB * 1024 * 1024:
         print(f"Überspringe Datei (zu klein für Komprimierung): {input_file}")
         return
@@ -25,7 +33,6 @@ async def compress_prores_file(input_file, output_file, compressor_profile_path,
 
     job_title = f"Kompression '{os.path.basename(input_file)}'"
 
-    # Befehl für Compressor vorbereiten
     command = [
         "/Applications/Compressor.app/Contents/MacOS/Compressor",
         "-batchname", job_title,
@@ -49,8 +56,22 @@ async def compress_prores_file(input_file, output_file, compressor_profile_path,
     if add_tag:
         add_compression_tag(input_file)
 
-    # Überwachung starten
-    await monitor_compression(input_file, output_file, callback, delete_prores)
+    # Überwachung der Komprimierung starten
+    await monitor_compression(output_file, callback)
+
+    # Nach erfolgreicher Kompression (erkannt durch Monitor) das Original löschen
+    if delete_prores:
+        try:
+            if prores_dir is None:
+                prores_dir = os.path.dirname(input_file)
+            prores_file = os.path.join(prores_dir, os.path.basename(input_file))
+            if os.path.exists(prores_file):
+                print(f"Lösche Original-ProRes-Datei: {prores_file}")
+                os.remove(prores_file)
+            else:
+                print(f"Original-ProRes-Datei nicht gefunden: {prores_file}")
+        except Exception as e:
+            print(f"Fehler beim Löschen der ProRes-Datei: {e}")
 
 def get_output_suffix(compressor_profile_path):
     """Ermittelt das Suffix für die Ausgabedatei basierend auf dem Compressor-Setting-Namen."""

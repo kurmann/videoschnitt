@@ -10,15 +10,13 @@ from apple_compressor_manager.cleanup_prores import delete_prores_if_hevc_a_exis
 CHECK_INTERVAL = 30  # Intervall in Sekunden zwischen den Überprüfungen
 MIN_OUTPUT_SIZE_KB = 100  # Output-Dateien unter 100 KB werden als nicht abgeschlossen betrachtet
 
-async def monitor_compression(input_file, output_file, callback=None, delete_prores=False):
+async def monitor_compression(output_file, callback=None):
     """
     Überwacht die Komprimierung und überprüft periodisch den Fortschritt, bis die Komprimierung abgeschlossen ist.
-    
+
     Argumente:
-    - input_file: Die Original-ProRes-Datei, die komprimiert wird.
-    - output_file: Die komprimierte Ausgabedatei.
+    - output_file: Der Pfad zur komprimierten Ausgabedatei.
     - callback: Eine optionale Rückruffunktion, die nach erfolgreicher Komprimierung aufgerufen wird.
-    - delete_prores: Boolean, der angibt, ob die ursprüngliche ProRes-Datei nach erfolgreicher Komprimierung gelöscht werden soll.
     """
     while True:
         await asyncio.sleep(CHECK_INTERVAL)
@@ -41,18 +39,6 @@ async def monitor_compression(input_file, output_file, callback=None, delete_pro
             print(f"Komprimierung abgeschlossen: {output_file}")
             if callback:
                 callback(output_file)
-
-            if delete_prores:
-                try:
-                    print(f"Lösche Original-ProRes-Datei: {input_file}")
-                    os.remove(input_file)
-                except Exception as e:
-                    print(f"Fehler beim Löschen der ProRes-Datei: {e}")
-            break
+            break  # Beende die Überwachung, da die Komprimierung abgeschlossen ist
         else:
             print(f"Unerwarteter Codec für {output_file}: '{codec}'. Warte weiter.")
-            
-def get_output_suffix(compressor_profile_path):
-    """Ermittelt das Suffix für die Ausgabedatei basierend auf dem Compressor-Setting-Namen."""
-    setting_name = os.path.splitext(os.path.basename(compressor_profile_path))[0]
-    return f"-{setting_name}"
