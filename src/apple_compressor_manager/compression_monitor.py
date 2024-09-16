@@ -10,7 +10,7 @@ from apple_compressor_manager.cleanup_prores import delete_prores_if_hevc_a_exis
 CHECK_INTERVAL = 30  # Intervall in Sekunden zwischen den Überprüfungen
 MIN_OUTPUT_SIZE_KB = 100  # Output-Dateien unter 100 KB werden als nicht abgeschlossen betrachtet
 
-async def monitor_compression(output_file, compressor_profile_path, callback=None, delete_prores=False, prores_dir=None):
+async def monitor_compression(output_file, callback=None, delete_prores=False, prores_dir=None):
     """
     Überwacht die Komprimierung und überprüft periodisch den Fortschritt, bis die Komprimierung abgeschlossen ist.
 
