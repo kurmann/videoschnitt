@@ -10,19 +10,11 @@ from apple_compressor_manager.file_utils import add_compression_tag
 
 MIN_PRORES_SIZE_MB = 25  # ProRes-Dateien unter 25 MB werden nicht komprimiert
 
-async def compress_prores_file(input_file, output_file, compressor_profile_path, callback=None, delete_prores=False, prores_dir=None, add_tag=True):
+async def compress_prores_file(input_file, output_file, compressor_profile_path, callback=None, delete_prores=False, add_tag=True):
     """
     Startet die Komprimierung einer einzelnen ProRes-Datei und überwacht den Prozess.
-
-    Argumente:
-    - input_file: Der Pfad zur ProRes-Eingabedatei.
-    - output_file: Der Pfad zur komprimierten Ausgabedatei.
-    - compressor_profile_path: Der Pfad zur Compressor-Settings-Datei.
-    - callback: Eine optionale Rückruffunktion, die nach erfolgreicher Komprimierung aufgerufen wird.
-    - delete_prores: Boolean, der angibt, ob die ursprüngliche ProRes-Datei nach erfolgreicher Komprimierung gelöscht werden soll.
-    - prores_dir: Das Verzeichnis, in dem die ursprüngliche ProRes-Datei gespeichert ist. Wird verwendet, wenn delete_prores=True gesetzt ist.
-    - add_tag: Boolean, der angibt, ob das Tag 'An Apple Kompressor übergeben' hinzugefügt werden soll (Standard: True).
     """
+    # Vorabprüfungen zur Dateigröße und Codec
     if os.path.getsize(input_file) < MIN_PRORES_SIZE_MB * 1024 * 1024:
         print(f"Überspringe Datei (zu klein für Komprimierung): {input_file}")
         return
@@ -33,6 +25,7 @@ async def compress_prores_file(input_file, output_file, compressor_profile_path,
 
     job_title = f"Kompression '{os.path.basename(input_file)}'"
 
+    # Befehl für Compressor vorbereiten
     command = [
         "/Applications/Compressor.app/Contents/MacOS/Compressor",
         "-batchname", job_title,
@@ -52,11 +45,12 @@ async def compress_prores_file(input_file, output_file, compressor_profile_path,
 
     print(f"Kompressionsauftrag erstellt für: {input_file} (Job-Titel: {job_title})")
 
+    # Optionales Tag hinzufügen
     if add_tag:
-        add_compression_tag(input_file)  # Tag hinzufügen
+        add_compression_tag(input_file)
 
-    # Warte auf Abschluss der Komprimierung
-    await monitor_compression(output_file, compressor_profile_path, callback, delete_prores, prores_dir)
+    # Überwachung starten
+    await monitor_compression(input_file, output_file, callback, delete_prores)
 
 def get_output_suffix(compressor_profile_path):
     """Ermittelt das Suffix für die Ausgabedatei basierend auf dem Compressor-Setting-Namen."""
