@@ -69,29 +69,26 @@ def compress_prores_file_command(
 ):
     """Komprimiert eine einzelne ProRes-Datei."""
 
+    # Überprüfe und initialisiere die `output`-Variable außerhalb der asynchronen Funktion
+    if output is None:
+        output = os.path.dirname(input_file)
+    
+    # Definiere die asynchrone Funktion
     async def async_main():
-        if output is None:
-            output = os.path.dirname(input_file)
-
         # Definiere einen Callback für den Abschluss der Komprimierung
         def on_completion(output_file):
             print(f"Komprimierung abgeschlossen für Datei: {output_file}")
 
-        output_file = os.path.join(
-            output,
-            f"{os.path.splitext(os.path.basename(input_file))[0]}{get_output_suffix(compressor_profile_path)}.mov"
-        )
-
+        # Führe die Komprimierung durch
         await compress_prores_file(
             input_file=input_file,
-            output_file=output_file,
+            output_file=os.path.join(output, os.path.basename(input_file)),  # Verwende das Verzeichnis von output
             compressor_profile_path=compressor_profile_path,
             callback=on_completion,
-            delete_prores=delete_prores,
-            prores_dir=os.path.dirname(input_file)
+            delete_prores=delete_prores
         )
-
-    # Starte die asynchrone Funktion
+    
+    # Führe die asynchrone Hauptfunktion aus
     asyncio.run(async_main())
 
 if __name__ == "__main__":
