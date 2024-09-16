@@ -1,3 +1,5 @@
+# original_media_integrator/file_utils.py
+
 import os
 
 def is_file_in_use(filepath):
