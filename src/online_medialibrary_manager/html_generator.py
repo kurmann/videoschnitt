@@ -5,6 +5,7 @@ Das Modul 'html_generator' ist verantwortlich für die Erstellung einer statisch
 die Videos in verschiedenen Auflösungen anbietet und die Metadaten korrekt einbindet.
 """
 
+import locale
 import os
 from datetime import datetime
 from emby_integrator.metadata_manager import get_metadata, parse_recording_date
@@ -27,6 +28,16 @@ def generate_html(metadata_source: str, high_res_file: str, mid_res_file: str, a
         str: Der generierte HTML-Inhalt als String.
     """
 
+    # Locale auf Deutsch setzen
+    try:
+        locale.setlocale(locale.LC_TIME, 'de_CH.UTF-8')
+    except locale.Error:
+        try:
+            locale.setlocale(locale.LC_TIME, 'de_DE.UTF-8')
+        except locale.Error:
+            # Fallback, falls die deutschen Locale-Einstellungen nicht verfügbar sind
+            locale.setlocale(locale.LC_TIME, '')
+
     # Extrahieren der Metadaten aus der angegebenen Metadatenquelle
     metadata = get_metadata(metadata_source)
 
@@ -35,8 +46,8 @@ def generate_html(metadata_source: str, high_res_file: str, mid_res_file: str, a
     description = metadata.get('Description') or ''
     recording_date = parse_recording_date(metadata_source)
     if recording_date:
-        # Datumsformat auf Deutsch: "1. Juli 2024"
-        recording_date_str = recording_date.strftime('%-d. %B %Y')
+        # Datumsformat auf Deutsch mit Wochentag: "Montag, 7. August 2024"
+        recording_date_str = recording_date.strftime('%A, %-d. %B %Y')
     else:
         recording_date_str = ''
 
@@ -176,7 +187,7 @@ def generate_html(metadata_source: str, high_res_file: str, mid_res_file: str, a
             color: #b0b0b0;
             font-size: 1.1em;
             line-height: 1.7em;
-            text-align: justify;
+            text-align: center;
         }}
 
         .links {{
@@ -214,7 +225,8 @@ def generate_html(metadata_source: str, high_res_file: str, mid_res_file: str, a
 </head>
 
 <body>
-    <h1>Familienfilm-Freigabe</h1>
+    <h1>Kurmann Mediathek</h1>
+    <h2>Familienfilm-Freigabe von Patrick Kurmann</h2>
     <div class="container">
         <h2 id="title-link">{title}</h2>
 
