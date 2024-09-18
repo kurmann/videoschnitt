@@ -9,7 +9,7 @@ import os
 from datetime import datetime
 from emby_integrator.metadata_manager import get_metadata, parse_recording_date
 
-def generate_html(original_file: str, high_res_file: str, mid_res_file: str, artwork_image: str) -> str:
+def generate_html(original_file: str, high_res_file: str, mid_res_file: str, artwork_image: str, download_file: str = None) -> str:
     """
     Generiert den HTML-Inhalt basierend auf den bereitgestellten Dateien und Metadaten.
 
@@ -18,6 +18,7 @@ def generate_html(original_file: str, high_res_file: str, mid_res_file: str, art
         high_res_file (str): Pfad zur hochauflösenden Videodatei (4K HEVC).
         mid_res_file (str): Pfad zur mittelauflösenden Videodatei (HD).
         artwork_image (str): Pfad zum Vorschaubild.
+        download_file (str, optional): Pfad zur Download-Datei (z.B. ZIP-Datei). Standard ist None.
 
     Returns:
         str: Der generierte HTML-Inhalt als String.
@@ -44,6 +45,7 @@ def generate_html(original_file: str, high_res_file: str, mid_res_file: str, art
     high_res_file_name = os.path.basename(high_res_file)
     mid_res_file_name = os.path.basename(mid_res_file)
     artwork_image_name = os.path.basename(artwork_image)
+    download_file_name = os.path.basename(download_file) if download_file else None
 
     # OpenGraph Metadaten
     og_meta_tags = f'''
@@ -165,7 +167,10 @@ def generate_html(original_file: str, high_res_file: str, mid_res_file: str, art
         .links {{
             text-align: center;
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 30px;
         }}
 
         .links a {{
@@ -175,22 +180,13 @@ def generate_html(original_file: str, high_res_file: str, mid_res_file: str, art
             border: 1px solid #ffae42;
             border-radius: 5px;
             transition: background-color 0.3s ease, color 0.3s ease;
-        }}
-
-        .links .link-description {{
-            font-size: 0.8em;
-            color: #b0b0b0;
-            display: block;
-            padding-top: 0.3rem;
+            width: 200px;
+            text-align: center;
         }}
 
         .links a:hover {{
             background-color: #ffae42;
             color: #181818;
-        }}
-
-        .links a:hover .link-description {{
-            color: #ffffff;
         }}
 
         footer {{
@@ -229,20 +225,15 @@ def generate_html(original_file: str, high_res_file: str, mid_res_file: str, art
             {description}
         </p>
 
-        <!-- Links für manuelle Auswahl der Auflösung -->
+        <!-- Links für manuelle Auswahl der Auflösung und Download -->
         <div class="links">
             <a href="{high_res_file_name}" id="4k-link">
-                <span class="link-title">Film in 4K-Qualität abspielen</span>
-                <span class="link-description">Dolby Vision HDR</span>
+                Film in 4K-Qualität
             </a>
             <a href="{mid_res_file_name}" id="hd-link">
-                <span class="link-title>">Film in HD-Qualität abspielen</span>
-                <span class="link-description">1080p SDR</span>
+                Film in HD-Qualität
             </a>
-            <a href="{original_file_name}" id="original-link download">
-                <span class="link-title">Originaldatei herunterladen</span>
-                <span class="link-description">Für Medienserver und Abspielen auf Computer</span>
-            </a>
+            {f'<a href="{download_file_name}" id="download-link">Datei herunterladen</a>' if download_file_name else ''}
         </div>
     </div>
 
@@ -276,22 +267,17 @@ def generate_html(original_file: str, high_res_file: str, mid_res_file: str, art
             if (playParam) {{
                 if (playParam.toLowerCase() === '4k') {{
                     playLink.href = highResFile;
-                    titleLink.href = highResFile;
                 }} else if (playParam.toLowerCase() === 'hd') {{
                     playLink.href = midResFile;
-                    titleLink.href = midResFile;
                 }} else {{
                     // Standard
                     playLink.href = midResFile;
-                    titleLink.href = midResFile;
                 }}
             }} else {{
                 if (canPlayHEVC()) {{
                     playLink.href = highResFile;
-                    titleLink.href = highResFile;
                 }} else {{
                     playLink.href = midResFile;
-                    titleLink.href = midResFile;
                 }}
             }}
         }});

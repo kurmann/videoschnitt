@@ -400,6 +400,7 @@ $ kurmann-videoschnitt online-media create-html [OPTIONS] ORIGINAL_FILE HIGH_RES
 **Options**:
 
 * `--output-file TEXT`: Name der Ausgabedatei für das HTML (Standard: index.html)  [default: index.html]
+* `--download-file TEXT`: Optionaler Pfad zur Download-Datei (z.B. ZIP-Datei)
 * `--help`: Show this message and exit.
 
 ## `kurmann-videoschnitt original-media`
