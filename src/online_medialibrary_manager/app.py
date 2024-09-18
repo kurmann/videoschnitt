@@ -14,18 +14,19 @@ app = typer.Typer(help="HTML Generator für Familienvideos")
 
 @app.command()
 def create_html(
-    original_file: str = typer.Argument(..., help="Pfad zur Originalvideodatei"),
+    metadata_source: str = typer.Argument(..., help="Pfad zur Videodatei, aus der die Metadaten extrahiert werden sollen"),
     high_res_file: str = typer.Argument(..., help="Pfad zur hochauflösenden Videodatei (4K HEVC)"),
     mid_res_file: str = typer.Argument(..., help="Pfad zur mittelauflösenden Videodatei (HD)"),
     artwork_image: str = typer.Argument(..., help="Pfad zum Vorschaubild"),
     output_file: str = typer.Option('index.html', help="Name der Ausgabedatei für das HTML (Standard: index.html)"),
     download_file: str = typer.Option(None, help="Optionaler Pfad zur Download-Datei (z.B. ZIP-Datei)"),
+    base_url: str = typer.Option('', help="Basis-URL für die OG-Metadaten (z.B. https://example.com/videos)"),
 ):
     """
     Generiert eine statische HTML-Seite für das Familienvideo.
     """
     try:
-        html_content = generate_html(original_file, high_res_file, mid_res_file, artwork_image, download_file)
+        html_content = generate_html(metadata_source, high_res_file, mid_res_file, artwork_image, download_file, base_url)
         
         with open(output_file, 'w', encoding='utf-8') as f:
             f.write(html_content)

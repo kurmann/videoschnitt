@@ -9,28 +9,29 @@ import os
 from datetime import datetime
 from emby_integrator.metadata_manager import get_metadata, parse_recording_date
 
-def generate_html(original_file: str, high_res_file: str, mid_res_file: str, artwork_image: str, download_file: str = None) -> str:
+def generate_html(metadata_source: str, high_res_file: str, mid_res_file: str, artwork_image: str, download_file: str = None, base_url: str = '') -> str:
     """
     Generiert den HTML-Inhalt basierend auf den bereitgestellten Dateien und Metadaten.
 
     Args:
-        original_file (str): Pfad zur Originalvideodatei.
+        metadata_source (str): Pfad zur Videodatei, aus der die Metadaten extrahiert werden.
         high_res_file (str): Pfad zur hochauflösenden Videodatei (4K HEVC).
         mid_res_file (str): Pfad zur mittelauflösenden Videodatei (HD).
         artwork_image (str): Pfad zum Vorschaubild.
         download_file (str, optional): Pfad zur Download-Datei (z.B. ZIP-Datei). Standard ist None.
+        base_url (str, optional): Basis-URL für die OG-Metadaten. Standard ist ''.
 
     Returns:
         str: Der generierte HTML-Inhalt als String.
     """
 
-    # Extrahieren der Metadaten aus der Originaldatei
-    metadata = get_metadata(original_file)
+    # Extrahieren der Metadaten aus der angegebenen Metadatenquelle
+    metadata = get_metadata(metadata_source)
 
     # Wichtige Metadaten abrufen
     title = metadata.get('Title') or 'Familienfilm-Freigabe'
     description = metadata.get('Description') or ''
-    recording_date = parse_recording_date(original_file)
+    recording_date = parse_recording_date(metadata_source)
     if recording_date:
         # Datumsformat auf Deutsch: "1. Juli 2024"
         recording_date_str = recording_date.strftime('%-d. %B %Y')
@@ -41,18 +42,21 @@ def generate_html(original_file: str, high_res_file: str, mid_res_file: str, art
     image_height = metadata.get('ImageHeight', '1080')
 
     # Dateinamen extrahieren
-    original_file_name = os.path.basename(original_file)
     high_res_file_name = os.path.basename(high_res_file)
     mid_res_file_name = os.path.basename(mid_res_file)
     artwork_image_name = os.path.basename(artwork_image)
     download_file_name = os.path.basename(download_file) if download_file else None
 
-    # OpenGraph Metadaten
+    # Wenn base_url angegeben ist, fügen wir sie den Dateinamen hinzu
+    def make_absolute(url):
+        return f'{base_url.rstrip("/")}/{url.lstrip("/")}' if base_url else url
+
+    # OpenGraph Metadaten mit absoluten URLs
     og_meta_tags = f'''
         <meta property="og:title" content="{title}" />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="{original_file_name}" />
-        <meta property="og:image" content="{artwork_image_name}" />
+        <meta property="og:url" content="{make_absolute('index.html')}" />
+        <meta property="og:image" content="{make_absolute(artwork_image_name)}" />
         <meta property="og:image:type" content="image/jpeg" />
         <meta property="og:description" content="{description}" />
         <meta property="og:image:width" content="{image_width}" />
@@ -85,19 +89,21 @@ def generate_html(original_file: str, high_res_file: str, mid_res_file: str, art
         }}
 
         h1 {{
-            margin: 20px;
             font-size: 2.5em;
             color: #ffffff;
             text-align: center;
             font-weight: 400;
+            padding-bottom: 0.7rem;
+            border-bottom: 1px solid silver;
+            letter-spacing: 0.15em;
         }}
 
         h2 {{
-            margin: 20px;
-            font-size: 1.8em;
+            font-size: 1.3rem;
             color: #ffffff;
             text-align: center;
             font-weight: 300;
+            letter-spacing: 0.1em;
         }}
 
         .container {{
@@ -114,7 +120,6 @@ def generate_html(original_file: str, high_res_file: str, mid_res_file: str, art
             display: inline-block;
             overflow: hidden;
             cursor: pointer;
-            margin: 30px 0;
             border-radius: 8px;
         }}
 
@@ -244,7 +249,6 @@ def generate_html(original_file: str, high_res_file: str, mid_res_file: str, art
     <script>
         document.addEventListener('DOMContentLoaded', function() {{
             var playLink = document.getElementById('play-link');
-            var titleLink = document.getElementById('title-link');
             var highResFile = '{high_res_file_name}';
             var midResFile = '{mid_res_file_name}';
 
