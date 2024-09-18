@@ -31,6 +31,7 @@ def generate_html(original_file: str, high_res_file: str, mid_res_file: str, art
     description = metadata.get('Description') or ''
     recording_date = parse_recording_date(original_file)
     if recording_date:
+        # Datumsformat auf Deutsch: "1. Juli 2024"
         recording_date_str = recording_date.strftime('%-d. %B %Y')
     else:
         recording_date_str = ''
@@ -67,60 +68,55 @@ def generate_html(original_file: str, high_res_file: str, mid_res_file: str, art
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{title}</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 
     <!-- OpenGraph Metadaten -->
     {og_meta_tags}
 
     <style>
-        /* Hier kommen Ihre CSS-Stile hin */
-        html,
+        /* Vereinfachtes CSS ohne Bootstrap-Abhängigkeiten */
+
         body {{
-            font-family: -apple-system, BlinkMacSystemFont, sans-serif, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial, sans-serif;
             color: #bbb;
             background-color: black;
         }}
 
         h1 {{
-            margin-bottom: 2rem;
+            margin: 20px;
+            font-size: 2em;
+            color: #fff;
         }}
 
-        h1:focus {{
-            outline: none;
+        h2 {{
+            margin: 20px;
+            font-size: 1.5em;
+            color: #fff;
         }}
 
-        a {{
-            color: #0071c1;
-        }}
-
-        .content {{
-            padding-top: 1.1rem;
-        }}
-
-        .page {{
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            background-color: black;
-        }}
-
-        main {{
-            flex: 1;
-            max-width: 1440px;
+        .container {{
+            max-width: 800px;
             margin: 0 auto;
+            padding: 20px;
         }}
 
         .video-container {{
             position: relative;
             display: inline-block;
             overflow: hidden;
+            cursor: pointer;
+            margin: 20px 0;
         }}
 
         .video-image {{
+            width: 100%;
+            height: auto;
+            display: block;
             border: 1px solid #444;
         }}
 
-        .video-container:hover img {{
+        .video-container:hover .video-image {{
             opacity: 0.8;
         }}
 
@@ -129,162 +125,91 @@ def generate_html(original_file: str, high_res_file: str, mid_res_file: str, art
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            height: 14%;
-            opacity: 0.5;
-        }}
-
-        .video-category {{
-            position: absolute;
-            top: 3%;
-        }}
-
-        .video-container:hover .play-icon,
-        .video-container:hover .video-text {{
+            width: 64px;
+            height: 64px;
             opacity: 0.7;
         }}
 
-        .video-text {{
+        .video-details {{
             position: absolute;
-            top: 64%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            opacity: 0;
-            font-size: 1.2em;
-            letter-spacing: 0.1em;
-            color: white;
-            text-align: center;
-        }}
-
-        .video-quality {{
-            position: absolute;
-            bottom: 3%;
-            right: 0;
-            font-size: 0.8em;
-            white-space: nowrap;
-            opacity: 0.8;
-            height: 32px;
-        }}
-
-        .video-category,
-        .video-quality {{
-            color: white;
+            bottom: 10px;
+            left: 10px;
+            color: #fff;
             background-color: rgba(0, 0, 0, 0.5);
-            padding: 5px 12px;
-            letter-spacing: 0.1em;
-            font-weight: normal;
+            padding: 5px 10px;
+            font-size: 0.9em;
         }}
 
-        .video-quality svg {{
-            position: relative;
-            margin-right: 10px;
-            bottom: 4px;
+        .video-description {{
+            margin: 20px;
+            color: #ccc;
+            font-size: 1em;
+            line-height: 1.5em;
         }}
 
-        .video-quality .text {{
-            position: relative;
-            bottom: 3px;
+        .links {{
+            margin: 20px;
+            font-size: 1em;
         }}
 
-        .recording-date-container {{
-            position: absolute;
-            bottom: 3%;
+        .links a {{
+            color: #0071c1;
+            text-decoration: none;
         }}
 
-        .recording-date {{
-            color: white;
-            background-color: rgba(0, 0, 0, 0.5);
-            padding: 0 12px;
-            font-size: 0.8em;
-            white-space: nowrap;
-            letter-spacing: 0.1em;
-            opacity: 0.8;
-            height: 32px;
-        }}
-
-        .recording-date svg {{
-            position: relative;
-            top: 4px;
-            margin-right: 7px;
-        }}
-
-        .recording-date .text {{
-            position: relative;
-            top: 6px;
-        }}
-
-        .check-icon {{
-            opacity: 0.5;
-            float: left;
-            margin-right: 0.25rem;
-            position: relative;
-            left: -2px;
-        }}
-
-        .link-style {{
-            color: #888;
+        .links a:hover {{
             text-decoration: underline;
-            cursor: pointer;
         }}
+
+        footer {{
+            text-align: center;
+            padding: 20px;
+            color: #777;
+            font-size: 0.9em;
+        }}
+
     </style>
 </head>
 
 <body>
-    <main>
-        <div class="container mt-3">
-            <h1>Familienfilm-Freigabe</h1>
-            <div class="mediaset">
-                <h2><a href="{mid_res_file_name}" id="title-link">{title}</a></h2>
+    <h1>Familienfilm-Freigabe</h1>
+    <div class="container">
+        <h2><a href="{mid_res_file_name}" id="title-link">{title}</a></h2>
 
-                <div class="video-container">
-                    <div class="video-container" role="button" aria-label="{title}">
-                        <a href="{mid_res_file_name}" id="play-link">
-                            <img src="{artwork_image_name}" class="img-fluid video-image" alt="{title}">
-                            <!-- Play-Icon -->
-                            <div class="play-icon">
-                                <!-- SVG des Play-Icons hier einfügen -->
-                            </div>
-                            <div class="video-category">Familie Kurmann-Glück</div>
-                            <div class="video-quality">
-                                <!-- Hier die Videoqualität anpassen -->
-                                <svg width="32px" height="32px" viewBox="34.366 -43.13 181.269 181.269"
-                                    xmlns="http://www.w3.org/2000/svg" fill="#ffffff">
-                                    <!-- SVG-Inhalt -->
-                                </svg>
-                                <span class="text">Dolby Vision</span>
-                            </div>
-                            <div class="recording-date-container">
-                                <div class="recording-date">
-                                    <!-- Kalender-Icon -->
-                                    <svg width="20px" height="20px" viewBox="0 -2 32 32" version="1.1"
-                                        xmlns="http://www.w3.org/2000/svg" fill="#ffffff">
-                                        <!-- SVG-Inhalt -->
-                                    </svg>
-                                    <span class="text">{recording_date_str}</span>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
+        <div class="video-container" id="video-container">
+            <a href="{mid_res_file_name}" id="play-link">
+                <img src="{artwork_image_name}" alt="{title}" class="video-image">
+                <!-- Play-Icon -->
+                <div class="play-icon">
+                    <!-- SVG des Play-Icons hier einfügen -->
+                    <!-- Beispiel: -->
+                    <svg width="100%" height="100%" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" fill="#ffffff">
+                        <circle cx="32" cy="32" r="32" opacity="0.7"/>
+                        <polygon points="26,20 26,44 46,32" fill="#000000"/>
+                    </svg>
                 </div>
-
-                <p class="video-description">
-                    {description}
-                </p>
-
-                <!-- Links für manuelle Auswahl der Auflösung -->
-                <p>
-                    <a href="{mid_res_file_name}" id="hd-link">Film in HD-Qualität abspielen</a><br>
-                    <a href="{high_res_file_name}" id="4k-link">Film in 4K-Qualität abspielen</a><br>
-                    <a href="{original_file_name}" id="original-link">Originaldatei herunterladen</a>
-                </p>
-
-            </div>
+                <div class="video-details">
+                    {recording_date_str}
+                </div>
+            </a>
         </div>
-    </main>
 
-    <footer class="text-center py-3">
-        <div class="container">
-            <p>&copy; {datetime.now().year} Mediaset Share by Patrick Kurmann. Alle Rechte vorbehalten.</p>
+        <p class="video-description">
+            {description}
+        </p>
+
+        <!-- Links für manuelle Auswahl der Auflösung -->
+        <div class="links">
+            <p>
+                <a href="{mid_res_file_name}" id="hd-link">Film in HD-Qualität abspielen</a><br>
+                <a href="{high_res_file_name}" id="4k-link">Film in 4K-Qualität abspielen</a><br>
+                <a href="{original_file_name}" id="original-link">Originaldatei herunterladen</a>
+            </p>
         </div>
+    </div>
+
+    <footer>
+        &copy; {datetime.now().year} Mediaset Share by Patrick Kurmann. Alle Rechte vorbehalten.
     </footer>
 
     <script>
