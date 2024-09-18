@@ -5,7 +5,7 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry]
 name = "kurmann-videoschnitt"
 authors = ["Patrick Kurmann <kurmannwillisau@gmail.com>"]
-version = "0.54.0"
+version = "0.55.0"
 description = "Sammlung von Werkzeugen zur Automatisierungen im privaten Videoschnitt"
 readme = "README.md"
 license = "Apache-2.0"
@@ -13,7 +13,8 @@ packages = [
     { include = "kurmann_videoschnitt", from = "src" },
     { include = "apple_compressor_manager", from = "src" },
     { include = "emby_integrator", from = "src" },
-    { include = "original_media_integrator", from = "src" }
+    { include = "original_media_integrator", from = "src" },
+    { include = "online_medialibrary_manager", from = "src" }
 ]
 
 [tool.poetry.dependencies]
