@@ -62,7 +62,7 @@ def generate_html(metadata_source: str, high_res_file: str, mid_res_file: str, a
         <meta property="og:image:width" content="{image_width}" />
         <meta property="og:image:height" content="{image_height}" />
         <meta property="og:locale" content="de_CH" />
-        <meta property="og:site_name" content="Patrick Kurmann Familienfilm-Freigabe" />
+        <meta property="og:site_name" content="Kurmann Mediathek: Familienfilm-Freigabe" />
     '''
 
     # HTML-Inhalt generieren
