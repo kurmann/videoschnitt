@@ -6,9 +6,8 @@ Es ermöglicht die Interaktion mit der Anwendung über die Kommandozeile und nut
 und Klassen der anderen Module.
 """
 
-import os
 import typer
-from online_medialibrary_manager import generate_html
+from online_medialibrary_manager.html_generator import generate_html
 
 app = typer.Typer(help="HTML Generator für Familienvideos")
 

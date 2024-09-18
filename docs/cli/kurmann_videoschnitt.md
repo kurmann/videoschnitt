@@ -1,6 +1,6 @@
 # `kurmann-videoschnitt`
 
-Kurmann Videoschnitt CLI Version 0.53.1
+Kurmann Videoschnitt CLI Version 0.55.0
 
 **Usage**:
 
@@ -18,6 +18,7 @@ $ kurmann-videoschnitt [OPTIONS] COMMAND [ARGS]...
 
 * `compressor`: Apple Compressor Manager
 * `emby`: Emby Integrator
+* `online-media`: HTML Generator für Familienvideos
 * `original-media`: Original Media Integrator
 
 ## `kurmann-videoschnitt compressor`
@@ -211,19 +212,8 @@ $ kurmann-videoschnitt emby convert-images-to-adobe-rgb [OPTIONS] MEDIA_DIR
 
 Generiert die NFO-Metadatendatei und gibt das XML aus.
 
-Diese Methode extrahiert die Metadaten aus der angegebenen Videodatei und generiert eine NFO-Metadatendatei im XML-Format für den Emby-Medienserver. Das erzeugte XML wird auf der Konsole ausgegeben.
-
 Args:
     file_path (str): Pfad zur Videodatei.
-
-Returns:
-    None
-
-Beispiel:
-    $ kurmann-videoschnitt emby generate-nfo-xml '/pfad/zur/videodatei.mov'
-
-Raises:
-    ValueError: Wenn das Aufnahmedatum nicht aus dem Dateinamen extrahiert werden kann.
 
 **Usage**:
 
@@ -355,19 +345,8 @@ $ kurmann-videoschnitt emby list-metadata [OPTIONS] FILE_PATH
 
 Generiert die NFO-Metadatendatei und schreibt sie in eine Datei.
 
-Diese Methode extrahiert die Metadaten aus der angegebenen Videodatei und erstellt eine NFO-Metadatendatei im XML-Format für den Emby-Medienserver. Die NFO-Datei wird im selben Verzeichnis wie die Videodatei gespeichert.
-
 Args:
     file_path (str): Pfad zur Videodatei.
-
-Returns:
-    None
-
-Beispiel:
-    $ kurmann-videoschnitt emby write-nfo-file '/pfad/zur/videodatei.mov'
-
-Raises:
-    ValueError: Wenn das Aufnahmedatum nicht aus dem Dateinamen extrahiert werden kann.
 
 **Usage**:
 
@@ -381,6 +360,46 @@ $ kurmann-videoschnitt emby write-nfo-file [OPTIONS] FILE_PATH
 
 **Options**:
 
+* `--help`: Show this message and exit.
+
+## `kurmann-videoschnitt online-media`
+
+HTML Generator für Familienvideos
+
+**Usage**:
+
+```console
+$ kurmann-videoschnitt online-media [OPTIONS] COMMAND [ARGS]...
+```
+
+**Options**:
+
+* `--help`: Show this message and exit.
+
+**Commands**:
+
+* `create-html`: Generiert eine statische HTML-Seite für...
+
+### `kurmann-videoschnitt online-media create-html`
+
+Generiert eine statische HTML-Seite für das Familienvideo.
+
+**Usage**:
+
+```console
+$ kurmann-videoschnitt online-media create-html [OPTIONS] ORIGINAL_FILE HIGH_RES_FILE MID_RES_FILE ARTWORK_IMAGE
+```
+
+**Arguments**:
+
+* `ORIGINAL_FILE`: Pfad zur Originalvideodatei  [required]
+* `HIGH_RES_FILE`: Pfad zur hochauflösenden Videodatei (4K HEVC)  [required]
+* `MID_RES_FILE`: Pfad zur mittelauflösenden Videodatei (HD)  [required]
+* `ARTWORK_IMAGE`: Pfad zum Vorschaubild  [required]
+
+**Options**:
+
+* `--output-file TEXT`: Name der Ausgabedatei für das HTML (Standard: index.html)  [default: index.html]
 * `--help`: Show this message and exit.
 
 ## `kurmann-videoschnitt original-media`
