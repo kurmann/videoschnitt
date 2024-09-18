@@ -5,13 +5,16 @@ Das Modul 'html_generator' ist verantwortlich für die Erstellung einer statisch
 die Videos in verschiedenen Auflösungen anbietet und die Metadaten korrekt einbindet.
 """
 
+import locale
 import os
 from datetime import datetime
 from emby_integrator.metadata_manager import get_metadata, parse_recording_date
+from online_medialibrary_manager.image_manager import create_og_image
 
 def generate_html(metadata_source: str, high_res_file: str, mid_res_file: str, artwork_image: str, download_file: str = None, base_url: str = '') -> str:
     """
     Generiert den HTML-Inhalt basierend auf den bereitgestellten Dateien und Metadaten.
+    Erzeugt auch ein OpenGraph-Bild (og-image.jpg) aus dem gegebenen Artwork-Bild.
 
     Args:
         metadata_source (str): Pfad zur Videodatei, aus der die Metadaten extrahiert werden.
@@ -25,6 +28,16 @@ def generate_html(metadata_source: str, high_res_file: str, mid_res_file: str, a
         str: Der generierte HTML-Inhalt als String.
     """
 
+    # Locale auf Deutsch setzen
+    try:
+        locale.setlocale(locale.LC_TIME, 'de_CH.UTF-8')
+    except locale.Error:
+        try:
+            locale.setlocale(locale.LC_TIME, 'de_DE.UTF-8')
+        except locale.Error:
+            # Fallback, falls die deutschen Locale-Einstellungen nicht verfügbar sind
+            locale.setlocale(locale.LC_TIME, '')
+
     # Extrahieren der Metadaten aus der angegebenen Metadatenquelle
     metadata = get_metadata(metadata_source)
 
@@ -33,18 +46,26 @@ def generate_html(metadata_source: str, high_res_file: str, mid_res_file: str, a
     description = metadata.get('Description') or ''
     recording_date = parse_recording_date(metadata_source)
     if recording_date:
-        # Datumsformat auf Deutsch: "1. Juli 2024"
-        recording_date_str = recording_date.strftime('%-d. %B %Y')
+        # Datumsformat auf Deutsch mit Wochentag: "Montag, 7. August 2024"
+        recording_date_str = recording_date.strftime('%A, %-d. %B %Y')
     else:
         recording_date_str = ''
 
-    image_width = metadata.get('ImageWidth', '1920')
-    image_height = metadata.get('ImageHeight', '1080')
+    # Erstellen des OpenGraph-Bildes
+    # Speichere es im gleichen Verzeichnis wie die metadata_source
+    metadata_dir = os.path.dirname(metadata_source)
+    og_image_path = os.path.join(metadata_dir, 'og-image.jpg')
+    create_og_image(artwork_image, og_image_path)
+
+    # Bildabmessungen für OG-Metadaten
+    image_width = 1536
+    image_height = 804
 
     # Dateinamen extrahieren
     high_res_file_name = os.path.basename(high_res_file)
     mid_res_file_name = os.path.basename(mid_res_file)
     artwork_image_name = os.path.basename(artwork_image)
+    og_image_name = os.path.basename(og_image_path)
     download_file_name = os.path.basename(download_file) if download_file else None
 
     # Wenn base_url angegeben ist, fügen wir sie den Dateinamen hinzu
@@ -56,13 +77,13 @@ def generate_html(metadata_source: str, high_res_file: str, mid_res_file: str, a
         <meta property="og:title" content="{title}" />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="{make_absolute('index.html')}" />
-        <meta property="og:image" content="{make_absolute(artwork_image_name)}" />
+        <meta property="og:image" content="{make_absolute(og_image_name)}" />
         <meta property="og:image:type" content="image/jpeg" />
         <meta property="og:description" content="{description}" />
         <meta property="og:image:width" content="{image_width}" />
         <meta property="og:image:height" content="{image_height}" />
         <meta property="og:locale" content="de_CH" />
-        <meta property="og:site_name" content="Patrick Kurmann Familienfilm-Freigabe" />
+        <meta property="og:site_name" content="Kurmann Mediathek: Familienfilm-Freigabe" />
     '''
 
     # HTML-Inhalt generieren
@@ -166,7 +187,7 @@ def generate_html(metadata_source: str, high_res_file: str, mid_res_file: str, a
             color: #b0b0b0;
             font-size: 1.1em;
             line-height: 1.7em;
-            text-align: justify;
+            text-align: center;
         }}
 
         .links {{
@@ -204,7 +225,8 @@ def generate_html(metadata_source: str, high_res_file: str, mid_res_file: str, a
 </head>
 
 <body>
-    <h1>Familienfilm-Freigabe</h1>
+    <h1>Kurmann Mediathek</h1>
+    <h2>Familienfilm-Freigabe von Patrick Kurmann</h2>
     <div class="container">
         <h2 id="title-link">{title}</h2>
 

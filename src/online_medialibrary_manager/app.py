@@ -1,7 +1,7 @@
-# html_generator/app.py
+# app.py
 
 """
-Das 'app' Modul enthält die CLI-Befehle für den HTML Generator.
+Das 'app' Modul enthält die CLI-Befehle für den Online Medialibrary Manager.
 Es ermöglicht die Interaktion mit der Anwendung über die Kommandozeile und nutzt die Funktionen
 und Klassen der anderen Module.
 """
@@ -9,8 +9,10 @@ und Klassen der anderen Module.
 import os
 import typer
 from online_medialibrary_manager.html_generator import generate_html
+from emby_integrator.metadata_manager import get_metadata
+from online_medialibrary_manager.image_manager import create_og_image
 
-app = typer.Typer(help="HTML Generator für Familienvideos")
+app = typer.Typer(help="Online Medialibrary Manager für Familienvideos")
 
 @app.command()
 def create_html(
@@ -23,7 +25,7 @@ def create_html(
     base_url: str = typer.Option('', help="Basis-URL für die OG-Metadaten (z.B. https://example.com/videos)"),
 ):
     """
-    Generiert eine statische HTML-Seite für das Familienvideo.
+    Generiert eine statische HTML-Seite für das Familienvideo und erstellt ein OpenGraph-Bild.
     """
     try:
         html_content = generate_html(metadata_source, high_res_file, mid_res_file, artwork_image, download_file, base_url)
@@ -34,6 +36,20 @@ def create_html(
         typer.secho(f"HTML-Datei wurde erfolgreich erstellt: {output_file}", fg=typer.colors.GREEN)
     except Exception as e:
         typer.secho(f"Fehler beim Erstellen der HTML-Datei: {e}", fg=typer.colors.RED)
+
+@app.command(name="create-og-image")
+def create_og_image_command(
+    artwork_image: str = typer.Argument(..., help="Pfad zum Vorschaubild"),
+    output_image: str = typer.Option('og-image.jpg', help="Name der Ausgabedatei für das OpenGraph-Bild (Standard: og-image.jpg)")
+):
+    """
+    Erzeugt ein OpenGraph-Bild aus dem gegebenen Vorschaubild.
+    """
+    try:
+        create_og_image(artwork_image, output_image)
+        typer.secho(f"OpenGraph-Bild wurde erfolgreich erstellt: {output_image}", fg=typer.colors.GREEN)
+    except Exception as e:
+        typer.secho(f"Fehler beim Erstellen des OpenGraph-Bildes: {e}", fg=typer.colors.RED)
 
 if __name__ == '__main__':
     app()

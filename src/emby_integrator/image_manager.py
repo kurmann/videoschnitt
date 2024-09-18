@@ -1,3 +1,5 @@
+# emby_integrator/image_manager.py
+
 import os
 import subprocess
 import logging
