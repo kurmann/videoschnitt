@@ -48,10 +48,9 @@ def generate_html(original_file: str, high_res_file: str, mid_res_file: str, art
     # OpenGraph Metadaten
     og_meta_tags = f'''
         <meta property="og:title" content="{title}" />
-        <meta property="og:type" content="video.movie" />
+        <meta property="og:type" content="website" />
         <meta property="og:url" content="{original_file_name}" />
         <meta property="og:image" content="{artwork_image_name}" />
-        <meta property="og:image:secure_url" content="{artwork_image_name}" />
         <meta property="og:image:type" content="image/jpeg" />
         <meta property="og:description" content="{description}" />
         <meta property="og:image:width" content="{image_width}" />
@@ -164,8 +163,6 @@ def generate_html(original_file: str, high_res_file: str, mid_res_file: str, art
         }}
 
         .links {{
-            margin: 30px;
-            font-size: 1.1em;
             text-align: center;
             display: flex;
             justify-content: space-between;
@@ -180,9 +177,20 @@ def generate_html(original_file: str, high_res_file: str, mid_res_file: str, art
             transition: background-color 0.3s ease, color 0.3s ease;
         }}
 
+        .links .link-description {{
+            font-size: 0.8em;
+            color: #b0b0b0;
+            display: block;
+            padding-top: 0.3rem;
+        }}
+
         .links a:hover {{
             background-color: #ffae42;
             color: #181818;
+        }}
+
+        .links a:hover .link-description {{
+            color: #ffffff;
         }}
 
         footer {{
@@ -223,9 +231,18 @@ def generate_html(original_file: str, high_res_file: str, mid_res_file: str, art
 
         <!-- Links für manuelle Auswahl der Auflösung -->
         <div class="links">
-            <a href="{high_res_file_name}" id="4k-link">Film in 4K-Qualität abspielen</a>
-            <a href="{mid_res_file_name}" id="hd-link">Film in HD-Qualität abspielen</a>
-            <a href="{original_file_name}" id="original-link download">Originaldatei herunterladen</a>
+            <a href="{high_res_file_name}" id="4k-link">
+                <span class="link-title">Film in 4K-Qualität abspielen</span>
+                <span class="link-description">Dolby Vision HDR</span>
+            </a>
+            <a href="{mid_res_file_name}" id="hd-link">
+                <span class="link-title>">Film in HD-Qualität abspielen</span>
+                <span class="link-description">1080p SDR</span>
+            </a>
+            <a href="{original_file_name}" id="original-link download">
+                <span class="link-title">Originaldatei herunterladen</span>
+                <span class="link-description">Für Medienserver und Abspielen auf Computer</span>
+            </a>
         </div>
     </div>
 
