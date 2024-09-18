@@ -6,6 +6,7 @@ import toml  # Stellen Sie sicher, dass das toml-Modul installiert ist
 from apple_compressor_manager.app import app as compressor
 from original_media_integrator.app import app as original_media_integrator
 from emby_integrator.app import app as emby_integrator
+from online_medialibrary_manager.app import app as onlinemedialib
 
 def get_version():
     """
@@ -29,6 +30,7 @@ app = typer.Typer(help=f"Kurmann Videoschnitt CLI Version {version}")
 app.add_typer(compressor, name="compressor")
 app.add_typer(original_media_integrator, name="original-media")
 app.add_typer(emby_integrator, name="emby")
+app.add_typer(onlinemedialib, name="online-media")
 
 if __name__ == "__main__":
     app()
