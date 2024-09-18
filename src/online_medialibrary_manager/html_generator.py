@@ -225,7 +225,7 @@ def generate_html(original_file: str, high_res_file: str, mid_res_file: str, art
         <div class="links">
             <a href="{high_res_file_name}" id="4k-link">Film in 4K-Qualität abspielen</a>
             <a href="{mid_res_file_name}" id="hd-link">Film in HD-Qualität abspielen</a>
-            <a href="{original_file_name}" id="original-link">Originaldatei herunterladen</a>
+            <a href="{original_file_name}" id="original-link download">Originaldatei herunterladen</a>
         </div>
     </div>
 
