@@ -73,32 +73,39 @@ def generate_html(original_file: str, high_res_file: str, mid_res_file: str, art
     {og_meta_tags}
 
     <style>
-        /* Vereinfachtes CSS ohne Bootstrap-Abhängigkeiten */
-
+        /* Modernisiertes CSS für eine ansprechendere Darstellung */
+        
         body {{
             margin: 0;
             padding: 0;
             font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial, sans-serif;
-            color: #bbb;
-            background-color: black;
+            color: #e0e0e0;
+            background-color: #181818;
         }}
 
         h1 {{
             margin: 20px;
-            font-size: 2em;
-            color: #fff;
+            font-size: 2.5em;
+            color: #ffffff;
+            text-align: center;
+            font-weight: 400;
         }}
 
         h2 {{
             margin: 20px;
-            font-size: 1.5em;
-            color: #fff;
+            font-size: 1.8em;
+            color: #ffffff;
+            text-align: center;
+            font-weight: 300;
         }}
 
         .container {{
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
             padding: 20px;
+            background-color: #1e1e1e;
+            border-radius: 10px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
         }}
 
         .video-container {{
@@ -106,18 +113,20 @@ def generate_html(original_file: str, high_res_file: str, mid_res_file: str, art
             display: inline-block;
             overflow: hidden;
             cursor: pointer;
-            margin: 20px 0;
+            margin: 30px 0;
+            border-radius: 8px;
         }}
 
         .video-image {{
             width: 100%;
             height: auto;
             display: block;
-            border: 1px solid #444;
+            border-radius: 8px;
+            transition: transform 0.3s ease-in-out;
         }}
 
         .video-container:hover .video-image {{
-            opacity: 0.8;
+            transform: scale(1.05);
         }}
 
         .play-icon {{
@@ -127,38 +136,53 @@ def generate_html(original_file: str, high_res_file: str, mid_res_file: str, art
             transform: translate(-50%, -50%);
             width: 64px;
             height: 64px;
-            opacity: 0.7;
+            opacity: 0.9;
+            transition: opacity 0.3s ease-in-out;
+        }}
+
+        .video-container:hover .play-icon {{
+            opacity: 1;
         }}
 
         .video-details {{
             position: absolute;
-            bottom: 10px;
-            left: 10px;
-            color: #fff;
-            background-color: rgba(0, 0, 0, 0.5);
-            padding: 5px 10px;
-            font-size: 0.9em;
+            bottom: 15px;
+            left: 15px;
+            color: #ffffff;
+            background-color: rgba(0, 0, 0, 0.6);
+            padding: 10px 15px;
+            font-size: 1em;
+            border-radius: 5px;
         }}
 
         .video-description {{
             margin: 20px;
-            color: #ccc;
-            font-size: 1em;
-            line-height: 1.5em;
+            color: #b0b0b0;
+            font-size: 1.1em;
+            line-height: 1.7em;
+            text-align: justify;
         }}
 
         .links {{
-            margin: 20px;
-            font-size: 1em;
+            margin: 30px;
+            font-size: 1.1em;
+            text-align: center;
+            display: flex;
+            justify-content: space-between;
         }}
 
         .links a {{
-            color: #0071c1;
+            color: #ffae42;
             text-decoration: none;
+            padding: 10px 15px;
+            border: 1px solid #ffae42;
+            border-radius: 5px;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }}
 
         .links a:hover {{
-            text-decoration: underline;
+            background-color: #ffae42;
+            color: #181818;
         }}
 
         footer {{
@@ -167,14 +191,13 @@ def generate_html(original_file: str, high_res_file: str, mid_res_file: str, art
             color: #777;
             font-size: 0.9em;
         }}
-
     </style>
 </head>
 
 <body>
     <h1>Familienfilm-Freigabe</h1>
     <div class="container">
-        <h2><a href="{mid_res_file_name}" id="title-link">{title}</a></h2>
+        <h2 id="title-link">{title}</h2>
 
         <div class="video-container" id="video-container">
             <a href="{mid_res_file_name}" id="play-link">
@@ -200,16 +223,14 @@ def generate_html(original_file: str, high_res_file: str, mid_res_file: str, art
 
         <!-- Links für manuelle Auswahl der Auflösung -->
         <div class="links">
-            <p>
-                <a href="{mid_res_file_name}" id="hd-link">Film in HD-Qualität abspielen</a><br>
-                <a href="{high_res_file_name}" id="4k-link">Film in 4K-Qualität abspielen</a><br>
-                <a href="{original_file_name}" id="original-link">Originaldatei herunterladen</a>
-            </p>
+            <a href="{high_res_file_name}" id="4k-link">Film in 4K-Qualität abspielen</a>
+            <a href="{mid_res_file_name}" id="hd-link">Film in HD-Qualität abspielen</a>
+            <a href="{original_file_name}" id="original-link">Originaldatei herunterladen</a>
         </div>
     </div>
 
     <footer>
-        &copy; {datetime.now().year} Mediaset Share by Patrick Kurmann. Alle Rechte vorbehalten.
+        &copy; {datetime.now().year} Kurmann Online-Mediathek von Patrick Kurmann. Alle Rechte vorbehalten.
     </footer>
 
     <script>
