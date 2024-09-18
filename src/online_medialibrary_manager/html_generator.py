@@ -72,8 +72,6 @@ def generate_html(original_file: str, high_res_file: str, mid_res_file: str, art
     <!-- OpenGraph Metadaten -->
     {og_meta_tags}
 
-# Ersatz des CSS-Teils in deinem HTML-Generator:
-
     <style>
         /* Modernisiertes CSS für eine ansprechendere Darstellung */
         
@@ -169,6 +167,8 @@ def generate_html(original_file: str, high_res_file: str, mid_res_file: str, art
             margin: 30px;
             font-size: 1.1em;
             text-align: center;
+            display: flex;
+            justify-content: space-between;
         }}
 
         .links a {{
@@ -197,7 +197,7 @@ def generate_html(original_file: str, high_res_file: str, mid_res_file: str, art
 <body>
     <h1>Familienfilm-Freigabe</h1>
     <div class="container">
-        <h2><a href="{mid_res_file_name}" id="title-link">{title}</a></h2>
+        <h2 id="title-link">{title}</h2>
 
         <div class="video-container" id="video-container">
             <a href="{mid_res_file_name}" id="play-link">
@@ -223,16 +223,14 @@ def generate_html(original_file: str, high_res_file: str, mid_res_file: str, art
 
         <!-- Links für manuelle Auswahl der Auflösung -->
         <div class="links">
-            <p>
-                <a href="{mid_res_file_name}" id="hd-link">Film in HD-Qualität abspielen</a><br>
-                <a href="{high_res_file_name}" id="4k-link">Film in 4K-Qualität abspielen</a><br>
-                <a href="{original_file_name}" id="original-link">Originaldatei herunterladen</a>
-            </p>
+            <a href="{high_res_file_name}" id="4k-link">Film in 4K-Qualität abspielen</a>
+            <a href="{mid_res_file_name}" id="hd-link">Film in HD-Qualität abspielen</a>
+            <a href="{original_file_name}" id="original-link">Originaldatei herunterladen</a>
         </div>
     </div>
 
     <footer>
-        &copy; {datetime.now().year} Mediaset Share by Patrick Kurmann. Alle Rechte vorbehalten.
+        &copy; {datetime.now().year} Kurmann Online-Mediathek von Patrick Kurmann. Alle Rechte vorbehalten.
     </footer>
 
     <script>
