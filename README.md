@@ -2,7 +2,7 @@
 
 ## Überblick
 
-**Kurmann Videoschnitt** ist eine leistungsstarke CLI-Anwendung für MacOS, die sich auf die Automatisierung und Verwaltung von Videoschnittprozessen konzentriert. Sie zielt darauf ab, die Effizienz und Produktivität zu steigern, indem verschiedene Aufgaben im Videoschnitt automatisiert und optimiert werden.
+**Kurmann Videoschnitt** ist eine leistungsstarke CLI-Anwendung für macOS, die sich auf die Automatisierung und Verwaltung von Videoschnittprozessen konzentriert. Sie zielt darauf ab, die Effizienz und Produktivität zu steigern, indem verschiedene Aufgaben im Videoschnitt automatisiert und optimiert werden.
 
 ## Hauptfunktionen
 
@@ -19,51 +19,63 @@ Die Anwendung bietet eine Reihe von Funktionen, die speziell für den Videoschni
 ### Voraussetzungen
 
 1. **macOS**: Die Anwendung ist für macOS optimiert.
-2. **Python 3.12 oder neuer**: Stelle sicher, dass Python auf deinem System installiert ist.
-3. **Poetry**: Die Abhängigkeitsverwaltung erfolgt über Poetry. Installiere es, falls noch nicht geschehen:
+2. **Python 3.8 oder neuer**: Stelle sicher, dass Python auf deinem System installiert ist. Du kannst die Installation überprüfen mit:
 
    ```bash
-   curl -sSL https://install.python-poetry.org | python3 -
+   python3 --version
    ```
 
-### Installation mit Poetry
+### Installation mit `pip` und `venv`
 
-1. Repository klonen:
+1. **Repository klonen**:
 
    ```bash
    git clone https://github.com/kurmann/videoschnitt.git
    ```
 
-2. In das Projektverzeichnis wechseln:
+2. **In das Projektverzeichnis wechseln**:
 
    ```bash
    cd videoschnitt
    ```
 
-3. Abhängigkeiten installieren:
+3. **Virtuelle Umgebung erstellen**:
 
    ```bash
-   poetry install
+   python3 -m venv venv
    ```
 
-4. Virtuelle Umgebung aktivieren:
+4. **Virtuelle Umgebung aktivieren**:
 
    ```bash
-   poetry shell
+   source venv/bin/activate
    ```
 
-5. Anwendung ausführen:
+5. **Abhängigkeiten installieren**:
+
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+6. **Anwendung installieren**:
+
+   ```bash
+   pip install .
+   ```
+
+7. **Anwendung ausführen**:
 
    ```bash
    kurmann-videoschnitt --help
    ```
+
 ## CLI
 
-Grundlage für die CLI ist das [CLI-Design](/docs/CLI-Design.md)
+Die Grundlage für die CLI ist das [CLI-Design](/docs/CLI-Design.md).
 
 ### CLI-Dokumentation
 
-- [Kurmann Videoschnit CLI](/docs/cli/kurmann_videoschnitt.md)
+- [Kurmann Videoschnitt CLI](/docs/cli/kurmann_videoschnitt.md)
 
 ## Mitwirken
 

@@ -1,29 +1,30 @@
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
 
-[tool.poetry]
+[project]
 name = "kurmann-videoschnitt"
-authors = ["Patrick Kurmann <kurmannwillisau@gmail.com>"]
-version = "0.57.0"
+version = "0.57.1"
 description = "Sammlung von Werkzeugen zur Automatisierungen im privaten Videoschnitt"
 readme = "README.md"
-license = "Apache-2.0"
-packages = [
-    { include = "kurmann_videoschnitt", from = "src" },
-    { include = "apple_compressor_manager", from = "src" },
-    { include = "emby_integrator", from = "src" },
-    { include = "original_media_integrator", from = "src" },
-    { include = "online_medialibrary_manager", from = "src" }
+requires-python = ">=3.8,<4.0"
+license = {text = "Apache-2.0"}
+authors = [
+  { name = "Patrick Kurmann", email = "kurmannwillisau@gmail.com" }
+]
+dependencies = [
+  "click==8.1.7",
+  "python-dotenv==1.0.1",
+  "typer==0.12.5",
+  "osxmetadata==1.3.5; python_version >= '3.8' and python_version < '3.13'",
+  "toml==0.10.2"
 ]
 
-[tool.poetry.dependencies]
-python = ">=3.8,<4.0"
-click = "^8.1.7"
-python-dotenv = "^1.0.1"
-typer = "^0.12.5"
-osxmetadata = {version = "^1.3.5", python = ">=3.8,<3.13"}
-toml = "^0.10.2"
-
-[tool.poetry.scripts]
+[project.scripts]
 kurmann-videoschnitt = "kurmann_videoschnitt.app:app"
+
+[project.urls]
+"Homepage" = "https://github.com/kurmann/videoschnitt"
+
+[tool.setuptools.packages.find]
+where = ["src"]
