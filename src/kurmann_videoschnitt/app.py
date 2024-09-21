@@ -2,13 +2,12 @@
 
 import typer
 from importlib.metadata import version, PackageNotFoundError
+from .config import ENV_FILE  # Stelle sicher, dass dies korrekt ist
 
 # Jetzt können wir Typer und die Sub-CLIs importieren
 from apple_compressor_manager.app import app as compressor
 from original_media_integrator.app import app as original_media_integrator
 from emby_integrator.app import app as emby_integrator
-# Entferne den doppelten Import
-# from original_media_integrator.app import app as original_media_integrator  # Entfernt
 
 def get_version() -> str:
     """
@@ -29,8 +28,17 @@ app = typer.Typer(help=f"Kurmann Videoschnitt CLI Version {version_str}")
 app.add_typer(compressor, name="compressor")
 app.add_typer(original_media_integrator, name="original-media")
 app.add_typer(emby_integrator, name="emby")
-# Füge einen separaten Typer für die Env-Prüfung hinzu, wenn gewünscht
-# app.add_typer(env_checker, name="env-check")  # Beispiel
+
+# Separater Befehl zur Überprüfung der .env-Datei
+@app.command()
+def check_env():
+    """
+    Überprüft, ob die .env-Datei geladen wurde.
+    """
+    if ENV_FILE.exists():
+        typer.echo(f".env-Datei geladen von: {ENV_FILE}")
+    else:
+        typer.echo(f"WARNUNG: Es wurde keine .env-Datei unter {ENV_FILE} gefunden.")
 
 # Callback zum Anzeigen der Version
 @app.callback()
