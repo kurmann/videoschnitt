@@ -110,21 +110,28 @@ def generate_html(metadata_source: str, high_res_file: str, mid_res_file: str, a
         }}
 
         h1 {{
-            font-size: 2.5em;
+            font-size: 1.8em;
             color: #ffffff;
             text-align: center;
             font-weight: 400;
             padding-bottom: 0.7rem;
             border-bottom: 1px solid silver;
-            letter-spacing: 0.15em;
+            letter-spacing: 0.1em;
         }}
 
         h2 {{
-            font-size: 1.3rem;
             color: #ffffff;
             text-align: center;
             font-weight: 300;
             letter-spacing: 0.1em;
+        }}
+
+        h2.subtitle {{
+            font-size: 1em;
+        }}
+
+        h2.title-link {{
+            font-size: 1.5em;
         }}
 
         .container {{
@@ -210,6 +217,13 @@ def generate_html(metadata_source: str, high_res_file: str, mid_res_file: str, a
             text-align: center;
         }}
 
+        .links span {{
+            color: #b0b0b0;
+            font-size: 0.8em;
+            margin-top: 5px;
+            display: block;
+        }}
+
         .links a:hover {{
             background-color: #ffae42;
             color: #181818;
@@ -226,7 +240,7 @@ def generate_html(metadata_source: str, high_res_file: str, mid_res_file: str, a
 
 <body>
     <h1>Kurmann Mediathek</h1>
-    <h2>Familienfilm-Freigabe von Patrick Kurmann</h2>
+    <h2 class="subtitle">Familienfilm-Freigabe von Patrick Kurmann</h2>
     <div class="container">
         <h2 id="title-link">{title}</h2>
 
@@ -235,8 +249,6 @@ def generate_html(metadata_source: str, high_res_file: str, mid_res_file: str, a
                 <img src="{artwork_image_name}" alt="{title}" class="video-image">
                 <!-- Play-Icon -->
                 <div class="play-icon">
-                    <!-- SVG des Play-Icons hier einfügen -->
-                    <!-- Beispiel: -->
                     <svg width="100%" height="100%" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" fill="#ffffff">
                         <circle cx="32" cy="32" r="32" opacity="0.7"/>
                         <polygon points="26,20 26,44 46,32" fill="#000000"/>
@@ -256,11 +268,13 @@ def generate_html(metadata_source: str, high_res_file: str, mid_res_file: str, a
         <div class="links">
             <a href="{high_res_file_name}" id="4k-link">
                 Film in 4K-Qualität
+                <span>Dolby Vision</span>
             </a>
             <a href="{mid_res_file_name}" id="hd-link">
                 Film in HD-Qualität
+                <span>1080p SDR</span>
             </a>
-            {f'<a href="{download_file_name}" id="download-link">Datei herunterladen</a>' if download_file_name else ''}
+            {f'<a href="{download_file_name}" id="download-link">Original herunterladen<span>Für Wiedergabe auf PC/Mac</span></a>' if download_file_name else ''}
         </div>
     </div>
 
