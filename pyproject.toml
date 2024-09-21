@@ -24,7 +24,7 @@ dependencies = [
 kurmann-videoschnitt = "kurmann_videoschnitt.app:app"
 
 [project.urls]
-"Homepage" = "https://github.com/kurmann/videoschnitt"
+Homepage = "https://github.com/kurmann/videoschnitt"
 
 [tool.setuptools.packages.find]
 where = ["src"]

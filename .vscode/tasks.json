@@ -4,9 +4,9 @@
         {
             "label": "generate-cli-docs",
             "type": "shell",
-            "command": "poetry",
+            "command": "/Library/Frameworks/Python.framework/Versions/3.11/bin/python3",  // Verwende den spezifischen Pfad zu python3
             "args": [
-                "run",
+                "-m",
                 "typer",
                 "${workspaceFolder}/src/kurmann_videoschnitt/app.py",
                 "utils",

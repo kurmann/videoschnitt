@@ -1,6 +1,6 @@
 # `kurmann-videoschnitt`
 
-Kurmann Videoschnitt CLI Version 0.55.0
+Kurmann Videoschnitt CLI
 
 **Usage**:
 
@@ -16,10 +16,26 @@ $ kurmann-videoschnitt [OPTIONS] COMMAND [ARGS]...
 
 **Commands**:
 
+* `check-env`: Überprüft, ob die .env-Datei geladen wurde.
 * `compressor`: Apple Compressor Manager
 * `emby`: Emby Integrator
-* `online-media`: HTML Generator für Familienvideos
+* `get-version`: Zeigt die aktuelle Version des CLI-Tools an.
+* `online-media`: Online Medialibrary Manager für...
 * `original-media`: Original Media Integrator
+
+## `kurmann-videoschnitt check-env`
+
+Überprüft, ob die .env-Datei geladen wurde.
+
+**Usage**:
+
+```console
+$ kurmann-videoschnitt check-env [OPTIONS]
+```
+
+**Options**:
+
+* `--help`: Show this message and exit.
 
 ## `kurmann-videoschnitt compressor`
 
@@ -362,9 +378,23 @@ $ kurmann-videoschnitt emby write-nfo-file [OPTIONS] FILE_PATH
 
 * `--help`: Show this message and exit.
 
+## `kurmann-videoschnitt get-version`
+
+Zeigt die aktuelle Version des CLI-Tools an.
+
+**Usage**:
+
+```console
+$ kurmann-videoschnitt get-version [OPTIONS]
+```
+
+**Options**:
+
+* `--help`: Show this message and exit.
+
 ## `kurmann-videoschnitt online-media`
 
-HTML Generator für Familienvideos
+Online Medialibrary Manager für Familienvideos
 
 **Usage**:
 
@@ -379,10 +409,11 @@ $ kurmann-videoschnitt online-media [OPTIONS] COMMAND [ARGS]...
 **Commands**:
 
 * `create-html`: Generiert eine statische HTML-Seite für...
+* `create-og-image`: Erzeugt ein OpenGraph-Bild aus dem...
 
 ### `kurmann-videoschnitt online-media create-html`
 
-Generiert eine statische HTML-Seite für das Familienvideo.
+Generiert eine statische HTML-Seite für das Familienvideo und erstellt ein OpenGraph-Bild.
 
 **Usage**:
 
@@ -402,6 +433,25 @@ $ kurmann-videoschnitt online-media create-html [OPTIONS] METADATA_SOURCE HIGH_R
 * `--output-file TEXT`: Name der Ausgabedatei für das HTML (Standard: index.html)  [default: index.html]
 * `--download-file TEXT`: Optionaler Pfad zur Download-Datei (z.B. ZIP-Datei)
 * `--base-url TEXT`: Basis-URL für die OG-Metadaten (z.B. https://example.com/videos)
+* `--help`: Show this message and exit.
+
+### `kurmann-videoschnitt online-media create-og-image`
+
+Erzeugt ein OpenGraph-Bild aus dem gegebenen Vorschaubild.
+
+**Usage**:
+
+```console
+$ kurmann-videoschnitt online-media create-og-image [OPTIONS] ARTWORK_IMAGE
+```
+
+**Arguments**:
+
+* `ARTWORK_IMAGE`: Pfad zum Vorschaubild  [required]
+
+**Options**:
+
+* `--output-image TEXT`: Name der Ausgabedatei für das OpenGraph-Bild (Standard: og-image.jpg)  [default: og-image.jpg]
 * `--help`: Show this message and exit.
 
 ## `kurmann-videoschnitt original-media`
@@ -432,16 +482,13 @@ und organisiert.
 **Usage**:
 
 ```console
-$ kurmann-videoschnitt original-media import-media [OPTIONS] SOURCE_DIR DESTINATION_DIR
+$ kurmann-videoschnitt original-media import-media [OPTIONS]
 ```
-
-**Arguments**:
-
-* `SOURCE_DIR`: Pfad zum Quellverzeichnis  [required]
-* `DESTINATION_DIR`: Pfad zum Zielverzeichnis  [required]
 
 **Options**:
 
-* `--compression-dir TEXT`: Optionales Komprimierungsverzeichnis
-* `--keep-original-prores / --no-keep-original-prores`: Behalte die Original-ProRes-Dateien nach der Komprimierung.  [default: no-keep-original-prores]
+* `-s, --source-dir TEXT`: Pfad zum Quellverzeichnis  [env var: original_media_source_dir]
+* `-d, --destination-dir TEXT`: Pfad zum Zielverzeichnis  [env var: original_media_destination_dir]
+* `-c, --compression-dir TEXT`: Optionales Komprimierungsverzeichnis  [env var: original_media_compression_dir]
+* `-k, --keep-original-prores`: Behalte die Original-ProRes-Dateien nach der Komprimierung.  [env var: original_media_keep_original_prores]
 * `--help`: Show this message and exit.
