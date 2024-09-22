@@ -32,6 +32,7 @@
                 "-m",
                 "typer",
                 "${workspaceFolder}/src/original_media_integrator/app.py",
+                "import-media",
                 "utils",
                 "docs",
                 "--name",
@@ -94,6 +95,29 @@
             "group": "build"
         },
         {
+            "label": "generate-cli-docs-config-manager",
+            "type": "shell",
+            "command": "/Library/Frameworks/Python.framework/Versions/3.11/bin/python3",
+            "args": [
+                "-m",
+                "typer",
+                "${workspaceFolder}/src/config_manager/app.py",
+                "utils",
+                "docs",
+                "--name",
+                "config-manager",
+                "--output",
+                "${workspaceFolder}/docs/cli/config_manager.md"
+            ],
+            "problemMatcher": [],
+            "options": {
+                "env": {
+                    "PYTHONPATH": "${workspaceFolder}/src"
+                }
+            },
+            "group": "build"
+        },
+        {
             "label": "generate-all-cli-docs",
             "type": "shell",
             "command": "echo",
@@ -102,7 +126,8 @@
                 "generate-cli-docs-apple-compressor-manager",
                 "generate-cli-docs-original-media-integrator",
                 "generate-cli-docs-emby-integrator",
-                "generate-cli-docs-online-medialibrary-manager"
+                "generate-cli-docs-online-medialibrary-manager",
+                "generate-cli-docs-config-manager"
             ],
             "problemMatcher": [],
             "group": {

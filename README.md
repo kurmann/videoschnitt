@@ -79,6 +79,7 @@ Die Grundlage für die CLI ist das [CLI-Design](/docs/CLI-Design.md).
 - [Emby Integrator](/docs/cli/emby_integrator.md)
 - [Online Medialibrary Manager](/docs/cli/online_medialibrary_manager.md)
 - [Original Media Integrator](/docs/cli/original_media_integrator.md)
+- [Configuration Manager](/docs/cli/config_manager.md)
 
 ## Mitwirken
 
