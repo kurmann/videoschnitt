@@ -3,14 +3,22 @@
 from dotenv import load_dotenv
 from pathlib import Path
 import os
+import logging
+
+# Konfiguriere das Logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+ENV_FILE_PATH = Path.home() / "Library/Application Support/Kurmann/Videoschnitt/.env"
 
 def load_app_env():
     """
     Lädt die .env Datei aus ~/Library/Application Support/Kurmann/Videoschnitt/.env
     """
-    env_path = Path.home() / "Library/Application Support/Kurmann/Videoschnitt/.env"
-    if env_path.exists():
-        load_dotenv(dotenv_path=env_path)
-        return env_path
+    if ENV_FILE_PATH.exists():
+        load_dotenv(dotenv_path=ENV_FILE_PATH)
+        logger.info(f".env Datei geladen von: {ENV_FILE_PATH}")
+        return ENV_FILE_PATH
     else:
+        logger.warning(f".env Datei nicht gefunden unter: {ENV_FILE_PATH}")
         return None
