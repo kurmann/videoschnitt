@@ -1,7 +1,11 @@
-# src/kurmann_videoschnitt/original_media_integrator/app.py
+# original_media_integrator/app.py
 
 import typer
 from original_media_integrator.new_media_importer import import_and_compress_media
+from utils.config_loader import load_app_env
+
+# Lade die .env Datei
+env_path = load_app_env()
 
 app = typer.Typer(help="Original Media Integrator")
 
@@ -38,24 +42,24 @@ def import_media(
 ):
     """
     CLI-Kommando zum Importieren und Komprimieren von Medien.
-    
-    Dieser Befehl ruft die import_and_compress_media Funktion auf, die neue Dateien komprimiert
-    und organisiert.
     """
-    
     # Überprüfe, ob erforderliche Argumente vorhanden sind
     missing_args = []
     if not source_dir:
         missing_args.append("original_media_source_dir")
     if not destination_dir:
         missing_args.append("original_media_destination_dir")
-    
+
     if missing_args:
-        typer.echo(f"Fehler: Die folgenden Konfigurationswerte fehlen: {', '.join(missing_args)}.")
-        typer.echo("Bitte geben Sie die fehlenden Werte entweder über die CLI oder in der .env-Datei an.")
+        if env_path:
+            typer.echo(f"Fehler: Die folgenden Konfigurationswerte fehlen: {', '.join(missing_args)}.")
+            typer.echo(f"Bitte geben Sie die fehlenden Werte entweder über die CLI oder in der .env-Datei unter {env_path} an.")
+        else:
+            typer.echo(f"Fehler: Die folgenden Konfigurationswerte fehlen: {', '.join(missing_args)}.")
+            typer.echo(f"Bitte geben Sie die fehlenden Werte entweder über die CLI oder erstellen Sie eine .env-Datei unter ~/Library/Application Support/Kurmann/Videoschnitt/.env.")
         raise typer.Exit(code=1)
-    
-    # Verwende die bestehenden Funktionen mit den ermittelten Werten
+
+    # Führe die Import- und Komprimierungsfunktion aus
     import_and_compress_media(
         source_dir=source_dir,
         destination_dir=destination_dir,
