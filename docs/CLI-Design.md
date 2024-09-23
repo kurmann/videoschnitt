@@ -74,18 +74,6 @@ CLI-Methoden sollten normalerweise keine komplexen **Rückgabewerte** an andere 
 
 - Bei **Listen**-Methoden kann die Ausgabe strukturiert oder formatiert sein (z.B. **JSON**).
 - Bei Methoden, die nur ein einzelnes **Ergebnis** zurückgeben, sollte die Ausgabe ebenfalls klar und formatiert sein, um sie leicht lesbar zu machen.
-  
-#### Beispiel: Rückgabe von Listen
-```bash
-Medienset: 2024-08-27 Ann-Sophie Spielsachen Bett
-  Videos:    2024-08-27 Ann-Sophie Spielsachen Bett.mov
-  Titelbild: Kein Titelbild gefunden.
-----------------------------------------
-Medienset: 2024-08-11 Böllerwagen Vollgas (Videoclip)
-  Videos:    2024-08-11 Böllerwagen Vollgas (Videoclip).mov
-  Titelbild: Kein Titelbild gefunden.
-----------------------------------------
-```
 
 ## 3. Fehlerbehandlung und Ausnahmen
 
