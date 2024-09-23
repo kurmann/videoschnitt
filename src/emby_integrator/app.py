@@ -42,19 +42,6 @@ def list_mediaserver_files(
     Returns:
         None: Gibt die Mediensets in einer menschenlesbaren Form oder als JSON zurück, je nach dem Wert von `json_output`.
     
-    Beispiel:
-        $ emby-integrator list-mediaserver-files /path/to/mediadirectory
-
-        Ausgabe:
-        Medienset: 2024-08-27 Ann-Sophie Spielsachen Bett
-        Videos:    2024-08-27 Ann-Sophie Spielsachen Bett.mov
-        Titelbild: Kein Titelbild gefunden.
-        ----------------------------------------
-        Medienset: Ann-Sophie rennt (Testvideo)
-        Videos:    Ann-Sophie rennt (Testvideo)-4K60-Medienserver.mov
-        Titelbild: Ann-Sophie rennt (Testvideo).jpg
-        ----------------------------------------
-    
     Raises:
         FileNotFoundError: Wenn das angegebene Verzeichnis nicht existiert.
     """
