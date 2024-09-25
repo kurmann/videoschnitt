@@ -2,7 +2,7 @@
 
 import os
 import asyncio
-from src.utils.config_loader import load_app_env
+from src.config_manager.config_loader import load_app_env
 import typer
 from apple_compressor_manager.cleanup_prores import run_cleanup
 from apple_compressor_manager.compress_filelist import compress_prores_files_async

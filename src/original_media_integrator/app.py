@@ -2,7 +2,7 @@
 
 import typer
 from original_media_integrator.new_media_importer import import_and_compress_media
-from utils.config_loader import load_app_env
+from config_manager.config_loader import load_app_env
 
 # Lade die .env Datei
 env_path = load_app_env()
