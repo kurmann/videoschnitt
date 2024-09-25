@@ -8,7 +8,7 @@ die Videos in verschiedenen Auflösungen anbietet und die Metadaten korrekt einb
 import locale
 import os
 from datetime import datetime
-from emby_integrator.metadata_manager import get_metadata, parse_recording_date
+from metadata_manager import get_metadata, parse_recording_date
 from online_medialibrary_manager.image_manager import create_og_image
 
 def generate_html(metadata_source: str, high_res_file: str, mid_res_file: str, artwork_image: str, download_file: str = None, base_url: str = '') -> str:

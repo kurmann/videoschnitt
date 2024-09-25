@@ -11,10 +11,7 @@ import os
 import typer
 import xml.etree.ElementTree as ET
 from emby_integrator.mediaset_manager import get_mediaserver_files
-from emby_integrator.metadata_manager import (
-    get_metadata, 
-    parse_recording_date
-)
+from metadata_manager import get_metadata, parse_recording_date
 from emby_integrator.nfo_generator import CustomProductionInfuseMetadata
 from emby_integrator.video_manager import compress_masterfile
 from emby_integrator.image_manager import convert_images_to_adobe_rgb
