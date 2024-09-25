@@ -10,43 +10,20 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-def get_video_codec(filepath: str) -> Optional[str]:
+def get_video_codec(filepath) -> Optional[str]:
     """
     Führt ffprobe aus, um den Codec der Videodatei zu ermitteln.
-
-    Args:
-        filepath (str): Der Pfad zur Videodatei.
-
-    Returns:
-        str | None: Der Name des Codecs (z.B. 'prores', 'hevc'), oder None, wenn nicht ermittelt werden konnte.
     """
-    if not os.path.exists(filepath):
-        logger.error(f"Datei existiert nicht: {filepath}")
-        return None
-
-    cmd = [
-        'ffprobe',
-        '-v', 'error',
-        '-select_streams', 'v:0',
-        '-show_entries', 'stream=codec_name',
-        '-of', 'json',
-        filepath
-    ]
-    try:
-        result = subprocess.run(cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-        probe = json.loads(result.stdout)
-        codec_name = probe.get('streams', [{}])[0].get('codec_name')
-        if codec_name:
-            logger.info(f"Codec für {filepath} ermittelt: {codec_name}")
-            return codec_name
-        else:
-            logger.warning(f"Codec konnte nicht ermittelt werden für: {filepath}")
-            return None
-    except subprocess.CalledProcessError as e:
-        logger.error(f"ffprobe Fehler für {filepath}: {e.stderr.strip()}")
-        return None
-    except json.JSONDecodeError as e:
-        logger.error(f"JSON Decode Error für {filepath}: {e}")
+    cmd = ['ffprobe', '-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=codec_name', '-of', 'json', filepath]
+    result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    
+    # JSON-Antwort parsen
+    probe = json.loads(result.stdout)
+    
+    # Überprüfen, ob der Videostream vorhanden ist und den Codec extrahieren
+    if 'streams' in probe and len(probe['streams']) > 0 and 'codec_name' in probe['streams'][0]:
+        return probe['streams'][0]['codec_name']
+    else:
         return None
 
 def get_bitrate(filepath: str) -> Optional[int]:
