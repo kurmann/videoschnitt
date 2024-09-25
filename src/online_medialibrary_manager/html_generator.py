@@ -1,4 +1,4 @@
-# html_generator.py
+# online_medialibrary_manager/html_generator.py
 
 """
 Das Modul 'html_generator' ist verantwortlich für die Erstellung einer statischen HTML-Seite,

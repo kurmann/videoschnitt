@@ -1,4 +1,4 @@
-# app.py
+# online_medialibrary_manager/app.py
 
 """
 Das 'app' Modul enthält die CLI-Befehle für den Online Medialibrary Manager.
