@@ -1,4 +1,4 @@
-# src/utils/config_loader.py
+# src/config_manager/config_loader.py
 
 from dotenv import load_dotenv
 from pathlib import Path
