@@ -2,10 +2,8 @@
 
 import os
 import asyncio
-from pathlib import Path
-from apple_compressor_manager.video_utils import get_video_codec
+from metadata_manager import get_video_codec
 from apple_compressor_manager.compressor_utils import are_sb_files_present
-from apple_compressor_manager.cleanup_prores import delete_prores_if_hevc_a_exists
 
 CHECK_INTERVAL = 30  # Intervall in Sekunden zwischen den Überprüfungen
 MIN_OUTPUT_SIZE_KB = 100  # Output-Dateien unter 100 KB werden als nicht abgeschlossen betrachtet

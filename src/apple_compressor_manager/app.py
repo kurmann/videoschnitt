@@ -8,7 +8,7 @@ from apple_compressor_manager.cleanup_prores import run_cleanup
 from apple_compressor_manager.compress_filelist import compress_prores_files_async
 from apple_compressor_manager.compress_file import compress_prores_file
 from apple_compressor_manager.file_utils import add_compression_tag
-from apple_compressor_manager.video_utils import get_video_codec
+from metadata_manager import get_video_codec
 from apple_compressor_manager.profiles.profile_manager import list_profiles  # Importiere list_profiles
 import logging
 

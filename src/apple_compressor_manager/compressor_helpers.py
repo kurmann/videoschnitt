@@ -5,7 +5,7 @@ import subprocess
 import time
 from datetime import timedelta
 from apple_compressor_manager.compressor_utils import are_sb_files_present
-from apple_compressor_manager.video_utils import get_video_codec
+from metadata_manager import get_video_codec
 
 def send_macos_notification(title, message):
     """Sendet eine macOS-Benachrichtigung."""

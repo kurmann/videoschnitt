@@ -6,10 +6,8 @@ Es ermöglicht die Interaktion mit der Anwendung über die Kommandozeile und nut
 und Klassen der anderen Module.
 """
 
-import os
 import typer
 from online_medialibrary_manager.html_generator import generate_html
-from emby_integrator.metadata_manager import get_metadata
 from online_medialibrary_manager.image_manager import create_og_image
 
 app = typer.Typer(help="Online Medialibrary Manager für Familienvideos")

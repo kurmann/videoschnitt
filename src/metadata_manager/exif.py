@@ -1,12 +1,26 @@
+# src/metadata_manager/exif.py
+
 import subprocess
 import json
 import os
 from datetime import datetime, timezone
+from typing import Optional
+import logging
 
-def get_creation_datetime(filepath):
+# Konfiguriere das Logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+def get_creation_datetime(filepath: str) -> Optional[datetime]:
     """
     Bestimmt das Erstellungsdatum für Videodateien (CreationDate) und Bilddateien (DateTimeOriginal).
     Berücksichtigt Zeitzoneninformationen durch OffsetTimeOriginal.
+
+    Args:
+        filepath (str): Der Pfad zur Mediendatei.
+
+    Returns:
+        datetime | None: Das Erstellungsdatum als datetime-Objekt, oder None, wenn nicht ermittelt werden konnte.
     """
     try:
         # Erkennung, ob es sich um eine Videodatei handelt
@@ -27,7 +41,7 @@ def get_creation_datetime(filepath):
 
         # Debug-Ausgabe der rohen exiftool-Daten
         exif_metadata = result.stdout.strip()
-        print(f"Rohdaten von exiftool: {exif_metadata}")
+        logger.debug(f"Rohdaten von exiftool: {exif_metadata}")
 
         exif_json = json.loads(exif_metadata)
 
@@ -41,7 +55,7 @@ def get_creation_datetime(filepath):
             
             offset_time_original = exif_json[0].get("OffsetTimeOriginal")
 
-            print(f"Ausgelesenes Datum: {creation_time_str}, OffsetTimeOriginal: {offset_time_original}")
+            logger.debug(f"Ausgelesenes Datum: {creation_time_str}, OffsetTimeOriginal: {offset_time_original}")
 
             if creation_time_str:
                 # Versuche verschiedene Formate zu parsen
@@ -61,18 +75,22 @@ def get_creation_datetime(filepath):
                         else:
                             datetime_with_timezone = datetime.strptime(creation_time_str, dt_format)
 
-                        print(f"Geparstes Datum mit Zeitzone: {datetime_with_timezone}")
+                        logger.info(f"Geparstes Datum mit Zeitzone: {datetime_with_timezone}")
                         return datetime_with_timezone
                     except ValueError:
                         continue
 
-                print("Fehler beim Parsen des Datums: Kein passendes Format gefunden. Verwende das Änderungsdatum der Datei.")
+                logger.error("Fehler beim Parsen des Datums: Kein passendes Format gefunden. Verwende das Änderungsdatum der Datei.")
         
     except Exception as e:
-        print(f"Fehler bei der EXIF-Analyse mit exiftool: {e}. Verwende das Änderungsdatum der Datei.")
+        logger.error(f"Fehler bei der EXIF-Analyse mit exiftool: {e}. Verwende das Änderungsdatum der Datei.")
 
     # Fallback: Verwende das Änderungsdatum der Datei
-    modification_time = os.path.getmtime(filepath)
-    datetime_with_timezone = datetime.fromtimestamp(modification_time, tz=timezone.utc).astimezone()
-    print(f"Verwende das Änderungsdatum der Datei für {filepath}: {datetime_with_timezone}")
-    return datetime_with_timezone
+    try:
+        modification_time = os.path.getmtime(filepath)
+        datetime_with_timezone = datetime.fromtimestamp(modification_time, tz=timezone.utc).astimezone()
+        logger.info(f"Verwende das Änderungsdatum der Datei für {filepath}: {datetime_with_timezone}")
+        return datetime_with_timezone
+    except Exception as e:
+        logger.error(f"Fehler beim Abrufen des Änderungsdatums der Datei {filepath}: {e}")
+        return None
