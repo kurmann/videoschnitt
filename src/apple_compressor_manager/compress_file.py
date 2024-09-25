@@ -4,7 +4,7 @@ import os
 import asyncio
 import subprocess
 
-from apple_compressor_manager.video_utils import get_video_codec
+from metadata_manager import get_video_codec
 from apple_compressor_manager.compression_monitor import monitor_compression
 from apple_compressor_manager.file_utils import add_compression_tag
 

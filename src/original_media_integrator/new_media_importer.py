@@ -4,7 +4,7 @@ import os
 import asyncio
 from apple_compressor_manager.compress_filelist import run_compress_prores_async
 from original_media_integrator.media_manager import organize_media_files
-from apple_compressor_manager.video_utils import get_video_codec
+from metadata_manager import get_video_codec
 
 # Modulkonstante für den Pfad zum HEVC-A Compressor-Profil
 COMPRESSOR_PROFILE_PATH = "/Users/patrickkurmann/Library/Application Support/Compressor/Settings/HEVC-A.compressorsetting"

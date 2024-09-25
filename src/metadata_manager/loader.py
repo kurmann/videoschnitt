@@ -3,10 +3,7 @@
 import subprocess
 import json
 import os
-from pathlib import Path
-from .utils import get_video_codec
-from .models import Metadata
-from typing import Optional, Dict
+from typing import Dict
 import logging
 
 # Konfiguriere das Logging
