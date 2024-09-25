@@ -3,8 +3,15 @@
 import subprocess
 import json
 import os
-from typing import Dict
+from pathlib import Path
+from typing import Optional, Dict
 import logging
+
+from src.metadata_manager.parser import parse_recording_date
+
+from .utils import get_video_codec
+from .exif import get_creation_datetime  # Import aus exif.py
+from .models import Metadata
 
 # Konfiguriere das Logging
 logging.basicConfig(level=logging.INFO)
@@ -49,30 +56,45 @@ def load_metadata(file_path: str) -> Dict:
         logger.error(error_message)
         raise ValueError(error_message)
 
-def load_exif_data(file_path: str) -> Dict:
+def get_metadata(file_path: str) -> Metadata:
     """
-    Lädt spezifische Exif-Daten einer Datei.
+    Lädt und parst die Metadaten einer Mediendatei und gibt ein Metadata-Objekt zurück.
 
     Args:
-        file_path (str): Der Pfad zur Datei.
+        file_path (str): Der Pfad zur Mediendatei.
 
     Returns:
-        dict: Ein Dictionary mit spezifischen Exif-Daten.
-
-    Raises:
-        FileNotFoundError: Wenn die Datei nicht existiert.
-        ValueError: Wenn keine Exif-Daten extrahiert werden konnten.
+        Metadata: Ein Metadata-Objekt mit den geladenen Metadaten.
     """
-    metadata = load_metadata(file_path)
-    # Hier kannst du spezifische Exif-Daten extrahieren, falls benötigt
-    # Zum Beispiel:
-    exif_data = {
-        "FileName": metadata.get("FileName", ""),
-        "Directory": metadata.get("Directory", ""),
-        "FileSize": metadata.get("FileSize", ""),
-        "CreateDate": metadata.get("CreateDate", ""),
-        "DateTimeOriginal": metadata.get("DateTimeOriginal", ""),
-        # Füge weitere benötigte Felder hinzu
-    }
-    logger.info(f"Spezifische Exif-Daten extrahiert für: {file_path}")
-    return exif_data
+    metadata_dict = load_metadata(file_path)
+    recording_date = parse_recording_date(metadata_dict)
+    metadata = Metadata(
+        file_name=metadata_dict.get("FileName", ""),
+        directory=metadata_dict.get("Directory", ""),
+        file_size=int(metadata_dict.get("FileSize", 0)),
+        file_modification_datetime=metadata_dict.get("FileModificationDateTime", ""),
+        file_type=metadata_dict.get("FileType", ""),
+        mime_type=metadata_dict.get("MIMEType", ""),
+        create_date=metadata_dict.get("CreateDate"),
+        duration=metadata_dict.get("Duration"),
+        audio_format=metadata_dict.get("AudioFormat"),
+        image_width=int(metadata_dict.get("ImageWidth", 0)),
+        image_height=int(metadata_dict.get("ImageHeight", 0)),
+        compressor_id=metadata_dict.get("CompressorID"),
+        compressor_name=metadata_dict.get("CompressorName"),
+        bit_depth=int(metadata_dict.get("BitDepth", 0)) if metadata_dict.get("BitDepth") else None,
+        video_frame_rate=metadata_dict.get("VideoFrameRate"),
+        title=metadata_dict.get("Title"),
+        album=metadata_dict.get("Album"),
+        description=metadata_dict.get("Description"),
+        copyright=metadata_dict.get("Copyright"),
+        author=metadata_dict.get("Author"),
+        keywords=metadata_dict.get("Keywords"),
+        avg_bitrate=int(metadata_dict.get("AvgBitrate", 0)) if metadata_dict.get("AvgBitrate") else None,
+        producer=metadata_dict.get("Producer"),
+        studio=metadata_dict.get("Studio"),
+        producers=metadata_dict.get("Producers", []),
+        directors=metadata_dict.get("Directors", []),
+        published=recording_date
+    )
+    return metadata
