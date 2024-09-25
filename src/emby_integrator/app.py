@@ -11,7 +11,7 @@ import os
 import typer
 import xml.etree.ElementTree as ET
 from emby_integrator.mediaset_manager import get_mediaserver_files
-from metadata_manager import get_metadata, parse_recording_date
+from metadata_manager import get_relevant_metadata, parse_recording_date
 from emby_integrator.nfo_generator import CustomProductionInfuseMetadata
 from emby_integrator.video_manager import compress_masterfile
 from emby_integrator.image_manager import convert_images_to_adobe_rgb
@@ -141,7 +141,7 @@ def list_metadata(
         ValueError: Wenn keine Metadaten extrahiert werden konnten.
     """
     try:
-        metadata = get_metadata(file_path)
+        metadata = get_relevant_metadata(file_path)
         
         if json_output:
             # JSON-Ausgabe
@@ -179,7 +179,7 @@ def generate_nfo_xml(file_path: str):
         file_path (str): Pfad zur Videodatei.
     """
     try:
-        metadata = get_metadata(file_path)
+        metadata = get_relevant_metadata(file_path)
         custom_metadata = CustomProductionInfuseMetadata.create_from_metadata(metadata, file_path)
         xml_element = custom_metadata.to_xml()
 
@@ -206,7 +206,7 @@ def write_nfo_file(file_path: str):
         file_path (str): Pfad zur Videodatei.
     """
     try:
-        metadata = get_metadata(file_path)
+        metadata = get_relevant_metadata(file_path)
         custom_metadata = CustomProductionInfuseMetadata.create_from_metadata(metadata, file_path)
         nfo_file_path = os.path.splitext(file_path)[0] + '.nfo'
 

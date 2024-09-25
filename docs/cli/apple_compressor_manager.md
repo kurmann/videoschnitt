@@ -20,6 +20,7 @@ $ apple-compressor-manager [OPTIONS] COMMAND [ARGS]...
 * `cleanup-prores`: Bereinigt ProRes-Dateien mit einem...
 * `compress-prores-file`: Komprimiert eine einzelne ProRes-Datei.
 * `compress-prores-files`: Komprimiert ProRes-Dateien in einem...
+* `list-profiles`: Listet alle verfügbaren Compressor-Profile...
 
 ## `apple-compressor-manager add-tag`
 
@@ -99,4 +100,18 @@ $ apple-compressor-manager compress-prores-files [OPTIONS] INPUT_DIR COMPRESSOR_
 
 * `--output TEXT`: Das Verzeichnis, in dem die Ausgabedateien gespeichert werden sollen
 * `--delete-prores`: Lösche ProRes-Dateien nach erfolgreicher Komprimierung
+* `--help`: Show this message and exit.
+
+## `apple-compressor-manager list-profiles`
+
+Listet alle verfügbaren Compressor-Profile auf.
+
+**Usage**:
+
+```console
+$ apple-compressor-manager list-profiles [OPTIONS]
+```
+
+**Options**:
+
 * `--help`: Show this message and exit.

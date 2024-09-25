@@ -132,6 +132,13 @@
                 "--output",
                 "${workspaceFolder}/docs/cli/metadata_manager.md"
             ],
+            "problemMatcher": [],
+            "options": {
+                "env": {
+                    "PYTHONPATH": "${workspaceFolder}/src"
+                }
+            },
+            "group": "build"
         },
         {
             "label": "generate-all-cli-docs",
@@ -143,7 +150,8 @@
                 "generate-cli-docs-original-media-integrator",
                 "generate-cli-docs-emby-integrator",
                 "generate-cli-docs-online-medialibrary-manager",
-                "generate-cli-docs-config-manager"
+                "generate-cli-docs-config-manager",
+                "generate-cli-docs-metadata-manager"
             ],
             "problemMatcher": [],
             "group": {
