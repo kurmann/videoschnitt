@@ -1,13 +1,23 @@
-# app.py
+# src/apple_compressor_manager/app.py
 
 import os
 import asyncio
+from src.utils.config_loader import load_app_env
 import typer
 from apple_compressor_manager.cleanup_prores import run_cleanup
 from apple_compressor_manager.compress_filelist import compress_prores_files_async
-from apple_compressor_manager.compress_file import compress_prores_file, get_output_suffix
+from apple_compressor_manager.compress_file import compress_prores_file
 from apple_compressor_manager.file_utils import add_compression_tag
 from apple_compressor_manager.video_utils import get_video_codec
+from apple_compressor_manager.profiles.profile_manager import list_profiles  # Importiere list_profiles
+import logging
+
+# Lade die .env Datei
+env_path = load_app_env()
+
+# Initialisiere das Logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 app = typer.Typer(help="Apple Compressor Manager")
 
@@ -40,7 +50,7 @@ def compress_prores_files_command(
 
         # Definiere einen Callback für den Abschluss der Komprimierung
         def on_completion(output_file):
-            print(f"Komprimierung abgeschlossen für Datei: {output_file}")
+            typer.echo(f"Komprimierung abgeschlossen für Datei: {output_file}")
 
         await compress_prores_files_async(
             file_list=[
@@ -77,7 +87,7 @@ def compress_prores_file_command(
     async def async_main():
         # Definiere einen Callback für den Abschluss der Komprimierung
         def on_completion(output_file):
-            print(f"Komprimierung abgeschlossen für Datei: {output_file}")
+            typer.echo(f"Komprimierung abgeschlossen für Datei: {output_file}")
 
         # Führe die Komprimierung durch
         await compress_prores_file(
@@ -90,6 +100,17 @@ def compress_prores_file_command(
     
     # Führe die asynchrone Hauptfunktion aus
     asyncio.run(async_main())
+
+@app.command("list-profiles")
+def list_profiles_command():
+    """Listet alle verfügbaren Compressor-Profile auf."""
+    profiles = list_profiles()
+    if not profiles:
+        typer.echo("Keine Compressor-Profile gefunden.")
+    else:
+        typer.echo("Verfügbare Compressor-Profile:")
+        for profile in profiles:
+            typer.echo(f"- {profile}")
 
 if __name__ == "__main__":
     app()
