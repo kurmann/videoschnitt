@@ -1,4 +1,4 @@
-# image_manager.py
+# onlinemedialibrarymanager/image_manager.py
 
 """
 Das Modul 'image_manager' enthält Funktionen zur Bildverarbeitung,

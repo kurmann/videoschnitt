@@ -118,6 +118,22 @@
             "group": "build"
         },
         {
+            "label": "generate-cli-docs-metadata-manager",
+            "type": "shell",
+            "command": "/Library/Frameworks/Python.framework/Versions/3.11/bin/python3",
+            "args": [
+                "-m",
+                "typer",
+                "${workspaceFolder}/src/metadata_manager/app.py",
+                "utils",
+                "docs",
+                "--name",
+                "metadata-manager",
+                "--output",
+                "${workspaceFolder}/docs/cli/metadata_manager.md"
+            ],
+        },
+        {
             "label": "generate-all-cli-docs",
             "type": "shell",
             "command": "echo",
