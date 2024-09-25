@@ -75,7 +75,7 @@ def get_creation_datetime(filepath: str) -> Optional[datetime]:
                         else:
                             datetime_with_timezone = datetime.strptime(creation_time_str, dt_format)
 
-                        logger.info(f"Geparstes Datum mit Zeitzone: {datetime_with_timezone}")
+                        logger.debug(f"Geparstes Datum mit Zeitzone: {datetime_with_timezone}")
                         return datetime_with_timezone
                     except ValueError:
                         continue

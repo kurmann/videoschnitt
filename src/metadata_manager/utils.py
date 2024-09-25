@@ -54,7 +54,7 @@ def get_bitrate(filepath: str) -> Optional[int]:
         bit_rate_str = probe.get('streams', [{}])[0].get('bit_rate')
         if bit_rate_str:
             bit_rate = int(bit_rate_str)
-            logger.info(f"Bitrate für {filepath} ermittelt: {bit_rate} bit/s")
+            logger.debug(f"Bitrate für {filepath} ermittelt: {bit_rate} bit/s")
             return bit_rate
         else:
             logger.warning(f"Bitrate konnte nicht ermittelt werden für: {filepath}")
@@ -79,7 +79,7 @@ def is_hevc_a(filepath: str) -> bool:
     """
     bitrate = get_bitrate(filepath)
     if bitrate and bitrate > 80 * 1024 * 1024:
-        logger.info(f"Datei {filepath} ist HEVC-A (Bitrate: {bitrate} bit/s)")
+        logger.debug(f"Datei {filepath} ist HEVC-A (Bitrate: {bitrate} bit/s)")
         return True
-    logger.info(f"Datei {filepath} ist nicht HEVC-A (Bitrate: {bitrate} bit/s)" if bitrate else f"Bitrate konnte nicht ermittelt werden für: {filepath}")
+    logger.debug(f"Datei {filepath} ist nicht HEVC-A (Bitrate: {bitrate} bit/s)" if bitrate else f"Bitrate konnte nicht ermittelt werden für: {filepath}")
     return False
