@@ -1,3 +1,5 @@
+# metadata_manager/aggregator.py
+
 from typing import Dict, Any
 from metadata_manager.loader import get_relevant_metadata
 from metadata_manager.utils import get_video_codec, get_bitrate, is_hevc_a
