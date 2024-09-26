@@ -28,66 +28,30 @@ $ metadata-manager [OPTIONS] COMMAND [ARGS]...
 
 Exportiert die Metadaten einer Datei in eine JSON- oder Textdatei.
 
-
-**Beispiele:**
-    metadata-manager export-metadata /path/to/video.mov /path/to/output.json
-    metadata-manager export-metadata /path/to/video.mov /path/to/output.txt
+## Argumente:
+- **file_path** (*Path*): Pfad zur Mediendatei.
+- **output_path** (*Path*): Pfad zur Ausgabedatei (unterstützt .json, .txt, .md).
+- **include_source** (*bool*): Wenn gesetzt, werden die Quellen der Metadaten ebenfalls in die Datei geschrieben.
 
-
-**Beispielausgabe (JSON):**
-{
-    "FileName": "video.mov",
-    "Directory": "/path/to/",
-    "FileSize": "10 GB",
-    "FileModifyDate": "2024:09:19 17:03:53+02:00",
-    "FileType": "MOV",
-    "MIMEType": "video/quicktime",
-    "CreateDate": "2024:09:19 14:29:04",
-    "Duration": "0:14:47",
-    "AudioFormat": "mp4a",
-    "ImageWidth": "3840",
-    "ImageHeight": "2160",
-    "CompressorID": "hvc1",
-    "CompressorName": "HEVC",
-    "BitDepth": "24",
-    "VideoFrameRate": "60",
-    "Title": "2024-09-15 Paula MTB-Finale Huttwil",
-    "Album": "Familie Kurmann",
-    "Description": "Start von Paula Gorycka  am XCO-Finale der ÖKK Bike Revolution 2024 in Huttwil.",
-    "Copyright": "© Patrick Kurmann 2024",
-    "Author": "Patrick Kurmann",
-    "Keywords": "17.09.24,fotos,aufgenommen von patrick kurmann,paula mtb-finale huttwil,aufgenommen von silvan kurmann",
-    "AvgBitrate": "90.7 Mbps",
-    "Producer": "Patrick Kurmann",
-    "Studio": "Kurmann Studios"
-}
+## Beispielaufrufe:
+```bash
+metadata-manager export-metadata /Pfad/zur/Datei.mov /Pfad/zur/Ausgabedatei.json
+```
 
-
-**Beispielausgabe (TXT):**
-FileName: video.mov
-Directory: /path/to/
-FileSize: 10 GB
-FileModifyDate: 2024:09:19 17:03:53+02:00
-FileType: MOV
-MIMEType: video/quicktime
-CreateDate: 2024:09:19 14:29:04
-Duration: 0:14:47
-AudioFormat: mp4a
-ImageWidth: 3840
-ImageHeight: 2160
-CompressorID: hvc1
-CompressorName: HEVC
-BitDepth: 24
-VideoFrameRate: 60
-Title: 2024-09-15 Paula MTB-Finale Huttwil
-Album: Familie Kurmann
-Description: Start von Paula Gorycka  am XCO-Finale der ÖKK Bike Revolution 2024 in Huttwil.
-Copyright: © Patrick Kurmann 2024
-Author: Patrick Kurmann
-Keywords: 17.09.24,fotos,aufgenommen von patrick kurmann,paula mtb-finale huttwil,aufgenommen von silvan kurmann
-AvgBitrate: 90.7 Mbps
-Producer: Patrick Kurmann
-Studio: Kurmann Studios
+Ausgabe:
+```plaintext
+Metadaten erfolgreich als JSON exportiert nach: /Pfad/zur/Ausgabedatei.json
+```
+
+Mit Text-Export:
+```bash
+metadata-manager export-metadata /Pfad/zur/Datei.mov /Pfad/zur/Ausgabedatei.txt
+```
+
+Ausgabe:
+```plaintext
+Metadaten erfolgreich als Text exportiert nach: /Pfad/zur/Ausgabedatei.txt
+```
 
 **Usage**:
 
@@ -102,23 +66,25 @@ $ metadata-manager export-metadata [OPTIONS] FILE_PATH OUTPUT_PATH
 
 **Options**:
 
+* `-s, --include-source`: Gibt die Quelle jeder Eigenschaft mit aus
 * `--help`: Show this message and exit.
 
 ## `metadata-manager get-bitrate`
 
 Gibt die Bitrate einer Videodatei zurück.
 
-
-**Beispiel:**
-    metadata-manager get-bitrate /path/to/video.mov
+## Argumente:
+- **file_path** (*Path*): Pfad zur Videodatei, deren Bitrate abgerufen werden soll.
 
-
-**Beispielausgabe (Bitrate gefunden):**
-    Bitrate: 90.7 Mbps
+## Beispielaufruf:
+```bash
+metadata-manager get-bitrate /Pfad/zur/Datei.mov
+```
 
-
-**Beispielausgabe (Bitrate nicht gefunden):**
-    Bitrate konnte nicht ermittelt werden.
+Ausgabe:
+```plaintext
+Bitrate: 1069.47 Mbps
+```
 
 **Usage**:
 
@@ -138,17 +104,18 @@ $ metadata-manager get-bitrate [OPTIONS] FILE_PATH
 
 Gibt das Erstellungsdatum einer Mediendatei zurück.
 
-
-**Beispiel:**
-    metadata-manager get-creation-datetime /path/to/video.mov
+## Argumente:
+- **file_path** (*Path*): Pfad zur Mediendatei, deren Erstellungsdatum abgerufen werden soll.
 
-
-**Beispielausgabe (Datum gefunden):**
-    Erstellungsdatum: 2024-09-19 14:29:04
+## Beispielaufruf:
+```bash
+metadata-manager get-creation-datetime /Pfad/zur/Datei.mov
+```
 
-
-**Beispielausgabe (Datum nicht gefunden, Fallback):**
-    Erstellungsdatum konnte nicht ermittelt werden.
+Ausgabe:
+```plaintext
+Erstellungsdatum: 2024-09-23T19:16:33+02:00
+```
 
 **Usage**:
 
@@ -168,17 +135,18 @@ $ metadata-manager get-creation-datetime [OPTIONS] FILE_PATH
 
 Gibt den Videocodec einer Datei zurück.
 
-
-**Beispiel:**
-    metadata-manager get-video-codec /path/to/video.mov
+## Argumente:
+- **file_path** (*Path*): Pfad zur Videodatei, deren Videocodec abgerufen werden soll.
 
-
-**Beispielausgabe (Codec gefunden):**
-    Videocodec: HEVC
+## Beispielaufruf:
+```bash
+metadata-manager get-video-codec /Pfad/zur/Datei.mov
+```
 
-
-**Beispielausgabe (Codec nicht gefunden):**
-    Videocodec konnte nicht ermittelt werden.
+Ausgabe:
+```plaintext
+Videocodec: prores
+```
 
 **Usage**:
 
@@ -198,17 +166,18 @@ $ metadata-manager get-video-codec [OPTIONS] FILE_PATH
 
 Überprüft, ob eine Videodatei HEVC-A ist (Bitrate > 80 Mbit/s).
 
-
-**Beispiel:**
-    metadata-manager is-hevc-a /path/to/video.mov
+## Argumente:
+- **file_path** (*Path*): Pfad zur Videodatei, die überprüft werden soll.
 
-
-**Beispielausgabe (HEVC-A):**
-    Die Datei ist HEVC-A (Bitrate > 80 Mbit/s).
+## Beispielaufruf:
+```bash
+metadata-manager is-hevc-a /Pfad/zur/Datei.mov
+```
 
-
-**Beispielausgabe (Nicht HEVC-A):**
-    Die Datei ist nicht HEVC-A (Bitrate <= 80 Mbit/s).
+Ausgabe:
+```plaintext
+Die Datei ist HEVC-A (Bitrate > 80 Mbit/s).
+```
 
 **Usage**:
 
@@ -228,66 +197,36 @@ $ metadata-manager is-hevc-a [OPTIONS] FILE_PATH
 
 Zeigt die Metadaten einer Datei an.
 
-
-**Beispiele:**
-    metadata-manager show-metadata /path/to/video.mov
-    metadata-manager show-metadata /path/to/video.mov --json
+## Argumente:
+- **file_path** (*Path*): Pfad zur Mediendatei.
+- **json_output** (*bool*): Wenn gesetzt, werden die Metadaten im JSON-Format ausgegeben.
+- **include_source** (*bool*): Wenn gesetzt, werden die Quellen der Metadaten ebenfalls angezeigt.
 
-
-**Beispielausgabe (Text):**
-    FileName: video.mov
-    Directory: /path/to/
-    FileSize: 10 GB
-    FileModifyDate: 2024:09:19 17:03:53+02:00
-    FileType: MOV
-    MIMEType: video/quicktime
-    CreateDate: 2024:09:19 14:29:04
-    Duration: 0:14:47
-    AudioFormat: mp4a
-    ImageWidth: 3840
-    ImageHeight: 2160
-    CompressorID: hvc1
-    CompressorName: HEVC
-    BitDepth: 24
-    VideoFrameRate: 60
-    Title: 2024-09-15 Paula MTB-Finale Huttwil
-    Album: Familie Kurmann
-    Description: Start von Paula Gorycka  am XCO-Finale der ÖKK Bike Revolution 2024 in Huttwil.
-    Copyright: © Patrick Kurmann 2024
-    Author: Patrick Kurmann
-    Keywords: 17.09.24,fotos,aufgenommen von patrick kurmann,paula mtb-finale huttwil,aufgenommen von silvan kurmann
-    AvgBitrate: 90.7 Mbps
-    Producer: Patrick Kurmann
-    Studio: Kurmann Studios
+## Beispielaufrufe:
+```bash
+metadata-manager show-metadata /Pfad/zur/Datei.mov
+```
 
-
-**Beispielausgabe (JSON):**
+Ausgabe:
+```plaintext
+FileName: Datei.mov
+Bitrate: 1069.47 Mbps
+VideoCodec: prores
+```
+
+Mit JSON-Option:
+```bash
+metadata-manager show-metadata /Pfad/zur/Datei.mov --json
+```
+
+Ausgabe im JSON-Format:
+```json
 {
-    "FileName": "video.mov",
-    "Directory": "/path/to/",
-    "FileSize": "10 GB",
-    "FileModifyDate": "2024:09:19 17:03:53+02:00",
-    "FileType": "MOV",
-    "MIMEType": "video/quicktime",
-    "CreateDate": "2024:09:19 14:29:04",
-    "Duration": "0:14:47",
-    "AudioFormat": "mp4a",
-    "ImageWidth": "3840",
-    "ImageHeight": "2160",
-    "CompressorID": "hvc1",
-    "CompressorName": "HEVC",
-    "BitDepth": "24",
-    "VideoFrameRate": "60",
-    "Title": "2024-09-15 Paula MTB-Finale Huttwil",
-    "Album": "Familie Kurmann",
-    "Description": "Start von Paula Gorycka  am XCO-Finale der ÖKK Bike Revolution 2024 in Huttwil.",
-    "Copyright": "© Patrick Kurmann 2024",
-    "Author": "Patrick Kurmann",
-    "Keywords": "17.09.24,fotos,aufgenommen von patrick kurmann,paula mtb-finale huttwil,aufgenommen von silvan kurmann",
-    "AvgBitrate": "90.7 Mbps",
-    "Producer": "Patrick Kurmann",
-    "Studio": "Kurmann Studios"
+    "FileName": "Datei.mov",
+    "Bitrate": "1069.47 Mbps",
+    "VideoCodec": "prores"
 }
+```
 
 **Usage**:
 
@@ -302,23 +241,26 @@ $ metadata-manager show-metadata [OPTIONS] FILE_PATH
 **Options**:
 
 * `-j, --json`: Gebe die Metadaten im JSON-Format aus
+* `-s, --include-source`: Gibt die Quelle jeder Eigenschaft mit aus
 * `--help`: Show this message and exit.
 
 ## `metadata-manager validate-file`
 
 Validiert die Mediendatei, indem überprüft wird, ob die Metadaten erfolgreich geladen werden können.
 
-
-**Beispiel:**
-    metadata-manager validate-file /path/to/video.mov
+## Argumente:
+- **file_path** (*Path*): Pfad zur Mediendatei, die validiert werden soll.
+- **include_source** (*bool*): Wenn gesetzt, wird die Quelle der Metadaten ebenfalls überprüft.
 
-
-**Beispielausgabe (Erfolgreich):**
-    Die Datei wurde erfolgreich validiert. Metadaten konnten geladen werden.
+## Beispielaufruf:
+```bash
+metadata-manager validate-file /Pfad/zur/Datei.mov
+```
 
-
-**Beispielausgabe (Fehlgeschlagen):**
-    Die Datei '/path/to/video.mov' wurde nicht gefunden.
+Ausgabe:
+```plaintext
+Die Datei wurde erfolgreich validiert. Metadaten konnten geladen werden.
+```
 
 **Usage**:
 
@@ -332,4 +274,5 @@ $ metadata-manager validate-file [OPTIONS] FILE_PATH
 
 **Options**:
 
+* `-s, --include-source`: Überprüft die Quelle der Metadaten
 * `--help`: Show this message and exit.
