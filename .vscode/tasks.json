@@ -32,7 +32,6 @@
                 "-m",
                 "typer",
                 "${workspaceFolder}/src/original_media_integrator/app.py",
-                "import-media",
                 "utils",
                 "docs",
                 "--name",

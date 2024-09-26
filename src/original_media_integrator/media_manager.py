@@ -3,9 +3,14 @@
 import os
 import shutil
 from original_media_integrator.file_utils import is_file_in_use
-from metadata_manager import get_video_codec, is_hevc_a, get_creation_datetime
+from metadata_manager import get_creation_datetime
+from typing import Optional
+import logging
 
-def move_file_to_target(source_file, base_source_dir, base_destination_dir):
+# Konfiguriere das Logging
+logger = logging.getLogger(__name__)
+
+def move_file_to_target(source_file: str, base_source_dir: str, base_destination_dir: str) -> Optional[str]:
     """
     Verschiebt eine Datei ins Zielverzeichnis, behält die Unterverzeichnisstruktur vom Quellverzeichnis bei und organisiert nach Datum.
 
@@ -14,7 +19,6 @@ def move_file_to_target(source_file, base_source_dir, base_destination_dir):
     - Dateien im Wurzelverzeichnis des Quellverzeichnisses werden direkt in die Datumsstruktur des Zielverzeichnisses verschoben.
     - Der Dateiname wird anhand des Erstellungsdatums der Datei generiert und enthält die Zeitzone.
     - Wenn der Dateiname "_edited" enthält, wird dies als "-edited" im neuen Dateinamen übernommen.
-    - Für Videodateien (MOV/MP4) wird der Codec ermittelt und ggf. im Dateinamen hinzugefügt (z.B. "-ProRes" oder "-HEVC-A").
 
     Argumente:
     - source_file (str): Der vollständige Pfad zur Quelldatei.
@@ -30,12 +34,15 @@ def move_file_to_target(source_file, base_source_dir, base_destination_dir):
 
     Beispiel:
     >>> move_file_to_target('/Volumes/Samsung2TB/BlackMagic/Aufnahmen von Patrick/video.mov', '/Volumes/Samsung2TB/BlackMagic', '/Volumes/Originalmedien')
-    Verschiebe Datei /Volumes/Samsung2TB/BlackMagic/Aufnahmen von Patrick/video.mov nach /Volumes/Originalmedien/2023/2023-09/2023-09-15/Aufnahmen von Patrick/2023-09-15_123456+0200-HEVC-A.mov
-    Datei verschoben nach /Volumes/Originalmedien/2023/2023-09/2023-09-15/Aufnahmen von Patrick/2023-09-15_123456+0200-HEVC-A.mov
+    Verschiebe Datei /Volumes/Samsung2TB/BlackMagic/Aufnahmen von Patrick/video.mov nach /Volumes/Originalmedien/2024/2024-09/2024-09-26/Aufnahmen von Patrick/2024-09-26_123456+0200.mov
+    Datei verschoben nach /Volumes/Originalmedien/2024/2024-09/2024-09-26/Aufnahmen von Patrick/2024-09-26_123456+0200.mov
     """
     try:
         # Datum der Datei extrahieren, inklusive Zeitzone
         creation_time = get_creation_datetime(source_file)
+        if not creation_time:
+            raise ValueError("Erstellungsdatum konnte nicht ermittelt werden.")
+
         date_path = creation_time.strftime('%Y/%Y-%m/%Y-%m-%d')
 
         # Relativen Pfad zum Quellverzeichnis finden (um Unterverzeichnisse beizubehalten)
@@ -54,23 +61,8 @@ def move_file_to_target(source_file, base_source_dir, base_destination_dir):
         # Prüfen, ob der Dateiname "_edited" enthält
         edited_suffix = "-edited" if "_edited" in filename_without_extension else ""
 
-        # Codec-Überprüfung für MOV/MP4-Dateien
-        codec = get_video_codec(source_file) if extension in ['.mov', '.mp4'] else None
-
-        if codec is None:
-            # Umbenennung für andere Dateitypen wie HEIC, JPG usw.
-            filename = creation_time.strftime(f'%Y-%m-%d_%H%M%S{timezone_suffix}{edited_suffix}{extension}')
-        else:
-            # Spezifische Codecs hinzufügen, falls vorhanden (z.B. ProRes oder HEVC-A)
-            if codec.lower() == "prores":
-                codec = "ProRes"
-            elif is_hevc_a(source_file):
-                codec = "HEVC-A"
-            else:
-                codec = ''
-
-            # Neuer Dateiname mit Datum, Zeitzone, Codec und ggf. -edited
-            filename = creation_time.strftime(f'%Y-%m-%d_%H%M%S{timezone_suffix}{f"-{codec}" if codec else ""}{edited_suffix}{extension}')
+        # Neuer Dateiname mit Datum, Zeitzone und ggf. -edited
+        filename = creation_time.strftime(f'%Y-%m-%d_%H%M%S{timezone_suffix}{edited_suffix}{extension}')
 
         # Sicherstellen, dass das Zielverzeichnis existiert
         os.makedirs(destination_dir, exist_ok=True)
@@ -79,16 +71,17 @@ def move_file_to_target(source_file, base_source_dir, base_destination_dir):
         destination_path = os.path.join(destination_dir, filename)
 
         # Verschiebe die Datei
-        print(f"Verschiebe Datei {source_file} ({os.path.getsize(source_file) / (1024 * 1024):.2f} MiB) nach {destination_path}")
+        logger.info(f"Verschiebe Datei {source_file} ({os.path.getsize(source_file) / (1024 * 1024):.2f} MiB) nach {destination_path}")
         shutil.move(source_file, destination_path)
-        print(f"Datei verschoben nach {destination_path}")
+        logger.info(f"Datei verschoben nach {destination_path}")
 
         return destination_path
     except Exception as e:
+        logger.error(f"Fehler beim Verschieben der Datei {source_file}: {e}")
         print(f"Fehler beim Verschieben der Datei {source_file}: {e}")
         return None
 
-def organize_media_files(source_dir, destination_dir, base_source_dir=None):
+def organize_media_files(source_dir: str, destination_dir: str, base_source_dir: Optional[str] = None):
     """
     Organisiert Medien aus dem Quellverzeichnis ins Zielverzeichnis.
 
@@ -106,14 +99,17 @@ def organize_media_files(source_dir, destination_dir, base_source_dir=None):
     else:
         base_source_dir = os.path.abspath(base_source_dir)
 
+    logger.info(f"Durchlaufe das Quellverzeichnis: {source_dir}")
     for root, _, files in os.walk(source_dir):
         for filename in files:
             if filename.startswith('.') or not filename.lower().endswith(('.mov', '.mp4', '.jpg', '.jpeg', '.png', '.heif', '.heic', '.dng')):
+                logger.debug(f"Überspringe Datei {filename} aufgrund des Dateityps oder versteckter Datei.")
                 continue
 
             file_path = os.path.join(root, filename)
 
             if is_file_in_use(file_path):
+                logger.warning(f"Datei {filename} wird noch verwendet. Überspringe.")
                 print(f"Datei {filename} wird noch verwendet. Überspringe.")
                 continue
 
@@ -121,8 +117,15 @@ def organize_media_files(source_dir, destination_dir, base_source_dir=None):
             move_file_to_target(file_path, base_source_dir, destination_dir)
 
     remove_empty_directories(source_dir)
-    
-def remove_empty_directories(root_dir):
+
+def remove_empty_directories(root_dir: str):
+    """
+    Entfernt leere Verzeichnisse rekursiv.
+
+    Argumente:
+    - root_dir (str): Das Wurzelverzeichnis, in dem nach leeren Verzeichnissen gesucht wird.
+    """
+    logger.info(f"Starte das Entfernen leerer Verzeichnisse in: {root_dir}")
     for dirpath, dirnames, filenames in os.walk(root_dir, topdown=False):
         if dirpath == root_dir:
             continue
@@ -130,13 +133,8 @@ def remove_empty_directories(root_dir):
         if not any(fname for fname in filenames if not fname.startswith('.')) and not dirnames:
             try:
                 os.rmdir(dirpath)
+                logger.info(f"Leeres Verzeichnis entfernt: {dirpath}")
                 print(f"Leeres Verzeichnis entfernt: {dirpath}")
             except Exception as e:
+                logger.error(f"Fehler beim Entfernen des Verzeichnisses {dirpath}: {e}")
                 print(f"Fehler beim Entfernen des Verzeichnisses {dirpath}: {e}")
-
-if __name__ == "__main__":
-    # Testparameter
-    base_source_dir = "/path/to/source_directory"  # Anpassen auf dein Quellverzeichnis
-    base_destination_dir = "/path/to/destination_directory"  # Anpassen auf dein Zielverzeichnis
-    
-    organize_media_files(base_source_dir, base_destination_dir)
