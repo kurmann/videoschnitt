@@ -7,12 +7,6 @@ from datetime import timedelta
 from apple_compressor_manager.compressor_utils import are_sb_files_present
 from metadata_manager import get_video_codec
 
-def send_macos_notification(title, message):
-    """Sendet eine macOS-Benachrichtigung."""
-    subprocess.run([
-        "osascript", "-e", f'display notification "{message}" with title "{title}"'
-    ])
-
 def process_batch(files, compressor_profile_path, check_interval, max_checks):
     """Verarbeitet einen Batch von Dateien und prüft periodisch, welche fertig komprimiert sind."""
     # Starte die Kompression für den gesamten Batch
