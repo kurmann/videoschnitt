@@ -1,11 +1,9 @@
-# src/apple_compressor_manager/compression_monitor.py
+# src/apple_compressor_manager/single_compression/compression_monitor.py
 
 import os
 import asyncio
 import logging
 from typing import Callable, Optional
-from metadata_manager import get_video_codec
-from apple_compressor_manager.utils.compressor_utils import are_sb_files_present
 
 CHECK_INTERVAL_DEFAULT = 30  # Standardintervall in Sekunden
 MIN_OUTPUT_SIZE_KB = 100  # Output-Dateien unter 100 KB werden als nicht abgeschlossen betrachtet
@@ -23,7 +21,7 @@ async def monitor_compression(
     ## Argumente:
     - **output_file** (*str*): Der Pfad zur komprimierten Ausgabedatei.
     - **callback** (*Callable[[str], None], optional*): Eine Rückruffunktion, die nach erfolgreicher Komprimierung aufgerufen wird.
-    - **check_interval** (*int*, optional*): Intervall in Sekunden zwischen den Überprüfungen des Komprimierungsstatus.
+    - **check_interval** (*int*, optional*): Intervall in Sekunden für die Überprüfung des Komprimierungsstatus (Standard: 30).
 
     ## Beispielaufruf:
     ```python
@@ -35,23 +33,18 @@ async def monitor_compression(
         await asyncio.sleep(check_interval)
         logger.info(f"Überprüfung für {output_file}...")
 
-        if are_sb_files_present(output_file):
-            logger.info(f"Komprimierung für: {output_file} läuft noch.")
-            continue
-
         if not os.path.exists(output_file):
             logger.warning(f"Komprimierung für: {output_file} hat noch nicht begonnen.")
             continue
 
-        if os.path.getsize(output_file) < MIN_OUTPUT_SIZE_KB * 1024:
-            logger.warning(f"Ausgabedatei {output_file} ist zu klein ({os.path.getsize(output_file)} Bytes). Warte weiter.")
+        file_size_kb = os.path.getsize(output_file) / 1024
+        if file_size_kb < MIN_OUTPUT_SIZE_KB:
+            logger.warning(f"Ausgabedatei {output_file} ist zu klein ({file_size_kb} KB). Warte weiter.")
             continue
 
-        codec = get_video_codec(output_file)
-        if codec == "hevc":
-            logger.info(f"Komprimierung abgeschlossen: {output_file}")
-            if callback:
-                callback(output_file)
-            break  # Beende die Überwachung, da die Komprimierung abgeschlossen ist
-        else:
-            logger.warning(f"Unerwarteter Codec für {output_file}: '{codec}'. Warte weiter.")
+        # Hier kannst du weitere Kriterien hinzufügen, falls notwendig
+
+        logger.info(f"Komprimierung abgeschlossen: {output_file}")
+        if callback:
+            callback(output_file)
+        break  # Beende die Überwachung, da die Komprimierung abgeschlossen ist

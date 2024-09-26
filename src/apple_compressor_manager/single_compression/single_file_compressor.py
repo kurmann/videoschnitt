@@ -3,6 +3,7 @@
 import os
 import subprocess
 import logging
+
 import typer
 
 from apple_compressor_manager.single_compression.compression_monitor import monitor_compression
@@ -82,6 +83,7 @@ async def compress(
 
     except subprocess.CalledProcessError as e:
         logger.error(f"Fehler beim Starten der Komprimierung für {input_file}: Rückgabecode {e.returncode}, Fehlerausgabe: {e.stderr}")
+        typer.secho(f"Fehler beim Starten der Komprimierung für {input_file}: {e.stderr}", fg=typer.colors.RED)
     except FileNotFoundError as e:
         logger.error(e)
         typer.secho(str(e), fg=typer.colors.RED)

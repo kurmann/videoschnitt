@@ -2,9 +2,11 @@
 
 import typer
 from config_manager.config_loader import load_app_env
-from apple_compressor_manager.commands.add_tag_command import add_tag_command
-from apple_compressor_manager.commands.compress_file_command import compress_file_command
-from apple_compressor_manager.commands.list_profiles_command import list_profiles_command
+from apple_compressor_manager.commands import (
+    add_tag_command,
+    compress_file_command,
+    list_profiles_command
+)
 import logging
 
 # Lade die .env Datei
@@ -12,7 +14,7 @@ env_path = load_app_env()
 
 # Initialisiere das Logging
 logging.basicConfig(
-    level=logging.INFO,  # Setze auf DEBUG für detaillierte Logs, falls benötigt
+    level=logging.INFO,  # Setze auf DEBUG für detaillierte Logs während der Fehlerbehebung
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
         logging.FileHandler("apple_compressor_manager.log"),
