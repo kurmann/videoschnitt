@@ -1,10 +1,10 @@
-# original_media_integrator/media_manager.py
+# src/original_media_integrator/media_manager.py
 
 import os
 import shutil
+from typing import Optional
 from original_media_integrator.file_utils import is_file_in_use
 from metadata_manager import get_creation_datetime
-from typing import Optional
 import logging
 
 # Konfiguriere das Logging
@@ -28,14 +28,6 @@ def move_file_to_target(source_file: str, base_source_dir: str, base_destination
     Rückgabewert:
     - str: Der vollständige Pfad der verschobenen Datei im Zielverzeichnis.
     - None: Wenn ein Fehler auftritt.
-
-    Ausnahmen:
-    - Fängt alle Ausnahmen ab und gibt eine Fehlermeldung aus, ohne die Ausführung zu unterbrechen.
-
-    Beispiel:
-    >>> move_file_to_target('/Volumes/Samsung2TB/BlackMagic/Aufnahmen von Patrick/video.mov', '/Volumes/Samsung2TB/BlackMagic', '/Volumes/Originalmedien')
-    Verschiebe Datei /Volumes/Samsung2TB/BlackMagic/Aufnahmen von Patrick/video.mov nach /Volumes/Originalmedien/2024/2024-09/2024-09-26/Aufnahmen von Patrick/2024-09-26_123456+0200.mov
-    Datei verschoben nach /Volumes/Originalmedien/2024/2024-09/2024-09-26/Aufnahmen von Patrick/2024-09-26_123456+0200.mov
     """
     try:
         # Datum der Datei extrahieren, inklusive Zeitzone
