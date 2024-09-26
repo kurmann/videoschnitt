@@ -2,7 +2,7 @@
 
 import os
 
-def is_file_in_use(filepath):
+def is_file_in_use(filepath: str) -> bool:
     """Überprüft, ob eine Datei in Verwendung ist."""
     try:
         os.rename(filepath, filepath)  # Versuch, die Datei umzubenennen, um sicherzustellen, dass sie nicht in Verwendung ist.

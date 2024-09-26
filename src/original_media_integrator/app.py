@@ -1,11 +1,23 @@
 # original_media_integrator/app.py
 
 import typer
-from original_media_integrator.new_media_importer import import_and_compress_media
+from original_media_integrator.new_media_importer import import_media_only
 from config_manager.config_loader import load_app_env
+import logging
 
 # Lade die .env Datei
 env_path = load_app_env()
+
+# Initialisiere das Logging
+logging.basicConfig(
+    level=logging.INFO,  # Setze auf INFO, kann bei Bedarf auf DEBUG geändert werden
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler("original_media_integrator.log"),
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger(__name__)
 
 app = typer.Typer(help="Original Media Integrator")
 
@@ -24,25 +36,21 @@ def import_media(
         "-d",
         help="Pfad zum Zielverzeichnis",
         envvar="original_media_destination_dir"
-    ),
-    compression_dir: str = typer.Option(
-        None,
-        "--compression-dir",
-        "-c",
-        help="Optionales Komprimierungsverzeichnis",
-        envvar="original_media_compression_dir"
-    ),
-    keep_original_prores: bool = typer.Option(
-        False,
-        "--keep-original-prores",
-        "-k",
-        help="Behalte die Original-ProRes-Dateien nach der Komprimierung.",
-        envvar="original_media_keep_original_prores"
     )
 ):
     """
-    CLI-Kommando zum Importieren und Komprimieren von Medien.
+    CLI-Kommando zum Importieren und Organisieren von Medien.
+
+    ## Argumente:
+    - **source_dir** (*str*): Pfad zum Quellverzeichnis.
+    - **destination_dir** (*str*): Pfad zum Zielverzeichnis.
+
+    ## Beispielaufrufe:
+    ```bash
+    original-media-integrator import-media --source-dir /Pfad/zum/Quellverzeichnis --destination-dir /Pfad/zum/Zielverzeichnis
+    ```
     """
+    logger.debug("Starte Import-Prozess")
     # Überprüfe, ob erforderliche Argumente vorhanden sind
     missing_args = []
     if not source_dir:
@@ -57,15 +65,22 @@ def import_media(
         else:
             typer.echo(f"Fehler: Die folgenden Konfigurationswerte fehlen: {', '.join(missing_args)}.")
             typer.echo(f"Bitte geben Sie die fehlenden Werte entweder über die CLI oder erstellen Sie eine .env-Datei unter ~/Library/Application Support/Kurmann/Videoschnitt/.env.")
+        logger.error(f"Fehlende Konfigurationswerte: {', '.join(missing_args)}")
         raise typer.Exit(code=1)
 
-    # Führe die Import- und Komprimierungsfunktion aus
-    import_and_compress_media(
-        source_dir=source_dir,
-        destination_dir=destination_dir,
-        compression_dir=compression_dir,
-        keep_original_prores=keep_original_prores
-    )
+    # Führe die Importfunktion aus
+    try:
+        import_media_only(
+            source_dir=source_dir,
+            destination_dir=destination_dir
+        )
+    except Exception as e:
+        typer.secho(f"Ein Fehler ist aufgetreten während des Imports: {e}", fg=typer.colors.RED)
+        logger.exception("Fehler während des Imports")
+        raise typer.Exit(code=1)
+
+    typer.secho("Import und Organisation abgeschlossen.", fg=typer.colors.GREEN)
+    logger.info("Import und Organisation abgeschlossen.")
 
 if __name__ == "__main__":
     app()
