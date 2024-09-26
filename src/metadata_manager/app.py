@@ -19,7 +19,36 @@ def show_metadata(
     """
     Zeigt die Metadaten einer Datei an.
 
-    ... [Bestehende Dokumentation bleibt unverändert] ...
+    ## Argumente:
+    - **file_path** (*Path*): Pfad zur Mediendatei.
+    - **json_output** (*bool*): Wenn gesetzt, werden die Metadaten im JSON-Format ausgegeben.
+    - **include_source** (*bool*): Wenn gesetzt, werden die Quellen der Metadaten ebenfalls angezeigt.
+
+    ## Beispielaufrufe:
+    ```bash
+    metadata-manager show-metadata /Pfad/zur/Datei.mov
+    ```
+
+    Ausgabe:
+    ```plaintext
+    FileName: Datei.mov
+    Bitrate: 1069.47 Mbps
+    VideoCodec: prores
+    ```
+
+    Mit JSON-Option:
+    ```bash
+    metadata-manager show-metadata /Pfad/zur/Datei.mov --json
+    ```
+
+    Ausgabe im JSON-Format:
+    ```json
+    {
+        "FileName": "Datei.mov",
+        "Bitrate": "1069.47 Mbps",
+        "VideoCodec": "prores"
+    }
+    ```
     """
     try:
         # Immer aggregate_metadata aufrufen, um alle Metadaten zu erhalten
@@ -58,7 +87,30 @@ def export_metadata(
     """
     Exportiert die Metadaten einer Datei in eine JSON- oder Textdatei.
 
-    ... [Bestehende Dokumentation bleibt unverändert] ...
+    ## Argumente:
+    - **file_path** (*Path*): Pfad zur Mediendatei.
+    - **output_path** (*Path*): Pfad zur Ausgabedatei (unterstützt .json, .txt, .md).
+    - **include_source** (*bool*): Wenn gesetzt, werden die Quellen der Metadaten ebenfalls in die Datei geschrieben.
+
+    ## Beispielaufrufe:
+    ```bash
+    metadata-manager export-metadata /Pfad/zur/Datei.mov /Pfad/zur/Ausgabedatei.json
+    ```
+
+    Ausgabe:
+    ```plaintext
+    Metadaten erfolgreich als JSON exportiert nach: /Pfad/zur/Ausgabedatei.json
+    ```
+
+    Mit Text-Export:
+    ```bash
+    metadata-manager export-metadata /Pfad/zur/Datei.mov /Pfad/zur/Ausgabedatei.txt
+    ```
+
+    Ausgabe:
+    ```plaintext
+    Metadaten erfolgreich als Text exportiert nach: /Pfad/zur/Ausgabedatei.txt
+    ```
     """
     try:
         # Immer aggregate_metadata aufrufen, um alle Metadaten zu erhalten
@@ -104,7 +156,19 @@ def validate_file(
     """
     Validiert die Mediendatei, indem überprüft wird, ob die Metadaten erfolgreich geladen werden können.
 
-    ... [Bestehende Dokumentation bleibt unverändert] ...
+    ## Argumente:
+    - **file_path** (*Path*): Pfad zur Mediendatei, die validiert werden soll.
+    - **include_source** (*bool*): Wenn gesetzt, wird die Quelle der Metadaten ebenfalls überprüft.
+
+    ## Beispielaufruf:
+    ```bash
+    metadata-manager validate-file /Pfad/zur/Datei.mov
+    ```
+
+    Ausgabe:
+    ```plaintext
+    Die Datei wurde erfolgreich validiert. Metadaten konnten geladen werden.
+    ```
     """
     try:
         # Immer aggregate_metadata aufrufen, um alle Metadaten zu erhalten
@@ -124,7 +188,18 @@ def cli_get_creation_datetime(
     """
     Gibt das Erstellungsdatum einer Mediendatei zurück.
 
-    ... [Bestehende Dokumentation bleibt unverändert] ...
+    ## Argumente:
+    - **file_path** (*Path*): Pfad zur Mediendatei, deren Erstellungsdatum abgerufen werden soll.
+
+    ## Beispielaufruf:
+    ```bash
+    metadata-manager get-creation-datetime /Pfad/zur/Datei.mov
+    ```
+
+    Ausgabe:
+    ```plaintext
+    Erstellungsdatum: 2024-09-23T19:16:33+02:00
+    ```
     """
     try:
         creation_datetime = get_creation_datetime(str(file_path))
@@ -144,7 +219,18 @@ def cli_get_video_codec(
     """
     Gibt den Videocodec einer Datei zurück.
 
-    ... [Bestehende Dokumentation bleibt unverändert] ...
+    ## Argumente:
+    - **file_path** (*Path*): Pfad zur Videodatei, deren Videocodec abgerufen werden soll.
+
+    ## Beispielaufruf:
+    ```bash
+    metadata-manager get-video-codec /Pfad/zur/Datei.mov
+    ```
+
+    Ausgabe:
+    ```plaintext
+    Videocodec: prores
+    ```
     """
     try:
         codec = get_video_codec(str(file_path))
@@ -164,7 +250,18 @@ def cli_get_bitrate(
     """
     Gibt die Bitrate einer Videodatei zurück.
 
-    ... [Bestehende Dokumentation bleibt unverändert] ...
+    ## Argumente:
+    - **file_path** (*Path*): Pfad zur Videodatei, deren Bitrate abgerufen werden soll.
+
+    ## Beispielaufruf:
+    ```bash
+    metadata-manager get-bitrate /Pfad/zur/Datei.mov
+    ```
+
+    Ausgabe:
+    ```plaintext
+    Bitrate: 1069.47 Mbps
+    ```
     """
     try:
         bitrate = get_bitrate(str(file_path))
@@ -186,7 +283,18 @@ def cli_is_hevc_a(
     """
     Überprüft, ob eine Videodatei HEVC-A ist (Bitrate > 80 Mbit/s).
 
-    ... [Bestehende Dokumentation bleibt unverändert] ...
+    ## Argumente:
+    - **file_path** (*Path*): Pfad zur Videodatei, die überprüft werden soll.
+
+    ## Beispielaufruf:
+    ```bash
+    metadata-manager is-hevc-a /Pfad/zur/Datei.mov
+    ```
+
+    Ausgabe:
+    ```plaintext
+    Die Datei ist HEVC-A (Bitrate > 80 Mbit/s).
+    ```
     """
     try:
         hevc_a = is_hevc_a(str(file_path))
