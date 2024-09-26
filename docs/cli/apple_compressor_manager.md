@@ -17,14 +17,20 @@ $ apple-compressor-manager [OPTIONS] COMMAND [ARGS]...
 **Commands**:
 
 * `add-tag`: Fügt der Datei das Tag 'An Apple...
-* `cleanup-prores`: Bereinigt ProRes-Dateien mit einem...
-* `compress-prores-file`: Komprimiert eine einzelne ProRes-Datei.
-* `compress-prores-files`: Komprimiert ProRes-Dateien in einem...
+* `compress-file`: Komprimiert eine einzelne Datei unter...
 * `list-profiles`: Listet alle verfügbaren Compressor-Profile...
 
 ## `apple-compressor-manager add-tag`
 
 Fügt der Datei das Tag 'An Apple Kompressor übergeben' hinzu.
+
+## Argumente:
+- **file_path** (*str*): Pfad zur Datei, die getaggt werden soll.
+
+## Beispielaufruf:
+```bash
+apple-compressor-manager add-tag /Pfad/zur/Datei.mov
+```
 
 **Usage**:
 
@@ -40,71 +46,64 @@ $ apple-compressor-manager add-tag [OPTIONS] FILE_PATH
 
 * `--help`: Show this message and exit.
 
-## `apple-compressor-manager cleanup-prores`
+## `apple-compressor-manager compress-file`
 
-Bereinigt ProRes-Dateien mit einem HEVC-A-Pendant.
+Komprimiert eine einzelne Datei unter Verwendung eines Compressor-Profils.
+
+Wenn kein Output-Pfad angegeben ist, wird der Profilname an den Dateinamen angehängt.
+
+## Argumente:
+- **input_file** (*str*): Pfad zur Datei, die komprimiert werden soll.
+- **compressor_profile** (*str*): Name des Compressor-Profils.
+- **output** (*str, optional*): Verzeichnis für die Ausgabedatei. Standardmäßig das Verzeichnis der Eingabedatei mit angehängtem Profilnamen.
+- **check_interval** (*int*): Intervall in Sekunden für die Überprüfung des Komprimierungsstatus.
+
+## Beispielaufruf:
+```bash
+apple-compressor-manager compress-file /Pfad/zur/Datei.m4v "HEVC-A" --output /Pfad/zum/Output-Verzeichnis --check-interval 60
+```
+
+Wenn kein Output-Pfad angegeben ist:
+```bash
+apple-compressor-manager compress-file /Pfad/zur/Datei.m4v "HEVC-A" --check-interval 60
+```
+Dies wird die Ausgabedatei als `/Pfad/zur/Datei-HEVC-A.m4v` speichern.
 
 **Usage**:
 
 ```console
-$ apple-compressor-manager cleanup-prores [OPTIONS] HEVC_A_DIR [PRORES_DIR]
+$ apple-compressor-manager compress-file [OPTIONS] INPUT_FILE COMPRESSOR_PROFILE
 ```
 
 **Arguments**:
 
-* `HEVC_A_DIR`: Pfad zum HEVC-A-Verzeichnis  [required]
-* `[PRORES_DIR]`: Pfad zum ProRes-Verzeichnis
-
-**Options**:
-
-* `--verbose`: Aktiviere detaillierte Ausgaben.
-* `--help`: Show this message and exit.
-
-## `apple-compressor-manager compress-prores-file`
-
-Komprimiert eine einzelne ProRes-Datei.
-
-**Usage**:
-
-```console
-$ apple-compressor-manager compress-prores-file [OPTIONS] INPUT_FILE COMPRESSOR_PROFILE_PATH
-```
-
-**Arguments**:
-
-* `INPUT_FILE`: Pfad zur ProRes-Datei  [required]
-* `COMPRESSOR_PROFILE_PATH`: Pfad zur Compressor-Settings-Datei  [required]
+* `INPUT_FILE`: Pfad zur Datei, die komprimiert werden soll  [required]
+* `COMPRESSOR_PROFILE`: Name des Compressor-Profils  [required]
 
 **Options**:
 
 * `--output TEXT`: Das Verzeichnis, in dem die Ausgabedatei gespeichert werden soll
-* `--delete-prores`: Lösche die ProRes-Datei nach erfolgreicher Komprimierung
-* `--help`: Show this message and exit.
-
-## `apple-compressor-manager compress-prores-files`
-
-Komprimiert ProRes-Dateien in einem Verzeichnis.
-
-**Usage**:
-
-```console
-$ apple-compressor-manager compress-prores-files [OPTIONS] INPUT_DIR COMPRESSOR_PROFILE_PATH
-```
-
-**Arguments**:
-
-* `INPUT_DIR`: Pfad zum Quellverzeichnis der ProRes-Dateien  [required]
-* `COMPRESSOR_PROFILE_PATH`: Pfad zur Compressor-Settings-Datei  [required]
-
-**Options**:
-
-* `--output TEXT`: Das Verzeichnis, in dem die Ausgabedateien gespeichert werden sollen
-* `--delete-prores`: Lösche ProRes-Dateien nach erfolgreicher Komprimierung
+* `--check-interval INTEGER`: Intervall in Sekunden für die Überprüfung des Komprimierungsstatus  [default: 30]
 * `--help`: Show this message and exit.
 
 ## `apple-compressor-manager list-profiles`
 
 Listet alle verfügbaren Compressor-Profile auf.
+
+## Beispielaufruf:
+```bash
+apple-compressor-manager list-profiles
+```
+
+## Ausgabe:
+```plaintext
+Verfügbare Compressor-Profile:
+- HEVC-A
+- 1080p-Internet
+- 4K60-Medienserver
+- 4K30-Medienserver
+- 4K-Internet
+```
 
 **Usage**:
 

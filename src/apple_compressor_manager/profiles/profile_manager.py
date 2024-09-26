@@ -4,7 +4,6 @@ import os
 from typing import List
 import logging
 
-# Initialisiere das Logger
 logger = logging.getLogger(__name__)
 
 # Standardverzeichnis für Compressor-Profile auf MacOS
@@ -17,13 +16,18 @@ def get_profile_path(profile_name: str, profile_dir: str = DEFAULT_PROFILE_DIR) 
     """
     Gibt den vollständigen Pfad zum Compressor-Profil basierend auf dem Profilnamen zurück.
 
-    Args:
-        profile_name (str): Der Name des Compressor-Profils ohne Pfad und Dateiendung.
-        profile_dir (str, optional): Das Verzeichnis, in dem die Compressor-Profile gespeichert sind. 
+    ## Argumente:
+    - **profile_name** (*str*): Der Name des Compressor-Profils ohne Pfad und Dateiendung.
+    - **profile_dir** (*str, optional*): Das Verzeichnis, in dem die Compressor-Profile gespeichert sind. 
                                      Standard ist das MacOS-Standardverzeichnis.
 
-    Returns:
-        str: Der vollständige Pfad zum Compressor-Profil.
+    ## Rückgabe:
+    - **str**: Der vollständige Pfad zum Compressor-Profil.
+
+    ## Beispielaufruf:
+    ```python
+    profile_path = get_profile_path("MeinCompressorProfil")
+    ```
     """
     filename = f"{profile_name}{PROFILE_EXTENSION}"
     profile_path = os.path.join(profile_dir, filename)
@@ -34,12 +38,17 @@ def list_profiles(profile_dir: str = DEFAULT_PROFILE_DIR) -> List[str]:
     """
     Listet alle verfügbaren Compressor-Profile im angegebenen Verzeichnis auf.
 
-    Args:
-        profile_dir (str, optional): Das Verzeichnis, in dem die Compressor-Profile gespeichert sind.
-                                     Standard ist das MacOS-Standardverzeichnis.
+    ## Argumente:
+    - **profile_dir** (*str, optional*): Das Verzeichnis, in dem die Compressor-Profile gespeichert sind.
+                                         Standard ist das MacOS-Standardverzeichnis.
 
-    Returns:
-        List[str]: Eine Liste der verfügbaren Profilnamen ohne Pfade und Dateiendungen.
+    ## Rückgabe:
+    - **List[str]**: Eine Liste der verfügbaren Profilnamen ohne Pfade und Dateiendungen.
+
+    ## Beispielaufruf:
+    ```python
+    profiles = list_profiles()
+    ```
     """
     if not os.path.isdir(profile_dir):
         logger.error(f"Profilverzeichnis existiert nicht: {profile_dir}")
@@ -59,13 +68,18 @@ def validate_profile(profile_name: str, profile_dir: str = DEFAULT_PROFILE_DIR) 
     """
     Überprüft, ob das angegebene Compressor-Profil existiert und lesbar ist.
 
-    Args:
-        profile_name (str): Der Name des Compressor-Profils ohne Pfad und Dateiendung.
-        profile_dir (str, optional): Das Verzeichnis, in dem die Compressor-Profile gespeichert sind.
-                                     Standard ist das MacOS-Standardverzeichnis.
+    ## Argumente:
+    - **profile_name** (*str*): Der Name des Compressor-Profils ohne Pfad und Dateiendung.
+    - **profile_dir** (*str, optional*): Das Verzeichnis, in dem die Compressor-Profile gespeichert sind.
+                                         Standard ist das MacOS-Standardverzeichnis.
 
-    Returns:
-        bool: True, wenn das Profil existiert und lesbar ist, sonst False.
+    ## Rückgabe:
+    - **bool**: True, wenn das Profil existiert und lesbar ist, sonst False.
+
+    ## Beispielaufruf:
+    ```python
+    ist_gueltig = validate_profile("MeinCompressorProfil")
+    ```
     """
     profile_path = get_profile_path(profile_name, profile_dir)
     if not os.path.exists(profile_path):
