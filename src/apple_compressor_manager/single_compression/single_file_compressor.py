@@ -3,14 +3,12 @@
 import os
 import subprocess
 import logging
-
 import typer
 
-from metadata_manager import get_video_codec
 from apple_compressor_manager.single_compression.compression_monitor import monitor_compression
 from apple_compressor_manager.utils.file_utils import add_compression_tag
 
-MIN_PRORES_SIZE_MB = 25  # ProRes-Dateien unter 25 MB werden nicht komprimiert
+MIN_FILE_SIZE_MB = 25  # Dateien unter 25 MB werden nicht komprimiert
 DEFAULT_CHECK_INTERVAL = 30  # Standard-Intervall für die Überprüfung
 
 logger = logging.getLogger(__name__)
@@ -24,10 +22,10 @@ async def compress(
     check_interval: int = DEFAULT_CHECK_INTERVAL
 ):
     """
-    Startet die Komprimierung einer einzelnen ProRes-Datei und überwacht den Prozess.
+    Startet die Komprimierung einer einzelnen Datei und überwacht den Prozess.
 
     ## Argumente:
-    - **input_file** (*str*): Der Pfad zur ProRes-Eingabedatei.
+    - **input_file** (*str*): Der Pfad zur Eingabedatei.
     - **output_file** (*str*): Der Pfad zur komprimierten Ausgabedatei.
     - **compressor_profile_path** (*str*): Der Pfad zur Compressor-Settings-Datei.
     - **callback** (*Callable[[str], None], optional*): Eine Rückruffunktion, die nach erfolgreicher Komprimierung aufgerufen wird.
@@ -48,13 +46,9 @@ async def compress(
     """
     try:
         # Überprüfe die Dateigröße
-        if os.path.getsize(input_file) < MIN_PRORES_SIZE_MB * 1024 * 1024:
+        file_size_mb = os.path.getsize(input_file) / (1024 * 1024)
+        if file_size_mb < MIN_FILE_SIZE_MB:
             logger.info(f"Überspringe Datei (zu klein für Komprimierung): {input_file}")
-            return
-
-        # Überprüfe den Codec
-        if get_video_codec(input_file) != "prores":
-            logger.info(f"Überspringe Datei (nicht ProRes): {input_file}")
             return
 
         # Füge das Tag hinzu, bevor der Compressor-Prozess gestartet wird
