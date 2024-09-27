@@ -4,7 +4,7 @@
         {
             "label": "generate-cli-docs-apple-compressor-manager",
             "type": "shell",
-            "command": "/Library/Frameworks/Python.framework/Versions/3.11/bin/python3",
+            "command": "/Library/Frameworks/Python.framework/Versions/3.12/bin/python3",
             "args": [
                 "-m",
                 "typer",
@@ -25,9 +25,32 @@
             "group": "build"
         },
         {
+            "label": "generate-cli-docs-apple-compressor-runner",
+            "type": "shell",
+            "command": "/Library/Frameworks/Python.framework/Versions/3.12/bin/python3",
+            "args": [
+                "-m",
+                "typer",
+                "${workspaceFolder}/src/apple_compressor_runner/app.py",
+                "utils",
+                "docs",
+                "--name",
+                "apple-compressor-runner",
+                "--output",
+                "${workspaceFolder}/docs/cli/apple_compressor_runner.md"
+            ],
+            "problemMatcher": [],
+            "options": {
+                "env": {
+                    "PYTHONPATH": "${workspaceFolder}/src"
+                }
+            },
+            "group": "build"
+        },
+        {
             "label": "generate-cli-docs-original-media-integrator",
             "type": "shell",
-            "command": "/Library/Frameworks/Python.framework/Versions/3.11/bin/python3",
+            "command": "/Library/Frameworks/Python.framework/Versions/3.12/bin/python3",
             "args": [
                 "-m",
                 "typer",
@@ -50,7 +73,7 @@
         {
             "label": "generate-cli-docs-emby-integrator",
             "type": "shell",
-            "command": "/Library/Frameworks/Python.framework/Versions/3.11/bin/python3",
+            "command": "/Library/Frameworks/Python.framework/Versions/3.12/bin/python3",
             "args": [
                 "-m",
                 "typer",
@@ -73,7 +96,7 @@
         {
             "label": "generate-cli-docs-online-medialibrary-manager",
             "type": "shell",
-            "command": "/Library/Frameworks/Python.framework/Versions/3.11/bin/python3",
+            "command": "/Library/Frameworks/Python.framework/Versions/3.12/bin/python3",
             "args": [
                 "-m",
                 "typer",
@@ -96,7 +119,7 @@
         {
             "label": "generate-cli-docs-config-manager",
             "type": "shell",
-            "command": "/Library/Frameworks/Python.framework/Versions/3.11/bin/python3",
+            "command": "/Library/Frameworks/Python.framework/Versions/3.12/bin/python3",
             "args": [
                 "-m",
                 "typer",
@@ -119,7 +142,7 @@
         {
             "label": "generate-cli-docs-metadata-manager",
             "type": "shell",
-            "command": "/Library/Frameworks/Python.framework/Versions/3.11/bin/python3",
+            "command": "/Library/Frameworks/Python.framework/Versions/3.12/bin/python3",
             "args": [
                 "-m",
                 "typer",
@@ -146,6 +169,7 @@
             "args": ["Generating all CLI documentation..."],
             "dependsOn": [
                 "generate-cli-docs-apple-compressor-manager",
+                "generate-cli-docs-apple-compressor-runner",
                 "generate-cli-docs-original-media-integrator",
                 "generate-cli-docs-emby-integrator",
                 "generate-cli-docs-online-medialibrary-manager",
