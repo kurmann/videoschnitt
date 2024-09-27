@@ -4,6 +4,7 @@ import os
 import asyncio
 import logging
 from typing import Callable, Optional
+import typer
 
 CHECK_INTERVAL_DEFAULT = 30  # Standardintervall in Sekunden
 MIN_OUTPUT_SIZE_KB = 100  # Output-Dateien unter 100 KB werden als nicht abgeschlossen betrachtet
@@ -29,22 +30,27 @@ async def monitor_compression(
     ```
     """
     logger.info(f"Beginne Überwachung der Komprimierung für: {output_file} mit Intervall: {check_interval} Sekunden")
+    typer.secho(f"Beginne Überwachung der Komprimierung für: {output_file} mit Intervall: {check_interval} Sekunden", fg=typer.colors.CYAN)
     while True:
         await asyncio.sleep(check_interval)
         logger.info(f"Überprüfung für {output_file}...")
+        typer.echo(f"Überprüfung für {output_file} in {check_interval} Sekunden...")
 
         if not os.path.exists(output_file):
             logger.warning(f"Komprimierung für: {output_file} hat noch nicht begonnen.")
+            typer.secho(f"Komprimierung für: {output_file} hat noch nicht begonnen.", fg=typer.colors.YELLOW)
             continue
 
         file_size_kb = os.path.getsize(output_file) / 1024
         if file_size_kb < MIN_OUTPUT_SIZE_KB:
-            logger.warning(f"Ausgabedatei {output_file} ist zu klein ({file_size_kb} KB). Warte weiter.")
+            logger.warning(f"Ausgabedatei {output_file} ist zu klein ({file_size_kb:.2f} KB). Warte weiter.")
+            typer.secho(f"Ausgabedatei {output_file} ist zu klein ({file_size_kb:.2f} KB). Warte weiter.", fg=typer.colors.YELLOW)
             continue
 
         # Hier kannst du weitere Kriterien hinzufügen, falls notwendig
 
         logger.info(f"Komprimierung abgeschlossen: {output_file}")
+        typer.secho(f"Komprimierung abgeschlossen: {output_file}", fg=typer.colors.GREEN)
         if callback:
             callback(output_file)
         break  # Beende die Überwachung, da die Komprimierung abgeschlossen ist

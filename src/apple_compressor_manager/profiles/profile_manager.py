@@ -88,5 +88,5 @@ def validate_profile(profile_name: str, profile_dir: str = DEFAULT_PROFILE_DIR) 
     if not os.access(profile_path, os.R_OK):
         logger.error(f"Profil ist nicht lesbar: {profile_path}")
         return False
-    logger.info(f"Profil ist gültig: {profile_path}")
+    logger.debug(f"Profil ist gültig: {profile_path}")
     return True
