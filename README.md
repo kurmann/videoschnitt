@@ -20,7 +20,6 @@ Die Anwendung bietet eine Vielzahl von Funktionen, die speziell für den Videosc
 
 ## CLI
 
-- [Apple Compressor Manager](/docs/cli/apple_compressor_manager.md)
 - [Emby Integrator](/docs/cli/emby_integrator.md)
 - [Metdata Manager](/docs/cli/metadata_manager.md)
 - [Online Medialibrary Manager](/docs/cli/online_medialibrary_manager.md)

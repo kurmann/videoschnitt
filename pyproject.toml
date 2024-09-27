@@ -21,8 +21,6 @@ dependencies = [
 ]
 
 [project.scripts]
-apple-compressor-manager = "apple_compressor_manager.app:app"
-apple-compressor-runner = "apple_compressor_runner.app:app"
 original-media-integrator = "original_media_integrator.app:app"
 emby-integrator = "emby_integrator.app:app"
 online-medialibrary-manager = "online_medialibrary_manager.app:app"
