@@ -2,52 +2,6 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "generate-cli-docs-apple-compressor-manager",
-            "type": "shell",
-            "command": "python",
-            "args": [
-                "-m",
-                "typer",
-                "${workspaceFolder}/src/apple_compressor_manager/app.py",
-                "utils",
-                "docs",
-                "--name",
-                "apple-compressor-manager",
-                "--output",
-                "${workspaceFolder}/docs/cli/apple_compressor_manager.md"
-            ],
-            "problemMatcher": [],
-            "options": {
-                "env": {
-                    "PYTHONPATH": "${workspaceFolder}/src"
-                }
-            },
-            "group": "build"
-        },
-        {
-            "label": "generate-cli-docs-apple-compressor-runner",
-            "type": "shell",
-            "command": "python",
-            "args": [
-                "-m",
-                "typer",
-                "${workspaceFolder}/src/apple_compressor_runner/app.py",
-                "utils",
-                "docs",
-                "--name",
-                "apple-compressor-runner",
-                "--output",
-                "${workspaceFolder}/docs/cli/apple_compressor_runner.md"
-            ],
-            "problemMatcher": [],
-            "options": {
-                "env": {
-                    "PYTHONPATH": "${workspaceFolder}/src"
-                }
-            },
-            "group": "build"
-        },
-        {
             "label": "generate-cli-docs-original-media-integrator",
             "type": "shell",
             "command": "python",
@@ -168,8 +122,6 @@
             "command": "echo",
             "args": ["Generating all CLI documentation..."],
             "dependsOn": [
-                "generate-cli-docs-apple-compressor-manager",
-                "generate-cli-docs-apple-compressor-runner",
                 "generate-cli-docs-original-media-integrator",
                 "generate-cli-docs-emby-integrator",
                 "generate-cli-docs-online-medialibrary-manager",
