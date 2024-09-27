@@ -4,7 +4,7 @@
         {
             "label": "generate-cli-docs-apple-compressor-manager",
             "type": "shell",
-            "command": "/Library/Frameworks/Python.framework/Versions/3.12/bin/python3",
+            "command": "python",
             "args": [
                 "-m",
                 "typer",
@@ -27,7 +27,7 @@
         {
             "label": "generate-cli-docs-apple-compressor-runner",
             "type": "shell",
-            "command": "/Library/Frameworks/Python.framework/Versions/3.12/bin/python3",
+            "command": "python",
             "args": [
                 "-m",
                 "typer",
@@ -50,7 +50,7 @@
         {
             "label": "generate-cli-docs-original-media-integrator",
             "type": "shell",
-            "command": "/Library/Frameworks/Python.framework/Versions/3.12/bin/python3",
+            "command": "python",
             "args": [
                 "-m",
                 "typer",
@@ -73,7 +73,7 @@
         {
             "label": "generate-cli-docs-emby-integrator",
             "type": "shell",
-            "command": "/Library/Frameworks/Python.framework/Versions/3.12/bin/python3",
+            "command": "python",
             "args": [
                 "-m",
                 "typer",
@@ -96,7 +96,7 @@
         {
             "label": "generate-cli-docs-online-medialibrary-manager",
             "type": "shell",
-            "command": "/Library/Frameworks/Python.framework/Versions/3.12/bin/python3",
+            "command": "python",
             "args": [
                 "-m",
                 "typer",
@@ -119,7 +119,7 @@
         {
             "label": "generate-cli-docs-config-manager",
             "type": "shell",
-            "command": "/Library/Frameworks/Python.framework/Versions/3.12/bin/python3",
+            "command": "python",
             "args": [
                 "-m",
                 "typer",
@@ -142,7 +142,7 @@
         {
             "label": "generate-cli-docs-metadata-manager",
             "type": "shell",
-            "command": "/Library/Frameworks/Python.framework/Versions/3.12/bin/python3",
+            "command": "python",
             "args": [
                 "-m",
                 "typer",

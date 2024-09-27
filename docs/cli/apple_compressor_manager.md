@@ -54,12 +54,6 @@ Komprimiert eine oder mehrere Dateien unter Verwendung von Compressor-Profilen.
 - **input_file** (*str*): Pfad zur Datei, die komprimiert werden soll.
 - **compressor_profiles** (*str*): Durch Kommas getrennte Liste von Compressor-Profilnamen.
 - **output** (*str, optional*): Verzeichnis für die Ausgabedatei. Standardmäßig das Verzeichnis der Eingabedatei mit angehängtem Profilnamen.
-- **check_interval** (*int*): Intervall in Sekunden für die Überprüfung des Komprimierungsstatus.
-
-## Beispielaufruf:
-```bash
-apple-compressor-manager compress-file /Pfad/zur/Datei.m4v "4K60-Medienserver,1080p-Internet" --output /Pfad/zum/Output-Verzeichnis --check-interval 60
-```
 
 **Usage**:
 
@@ -75,7 +69,6 @@ $ apple-compressor-manager compress-file [OPTIONS] INPUT_FILE COMPRESSOR_PROFILE
 **Options**:
 
 * `--output TEXT`: Das Verzeichnis, in dem die Ausgabedatei gespeichert werden soll
-* `--check-interval INTEGER`: Intervall in Sekunden für die Überprüfung des Komprimierungsstatus  [default: 30]
 * `--help`: Show this message and exit.
 
 ## `apple-compressor-manager list-profiles`
