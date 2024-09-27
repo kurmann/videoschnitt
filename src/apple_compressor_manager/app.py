@@ -26,9 +26,9 @@ logger = logging.getLogger(__name__)
 app = typer.Typer(help="Apple Compressor Manager")
 
 # Registriere die Befehle
-app.command()(add_tag_command)
-app.command()(compress_file_command)
-app.command()(list_profiles_command)
+app.command(name="add-tag")(add_tag_command)
+app.command(name="compress-file")(compress_file_command)
+app.command(name="list-profiles")(list_profiles_command)
 
 if __name__ == "__main__":
     app()
