@@ -41,13 +41,12 @@ def add_compression_tag(file_path: str):
         
         # Prüfe, ob das Tag bereits vorhanden ist
         if compression_tag in existing_tags:
-            typer.echo(f"Tag '{COMPRESSION_TAG_NAME}' ist bereits vorhanden für {file_path}. Hinzufügen wird übersprungen.")
-            logger.info(f"Tag '{COMPRESSION_TAG_NAME}' ist bereits vorhanden für {file_path}. Hinzufügen wird übersprungen.")
+            logger.debug(f"Tag '{COMPRESSION_TAG_NAME}' ist bereits vorhanden für {file_path}. Hinzufügen wird übersprungen.")
         else:
             # Füge das Tag hinzu
             metadata.tags = existing_tags + [compression_tag]
             typer.echo(f"Tag '{COMPRESSION_TAG_NAME}' zu {file_path} hinzugefügt.")
-            logger.info(f"Tag '{COMPRESSION_TAG_NAME}' zu {file_path} hinzugefügt.")
+            logger.debug(f"Tag '{COMPRESSION_TAG_NAME}' zu {file_path} hinzugefügt.")
     except Exception as e:
         typer.secho(f"Fehler beim Hinzufügen des Tags zu '{file_path}': {e}", fg=typer.colors.RED)
         logger.error(f"Fehler beim Hinzufügen des Tags zu '{file_path}': {e}")

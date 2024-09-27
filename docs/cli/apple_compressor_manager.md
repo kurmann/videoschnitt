@@ -17,7 +17,7 @@ $ apple-compressor-manager [OPTIONS] COMMAND [ARGS]...
 **Commands**:
 
 * `add-tag`: Fügt der Datei das Tag 'An Apple...
-* `compress-file`: Komprimiert eine einzelne Datei unter...
+* `compress-file`: Komprimiert eine oder mehrere Dateien...
 * `list-profiles`: Listet alle verfügbaren Compressor-Profile...
 
 ## `apple-compressor-manager add-tag`
@@ -48,37 +48,29 @@ $ apple-compressor-manager add-tag [OPTIONS] FILE_PATH
 
 ## `apple-compressor-manager compress-file`
 
-Komprimiert eine einzelne Datei unter Verwendung eines Compressor-Profils.
-
-Wenn kein Output-Pfad angegeben ist, wird der Profilname an den Dateinamen angehängt.
+Komprimiert eine oder mehrere Dateien unter Verwendung von Compressor-Profilen.
 
 ## Argumente:
 - **input_file** (*str*): Pfad zur Datei, die komprimiert werden soll.
-- **compressor_profile** (*str*): Name des Compressor-Profils.
+- **compressor_profiles** (*str*): Durch Kommas getrennte Liste von Compressor-Profilnamen.
 - **output** (*str, optional*): Verzeichnis für die Ausgabedatei. Standardmäßig das Verzeichnis der Eingabedatei mit angehängtem Profilnamen.
 - **check_interval** (*int*): Intervall in Sekunden für die Überprüfung des Komprimierungsstatus.
 
 ## Beispielaufruf:
 ```bash
-apple-compressor-manager compress-file /Pfad/zur/Datei.m4v "HEVC-A" --output /Pfad/zum/Output-Verzeichnis --check-interval 60
+apple-compressor-manager compress-file /Pfad/zur/Datei.m4v "4K60-Medienserver,1080p-Internet" --output /Pfad/zum/Output-Verzeichnis --check-interval 60
 ```
-
-Wenn kein Output-Pfad angegeben ist:
-```bash
-apple-compressor-manager compress-file /Pfad/zur/Datei.m4v "HEVC-A" --check-interval 60
-```
-Dies wird die Ausgabedatei als `/Pfad/zur/Datei-HEVC-A.m4v` speichern.
 
 **Usage**:
 
 ```console
-$ apple-compressor-manager compress-file [OPTIONS] INPUT_FILE COMPRESSOR_PROFILE
+$ apple-compressor-manager compress-file [OPTIONS] INPUT_FILE COMPRESSOR_PROFILES
 ```
 
 **Arguments**:
 
 * `INPUT_FILE`: Pfad zur Datei, die komprimiert werden soll  [required]
-* `COMPRESSOR_PROFILE`: Name des Compressor-Profils  [required]
+* `COMPRESSOR_PROFILES`: Durch Kommas getrennte Liste von Compressor-Profilnamen  [required]
 
 **Options**:
 
