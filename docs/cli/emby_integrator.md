@@ -16,45 +16,11 @@ $ emby-integrator [OPTIONS] COMMAND [ARGS]...
 
 **Commands**:
 
-* `compress-masterfile`: Komprimiere eine Master-Datei.
 * `convert-images-to-adobe-rgb`: Konvertiere eine Liste von PNG-Bildern in...
 * `generate-nfo-xml`: Generiert die NFO-Metadatendatei und gibt...
 * `get-recording-date`: Gibt das Aufnahmedatum aus dem Dateinamen...
-* `list-mediaserver-files`: Liste die Mediaserver-Dateien aus einem...
 * `list-metadata`: Extrahiere die Metadaten aus einer Datei...
 * `write-nfo-file`: Generiert die NFO-Metadatendatei und...
-
-## `emby-integrator compress-masterfile`
-
-Komprimiere eine Master-Datei.
-
-Diese Methode startet die Kompression der angegebenen Datei und bietet die Möglichkeit, 
-nach Abschluss der Komprimierung die Originaldatei zu löschen.
-
-Args:
-    input_file (str): Der Pfad zur Master-Datei, die komprimiert werden soll.
-    delete_master_file (bool): Optional. Gibt an, ob die Master-Datei nach der Komprimierung gelöscht werden soll. Standard ist `False`.
-
-Returns:
-    None
-
-Beispiel:
-    $ emby-integrator compress-masterfile /path/to/masterfile.mov --delete-master-file
-
-**Usage**:
-
-```console
-$ emby-integrator compress-masterfile [OPTIONS] INPUT_FILE
-```
-
-**Arguments**:
-
-* `INPUT_FILE`: [required]
-
-**Options**:
-
-* `--delete-master-file / --no-delete-master-file`: Lösche die Master-Datei nach der Komprimierung.  [default: no-delete-master-file]
-* `--help`: Show this message and exit.
 
 ## `emby-integrator convert-images-to-adobe-rgb`
 
@@ -126,40 +92,6 @@ $ emby-integrator get-recording-date [OPTIONS] FILE_PATH
 
 **Options**:
 
-* `--help`: Show this message and exit.
-
-## `emby-integrator list-mediaserver-files`
-
-Liste die Mediaserver-Dateien aus einem Verzeichnis auf und gruppiere sie nach Mediensets.
-
-Diese Methode durchsucht das angegebene Verzeichnis nach Videodateien und zugehörigen Titelbildern 
-und gruppiert diese nach Mediensets. Falls das Flag `--json-output` gesetzt wird, wird die Ausgabe 
-im JSON-Format zurückgegeben, andernfalls wird eine menschenlesbare Ausgabe erstellt, die die 
-Informationen bündig darstellt.
-
-Args:
-    source_dir (str): Der Pfad zu dem Verzeichnis, das nach Mediendateien und Bildern durchsucht wird.
-    json_output (bool): Optional. Wenn gesetzt, wird die Ausgabe im JSON-Format dargestellt. Standard ist `False`.
-
-Returns:
-    None: Gibt die Mediensets in einer menschenlesbaren Form oder als JSON zurück, je nach dem Wert von `json_output`.
-
-Raises:
-    FileNotFoundError: Wenn das angegebene Verzeichnis nicht existiert.
-
-**Usage**:
-
-```console
-$ emby-integrator list-mediaserver-files [OPTIONS] SOURCE_DIR
-```
-
-**Arguments**:
-
-* `SOURCE_DIR`: [required]
-
-**Options**:
-
-* `--json-output / --no-json-output`: Gebe die Ausgabe im JSON-Format aus  [default: no-json-output]
 * `--help`: Show this message and exit.
 
 ## `emby-integrator list-metadata`
