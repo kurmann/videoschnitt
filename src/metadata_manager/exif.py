@@ -94,3 +94,42 @@ def get_creation_datetime(filepath: str) -> Optional[datetime]:
     except Exception as e:
         logger.error(f"Fehler beim Abrufen des Änderungsdatums der Datei {filepath}: {e}")
         return None
+
+def get_album(filepath: str) -> Optional[str]:
+    """
+    Liest den "Album"-Tag aus den Metadaten einer Mediendatei aus.
+
+    Args:
+        filepath (str): Der Pfad zur Mediendatei.
+
+    Returns:
+        str | None: Der Album-Name, oder None, wenn der Tag nicht gefunden wurde.
+    """
+    try:
+        cmd = [
+            'exiftool',
+            '-Album',
+            '-json',
+            filepath
+        ]
+        result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+
+        if result.returncode != 0:
+            logger.error(f"ExifTool Fehler: {result.stderr.strip()}")
+            return None
+
+        exif_metadata = result.stdout.strip()
+        logger.debug(f"Rohdaten von exiftool: {exif_metadata}")
+
+        exif_json = json.loads(exif_metadata)
+
+        if exif_json and len(exif_json) > 0:
+            album = exif_json[0].get("Album")
+            logger.debug(f"Ausgelesenes Album: {album}")
+            return album
+
+    except Exception as e:
+        logger.error(f"Fehler beim Abrufen des Album-Tags mit exiftool: {e}")
+
+    logger.warning(f"Album-Tag konnte nicht aus {filepath} gelesen werden.")
+    return None

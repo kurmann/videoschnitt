@@ -5,8 +5,7 @@ import json
 from pathlib import Path
 from metadata_manager import aggregate_metadata
 from metadata_manager.utils import get_video_codec, get_bitrate, is_hevc_a
-from metadata_manager.exif import get_creation_datetime
-from datetime import datetime
+from metadata_manager.exif import get_album, get_creation_datetime
 
 app = typer.Typer(help="Metadata Manager CLI für Kurmann Videoschnitt")
 
@@ -207,6 +206,37 @@ def cli_get_creation_datetime(
             print(f"Erstellungsdatum: {creation_datetime}")
         else:
             typer.secho("Erstellungsdatum konnte nicht ermittelt werden.", fg=typer.colors.YELLOW)
+    except FileNotFoundError:
+        typer.secho(f"Die Datei '{file_path}' wurde nicht gefunden.", fg=typer.colors.RED)
+    except Exception as e:
+        typer.secho(f"Ein Fehler ist aufgetreten: {e}", fg=typer.colors.RED)
+        
+@app.command("get-album")
+def cli_get_album(
+    file_path: Path = typer.Argument(..., help="Pfad zur Mediendatei, deren Album-Tag abgerufen werden soll")
+):
+    """
+    Gibt den Album-Tag einer Mediendatei zurück.
+
+    ## Argumente:
+    - **file_path** (*Path*): Pfad zur Mediendatei, deren Album-Tag abgerufen werden soll.
+
+    ## Beispielaufruf:
+    ```bash
+    metadata-manager get-album /Pfad/zur/Datei.mov
+    ```
+
+    Ausgabe:
+    ```plaintext
+    Album: MeinAlbum
+    ```
+    """
+    try:
+        album = get_album(str(file_path))
+        if album:
+            print(f"Album: {album}")
+        else:
+            typer.secho("Album-Tag konnte nicht ermittelt werden.", fg=typer.colors.YELLOW)
     except FileNotFoundError:
         typer.secho(f"Die Datei '{file_path}' wurde nicht gefunden.", fg=typer.colors.RED)
     except Exception as e:
