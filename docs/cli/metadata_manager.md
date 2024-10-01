@@ -17,6 +17,7 @@ $ metadata-manager [OPTIONS] COMMAND [ARGS]...
 **Commands**:
 
 * `export-metadata`: Exportiert die Metadaten einer Datei in...
+* `get-album`: Gibt den Album-Tag einer Mediendatei zurück.
 * `get-bitrate`: Gibt die Bitrate einer Videodatei zurück.
 * `get-creation-datetime`: Gibt das Erstellungsdatum einer...
 * `get-video-codec`: Gibt den Videocodec einer Datei zurück.
@@ -67,6 +68,37 @@ $ metadata-manager export-metadata [OPTIONS] FILE_PATH OUTPUT_PATH
 **Options**:
 
 * `-s, --include-source`: Gibt die Quelle jeder Eigenschaft mit aus
+* `--help`: Show this message and exit.
+
+## `metadata-manager get-album`
+
+Gibt den Album-Tag einer Mediendatei zurück.
+
+## Argumente:
+- **file_path** (*Path*): Pfad zur Mediendatei, deren Album-Tag abgerufen werden soll.
+
+## Beispielaufruf:
+```bash
+metadata-manager get-album /Pfad/zur/Datei.mov
+```
+
+Ausgabe:
+```plaintext
+Album: MeinAlbum
+```
+
+**Usage**:
+
+```console
+$ metadata-manager get-album [OPTIONS] FILE_PATH
+```
+
+**Arguments**:
+
+* `FILE_PATH`: Pfad zur Mediendatei, deren Album-Tag abgerufen werden soll  [required]
+
+**Options**:
+
 * `--help`: Show this message and exit.
 
 ## `metadata-manager get-bitrate`
