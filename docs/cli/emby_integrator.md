@@ -20,6 +20,7 @@ $ emby-integrator [OPTIONS] COMMAND [ARGS]...
 * `generate-nfo-xml`: Generiert die NFO-Metadatendatei und gibt...
 * `get-recording-date`: Gibt das Aufnahmedatum aus dem Dateinamen...
 * `list-metadata`: Extrahiere die Metadaten aus einer Datei...
+* `scan-media`: Scannt ein Verzeichnis nach...
 * `write-nfo-file`: Generiert die NFO-Metadatendatei und...
 
 ## `emby-integrator convert-images-to-adobe-rgb`
@@ -136,6 +137,63 @@ $ emby-integrator list-metadata [OPTIONS] FILE_PATH
 **Options**:
 
 * `--json-output / --no-json-output`: Gebe die Ausgabe im JSON-Format aus  [default: no-json-output]
+* `--help`: Show this message and exit.
+
+## `emby-integrator scan-media`
+
+Scannt ein Verzeichnis nach Quicktime-Dateien (.mov) und optionalen Bilddateien (.png, .jpg, .jpeg),
+die mit einem ISO-Datum beginnen, und gruppiert sie als Mediaserver-Set.
+
+## Argumente:
+- **media_dir** (*Path*): Pfad zum Verzeichnis, das gescannt werden soll.
+- **json_output** (*bool*): Optional. Wenn gesetzt, wird die Ausgabe im JSON-Format dargestellt. Standard ist `False`.
+
+## Beispielaufrufe:
+```bash
+emby-integrator scan-media /Pfad/zum/Verzeichnis
+```
+
+Ausgabe:
+```plaintext
+Mediaserver-Set: 2024-09-22 Besuch Kurmann-Glück bei Dario
+    Video: 2024-09-22 Besuch Kurmann-Glück bei Dario - 1.mov
+    Image: 2024-09-22 Besuch Kurmann-Glück bei Dario.png
+
+Mediaserver-Set: 2024-09-24 Wanderung auf den Napf
+    Video: 2024-09-24 Wanderung auf den Napf.mov
+```
+
+Mit JSON-Option:
+```bash
+emby-integrator scan-media /Pfad/zum/Verzeichnis --json
+```
+
+Ausgabe im JSON-Format:
+```json
+{
+    "2024-09-22 Besuch Familie Kurmann in Willisau": {
+        "video": "2024-09-22 Besuch Familie Kurmann in Willisau - 1.mov",
+        "image": "2024-09-22 Besuch Familie Kurmann in Willisau.png"
+    },
+    "2024-09-24 Wanderung auf den Napf": {
+        "video": "2024-09-24 Wanderung auf den Napf.mov"
+    }
+}
+```
+
+**Usage**:
+
+```console
+$ emby-integrator scan-media [OPTIONS] MEDIA_DIR
+```
+
+**Arguments**:
+
+* `MEDIA_DIR`: Pfad zum Verzeichnis, das gescannt werden soll  [required]
+
+**Options**:
+
+* `-j, --json`: Gebe die Ausgabe im JSON-Format aus
 * `--help`: Show this message and exit.
 
 ## `emby-integrator write-nfo-file`
