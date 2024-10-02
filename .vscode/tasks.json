@@ -100,7 +100,7 @@
             "args": [
                 "-m",
                 "typer",
-                "${workspaceFolder}/src/metadata_manager/app.py",
+                "${workspaceFolder}/src/metadata_manager/cli/app.py",
                 "utils",
                 "docs",
                 "--name",

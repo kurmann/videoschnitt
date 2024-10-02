@@ -25,7 +25,7 @@ original-media-integrator = "original_media_integrator.app:app"
 emby-integrator = "emby_integrator.app:app"
 online-medialibrary-manager = "online_medialibrary_manager.app:app"
 config-manager = "config_manager.app:app"
-metadata-manager = "metadata_manager.app:app"
+metadata-manager = "metadata_manager.cli.main:app"
 
 [project.urls]
 Homepage = "https://github.com/kurmann/videoschnitt"
