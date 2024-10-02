@@ -20,7 +20,7 @@ $ emby-integrator [OPTIONS] COMMAND [ARGS]...
 * `generate-nfo-xml`: Generiert die NFO-Metadatendatei und gibt...
 * `get-recording-date`: Gibt das Aufnahmedatum aus dem Dateinamen...
 * `list-metadata`: Extrahiere die Metadaten aus einer Datei...
-* `scan-media`: Scannt ein Verzeichnis nach...
+* `scan-media`: Scannt ein Verzeichnis nach Bilddateien...
 * `write-nfo-file`: Generiert die NFO-Metadatendatei und...
 
 ## `emby-integrator convert-images-to-adobe-rgb`
@@ -141,8 +141,8 @@ $ emby-integrator list-metadata [OPTIONS] FILE_PATH
 
 ## `emby-integrator scan-media`
 
-Scannt ein Verzeichnis nach Quicktime-Dateien (.mov) und optionalen Bilddateien (.png, .jpg, .jpeg),
-die mit einem ISO-Datum beginnen, und gruppiert sie als Mediaserver-Set.
+Scannt ein Verzeichnis nach Bilddateien (.png, .jpg, .jpeg) und QuickTime-Dateien (.mov),
+gruppiert sie als Mediaserver-Set basierend auf den Bilddateien und listet unvollständige Gruppen auf.
 
 ## Argumente:
 - **media_dir** (*Path*): Pfad zum Verzeichnis, das gescannt werden soll.
@@ -155,12 +155,12 @@ emby-integrator scan-media /Pfad/zum/Verzeichnis
 
 Ausgabe:
 ```plaintext
-Mediaserver-Set: 2024-09-22 Besuch Kurmann-Glück bei Dario
-    Video: 2024-09-22 Besuch Kurmann-Glück bei Dario - 1.mov
-    Image: 2024-09-22 Besuch Kurmann-Glück bei Dario.png
+Mediaserver-Set: 2024-09-08 Ann-Sophie rennt Testvideo
+    Image: 2024-09-08 Ann-Sophie rennt Testvideo.png
+    Video: 2024-09-08 Ann-Sophie rennt Testvideo-1080p-Internet 4K60-Medienserver.mov
 
-Mediaserver-Set: 2024-09-24 Wanderung auf den Napf
-    Video: 2024-09-24 Wanderung auf den Napf.mov
+Unvollständige Videodateien (ohne Bilder):
+    - 2024-09-25 Event ohne Bild-2.mov
 ```
 
 Mit JSON-Option:
@@ -171,15 +171,22 @@ emby-integrator scan-media /Pfad/zum/Verzeichnis --json
 Ausgabe im JSON-Format:
 ```json
 {
-    "2024-09-22 Besuch Familie Kurmann in Willisau": {
-        "video": "2024-09-22 Besuch Familie Kurmann in Willisau - 1.mov",
-        "image": "2024-09-22 Besuch Familie Kurmann in Willisau.png"
+    "complete_sets": {
+        "2024-09-08 Ann-Sophie rennt Testvideo": {
+            "image": "2024-09-08 Ann-Sophie rennt Testvideo.png",
+            "video": "2024-09-08 Ann-Sophie rennt Testvideo-1080p-Internet 4K60-Medienserver.mov"
+        }
     },
-    "2024-09-24 Wanderung auf den Napf": {
-        "video": "2024-09-24 Wanderung auf den Napf.mov"
-    }
+    "incomplete_sets": [
+        {
+            "image": "2024-09-08 Ann-Sophie rennt Testvideo.png",
+            "videos": ["2024-09-08 Ann-Sophie rennt Testvideo-1080p-Internet 4K60-Medienserver.mov"]
+        }
+    ],
+    "unmatched_videos": [
+        "2024-09-25 Event ohne Bild-2.mov"
+    ]
 }
-```
 
 **Usage**:
 
