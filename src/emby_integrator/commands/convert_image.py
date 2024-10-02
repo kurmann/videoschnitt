@@ -1,11 +1,10 @@
-# src/emby_integrator/commands/convert_single_image.py
+# src/emby_integrator/commands/convert_image.py
 
 import os
 import typer
 from emby_integrator.image_manager import convert_image_to_adobe_rgb, delete_image
-from typing import Optional
 
-def convert_single_image_command(
+def convert_image_command(
     image_path: str,
     no_confirm: bool = typer.Option(
         False,
@@ -16,24 +15,6 @@ def convert_single_image_command(
 ):
     """
     Konvertiere ein einzelnes Bild in das Adobe RGB-Farbprofil.
-
-    Diese Methode konvertiert das angegebene Bild in das Adobe RGB-Farbprofil und speichert es als JPG.
-    Standardmäßig wird das Originalbild nach erfolgreicher Konvertierung gelöscht. Der Benutzer kann dies
-    durch Bestätigung steuern oder das Löschen ohne Rückfrage erzwingen.
-
-    Args:
-        image_path (str): Pfad zur Bilddatei, die konvertiert werden soll.
-        no_confirm (bool): Optional. Wenn gesetzt, wird das Originalbild ohne Rückfrage gelöscht. Standard ist `False`.
-
-    Returns:
-        None
-
-    Beispiel:
-        Konvertiere ein Bild mit Bestätigung zum Löschen des Originals:
-            $ emby-integrator convert-single-image /path/to/image.png
-
-        Konvertiere ein Bild und lösche das Original ohne Rückfrage:
-            $ emby-integrator convert-single-image /path/to/image.png --no-confirm
     """
     # Überprüfe, ob die Eingabedatei existiert
     if not os.path.isfile(image_path):
@@ -75,4 +56,4 @@ def convert_single_image_command(
         raise typer.Exit(code=1)
 
 def register(app: typer.Typer):
-    app.command(name="convert-single-image")(convert_single_image_command)
+    app.command(name="convert-image")(convert_image_command)

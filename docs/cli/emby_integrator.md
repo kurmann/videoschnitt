@@ -16,69 +16,20 @@ $ emby-integrator [OPTIONS] COMMAND [ARGS]...
 
 **Commands**:
 
-* `convert-images-to-adobe-rgb`: Konvertiere eine Liste von PNG-Bildern in...
-* `convert-single-image`: Konvertiere ein einzelnes Bild in das...
+* `convert-image`: Konvertiere ein einzelnes Bild in das...
 * `generate-nfo-xml`: Generiert die NFO-Metadatendatei und gibt...
 * `list-metadata-command`: Extrahiere die Metadaten aus einer Datei...
 * `scan-media-command`: Scannt ein Verzeichnis nach Bilddateien...
 * `write-nfo-file`: Generiert die NFO-Metadatendatei und...
 
-## `emby-integrator convert-images-to-adobe-rgb`
-
-Konvertiere eine Liste von PNG-Bildern in Adobe RGB, falls eine passende Videodatei existiert.
-
-Diese Methode durchsucht das angegebene Verzeichnis nach PNG-Bildern und konvertiert sie in das 
-Adobe RGB-Farbprofil, falls eine passende Videodatei im gleichen Verzeichnis existiert.
-
-Args:
-    media_dir (str): Der Pfad zu dem Verzeichnis, das nach PNG-Bildern und passenden Videodateien durchsucht wird.
-
-Returns:
-    None
-
-Beispiel:
-    $ emby-integrator convert-images-to-adobe-rgb /path/to/mediadirectory
-
-**Usage**:
-
-```console
-$ emby-integrator convert-images-to-adobe-rgb [OPTIONS] MEDIA_DIR
-```
-
-**Arguments**:
-
-* `MEDIA_DIR`: [required]
-
-**Options**:
-
-* `--help`: Show this message and exit.
-
-## `emby-integrator convert-single-image`
+## `emby-integrator convert-image`
 
 Konvertiere ein einzelnes Bild in das Adobe RGB-Farbprofil.
 
-Diese Methode konvertiert das angegebene Bild in das Adobe RGB-Farbprofil und speichert es als JPG.
-Standardmäßig wird das Originalbild nach erfolgreicher Konvertierung gelöscht. Der Benutzer kann dies
-durch Bestätigung steuern oder das Löschen ohne Rückfrage erzwingen.
-
-Args:
-    image_path (str): Pfad zur Bilddatei, die konvertiert werden soll.
-    no_confirm (bool): Optional. Wenn gesetzt, wird das Originalbild ohne Rückfrage gelöscht. Standard ist `False`.
-
-Returns:
-    None
-
-Beispiel:
-    Konvertiere ein Bild mit Bestätigung zum Löschen des Originals:
-        $ emby-integrator convert-single-image /path/to/image.png
-
-    Konvertiere ein Bild und lösche das Original ohne Rückfrage:
-        $ emby-integrator convert-single-image /path/to/image.png --no-confirm
-
 **Usage**:
 
 ```console
-$ emby-integrator convert-single-image [OPTIONS] IMAGE_PATH
+$ emby-integrator convert-image [OPTIONS] IMAGE_PATH
 ```
 
 **Arguments**:
