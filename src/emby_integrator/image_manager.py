@@ -1,4 +1,4 @@
-# emby_integrator/image_manager.py
+# src/emby_integrator/image_manager.py
 
 import os
 import subprocess
@@ -7,12 +7,12 @@ from typing import List
 
 # Modulvariablen
 ADOBE_RGB_PROFILE = "/System/Library/ColorSync/Profiles/AdobeRGB1998.icc"
-SUPPORTED_IMAGE_FORMATS = [".jpg"]
+SUPPORTED_IMAGE_FORMATS = [".jpg", ".jpeg", ".png"]  # Erweiterung um .jpeg und .png
 COMPRESSOR_SUFFIXES = ["4K60-Medienserver", "4K30-Medienserver"]
 
 def get_images_for_artwork(directory: str, media_set_names: List[str]) -> List[str]:
     """
-    Rufe JPG-Bilder im Adobe RGB-Farbprofil ab, die mit den Mediendateien übereinstimmen.
+    Rufe Bilddateien im Adobe RGB-Farbprofil ab, die mit den Mediendateien übereinstimmen.
     
     :param directory: Verzeichnis, in dem nach Bildern für Artwork gesucht wird.
     :param media_set_names: Liste der Medienset-Namen, zu denen Bilder gefunden werden sollen.
@@ -38,13 +38,13 @@ def get_images_for_artwork(directory: str, media_set_names: List[str]) -> List[s
 
 def convert_image_to_adobe_rgb(input_file: str, output_file: str) -> None:
     """
-    Konvertiere ein PNG-Bild in das Adobe RGB-Farbprofil und speichere es als JPEG.
+    Konvertiere ein Bild in das Adobe RGB-Farbprofil und speichere es als JPEG.
     
     :param input_file: Pfad zur Eingabedatei (PNG).
     :param output_file: Pfad zur Ausgabedatei (JPEG).
     """
-    if not input_file.lower().endswith(".png"):
-        raise ValueError("Eingabedatei muss eine PNG-Datei sein.")
+    if not input_file.lower().endswith((".png", ".jpg", ".jpeg")):
+        raise ValueError("Eingabedatei muss eine PNG- oder JPG/JPEG-Datei sein.")
     
     if not output_file.lower().endswith(".jpg"):
         raise ValueError("Ausgabedatei muss eine JPG-Datei sein.")
@@ -59,6 +59,7 @@ def convert_image_to_adobe_rgb(input_file: str, output_file: str) -> None:
         logging.info(f"Erfolgreich konvertiert: {input_file} -> {output_file}")
     except subprocess.CalledProcessError as e:
         logging.error(f"Fehler beim Konvertieren von {input_file}: {e}")
+        raise
 
 def _find_related_video(image_file: str, media_dir: str) -> bool:
     """
@@ -82,9 +83,9 @@ def _find_related_video(image_file: str, media_dir: str) -> bool:
 
 def convert_images_to_adobe_rgb(image_files: List[str], media_dir: str) -> None:
     """
-    Konvertiere eine Liste von PNG-Bildern in Adobe RGB, falls eine passende Videodatei existiert.
+    Konvertiere eine Liste von Bildern in Adobe RGB, falls eine passende Videodatei existiert.
     
-    :param image_files: Liste von Bilddateien (PNG).
+    :param image_files: Liste von Bilddateien (PNG/JPG/JPEG).
     :param media_dir: Verzeichnis, in dem nach zugehörigen Videodateien gesucht wird.
     """
     if not os.path.exists(media_dir):
@@ -93,7 +94,26 @@ def convert_images_to_adobe_rgb(image_files: List[str], media_dir: str) -> None:
 
     for image_file in image_files:
         if _find_related_video(image_file, media_dir):
-            output_file = f"{os.path.splitext(image_file)[0]}.jpg"
+            output_file = os.path.splitext(image_file)[0] + ".jpg"
             convert_image_to_adobe_rgb(image_file, output_file)
         else:
             logging.info(f"Keine zugehörige Videodatei für {image_file} gefunden. Keine Konvertierung durchgeführt.")
+
+def delete_image(file_path: str) -> None:
+    """
+    Lösche die angegebene Bilddatei.
+    
+    :param file_path: Pfad zur Bilddatei, die gelöscht werden soll.
+    """
+    try:
+        os.remove(file_path)
+        logging.info(f"Bild gelöscht: {file_path}")
+    except FileNotFoundError:
+        logging.error(f"Die Datei {file_path} wurde nicht gefunden.")
+        raise
+    except PermissionError:
+        logging.error(f"Keine Berechtigung zum Löschen der Datei {file_path}.")
+        raise
+    except Exception as e:
+        logging.error(f"Fehler beim Löschen der Datei {file_path}: {e}")
+        raise
