@@ -17,10 +17,10 @@ $ emby-integrator [OPTIONS] COMMAND [ARGS]...
 **Commands**:
 
 * `convert-images-to-adobe-rgb`: Konvertiere eine Liste von PNG-Bildern in...
+* `convert-single-image`: Konvertiere ein einzelnes Bild in das...
 * `generate-nfo-xml`: Generiert die NFO-Metadatendatei und gibt...
-* `get-recording-date`: Gibt das Aufnahmedatum aus dem Dateinamen...
-* `list-metadata`: Extrahiere die Metadaten aus einer Datei...
-* `scan-media`: Scannt ein Verzeichnis nach Bilddateien...
+* `list-metadata-command`: Extrahiere die Metadaten aus einer Datei...
+* `scan-media-command`: Scannt ein Verzeichnis nach Bilddateien...
 * `write-nfo-file`: Generiert die NFO-Metadatendatei und...
 
 ## `emby-integrator convert-images-to-adobe-rgb`
@@ -53,12 +53,64 @@ $ emby-integrator convert-images-to-adobe-rgb [OPTIONS] MEDIA_DIR
 
 * `--help`: Show this message and exit.
 
+## `emby-integrator convert-single-image`
+
+Konvertiere ein einzelnes Bild in das Adobe RGB-Farbprofil.
+
+Diese Methode konvertiert das angegebene Bild in das Adobe RGB-Farbprofil und speichert es als JPG.
+Standardmäßig wird das Originalbild nach erfolgreicher Konvertierung gelöscht. Der Benutzer kann dies
+durch Bestätigung steuern oder das Löschen ohne Rückfrage erzwingen.
+
+Args:
+    image_path (str): Pfad zur Bilddatei, die konvertiert werden soll.
+    no_confirm (bool): Optional. Wenn gesetzt, wird das Originalbild ohne Rückfrage gelöscht. Standard ist `False`.
+
+Returns:
+    None
+
+Beispiel:
+    Konvertiere ein Bild mit Bestätigung zum Löschen des Originals:
+        $ emby-integrator convert-single-image /path/to/image.png
+
+    Konvertiere ein Bild und lösche das Original ohne Rückfrage:
+        $ emby-integrator convert-single-image /path/to/image.png --no-confirm
+
+**Usage**:
+
+```console
+$ emby-integrator convert-single-image [OPTIONS] IMAGE_PATH
+```
+
+**Arguments**:
+
+* `IMAGE_PATH`: [required]
+
+**Options**:
+
+* `-n, --no-confirm`: Lösche das Originalbild ohne Rückfrage.
+* `--help`: Show this message and exit.
+
 ## `emby-integrator generate-nfo-xml`
 
 Generiert die NFO-Metadatendatei und gibt das XML aus.
 
+Diese Methode extrahiert die relevanten Metadaten aus der angegebenen Videodatei, erstellt eine
+benutzerdefinierte NFO-Metadatendatei und gibt das resultierende XML in der Konsole aus.
+
 Args:
     file_path (str): Pfad zur Videodatei.
+
+Returns:
+    None: Gibt das generierte XML in der Konsole aus.
+
+Beispiel:
+    $ emby-integrator generate-nfo-xml /path/to/video.mov
+
+    Ausgabe:
+    <?xml version="1.0" encoding="utf-8"?>
+    <nfo>
+        ...
+    </nfo>
 
 **Usage**:
 
@@ -74,28 +126,7 @@ $ emby-integrator generate-nfo-xml [OPTIONS] FILE_PATH
 
 * `--help`: Show this message and exit.
 
-## `emby-integrator get-recording-date`
-
-Gibt das Aufnahmedatum aus dem Dateinamen in einem deutschen Datumsformat mit Wochentag aus.
-
-Args:
-    file_path (str): Pfad zur Datei, deren Aufnahmedatum im Dateinamen enthalten sein soll.
-
-**Usage**:
-
-```console
-$ emby-integrator get-recording-date [OPTIONS] FILE_PATH
-```
-
-**Arguments**:
-
-* `FILE_PATH`: [required]
-
-**Options**:
-
-* `--help`: Show this message and exit.
-
-## `emby-integrator list-metadata`
+## `emby-integrator list-metadata-command`
 
 Extrahiere die Metadaten aus einer Datei und gebe sie aus.
 
@@ -127,7 +158,7 @@ Raises:
 **Usage**:
 
 ```console
-$ emby-integrator list-metadata [OPTIONS] FILE_PATH
+$ emby-integrator list-metadata-command [OPTIONS] FILE_PATH
 ```
 
 **Arguments**:
@@ -136,10 +167,10 @@ $ emby-integrator list-metadata [OPTIONS] FILE_PATH
 
 **Options**:
 
-* `--json-output / --no-json-output`: Gebe die Ausgabe im JSON-Format aus  [default: no-json-output]
+* `--json-output / --no-json-output`: [default: no-json-output]
 * `--help`: Show this message and exit.
 
-## `emby-integrator scan-media`
+## `emby-integrator scan-media-command`
 
 Scannt ein Verzeichnis nach Bilddateien (.png, .jpg, .jpeg) und QuickTime-Dateien (.mov),
 gruppiert sie als Mediaserver-Set basierend auf den Bilddateien und listet unvollständige Gruppen auf.
@@ -180,7 +211,11 @@ Ausgabe im JSON-Format:
     "incomplete_sets": [
         {
             "image": "2024-09-08 Ann-Sophie rennt Testvideo.png",
-            "videos": ["2024-09-08 Ann-Sophie rennt Testvideo-1080p-Internet 4K60-Medienserver.mov"]
+            "videos": ["2024-09-08 Ann-Sophie rennt Testvideo-720p-Hochwertig.mov"]
+        },
+        {
+            "image": "2024-09-26 Another Event.png",
+            "videos": []
         }
     ],
     "unmatched_videos": [
@@ -191,24 +226,36 @@ Ausgabe im JSON-Format:
 **Usage**:
 
 ```console
-$ emby-integrator scan-media [OPTIONS] MEDIA_DIR
+$ emby-integrator scan-media-command [OPTIONS] MEDIA_DIR
 ```
 
 **Arguments**:
 
-* `MEDIA_DIR`: Pfad zum Verzeichnis, das gescannt werden soll  [required]
+* `MEDIA_DIR`: [required]
 
 **Options**:
 
-* `-j, --json`: Gebe die Ausgabe im JSON-Format aus
+* `--json-output / --no-json-output`: [default: no-json-output]
 * `--help`: Show this message and exit.
 
 ## `emby-integrator write-nfo-file`
 
 Generiert die NFO-Metadatendatei und schreibt sie in eine Datei.
 
+Diese Methode extrahiert die relevanten Metadaten aus der angegebenen Videodatei, erstellt eine
+benutzerdefinierte NFO-Metadatendatei und schreibt das resultierende XML in eine `.nfo` Datei neben der Videodatei.
+
 Args:
     file_path (str): Pfad zur Videodatei.
+
+Returns:
+    None: Schreibt die generierte NFO-Datei in das gleiche Verzeichnis wie die Videodatei.
+
+Beispiel:
+    $ emby-integrator write-nfo-file /path/to/video.mov
+
+    Ausgabe:
+    NFO-Datei wurde erfolgreich erstellt: /path/to/video.nfo
 
 **Usage**:
 
