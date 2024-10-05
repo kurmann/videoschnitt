@@ -8,7 +8,7 @@ die Videos in verschiedenen Auflösungen anbietet und die Metadaten korrekt einb
 import locale
 import os
 from datetime import datetime
-from metadata_manager import get_relevant_metadata, parse_recording_date
+from metadata_manager import get_metadata_with_exiftool, parse_recording_date
 from online_medialibrary_manager.image_manager import create_og_image
 
 def generate_html(metadata_source: str, high_res_file: str, mid_res_file: str, artwork_image: str, download_file: str = None, base_url: str = '') -> str:
@@ -39,7 +39,7 @@ def generate_html(metadata_source: str, high_res_file: str, mid_res_file: str, a
             locale.setlocale(locale.LC_TIME, '')
 
     # Extrahieren der Metadaten aus der angegebenen Metadatenquelle
-    metadata = get_relevant_metadata(metadata_source)
+    metadata = get_metadata_with_exiftool(metadata_source)
 
     # Wichtige Metadaten abrufen
     title = metadata.get('Title') or 'Familienfilm-Freigabe'

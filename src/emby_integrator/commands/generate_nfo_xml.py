@@ -1,7 +1,7 @@
 # src/emby_integrator/commands/generate_nfo_xml.py
 
 import typer
-from metadata_manager import get_relevant_metadata
+from metadata_manager import get_metadata_with_exiftool
 from emby_integrator.nfo_generator import CustomProductionInfuseMetadata
 from emby_integrator.xml_utils import indent
 import xml.etree.ElementTree as ET
@@ -30,7 +30,7 @@ def generate_nfo_xml_command(file_path: str):
     """
     try:
         # Extrahiere relevante Metadaten aus der Videodatei
-        metadata = get_relevant_metadata(file_path)
+        metadata = get_metadata_with_exiftool(file_path)
         
         # Erstelle ein benutzerdefiniertes NFO-Metadatenset
         custom_metadata = CustomProductionInfuseMetadata.create_from_metadata(metadata, file_path)

@@ -4,6 +4,8 @@ import typer
 import json
 from pathlib import Path
 from metadata_manager import aggregate_metadata
+from metadata_manager.loader import get_metadata_with_exiftool
+from metadata_manager.utils import get_metadata_with_ffmpeg
 from metadata_manager.utils import get_video_codec, get_bitrate, is_hevc_a
 from metadata_manager.exif import get_album, get_creation_datetime
 
@@ -146,6 +148,46 @@ def export_metadata(
         typer.secho(str(e), fg=typer.colors.RED)
     except Exception as e:
         typer.secho(f"Ein unerwarteter Fehler ist aufgetreten: {e}", fg=typer.colors.RED)
+        
+@app.command("show-metadata-with-exiftool")
+def show_metadata_with_exiftool(
+    file_path: Path = typer.Argument(..., help="Pfad zur Mediendatei, aus der die Metadaten angezeigt werden sollen"),
+    json_output: bool = typer.Option(False, "--json", "-j", help="Gebe die Metadaten im JSON-Format aus")
+):
+    """
+    Zeigt die Metadaten einer Datei an, ermittelt mit ExifTool.
+    """
+    try:
+        metadata = get_metadata_with_exiftool(str(file_path))
+        if json_output:
+            print(json.dumps(metadata, indent=4, ensure_ascii=False))
+        else:
+            for key, value in metadata.items():
+                print(f"{key}: {value}")
+    except Exception as e:
+        typer.secho(f"Ein Fehler ist aufgetreten: {e}", fg=typer.colors.RED)
+
+@app.command("show-metadata-with-ffmpeg")
+def show_metadata_with_ffmpeg(
+    file_path: Path = typer.Argument(..., help="Pfad zur Mediendatei, aus der die Metadaten angezeigt werden sollen"),
+    json_output: bool = typer.Option(False, "--json", "-j", help="Gebe die Metadaten im JSON-Format aus")
+):
+    """
+    Zeigt die Metadaten einer Datei an, ermittelt mit FFmpeg/FFprobe.
+    """
+    try:
+        metadata = get_metadata_with_ffmpeg(str(file_path))
+        if json_output:
+            print(json.dumps(metadata, indent=4, ensure_ascii=False))
+        else:
+            for key, value in metadata.items():
+                if key == "Bitrate" and value and isinstance(value, (int, float)):
+                    bitrate_mbps = float(value) / 1_000_000
+                    print(f"{key}: {bitrate_mbps:.2f} Mbps")
+                else:
+                    print(f"{key}: {value}")
+    except Exception as e:
+        typer.secho(f"Ein Fehler ist aufgetreten: {e}", fg=typer.colors.RED)
 
 @app.command("validate-file")
 def validate_file(
