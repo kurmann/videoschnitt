@@ -2,7 +2,7 @@
 
 import json
 import typer
-from metadata_manager import get_metadata_with_exiftool
+from metadata_manager import aggregate_metadata
 
 def list_metadata_command(file_path: str, json_output: bool = False):
     """
@@ -34,7 +34,7 @@ def list_metadata_command(file_path: str, json_output: bool = False):
         ValueError: Wenn keine Metadaten extrahiert werden konnten.
     """
     try:
-        metadata = get_metadata_with_exiftool(file_path)
+        metadata = aggregate_metadata(file_path)
         
         if json_output:
             # JSON-Ausgabe
@@ -47,4 +47,4 @@ def list_metadata_command(file_path: str, json_output: bool = False):
         typer.secho(str(e), fg=typer.colors.RED)
 
 def register(app: typer.Typer):
-    app.command()(list_metadata_command)
+    app.command(name="list-metadata")(list_metadata_command)
