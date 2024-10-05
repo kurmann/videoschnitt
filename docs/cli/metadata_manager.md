@@ -23,6 +23,8 @@ $ metadata-manager [OPTIONS] COMMAND [ARGS]...
 * `get-video-codec`: Gibt den Videocodec einer Datei zurück.
 * `is-hevc-a`: Überprüft, ob eine Videodatei HEVC-A ist...
 * `show-metadata`: Zeigt die Metadaten einer Datei an.
+* `show-metadata-with-exiftool`: Zeigt die Metadaten einer Datei an,...
+* `show-metadata-with-ffmpeg`: Zeigt die Metadaten einer Datei an,...
 * `validate-file`: Validiert die Mediendatei, indem überprüft...
 
 ## `metadata-manager export-metadata`
@@ -274,6 +276,44 @@ $ metadata-manager show-metadata [OPTIONS] FILE_PATH
 
 * `-j, --json`: Gebe die Metadaten im JSON-Format aus
 * `-s, --include-source`: Gibt die Quelle jeder Eigenschaft mit aus
+* `--help`: Show this message and exit.
+
+## `metadata-manager show-metadata-with-exiftool`
+
+Zeigt die Metadaten einer Datei an, ermittelt mit ExifTool.
+
+**Usage**:
+
+```console
+$ metadata-manager show-metadata-with-exiftool [OPTIONS] FILE_PATH
+```
+
+**Arguments**:
+
+* `FILE_PATH`: Pfad zur Mediendatei, aus der die Metadaten angezeigt werden sollen  [required]
+
+**Options**:
+
+* `-j, --json`: Gebe die Metadaten im JSON-Format aus
+* `--help`: Show this message and exit.
+
+## `metadata-manager show-metadata-with-ffmpeg`
+
+Zeigt die Metadaten einer Datei an, ermittelt mit FFmpeg/FFprobe.
+
+**Usage**:
+
+```console
+$ metadata-manager show-metadata-with-ffmpeg [OPTIONS] FILE_PATH
+```
+
+**Arguments**:
+
+* `FILE_PATH`: Pfad zur Mediendatei, aus der die Metadaten angezeigt werden sollen  [required]
+
+**Options**:
+
+* `-j, --json`: Gebe die Metadaten im JSON-Format aus
 * `--help`: Show this message and exit.
 
 ## `metadata-manager validate-file`
