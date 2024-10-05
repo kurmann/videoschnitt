@@ -2,7 +2,7 @@
 
 import json
 import typer
-from metadata_manager import get_relevant_metadata
+from metadata_manager import get_metadata_with_exiftool
 
 def list_metadata_command(file_path: str, json_output: bool = False):
     """
@@ -34,7 +34,7 @@ def list_metadata_command(file_path: str, json_output: bool = False):
         ValueError: Wenn keine Metadaten extrahiert werden konnten.
     """
     try:
-        metadata = get_relevant_metadata(file_path)
+        metadata = get_metadata_with_exiftool(file_path)
         
         if json_output:
             # JSON-Ausgabe

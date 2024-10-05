@@ -1,7 +1,7 @@
 # metadata_manager/aggregator.py
 
 from typing import Dict, Any
-from metadata_manager.loader import get_relevant_metadata
+from metadata_manager.loader import get_metadata_with_exiftool
 from metadata_manager.utils import get_video_codec, get_bitrate, is_hevc_a
 from metadata_manager.exif import get_creation_datetime
 import logging
@@ -25,7 +25,7 @@ def aggregate_metadata(file_path: str, include_source: bool = False) -> Dict[str
     """
     try:
         # Holen der Metadaten von ExifTool
-        exif_metadata = get_relevant_metadata(file_path)
+        exif_metadata = get_metadata_with_exiftool(file_path)
 
         if include_source:
             aggregated_metadata = {key: {"value": value, "source": "ExifTool"} 

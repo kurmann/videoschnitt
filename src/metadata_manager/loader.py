@@ -20,15 +20,9 @@ METADATA_KEYS = [
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-def get_relevant_metadata(file_path: str) -> Dict[str, str]:
+def get_metadata_with_exiftool(file_path: str) -> Dict[str, str]:
     """
-    Extrahiert relevante Metadaten aus einer Datei mithilfe von ExifTool und gibt ein gefiltertes Dictionary zurück.
-
-    Args:
-        file_path (str): Der Pfad zur Mediendatei.
-
-    Returns:
-        dict: Ein Dictionary mit den gefilterten Metadaten als Strings.
+    Extrahiert relevante Metadaten aus einer Datei mithilfe von ExifTool.
     """
     if not os.path.exists(file_path):
         raise FileNotFoundError(f"Die Datei '{file_path}' wurde nicht gefunden.")
@@ -65,19 +59,10 @@ def get_relevant_metadata(file_path: str) -> Dict[str, str]:
 def aggregate_metadata(file_path: str, include_source: bool = False) -> Dict[str, Any]:
     """
     Aggregiert Metadaten aus mehreren Quellen (ExifTool, FFprobe) und gibt ein kombiniertes Dictionary zurück.
-
-    Args:
-        file_path (str): Der Pfad zur Mediendatei.
-        include_source (bool): Wenn True, enthält jede Eigenschaft Informationen über das Herkunftstool.
-
-    Returns:
-        dict: Ein Dictionary mit aggregierten Metadaten.
-              Wenn include_source True ist, enthält jede Eigenschaft einen 'value' und einen 'source'.
-              Andernfalls wird ein flaches Dictionary mit den Eigenschaftswerten zurückgegeben.
     """
     try:
         # Holen der Metadaten von ExifTool
-        exif_metadata = get_relevant_metadata(file_path)
+        exif_metadata = get_metadata_with_exiftool(file_path)
 
         if include_source:
             aggregated_metadata = {key: {"value": value, "source": "ExifTool"} 

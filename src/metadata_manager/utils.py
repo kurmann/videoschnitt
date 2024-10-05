@@ -3,12 +3,27 @@
 import subprocess
 import json
 import os
-from typing import Optional
+from typing import Any, Dict, Optional
 import logging
 
 # Konfiguriere das Logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+def get_metadata_with_ffmpeg(file_path: str) -> Dict[str, Any]:
+    """
+    Extrahiert relevante Metadaten aus einer Datei mithilfe von FFprobe.
+    """
+    metadata = {}
+    video_codec = get_video_codec(file_path)
+    bitrate = get_bitrate(file_path)
+    hevc_a = is_hevc_a(file_path)
+    if video_codec:
+        metadata["VideoCodec"] = video_codec
+    if bitrate:
+        metadata["Bitrate"] = bitrate
+    metadata["IsHEVCA"] = hevc_a
+    return metadata
 
 def get_video_codec(filepath) -> Optional[str]:
     """
