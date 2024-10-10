@@ -16,40 +16,52 @@ $ online-medialibrary-manager [OPTIONS] COMMAND [ARGS]...
 
 **Commands**:
 
-* `create-html-command`: Generiert eine statische HTML-Seite für...
+* `create-artwork`: Erzeugt ein Titelbild aus der angegebenen...
+* `create-html`: Generiert eine statische HTML-Seite für...
 * `create-og-image`: Erzeugt ein OpenGraph-Bild aus dem...
 
-## `online-medialibrary-manager create-html-command`
+## `online-medialibrary-manager create-artwork`
 
-Generiert eine statische HTML-Seite für das Familienvideo und erstellt ein OpenGraph-Bild.
-
-Args:
-    metadata_source (str): Pfad zur Videodatei, aus der die Metadaten extrahiert werden sollen.
-    high_res_file (str): Pfad zur hochauflösenden Videodatei (4K HEVC).
-    mid_res_file (str): Pfad zur mittelauflösenden Videodatei (HD).
-    artwork_image (str): Pfad zum Vorschaubild.
-    output_file (str): Name der Ausgabedatei für das HTML (Standard: 'index.html').
-    download_file (str): Optionaler Pfad zur Download-Datei (z.B. ZIP-Datei).
-    base_url (str): Basis-URL für die OG-Metadaten (z.B. https://example.com/videos).
+Erzeugt ein Titelbild aus der angegebenen Eingabedatei. Wenn kein Zielpfad angegeben ist,
+wird das Titelbild im gleichen Verzeichnis erstellt und erhält das Suffix '-Titelbild'.
 
 **Usage**:
 
 ```console
-$ online-medialibrary-manager create-html-command [OPTIONS] METADATA_SOURCE HIGH_RES_FILE MID_RES_FILE ARTWORK_IMAGE
+$ online-medialibrary-manager create-artwork [OPTIONS] INPUT_IMAGE
 ```
 
 **Arguments**:
 
-* `METADATA_SOURCE`: [required]
-* `HIGH_RES_FILE`: [required]
-* `MID_RES_FILE`: [required]
-* `ARTWORK_IMAGE`: [required]
+* `INPUT_IMAGE`: Pfad zur Eingabedatei (PNG oder JPG/JPEG)  [required]
 
 **Options**:
 
-* `--output-file TEXT`: [default: index.html]
-* `--download-file TEXT`
-* `--base-url TEXT`
+* `--output-image TEXT`: Optionaler Pfad zur Ausgabedatei
+* `--help`: Show this message and exit.
+
+## `online-medialibrary-manager create-html`
+
+Generiert eine statische HTML-Seite für das Familienvideo und erstellt ein OpenGraph-Bild.
+
+**Usage**:
+
+```console
+$ online-medialibrary-manager create-html [OPTIONS] METADATA_SOURCE HIGH_RES_FILE MID_RES_FILE ARTWORK_IMAGE
+```
+
+**Arguments**:
+
+* `METADATA_SOURCE`: Pfad zur Videodatei, aus der die Metadaten extrahiert werden sollen  [required]
+* `HIGH_RES_FILE`: Pfad zur hochauflösenden Videodatei (4K HEVC)  [required]
+* `MID_RES_FILE`: Pfad zur mittelauflösenden Videodatei (HD)  [required]
+* `ARTWORK_IMAGE`: Pfad zum Vorschaubild  [required]
+
+**Options**:
+
+* `--output-file TEXT`: Name der Ausgabedatei für das HTML (Standard: 'index.html')  [default: index.html]
+* `--download-file TEXT`: Optionaler Pfad zur Download-Datei (z.B. ZIP-Datei)
+* `--base-url TEXT`: Basis-URL für die OG-Metadaten (z.B. https://example.com/videos)
 * `--help`: Show this message and exit.
 
 ## `online-medialibrary-manager create-og-image`

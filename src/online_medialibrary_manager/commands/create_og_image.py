@@ -2,7 +2,7 @@ import os
 import subprocess
 import typer
 
-def create_og_image(
+def create_og_image_command(
     artwork_image: str,
     output_image: str = None,  # Standardmäßig None, damit der Pfad dynamisch generiert wird
 ) -> str:
