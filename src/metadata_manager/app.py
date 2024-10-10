@@ -8,8 +8,11 @@ from metadata_manager.loader import get_metadata_with_exiftool
 from metadata_manager.utils import get_metadata_with_ffmpeg
 from metadata_manager.utils import get_video_codec, get_bitrate, is_hevc_a
 from metadata_manager.exif import get_album, get_creation_datetime
+from metadata_manager.commands.get_recording_date import get_recording_date_command
 
 app = typer.Typer(help="Metadata Manager CLI für Kurmann Videoschnitt")
+
+app.command("get-recording-date")(get_recording_date_command)
 
 @app.command("show-metadata")
 def show_metadata(
