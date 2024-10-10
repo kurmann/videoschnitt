@@ -7,19 +7,13 @@ def create_og_image_command(
     output_image: str = None,  # Standardmäßig None, damit der Pfad dynamisch generiert wird
 ) -> str:
     """
-    Erzeugt ein OpenGraph-Bild aus dem gegebenen Vorschaubild.
-    Nur JPG/JPEG-Dateien werden akzeptiert.
-    Wenn kein Ausgabepfad angegeben wird, wird das gleiche Verzeichnis verwendet,
-    und das Bild erhält das Suffix '-OG'.
+    Erstellt ein OpenGraph-Bild.
+
+    Diese Methode skaliert und beschneidet das gegebene Vorschaubild und erstellt ein OpenGraph-Bild für die Verwendung in sozialen Medien. Wenn kein Zielpfad angegeben ist, wird das Bild im gleichen Verzeichnis wie das Eingabebild gespeichert und erhält das Suffix '-OG'.
 
     Args:
-        artwork_image (str): Pfad zum Eingabebild.
-        output_image (str, optional): Pfad zur Ausgabedatei. Wenn nicht angegeben,
-                                      wird der Dateiname des Eingabebilds verwendet, 
-                                      mit dem Suffix '-OG'.
-
-    Returns:
-        str: Der Pfad zum erstellten OpenGraph-Bild.
+        artwork_image (str): Pfad zum Vorschaubild.
+        output_image (str): Name der Ausgabedatei für das OpenGraph-Bild (Standard: 'og-image.jpg').
     """
     if not os.path.exists(artwork_image):
         typer.secho(f"Die Datei {artwork_image} existiert nicht.", fg=typer.colors.RED)

@@ -7,8 +7,15 @@ def create_artwork_command(
     output_image: str = typer.Option(None, help="Optionaler Pfad zur Ausgabedatei")
 ):
     """
-    Erzeugt ein Titelbild aus der angegebenen Eingabedatei. Wenn kein Zielpfad angegeben ist,
-    wird das Titelbild im gleichen Verzeichnis erstellt und erhält das Suffix '-Titelbild'.
+    Erzeugt ein Titelbild aus einer Eingabedatei.
+
+    Diese Methode konvertiert ein Bild in das JPG-Format und wendet das Adobe RGB-Farbprofil an.
+    Wenn kein Zielpfad angegeben wird, wird das Titelbild im gleichen Verzeichnis erstellt und 
+    erhält das Suffix '-Titelbild'.
+
+    Args:
+        input_image (str): Pfad zur Eingabedatei.
+        output_image (str, optional): Optionaler Pfad zur Ausgabedatei.
     """
     # Überprüfe, ob die Eingabedatei existiert
     if not os.path.isfile(input_image):

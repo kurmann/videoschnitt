@@ -17,7 +17,18 @@ def create_html_command(
     base_url: str = typer.Option('', help="Basis-URL für die OG-Metadaten (z.B. https://example.com/videos)")
 ):
     """
-    Generiert eine statische HTML-Seite für das Familienvideo und erstellt ein OpenGraph-Bild.
+    Erstellt eine statische HTML-Seite.
+
+    Diese Methode verwendet die bereitgestellten Videodateien und Metadaten, um eine HTML-Seite zu generieren, die die Videos in verschiedenen Auflösungen anzeigt. Zusätzlich wird ein OpenGraph-Bild erstellt, das für die Vorschau auf sozialen Medien verwendet werden kann.
+
+    Args:
+        metadata_source (str): Pfad zur Videodatei, aus der die Metadaten extrahiert werden sollen.
+        high_res_file (str): Pfad zur hochauflösenden Videodatei (4K HEVC).
+        mid_res_file (str): Pfad zur mittelauflösenden Videodatei (HD).
+        artwork_image (str): Pfad zum Vorschaubild.
+        output_file (str): Name der Ausgabedatei für das HTML (Standard: 'index.html').
+        download_file (str): Optionaler Pfad zur Download-Datei (z.B. ZIP-Datei).
+        base_url (str): Basis-URL für die OG-Metadaten.
     """
     html_content = generate_html(metadata_source, high_res_file, mid_res_file, artwork_image, download_file, base_url)
 
@@ -28,19 +39,18 @@ def create_html_command(
 
 def generate_html(metadata_source: str, high_res_file: str, mid_res_file: str, artwork_image: str, download_file: str = None, base_url: str = '') -> str:
     """
-    Generiert den HTML-Inhalt basierend auf den bereitgestellten Dateien und Metadaten.
-    Erzeugt auch ein OpenGraph-Bild aus dem gegebenen Artwork-Bild.
+    Generiert eine statische HTML-Seite für das Familienvideo und erstellt ein OpenGraph-Bild.
+
+    Diese Methode verwendet die bereitgestellten Videodateien und Metadaten, um eine HTML-Seite zu erstellen, die die Videos in verschiedenen Auflösungen anzeigt. Zusätzlich wird ein OpenGraph-Bild erstellt, das für die Vorschau auf sozialen Medien verwendet werden kann.
 
     Args:
-        metadata_source (str): Pfad zur Videodatei, aus der die Metadaten extrahiert werden.
+        metadata_source (str): Pfad zur Videodatei, aus der die Metadaten extrahiert werden sollen.
         high_res_file (str): Pfad zur hochauflösenden Videodatei (4K HEVC).
         mid_res_file (str): Pfad zur mittelauflösenden Videodatei (HD).
         artwork_image (str): Pfad zum Vorschaubild.
-        download_file (str, optional): Pfad zur Download-Datei (z.B. ZIP-Datei). Standard ist None.
-        base_url (str, optional): Basis-URL für die OG-Metadaten. Standard ist ''.
-
-    Returns:
-        str: Der generierte HTML-Inhalt als String.
+        output_file (str): Name der Ausgabedatei für das HTML (Standard: 'index.html').
+        download_file (str): Optionaler Pfad zur Download-Datei (z.B. ZIP-Datei).
+        base_url (str): Basis-URL für die OG-Metadaten.
     """
 
     # Locale auf Deutsch setzen
