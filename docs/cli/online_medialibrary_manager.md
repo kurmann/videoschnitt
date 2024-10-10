@@ -16,14 +16,21 @@ $ online-medialibrary-manager [OPTIONS] COMMAND [ARGS]...
 
 **Commands**:
 
-* `create-artwork`: Erzeugt ein Titelbild aus der angegebenen...
-* `create-html`: Generiert eine statische HTML-Seite für...
-* `create-og-image`: Erzeugt ein OpenGraph-Bild aus dem...
+* `create-artwork`: Erzeugt ein Titelbild aus einer Eingabedatei.
+* `create-html`: Erstellt eine statische HTML-Seite.
+* `create-og-image`: Erstellt ein OpenGraph-Bild.
 
 ## `online-medialibrary-manager create-artwork`
 
-Erzeugt ein Titelbild aus der angegebenen Eingabedatei. Wenn kein Zielpfad angegeben ist,
-wird das Titelbild im gleichen Verzeichnis erstellt und erhält das Suffix '-Titelbild'.
+Erzeugt ein Titelbild aus einer Eingabedatei.
+
+Diese Methode konvertiert ein Bild in das JPG-Format und wendet das Adobe RGB-Farbprofil an.
+Wenn kein Zielpfad angegeben wird, wird das Titelbild im gleichen Verzeichnis erstellt und 
+erhält das Suffix '-Titelbild'.
+
+Args:
+    input_image (str): Pfad zur Eingabedatei.
+    output_image (str, optional): Optionaler Pfad zur Ausgabedatei.
 
 **Usage**:
 
@@ -42,7 +49,18 @@ $ online-medialibrary-manager create-artwork [OPTIONS] INPUT_IMAGE
 
 ## `online-medialibrary-manager create-html`
 
-Generiert eine statische HTML-Seite für das Familienvideo und erstellt ein OpenGraph-Bild.
+Erstellt eine statische HTML-Seite.
+
+Diese Methode verwendet die bereitgestellten Videodateien und Metadaten, um eine HTML-Seite zu generieren, die die Videos in verschiedenen Auflösungen anzeigt. Zusätzlich wird ein OpenGraph-Bild erstellt, das für die Vorschau auf sozialen Medien verwendet werden kann.
+
+Args:
+    metadata_source (str): Pfad zur Videodatei, aus der die Metadaten extrahiert werden sollen.
+    high_res_file (str): Pfad zur hochauflösenden Videodatei (4K HEVC).
+    mid_res_file (str): Pfad zur mittelauflösenden Videodatei (HD).
+    artwork_image (str): Pfad zum Vorschaubild.
+    output_file (str): Name der Ausgabedatei für das HTML (Standard: 'index.html').
+    download_file (str): Optionaler Pfad zur Download-Datei (z.B. ZIP-Datei).
+    base_url (str): Basis-URL für die OG-Metadaten.
 
 **Usage**:
 
@@ -66,19 +84,13 @@ $ online-medialibrary-manager create-html [OPTIONS] METADATA_SOURCE HIGH_RES_FIL
 
 ## `online-medialibrary-manager create-og-image`
 
-Erzeugt ein OpenGraph-Bild aus dem gegebenen Vorschaubild.
-Nur JPG/JPEG-Dateien werden akzeptiert.
-Wenn kein Ausgabepfad angegeben wird, wird das gleiche Verzeichnis verwendet,
-und das Bild erhält das Suffix '-OG'.
+Erstellt ein OpenGraph-Bild.
+
+Diese Methode skaliert und beschneidet das gegebene Vorschaubild und erstellt ein OpenGraph-Bild für die Verwendung in sozialen Medien. Wenn kein Zielpfad angegeben ist, wird das Bild im gleichen Verzeichnis wie das Eingabebild gespeichert und erhält das Suffix '-OG'.
 
 Args:
-    artwork_image (str): Pfad zum Eingabebild.
-    output_image (str, optional): Pfad zur Ausgabedatei. Wenn nicht angegeben,
-                                  wird der Dateiname des Eingabebilds verwendet, 
-                                  mit dem Suffix '-OG'.
-
-Returns:
-    str: Der Pfad zum erstellten OpenGraph-Bild.
+    artwork_image (str): Pfad zum Vorschaubild.
+    output_image (str): Name der Ausgabedatei für das OpenGraph-Bild (Standard: 'og-image.jpg').
 
 **Usage**:
 
