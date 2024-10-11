@@ -1,10 +1,9 @@
-import json
-import subprocess
-import typer
 import logging
 import re
+import typer
 from typing import Optional
 from datetime import datetime
+from metadata_manager.commands.get_title import get_title
 
 logger = logging.getLogger(__name__)
 
@@ -79,45 +78,6 @@ def parse_recording_date_from_filename(file_name: str) -> Optional[datetime]:
         return recording_date
 
     logger.warning(f"Kein Aufnahmedatum im Dateinamen gefunden: {file_name}")
-    return None
-
-def get_title(filepath: str) -> Optional[str]:
-    """
-    Liest den "Title"-Tag aus den Metadaten einer Mediendatei aus.
-
-    Args:
-        filepath (str): Der Pfad zur Mediendatei.
-
-    Returns:
-        str | None: Der Titel der Datei, oder None, wenn der Tag nicht gefunden wurde.
-    """
-    try:
-        cmd = [
-            'exiftool',
-            '-Title',
-            '-json',
-            filepath
-        ]
-        result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-
-        if result.returncode != 0:
-            logger.error(f"ExifTool Fehler: {result.stderr.strip()}")
-            return None
-
-        exif_metadata = result.stdout.strip()
-        logger.debug(f"Rohdaten von exiftool: {exif_metadata}")
-
-        exif_json = json.loads(exif_metadata)
-
-        if exif_json and len(exif_json) > 0:
-            title = exif_json[0].get("Title")
-            logger.debug(f"Ausgelesener Titel: {title}")
-            return title
-
-    except Exception as e:
-        logger.error(f"Fehler beim Abrufen des Titel-Tags mit exiftool: {e}")
-
-    logger.warning(f"Titel-Tag konnte nicht aus {filepath} gelesen werden.")
     return None
 
 if __name__ == "__main__":
