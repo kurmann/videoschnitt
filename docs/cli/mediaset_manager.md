@@ -14,9 +14,28 @@ $ mediaset-manager [OPTIONS] COMMAND [ARGS]...
 
 **Commands**:
 
+* `create-metadata-file`: Erstellt eine Metadaten.yaml-Datei für ein...
 * `get-recording-date`: Extrahiert das Aufnahmedatum aus Dateiname...
 * `get-resolution`: Gibt die Auflösungskategorie einer...
 * `list-mediasets`: Listet alle Mediensets im angegebenen...
+
+## `mediaset-manager create-metadata-file`
+
+Erstellt eine Metadaten.yaml-Datei für ein gegebenes Medienset basierend auf einer Metadaten-Quelle.
+
+**Usage**:
+
+```console
+$ mediaset-manager create-metadata-file [OPTIONS] METADATA_SOURCE
+```
+
+**Arguments**:
+
+* `METADATA_SOURCE`: Pfad zur Metadaten-Quelle (z.B. eine Videodatei)  [required]
+
+**Options**:
+
+* `--help`: Show this message and exit.
 
 ## `mediaset-manager get-recording-date`
 
