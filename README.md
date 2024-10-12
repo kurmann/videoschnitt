@@ -18,6 +18,8 @@ Die Anwendung bietet eine Vielzahl von Funktionen, die speziell für den Videosc
 
 **Kurmann Videoschnitt** ist in verschiedene Pakete unterteilt, von denen jedes eine eigene CLI bietet. Diese Struktur ermöglicht es, einzelne Komponenten unabhängig voneinander zu entwickeln, zu warten und zu erweitern. Neue Pakete können hinzugefügt werden, wenn neue Anwendungsfälle entstehen, wodurch die Anwendung stetig ausgebaut und an die Bedürfnisse der Benutzer angepasst wird.
 
+Ein Beispiel für eine solche Erweiterung ist das Konzept der **Kurmann-Mediensets**. Ein Kurmann-Medienset ist eine standardisierte Sammlung von Mediendateien, die zu einem bestimmten Ereignis, Thema oder Projekt gehören und in einem eigenen Verzeichnis organisiert sind. Jedes Medienset enthält sowohl die Medien selbst als auch eine strukturierte Metadaten-Datei (`Metadaten.yaml`), welche die wichtigsten Informationen über das Set beschreibt. Die Spezifikation der Kurmann-Mediensets sorgt für Konsistenz und erleichtert die Verwaltung und Archivierung, was insbesondere bei einer großen Anzahl von Mediendateien von Vorteil ist. Weitere Informationen zur Spezifikation der Mediensets sind unter [docs/kurmann_mediaset.md](docs/kurmann_mediaset.md) zu finden.
+
 ## CLI
 
 - [Emby Integrator](/docs/cli/emby_integrator.md)
@@ -36,3 +38,4 @@ Dieses Projekt wird von mir privat in meiner Freizeit in der Schweiz entwickelt.
 ## Lizenz
 
 Dieses Projekt steht unter der Apache-2.0-Lizenz. Details sind in der Datei [LICENSE](LICENSE) im Repository zu finden.
+
