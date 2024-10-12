@@ -1,10 +1,11 @@
-# online_medialibrary_manager/commands/generate_html.py
+# src/online_medialibrary_manager/commands/create_html.py
 
 import locale
 import typer
 import os
 from datetime import datetime
-from metadata_manager import get_metadata_with_exiftool, parse_recording_date
+from metadata_manager import get_metadata_with_exiftool
+from metadata_manager.commands.get_recording_date import get_recording_date_command as get_recording_date
 from online_medialibrary_manager.commands.create_og_image import create_og_image_command
 
 def create_html_command(
@@ -12,7 +13,7 @@ def create_html_command(
     high_res_file: str = typer.Argument(..., help="Pfad zur hochauflösenden Videodatei (4K HEVC)"),
     mid_res_file: str = typer.Argument(..., help="Pfad zur mittelauflösenden Videodatei (HD)"),
     artwork_image: str = typer.Argument(..., help="Pfad zum Vorschaubild"),
-    output_file: str = typer.Option('index.html', help="Name der Ausgabedatei für das HTML (Standard: 'index.html')"),
+    subtitle: str = typer.Option(None, help="Optionaler Untertitel für die Seite (z.B. Ukrainisch)"),
     download_file: str = typer.Option(None, help="Optionaler Pfad zur Download-Datei (z.B. ZIP-Datei)"),
     base_url: str = typer.Option('', help="Basis-URL für die OG-Metadaten (z.B. https://example.com/videos)")
 ):
@@ -23,14 +24,26 @@ def create_html_command(
     die die Videos in verschiedenen Auflösungen anzeigt. Zusätzlich wird ein OpenGraph-Bild erstellt, das für
     die Vorschau auf sozialen Medien verwendet werden kann.
     """
-    html_content = generate_html(metadata_source, high_res_file, mid_res_file, artwork_image, download_file, base_url)
+    # Verzeichnis der metadata_source-Datei ermitteln
+    output_directory = os.path.dirname(metadata_source)
+    output_file = os.path.join(output_directory, 'index.html')
+
+    # Prüfen, ob die Datei bereits existiert und Rückfrage stellen
+    if os.path.exists(output_file):
+        overwrite = typer.confirm(f"Die Datei '{output_file}' existiert bereits. Möchtest du sie überschreiben?")
+        if not overwrite:
+            typer.secho("Vorgang abgebrochen.", fg=typer.colors.RED)
+            raise typer.Exit(code=1)
+
+    # HTML generieren
+    html_content = generate_html(metadata_source, high_res_file, mid_res_file, artwork_image, subtitle, download_file, base_url)
 
     # HTML-Datei speichern
     with open(output_file, 'w', encoding='utf-8') as f:
         f.write(html_content)
     typer.secho(f"HTML-Datei wurde erfolgreich erstellt: {output_file}", fg=typer.colors.GREEN)
 
-def generate_html(metadata_source: str, high_res_file: str, mid_res_file: str, artwork_image: str, download_file: str = None, base_url: str = '') -> str:
+def generate_html(metadata_source: str, high_res_file: str, mid_res_file: str, artwork_image: str, subtitle: str = None, download_file: str = None, base_url: str = '') -> str:
     """
     Generiert eine statische HTML-Seite für das Familienvideo und erstellt ein OpenGraph-Bild.
 
@@ -53,7 +66,7 @@ def generate_html(metadata_source: str, high_res_file: str, mid_res_file: str, a
     # Wichtige Metadaten abrufen
     title = metadata.get('Title') or 'Familienfilm-Freigabe'
     description = metadata.get('Description') or ''
-    recording_date = parse_recording_date(metadata_source)
+    recording_date = get_recording_date(metadata_source)
     if recording_date:
         recording_date_str = recording_date.strftime('%A, %-d. %B %Y')
     else:
@@ -80,11 +93,23 @@ def generate_html(metadata_source: str, high_res_file: str, mid_res_file: str, a
         <meta property="og:image" content="{make_absolute(og_image_name)}" />
         <meta property="og:image:type" content="image/jpeg" />
         <meta property="og:description" content="{description}" />
+        <meta property="og:image:width" content="1536" />
+        <meta property="og:image:height" content="804" />
         <meta property="og:locale" content="de_CH" />
         <meta property="og:site_name" content="Kurmann Mediathek: Familienfilm-Freigabe" />
     '''
 
     # HTML-Inhalt generieren
+    subtitle_section = f'<div class="below-subtitle">{subtitle}</div>' if subtitle else ''
+
+    # Download-Link, falls vorhanden
+    download_section = f'''
+        <a href="{download_file_name}" id="download-link">
+            Original herunterladen
+            <span>Für Wiedergabe auf PC/Mac</span>
+        </a>
+    ''' if download_file_name else ''
+
     html_content = f'''<!DOCTYPE html>
 <html lang="de-CH">
 
@@ -105,7 +130,7 @@ def generate_html(metadata_source: str, high_res_file: str, mid_res_file: str, a
     <h2 class="subtitle">Familienfilm-Freigabe von Patrick Kurmann</h2>
     <div class="container">
         <h2 id="title-link">{title}</h2>
-
+        {subtitle_section}
         <div class="video-container" id="video-container">
             <a href="{mid_res_file_name}" id="play-link">
                 <img src="{artwork_image}" alt="{title}" class="video-image">
@@ -135,7 +160,7 @@ def generate_html(metadata_source: str, high_res_file: str, mid_res_file: str, a
                 Film in HD-Qualität
                 <span>1080p SDR</span>
             </a>
-            {f'<a href="{download_file_name}" id="download-link">Original herunterladen<span>Für Wiedergabe auf PC/Mac</span></a>' if download_file_name else ''}
+            {download_section}
         </div>
     </div>
 
@@ -155,7 +180,7 @@ def generate_html(metadata_source: str, high_res_file: str, mid_res_file: str, a
 def generate_css() -> str:
     """
     Generiert das CSS für die HTML-Seite.
-    
+
     Returns:
         str: Der CSS-String.
     """
@@ -179,6 +204,27 @@ def generate_css() -> str:
             letter-spacing: 0.1em;
         }
 
+        h2 {
+            color: #ffffff;
+            text-align: center;
+            font-weight: 300;
+            letter-spacing: 0.1em;
+        }
+
+        h2.subtitle {
+            font-size: 1em;
+        }
+
+        .below-subtitle {
+            text-align: center;
+            font-size: 1em;
+            margin-top: 0;
+        }
+
+        h2.title-link {
+            font-size: 1.5em;
+        }
+
         .container {
             max-width: 900px;
             margin: 0 auto;
@@ -188,10 +234,94 @@ def generate_css() -> str:
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
         }
 
+        .video-container {
+            position: relative;
+            display: inline-block;
+            overflow: hidden;
+            cursor: pointer;
+            border-radius: 8px;
+        }
+
         .video-image {
             width: 100%;
             height: auto;
+            display: block;
             border-radius: 8px;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .video-container:hover .video-image {
+            transform: scale(1.05);
+        }
+
+        .play-icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 64px;
+            height: 64px;
+            opacity: 0.9;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .video-container:hover .play-icon {
+            opacity: 1;
+        }
+
+        .video-details {
+            position: absolute;
+            bottom: 15px;
+            left: 15px;
+            color: #ffffff;
+            background-color: rgba(0, 0, 0, 0.6);
+            padding: 10px 15px;
+            font-size: 1em;
+            border-radius: 5px;
+        }
+
+        .video-description {
+            margin: 20px;
+            color: #b0b0b0;
+            font-size: 1.1em;
+            line-height: 1.7em;
+            text-align: center;
+        }
+
+        .links {
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .links a {
+            color: #ffae42;
+            text-decoration: none;
+            padding: 10px 15px;
+            border: 1px solid #ffae42;
+            border-radius: 5px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            width: 200px;
+            text-align: center;
+        }
+
+        .links span {
+            color: #b0b0b0;
+            font-size: 0.8em;
+            margin-top: 5px;
+            display: block;
+        }
+
+        .links a:hover {
+            background-color: #ffae42;
+            color: #181818;
+        }
+
+        .links a:hover span {
+            color: white;
         }
 
         footer {
@@ -206,11 +336,11 @@ def generate_css() -> str:
 def generate_javascript(high_res_file_name: str, mid_res_file_name: str) -> str:
     """
     Generiert das JavaScript für die HTML-Seite.
-    
+
     Args:
         high_res_file_name (str): Der Name der 4K-Datei.
         mid_res_file_name (str): Der Name der HD-Datei.
-    
+
     Returns:
         str: Der JavaScript-String.
     """
@@ -241,15 +371,15 @@ def generate_javascript(high_res_file_name: str, mid_res_file_name: str) -> str:
                 if (playParam.toLowerCase() === '4k') {{
                     playLink.href = highResFile;
                 }} else if (playParam.toLowerCase() === 'hd') {{
-                    playLink.href = mid_res_file_name;
+                    playLink.href = midResFile;
                 }} else {{
-                    playLink.href = midRes_file_name;
+                    playLink.href = midResFile;
                 }}
             }} else {{
                 if (canPlayHEVC()) {{
                     playLink.href = highResFile;
                 }} else {{
-                    playLink.href = mid_res_file_name;
+                    playLink.href = midResFile;
                 }}
             }}
         }});
