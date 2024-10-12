@@ -117,6 +117,29 @@
             "group": "build"
         },
         {
+            "label": "generate-cli-docs-mediaset-manager",
+            "type": "shell",
+            "command": "python",
+            "args": [
+                "-m",
+                "typer",
+                "${workspaceFolder}/src/mediaset_manager/app.py",
+                "utils",
+                "docs",
+                "--name",
+                "mediaset-manager",
+                "--output",
+                "${workspaceFolder}/docs/cli/mediaset_manager.md"
+            ],
+            "problemMatcher": [],
+            "options": {
+                "env": {
+                    "PYTHONPATH": "${workspaceFolder}/src"
+                }
+            },
+            "group": "build"
+        },
+        {
             "label": "generate-all-cli-docs",
             "type": "shell",
             "command": "echo",
@@ -126,7 +149,8 @@
                 "generate-cli-docs-emby-integrator",
                 "generate-cli-docs-online-medialibrary-manager",
                 "generate-cli-docs-config-manager",
-                "generate-cli-docs-metadata-manager"
+                "generate-cli-docs-metadata-manager",
+                "generate-cli-docs-mediaset-manager"  // Neuer Eintrag hinzugefügt
             ],
             "problemMatcher": [],
             "group": {
