@@ -1,6 +1,6 @@
 # Kurmann-Medienset Spezifikation
 
-Version 0.2
+Version 0.2 vom 12. Oktober 2024. Autor: *Patrick Kurmann*
 
 ## 1. Überblick
 
