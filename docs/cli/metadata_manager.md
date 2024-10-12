@@ -21,6 +21,7 @@ $ metadata-manager [OPTIONS] COMMAND [ARGS]...
 * `get-bitrate`: Gibt die Bitrate einer Videodatei zurück.
 * `get-creation-datetime`: Gibt das Erstellungsdatum einer...
 * `get-recording-date`: Extrahiert das Aufnahmedatum aus Dateiname...
+* `get-title`: Liest den "Title"-Tag aus den Metadaten...
 * `get-video-codec`: Gibt den Videocodec einer Datei zurück.
 * `is-hevc-a`: Überprüft, ob eine Videodatei HEVC-A ist...
 * `show-metadata`: Zeigt die Metadaten einer Datei an.
@@ -187,6 +188,24 @@ $ metadata-manager get-recording-date [OPTIONS] FILE_NAME
 
 * `-f, --file-path TEXT`: Pfad zur Datei, um das Datum aus dem Titel zu extrahieren
 * `-n, --filename-only`: Extrahiere das Aufnahmedatum nur aus dem Dateinamen
+* `--help`: Show this message and exit.
+
+## `metadata-manager get-title`
+
+Liest den "Title"-Tag aus den Metadaten einer Mediendatei und gibt ihn aus.
+
+**Usage**:
+
+```console
+$ metadata-manager get-title [OPTIONS] FILEPATH
+```
+
+**Arguments**:
+
+* `FILEPATH`: Pfad zur Mediendatei, aus der der Titel ausgelesen werden soll  [required]
+
+**Options**:
+
 * `--help`: Show this message and exit.
 
 ## `metadata-manager get-video-codec`
