@@ -1,5 +1,7 @@
 # Kurmann-Medienset Spezifikation
 
+Version 0.1
+
 ## 1. Überblick
 
 Das **Kurmann-Medienset** ist ein standardisiertes Format zur Organisation und Archivierung von Mediendateien. Jedes Medienset besteht aus mehreren Mediendateien sowie einer Metadaten-Datei (`Metadaten.yaml`). Diese Spezifikation stellt sicher, dass alle Mediensets konsistent benannt und strukturiert sind, um eine einfache Verwaltung und zukünftige Erweiterung zu ermöglichen.
