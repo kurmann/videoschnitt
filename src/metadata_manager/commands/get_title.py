@@ -1,3 +1,5 @@
+# src/metadata_manager/commands/get_title.py
+
 import json
 import subprocess
 from typing import Optional

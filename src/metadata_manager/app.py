@@ -10,13 +10,15 @@ from metadata_manager.utils import get_video_codec, get_bitrate, is_hevc_a
 from metadata_manager.exif import get_album, get_creation_datetime
 from metadata_manager.commands.get_recording_date import get_recording_date_command
 from metadata_manager.commands.get_title import get_title_command
-from metadata_manager.commands.get_resolution_category import get_resolution_command
+from metadata_manager.commands.get_resolution import get_resolution_command
+from metadata_manager.commands.get_video_codec import get_video_codec_command
 
 app = typer.Typer(help="Metadata Manager CLI für Kurmann Videoschnitt")
 
 app.command("get-recording-date")(get_recording_date_command)
 app.command("get-title")(get_title_command)
 app.command("get-resolution")(get_resolution_command)
+app.command("get-video-codec")(get_video_codec_command)
 
 @app.command("show-metadata")
 def show_metadata(

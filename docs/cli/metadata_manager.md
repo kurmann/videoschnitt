@@ -21,6 +21,7 @@ $ metadata-manager [OPTIONS] COMMAND [ARGS]...
 * `get-bitrate`: Gibt die Bitrate einer Videodatei zurück.
 * `get-creation-datetime`: Gibt das Erstellungsdatum einer...
 * `get-recording-date`: Extrahiert das Aufnahmedatum aus Dateiname...
+* `get-resolution`: Gibt die Auflösungskategorie einer...
 * `get-title`: Liest den "Title"-Tag aus den Metadaten...
 * `get-video-codec`: Gibt den Videocodec einer Datei zurück.
 * `is-hevc-a`: Überprüft, ob eine Videodatei HEVC-A ist...
@@ -188,6 +189,25 @@ $ metadata-manager get-recording-date [OPTIONS] FILE_NAME
 
 * `-f, --file-path TEXT`: Pfad zur Datei, um das Datum aus dem Titel zu extrahieren
 * `-n, --filename-only`: Extrahiere das Aufnahmedatum nur aus dem Dateinamen
+* `--help`: Show this message and exit.
+
+## `metadata-manager get-resolution`
+
+Gibt die Auflösungskategorie einer Videodatei zurück (SD, 720p, 1080p, 2K, 4K)
+sowie die exakte Auflösung in Pixeln (Höhe × Breite).
+
+**Usage**:
+
+```console
+$ metadata-manager get-resolution [OPTIONS] FILE_PATH
+```
+
+**Arguments**:
+
+* `FILE_PATH`: Pfad zur Videodatei, um die Auflösungskategorie zu bestimmen  [required]
+
+**Options**:
+
 * `--help`: Show this message and exit.
 
 ## `metadata-manager get-title`

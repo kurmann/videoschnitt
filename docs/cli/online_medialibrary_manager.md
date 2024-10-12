@@ -51,7 +51,9 @@ $ online-medialibrary-manager create-artwork [OPTIONS] INPUT_IMAGE
 
 Erstellt eine statische HTML-Seite.
 
-Diese Methode verwendet die bereitgestellten Videodateien und Metadaten, um eine HTML-Seite zu generieren, die die Videos in verschiedenen Auflösungen anzeigt. Zusätzlich wird ein OpenGraph-Bild erstellt, das für die Vorschau auf sozialen Medien verwendet werden kann.
+Diese Methode verwendet die bereitgestellten Videodateien und Metadaten, um eine HTML-Seite zu generieren,
+die die Videos in verschiedenen Auflösungen anzeigt. Zusätzlich wird ein OpenGraph-Bild erstellt, das für
+die Vorschau auf sozialen Medien verwendet werden kann.
 
 Args:
     metadata_source (str): Pfad zur Videodatei, aus der die Metadaten extrahiert werden sollen.
@@ -77,7 +79,7 @@ $ online-medialibrary-manager create-html [OPTIONS] METADATA_SOURCE HIGH_RES_FIL
 
 **Options**:
 
-* `--output-file TEXT`: Name der Ausgabedatei für das HTML (Standard: 'index.html')  [default: index.html]
+* `--subtitle TEXT`: Optionaler Untertitel für die Seite (z.B. Ukrainisch)
 * `--download-file TEXT`: Optionaler Pfad zur Download-Datei (z.B. ZIP-Datei)
 * `--base-url TEXT`: Basis-URL für die OG-Metadaten (z.B. https://example.com/videos)
 * `--help`: Show this message and exit.
