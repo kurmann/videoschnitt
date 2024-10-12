@@ -25,6 +25,7 @@ Die Anwendung bietet eine Vielzahl von Funktionen, die speziell für den Videosc
 - [Online Medialibrary Manager](/docs/cli/online_medialibrary_manager.md)
 - [Original Media Integrator](/docs/cli/original_media_integrator.md)
 - [Configuration Manager](/docs/cli/config_manager.md)
+- [Medienset Manager](/docs/cli/mediaset_manager.md)
 
 Die Grundlage für die CLI ist das [CLI-Design](/docs/cli_design.md)
 
