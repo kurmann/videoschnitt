@@ -1,19 +1,62 @@
 # Kurmann-Medienset Spezifikation
 
-Version 0.1
+Version 0.2
 
 ## 1. Überblick
 
-Das **Kurmann-Medienset** ist ein standardisiertes Format zur Organisation und Archivierung von Mediendateien. Jedes Medienset besteht aus mehreren Mediendateien sowie einer Metadaten-Datei (`Metadaten.yaml`). Diese Spezifikation stellt sicher, dass alle Mediensets konsistent benannt und strukturiert sind, um eine einfache Verwaltung und zukünftige Erweiterung zu ermöglichen.
+Ein **Kurmann-Medienset** ist eine standardisierte Sammlung von Mediendateien, die zu einem bestimmten Ereignis, Thema oder Projekt gehören und in einem eigenen Verzeichnis organisiert sind. Jedes Medienset enthält sowohl die Medien selbst als auch eine strukturierte Metadaten-Datei (`Metadaten.yaml`), welche die wichtigsten Informationen über das Set beschreibt. Die Metadaten-Datei ermöglicht eine effiziente Archivierung, Kategorisierung und zukünftige Verarbeitung der Mediendateien.
 
-**Version 0.1** fokussiert sich ausschließlich auf **Video**-basierte Mediensets. Weitere Medientypen wie **Dokument**, **Foto** und **Audio** sind vorgesehen und werden in zukünftigen Versionen ergänzt. Alle Medientypen werden gemeinsame obligatorische Eigenschaften besitzen: **Id**, **Titel**, **Typ** und **Datum**.
+**Version 0.2** fokussiert sich ausschließlich auf **Video**-basierte Mediensets. Weitere Medientypen wie **Dokument**, **Foto** und **Audio** sind vorgesehen und werden in zukünftigen Versionen ergänzt. Alle Medientypen werden gemeinsame obligatorische Eigenschaften besitzen: **Id**, **Titel**, **Typ** und **Datum**.
+
+### Eigenschaften eines Kurmann-Mediensets:
+
+1. **Ein Verzeichnis pro Medienset**:
+
+   - Jedes Medienset wird in einem eigenen Verzeichnis gespeichert, dessen Name sich aus dem Aufnahmedatum und dem Projekttitel zusammensetzt.
+   - Beispiel: `2024-10-10_10_Wanderung_auf_den_Napf_mit_Übernachtung/`.
+
+2. **Verschiedene Mediendateien**:
+
+   - Ein Medienset enthält mehrere Mediendateien (z.B. Videos in verschiedenen Auflösungen, Titelbilder, Projektdateien), die nach ihrem Zweck benannt sind (z.B. `Medienserver.mov`, `Internet-4K.m4v`, `Titelbild.png`).
+
+3. **Zentrale Metadaten-Datei**:
+
+   - Jede Sammlung enthält eine Datei namens `Metadaten.yaml`, welche die strukturierten Informationen zum Medienset enthält (z.B. Titel, Datum, Dauer des Videos, beteiligte Personen).
+
+4. **Ein Typ pro Medienset**:
+
+   - Ein Medienset hat einen klar definierten Medientyp, wie Video, Foto, Dokument oder Audio. Mischformen gibt es nicht, aber ein Medienset kann verschiedene unterstützende Dateien wie Projekte oder Titelbilder enthalten.
+
+5. **Zentrale Identifikationsnummer (ID)**:
+
+   - Jedes Medienset hat eine eindeutige ID (basierend auf einer ULID), die in der `Metadaten.yaml` gespeichert wird. Diese ID bleibt konstant, auch wenn der Titel oder das Datum des Mediensets geändert wird.
+
+6. **Zukunftssicherheit durch Typen**:
+
+   - Aktuell spezifiziert Version 0.1 Video-basierte Mediensets. In Zukunft sind auch Foto-, Dokument- und Audio-basierte Mediensets vorgesehen, welche jedoch auf der gleichen Struktur basieren. Alle Medientypen teilen sich die grundlegenden Pflichtfelder (ID, Titel, Datum, Typ).
 
 ## 2. Verzeichnisstruktur
 
-Jedes Medienset wird in einem eigenen Verzeichnis gespeichert, dessen Name das Aufnahmedatum und den Projektnamen enthält.
+Die Verzeichnisstruktur gilt für alle Medienset-Typen. Jedes Medienset wird in einem eigenen Verzeichnis gespeichert, dessen Name das Aufnahmedatum und den Titel enthält.
+
+### Allgemeine Struktur des Verzeichnisses
+
+Der Name des Verzeichnisses besteht immer aus dem Datum und dem Titel des Mediensets:
 
 ```yaml
-[YYYY-MM-DD]_[Projektname]/
+[YYYY-MM-DD]_[Titel]/
+```
+
+## 3. Inhalt des Verzeichnisses pro Medienset-Typ
+
+In dieser Spezifikation wird nur der Video-Medienset-Typ beschrieben.
+
+#### 3.1 Video-Medienset Struktur
+
+Die folgende Struktur beschreibt den Inhalt eines Video-basierten Mediensets:
+
+```yaml
+[YYYY-MM-DD]_[Titel]/
 ├── Internet-4K.m4v
 ├── Internet-HD.m4v
 ├── Medienserver.mov
@@ -36,9 +79,9 @@ Jedes Medienset wird in einem eigenen Verzeichnis gespeichert, dessen Name das A
 └── Metadaten.yaml
 ```
 
-## 3. Dateinamenkonventionen
+#### 3.2. Dateinamenkonventionen für Video-Mediensets
 
-Innerhalb des Medienset-Verzeichnisses sind die Dateien nach ihrem Zweck benannt, was die Identifikation und Verarbeitung der Dateien erleichtert.
+Innerhalb des Video-Medienset-Verzeichnisses sind die Dateien nach ihrem Zweck benannt, was die Identifikation und Verarbeitung der Dateien erleichtert.
 
 - **Internet-4K.m4v**: Hochauflösende Version für das Internet (4K)
 - **Internet-HD.m4v**: HD-Version für das Internet
@@ -54,7 +97,9 @@ Die `Metadaten.yaml`-Datei enthält alle relevanten Informationen zu einem Medie
 
 ### 4.1. Allgemeine Struktur der `Metadaten.yaml`
 
-Die `Metadaten.yaml`-Datei ist eine YAML-Datei, die die wichtigsten Informationen zu einem Medienset speichert. Ein Beispiel ist unten dargestellt, wobei alle Arrays inline dargestellt sind.
+Die `Metadaten.yaml`-Datei ist für alle Medienset-Typen relevant. Andere Typen wie Dokument, Fotoalbum oder Audio können zusätzliche oder andere Eigenschaften haben.
+
+Die `Metadaten.yaml`-Datei ist eine YAML-Datei, die die wichtigsten Informationen zu einem Medienset speichert. Die Pflichtfelder sind für alle Medienset-Typen bindend, während die optionalen Felder spezifisch für den Video-Typ sind. Ein Beispiel ist unten dargestellt, wobei alle Arrays inline dargestellt sind.
 
 > **Hinweis**: Wenn Double Quotes (`"`) in den Werten verwendet werden, müssen diese entsprechend escaped werden. Zum Beispiel: `"Das ist ein \"Beispiel\" mit Anführungszeichen."` oder alternativ mit Single Quotes (`'`).
 
@@ -77,14 +122,14 @@ Untertyp: "Eigenproduktionen"
 
 ### 4.2. Beschreibung der Felder
 
-#### Pflichtfelder
+#### 4.2.1. Pflichtfelder (für alle Medienset-Typen)
 
 - **Id**: Eindeutige Identifikationsnummer für das Medienset (wird als ULID vergeben).
 - **Titel**: Der Titel des Mediensets.
 - **Typ**: Haupttyp des Mediensets (z.B. „Video“).
 - **Datum**: Das Datum der Aufnahme, im Format YYYY-MM-DD.
 
-#### Optionale Felder
+#### 4.2.2. Optionale Felder (spezifisch für Video-Mediensets)
 
 - **Beschreibung**: Eine detaillierte Beschreibung des Mediensets.
 - **Copyright**: Informationen über den Copyright-Inhaber.
@@ -115,3 +160,4 @@ Falls die `Metadaten.yaml`-Datei bereits existiert und überschrieben werden sol
 Bestehende ID übernommen.
 Metadaten erfolgreich gespeichert.
 ```
+
