@@ -7,14 +7,18 @@ from datetime import datetime
 from metadata_manager import get_metadata_with_exiftool
 from metadata_manager.commands.get_recording_date import get_recording_date_command as get_recording_date
 from online_medialibrary_manager.commands.create_og_image import create_og_image_command
+from typing import Optional
 
+app = typer.Typer()
+
+@app.command()
 def create_html_command(
     metadata_source: str = typer.Argument(..., help="Pfad zur Videodatei, aus der die Metadaten extrahiert werden sollen"),
     high_res_file: str = typer.Argument(..., help="Pfad zur hochauflösenden Videodatei (4K HEVC)"),
     mid_res_file: str = typer.Argument(..., help="Pfad zur mittelauflösenden Videodatei (HD)"),
     artwork_image: str = typer.Argument(..., help="Pfad zum Vorschaubild"),
-    subtitle: str = typer.Option(None, help="Optionaler Untertitel für die Seite (z.B. Ukrainisch)"),
-    download_file: str = typer.Option(None, help="Optionaler Pfad zur Download-Datei (z.B. ZIP-Datei)"),
+    subtitle: Optional[str] = typer.Option(None, help="Optionaler Untertitel für die Seite (z.B. Ukrainisch)"),
+    download_file: Optional[str] = typer.Option(None, help="Optionaler Pfad zur Download-Datei (z.B. ZIP-Datei)"),
     base_url: str = typer.Option('', help="Basis-URL für die OG-Metadaten (z.B. https://example.com/videos)")
 ):
     """
@@ -24,6 +28,24 @@ def create_html_command(
     die die Videos in verschiedenen Auflösungen anzeigt. Zusätzlich wird ein OpenGraph-Bild erstellt, das für
     die Vorschau auf sozialen Medien verwendet werden kann.
     """
+    # Überprüfen, ob alle erforderlichen Dateien existieren
+    required_files = {
+        "Metadatenquelle": metadata_source,
+        "4K-Videodatei": high_res_file,
+        "HD-Videodatei": mid_res_file,
+        "Vorschaubild": artwork_image
+    }
+
+    if download_file:
+        required_files["Download-Datei"] = download_file
+
+    missing_files = [name for name, path in required_files.items() if not os.path.isfile(path)]
+
+    if missing_files:
+        for name in missing_files:
+            typer.secho(f"Fehler: Die Datei für '{name}' wurde nicht gefunden.", fg=typer.colors.RED)
+        raise typer.Exit(code=1)
+
     # Verzeichnis der metadata_source-Datei ermitteln
     output_directory = os.path.dirname(metadata_source)
     output_file = os.path.join(output_directory, 'index.html')
@@ -32,18 +54,23 @@ def create_html_command(
     if os.path.exists(output_file):
         overwrite = typer.confirm(f"Die Datei '{output_file}' existiert bereits. Möchtest du sie überschreiben?")
         if not overwrite:
-            typer.secho("Vorgang abgebrochen.", fg=typer.colors.RED)
+            typer.secho("Vorgang abgebrochen.", fg=typer.colors.YELLOW)
             raise typer.Exit(code=1)
 
-    # HTML generieren
-    html_content = generate_html(metadata_source, high_res_file, mid_res_file, artwork_image, subtitle, download_file, base_url)
+    # HTML generieren und speichern
+    try:
+        html_content = generate_html(metadata_source, high_res_file, mid_res_file, artwork_image, subtitle, download_file, base_url)
 
-    # HTML-Datei speichern
-    with open(output_file, 'w', encoding='utf-8') as f:
-        f.write(html_content)
-    typer.secho(f"HTML-Datei wurde erfolgreich erstellt: {output_file}", fg=typer.colors.GREEN)
+        # HTML-Datei speichern
+        with open(output_file, 'w', encoding='utf-8') as f:
+            f.write(html_content)
+        typer.secho(f"HTML-Datei wurde erfolgreich erstellt: {output_file}", fg=typer.colors.GREEN)
+    except Exception as e:
+        typer.secho(f"Ein unerwarteter Fehler ist aufgetreten: {e}", fg=typer.colors.RED)
+        raise typer.Exit(code=1)
 
-def generate_html(metadata_source: str, high_res_file: str, mid_res_file: str, artwork_image: str, subtitle: str = None, download_file: str = None, base_url: str = '') -> str:
+
+def generate_html(metadata_source: str, high_res_file: str, mid_res_file: str, artwork_image: str, subtitle: Optional[str] = None, download_file: Optional[str] = None, base_url: str = '') -> str:
     """
     Generiert eine statische HTML-Seite für das Familienvideo und erstellt ein OpenGraph-Bild.
 
@@ -385,3 +412,6 @@ def generate_javascript(high_res_file_name: str, mid_res_file_name: str) -> str:
         }});
     </script>
     '''
+
+if __name__ == "__main__":
+    app()

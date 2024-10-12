@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "kurmann-videoschnitt"
-version = "0.64.5"
+version = "0.64.6"
 description = "Sammlung von Werkzeugen zur Automatisierungen im privaten Videoschnitt"
 readme = "README.md"
 requires-python = ">=3.8,<4.0"
