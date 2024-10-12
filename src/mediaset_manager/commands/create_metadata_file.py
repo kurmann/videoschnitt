@@ -4,7 +4,6 @@ import os
 import yaml
 import ulid
 import logging
-from typing import Optional, Dict, Any
 import typer
 from datetime import datetime
 
@@ -36,9 +35,24 @@ def create_metadata_file(
     metadata_path = os.path.join(directory, metadata_filename)
     
     # Überprüfe, ob die Metadaten-Datei bereits existiert
+    existing_id = None
     if os.path.exists(metadata_path):
         overwrite = typer.confirm(f"Die Datei '{metadata_filename}' existiert bereits. Möchten Sie sie überschreiben?")
-        if not overwrite:
+        if overwrite:
+            # Lade die bestehende Metadaten-Datei und extrahiere die Id
+            try:
+                with open(metadata_path, 'r', encoding='utf-8') as yaml_file:
+                    existing_metadaten = yaml.safe_load(yaml_file)
+                existing_id = existing_metadaten.get("Id")
+                if existing_id:
+                    typer.secho("Bestehende ID übernommen.", fg=typer.colors.BLUE)
+                else:
+                    typer.secho("Keine bestehende ID gefunden. Neue ID wird generiert.", fg=typer.colors.YELLOW)
+            except Exception as e:
+                logger.warning(f"Fehler beim Lesen der bestehenden Metadaten-Datei: {e}")
+                typer.secho(f"Fehler beim Lesen der bestehenden Metadaten-Datei: {e}", fg=typer.colors.RED)
+                raise typer.Exit(code=1)
+        else:
             typer.secho("Operation abgebrochen. Die bestehende Metadaten-Datei wurde nicht überschrieben.", fg=typer.colors.YELLOW)
             raise typer.Exit()
     
@@ -53,8 +67,11 @@ def create_metadata_file(
             recording_date = datetime.fromtimestamp(os.path.getmtime(metadata_source))
             logger.info(f"Verwende das Änderungsdatum der Datei für '{metadata_source}': {recording_date.strftime('%Y-%m-%d')}")
         
-        # Generiere eine ULID für das Medienset
-        medienset_id = generate_ulid()
+        # Generiere eine ULID für das Medienset, falls keine bestehende Id vorhanden ist
+        if not existing_id:
+            medienset_id = generate_ulid()
+        else:
+            medienset_id = existing_id
         
         # Verarbeitung der Dauer (in Sekunden)
         duration_str = metadata.get("Duration", "0")
