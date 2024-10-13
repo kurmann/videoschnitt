@@ -140,6 +140,29 @@
             "group": "build"
         },
         {
+            "label": "generate-cli-docs-ffmpeg-compressor",
+            "type": "shell",
+            "command": "python",
+            "args": [
+                "-m",
+                "typer",
+                "${workspaceFolder}/src/ffmpeg_compressor/app.py",
+                "utils",
+                "docs",
+                "--name",
+                "ffmpeg-compressor",
+                "--output",
+                "${workspaceFolder}/docs/cli/ffmpeg_compressor.md"
+            ],
+            "problemMatcher": [],
+            "options": {
+                "env": {
+                    "PYTHONPATH": "${workspaceFolder}/src"
+                }
+            },
+            "group": "build"
+        },
+        {
             "label": "generate-all-cli-docs",
             "type": "shell",
             "command": "echo",
@@ -150,7 +173,8 @@
                 "generate-cli-docs-online-medialibrary-manager",
                 "generate-cli-docs-config-manager",
                 "generate-cli-docs-metadata-manager",
-                "generate-cli-docs-mediaset-manager"  // Neuer Eintrag hinzugefügt
+                "generate-cli-docs-mediaset-manager",
+                "generate-cli-docs-ffmpeg-compressor"  // Neuer Eintrag hinzugefügt
             ],
             "problemMatcher": [],
             "group": {
