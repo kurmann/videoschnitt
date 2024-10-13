@@ -1,12 +1,12 @@
 # Kurmann-Medienset Spezifikation
 
-Version 0.2 vom 12. Oktober 2024. Autor: *Patrick Kurmann*
+Version 0.3 vom 12. Oktober 2024. Autor: *Patrick Kurmann*
 
 ## 1. Überblick
 
 Ein **Kurmann-Medienset** ist eine standardisierte Sammlung von Mediendateien, die zu einem bestimmten Ereignis, Thema oder Projekt gehören und in einem eigenen Verzeichnis organisiert sind. Jedes Medienset enthält sowohl die Medien selbst als auch eine strukturierte Metadaten-Datei (`Metadaten.yaml`), welche die wichtigsten Informationen über das Set beschreibt. Die Metadaten-Datei ermöglicht eine effiziente Archivierung, Kategorisierung und zukünftige Verarbeitung der Mediendateien.
 
-**Version 0.2** fokussiert sich ausschließlich auf **Video**-basierte Mediensets. Weitere Medientypen wie **Dokument**, **Foto** und **Audio** sind vorgesehen und werden in zukünftigen Versionen ergänzt. Alle Medientypen werden gemeinsame obligatorische Eigenschaften besitzen: **Id**, **Titel**, **Typ** und **Datum**.
+**Version 0.3** fokussiert sich weiterhin ausschließlich auf **Video**-basierte Mediensets. Weitere Medientypen wie **Dokument**, **Foto** und **Audio** sind vorgesehen und werden in zukünftigen Versionen ergänzt. Alle Medientypen werden gemeinsame obligatorische Eigenschaften besitzen: **Id**, **Titel**, **Typ** und **Datum**.
 
 ### Eigenschaften eines Kurmann-Mediensets:
 
@@ -33,7 +33,7 @@ Ein **Kurmann-Medienset** ist eine standardisierte Sammlung von Mediendateien, d
 
 6. **Zukunftssicherheit durch Typen**:
 
-   - Aktuell spezifiziert Version 0.1 Video-basierte Mediensets. In Zukunft sind auch Foto-, Dokument- und Audio-basierte Mediensets vorgesehen, welche jedoch auf der gleichen Struktur basieren. Alle Medientypen teilen sich die grundlegenden Pflichtfelder (ID, Titel, Datum, Typ).
+   - Die aktuelle Version fokussiert sich auf Video-basierte Mediensets. In Zukunft sind auch Foto-, Dokument- und Audio-basierte Mediensets vorgesehen, welche jedoch auf der gleichen Struktur basieren. Alle Medientypen teilen sich die grundlegenden Pflichtfelder (ID, Titel, Datum, Typ). Zusätzliche Pflichtfelder sind abhängig vom jeweiligen Medienset-Untertyp.
 
 ## 2. Verzeichnisstruktur
 
@@ -107,6 +107,7 @@ Die `Metadaten.yaml`-Datei ist eine YAML-Datei, die die wichtigsten Informatione
 Id: "01JA0X08NCSKRSB6VF4C51MEB6"
 Titel: "Wanderung auf den Napf mit Übernachtung"
 Typ: "Video"
+Untertyp: "Eigenproduktionen"
 Datum: "2024-10-10"
 Beschreibung: "Als ganze Familie auf dem Gipfel des Napfs mit einer prächtigen Rundumsicht in die Alpen und das Mittelland einschliesslich Übernachtung im Berghotel."
 Copyright: "© Patrick Kurmann 2024"
@@ -117,7 +118,6 @@ Album: "Familie Kurmann-Glück"
 Videoschnitt: ["Patrick Kurmann"]
 Aufnahmen: ["Patrick Kurmann", "Kathrin Glück"]
 Dauer_in_Sekunden: 425
-Untertyp: "Eigenproduktionen"
 ```
 
 ### 4.2. Beschreibung der Felder
@@ -126,8 +126,12 @@ Untertyp: "Eigenproduktionen"
 
 - **Id**: Eindeutige Identifikationsnummer für das Medienset (wird als ULID vergeben).
 - **Titel**: Der Titel des Mediensets.
-- **Typ**: Haupttyp des Mediensets (z.B. „Video“).
+- **Typ**: Haupttyp des Mediensets (z.B. "Video").
 - **Datum**: Das Datum der Aufnahme, im Format YYYY-MM-DD.
+
+Für bestimmte Untertypen können zusätzliche Pflichtfelder vorgeschrieben sein. Zum Beispiel:
+
+- **Eigenproduktion**: Zusätzlich zu den allgemeinen Pflichtfeldern muss das **Aufnahmedatum** angegeben werden.
 
 #### 4.2.2. Optionale Felder (spezifisch für Video-Mediensets)
 
@@ -140,21 +144,21 @@ Untertyp: "Eigenproduktionen"
 - **Videoschnitt**: Eine Liste der Personen, die für den Videoschnitt verantwortlich sind. Beispiel: `["Patrick Kurmann"]`
 - **Aufnahmen**: Eine Liste der Personen, die an den Aufnahmen beteiligt waren. Beispiel: `["Patrick Kurmann", "Kathrin Glück"]`
 - **Dauer\_in\_Sekunden**: Die Gesamtdauer des Videos in Sekunden (gerundet).
-- **Untertyp**: Ein spezifischer Untertyp des Videos, z.B. „Eigenproduktionen“.
+- **Untertyp**: Ein spezifischer Untertyp des Videos, z.B. „Eigenproduktionen“. Falls nicht angegeben, wird "nicht spezifiziert" verwendet.
 
 ## 5. Generierung der `Metadaten.yaml`
 
-Um die `Metadaten.yaml`-Datei automatisch zu erstellen, wird ein Typer-Command bereitgestellt. In Version 0.1 unterstützt der Command ausschließlich Video-basierte Mediensets. Andere Medientypen werden in zukünftigen Versionen unterstützt.
+Um die `Metadaten.yaml`-Datei automatisch zu erstellen, wird ein Typer-Command bereitgestellt. Die aktuelle Version unterstützt ausschließlich Video-basierte Mediensets. Andere Medientypen werden in zukünftigen Versionen unterstützt.
 
 ### 5.1. Nutzung des `create-metadata-file` Commands
 
-Um die `Metadaten.yaml`-Datei für ein Video-basiertes Medienset zu generieren, führe folgenden Befehl in deinem Terminal aus:
+Um die Metadaten.yaml-Datei für ein Video-basiertes Medienset zu generieren, führe folgenden Befehl in deinem Terminal aus:
 
 ```bash
 mediaset-manager create-metadata-file '/Pfad/zur/Medienserver.mov'
 ```
 
-Falls die `Metadaten.yaml`-Datei bereits existiert und überschrieben werden soll, übernimmt die CLI die bestehende **Id**.
+Falls die Metadaten.yaml-Datei bereits existiert und überschrieben werden soll, übernimmt die CLI die bestehende Id.
 
 ```
 Bestehende ID übernommen.
