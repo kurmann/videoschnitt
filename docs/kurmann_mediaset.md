@@ -104,11 +104,12 @@ Die `Metadaten.yaml`-Datei ist für alle Medienset-Typen relevant. Andere Typen 
 - **Bearbeitungsdatum**: Das Datum, an dem das Medienset zuletzt angepasst wurde, z.B. bei einer Korrektur oder einer neuen Version eines Videos. Dieses Feld ist optional.
 - **Mediatheksdatum**: Das Datum, an dem das Medienset in die Mediathek aufgenommen wurde. Dieses Feld ist optional, wird jedoch in den meisten Fällen automatisch durch das zugehörige Python-Skript gesetzt, sobald das Medienset integriert wird.
 
-Die `Metadaten.yaml`-Datei ist eine YAML-Datei, die die wichtigsten Informationen zu einem Medienset speichert. Die Pflichtfelder sind für alle Medienset-Typen bindend, während die optionalen Felder spezifisch für den Video-Typ sind. Ein Beispiel ist unten dargestellt, wobei alle Arrays inline dargestellt sind.
+Die `Metadaten.yaml`-Datei ist eine YAML-Datei, die die wichtigsten Informationen zu einem Medienset speichert. Die Pflichtfelder sind für alle Medienset-Typen bindend, während die optionalen Felder spezifisch für den Video-Typ sind. Zusätzlich gibt es ein Pflichtfeld, das die Spezifikationsversion angibt, um die Kompatibilität sicherzustellen. Ein Beispiel ist unten dargestellt, wobei alle Arrays inline dargestellt sind.
 
 > **Hinweis**: Wenn Double Quotes (`"`) in den Werten verwendet werden, müssen diese entsprechend escaped werden. Zum Beispiel: `"Das ist ein \"Beispiel\" mit Anführungszeichen."` oder alternativ mit Single Quotes (`'`).
 
 ```yaml
+Spezifikationsversion: "0.5"
 Id: "01JA0X08NCSKRSB6VF4C51MEB6"
 Titel: "Wanderung auf den Napf mit Übernachtung"
 Typ: "Video"
@@ -131,6 +132,7 @@ Dauer_in_Sekunden: 425
 
 #### 4.2.1. Pflichtfelder (für alle Medienset-Typen)
 
+- **Spezifikationsversion**: Die Version der Medienset-Spezifikation, die für das Medienset verwendet wurde (z.B. "0.5").
 - **Id**: Eindeutige Identifikationsnummer für das Medienset (wird als ULID vergeben).
 - **Titel**: Der Titel des Mediensets.
 - **Typ**: Haupttyp des Mediensets (z.B. "Video").
@@ -171,3 +173,4 @@ Falls die Metadaten.yaml-Datei bereits existiert und überschrieben werden soll,
 Bestehende ID übernommen.
 Metadaten erfolgreich gespeichert.
 ```
+
