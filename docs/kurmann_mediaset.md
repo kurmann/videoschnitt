@@ -1,12 +1,12 @@
 # Kurmann-Medienset Spezifikation
 
-Version 0.4 vom 12. Oktober 2024. Autor: *Patrick Kurmann*
+Version 0.5 vom 14. Oktober 2024. Autor: *Patrick Kurmann*
 
 ## 1. Überblick
 
 Ein **Kurmann-Medienset** ist eine standardisierte Sammlung von Mediendateien, die zu einem bestimmten Ereignis, Thema oder Projekt gehören und in einem eigenen Verzeichnis organisiert sind. Jedes Medienset enthält sowohl die Medien selbst als auch eine strukturierte Metadaten-Datei (`Metadaten.yaml`), welche die wichtigsten Informationen über das Set beschreibt. Die Metadaten-Datei ermöglicht eine effiziente Archivierung, Kategorisierung und zukünftige Verarbeitung der Mediendateien.
 
-**Version 0.4** fokussiert sich weiterhin ausschließlich auf **Video**-basierte Mediensets. Weitere Medientypen wie **Dokument**, **Foto** und **Audio** sind vorgesehen und werden in zukünftigen Versionen ergänzt. Alle Medientypen werden gemeinsame obligatorische Eigenschaften besitzen: **Id**, **Titel**, **Typ** und **Datum**.
+**Version 0.5** fokussiert sich weiterhin ausschließlich auf **Video**-basierte Mediensets. Weitere Medientypen wie **Dokument**, **Foto** und **Audio** sind vorgesehen und werden in zukünftigen Versionen ergänzt. Alle Medientypen werden gemeinsame obligatorische Eigenschaften besitzen: **Id**, **Titel**, **Typ** und **Datum**.
 
 ### Eigenschaften eines Kurmann-Mediensets:
 
@@ -97,18 +97,25 @@ Die `Metadaten.yaml`-Datei enthält alle relevanten Informationen zu einem Medie
 
 ### 4.1. Allgemeine Struktur der `Metadaten.yaml`
 
-Die `Metadaten.yaml`-Datei ist für alle Medienset-Typen relevant. Andere Typen wie Dokument, Fotoalbum oder Audio können zusätzliche oder andere Eigenschaften haben.
+Die `Metadaten.yaml`-Datei ist für alle Medienset-Typen relevant. Andere Typen wie Dokument, Fotoalbum oder Audio können zusätzliche oder andere Eigenschaften haben. Es gibt verschiedene optionale Datumsfelder, um den Lebenszyklus des Mediensets abzubilden:
 
-Die `Metadaten.yaml`-Datei ist eine YAML-Datei, die die wichtigsten Informationen zu einem Medienset speichert. Die Pflichtfelder sind für alle Medienset-Typen bindend, während die optionalen Felder spezifisch für den Video-Typ sind. Ein Beispiel ist unten dargestellt, wobei alle Arrays inline dargestellt sind.
+- **Aufnahmedatum**: Das Datum, an dem die Medien aufgenommen wurden (z.B. das Filmdatum eines Videos). Dieses Feld ist insbesondere für den Untertyp "Ereignis" relevant.
+- **Erstellungsdatum**: Das Datum, an dem das Medienset zusammengestellt und der Videoschnitt abgeschlossen wurde. Dieses Feld ist optional und vor allem für Videos relevant.
+- **Bearbeitungsdatum**: Das Datum, an dem das Medienset zuletzt angepasst wurde, z.B. bei einer Korrektur oder einer neuen Version eines Videos. Dieses Feld ist optional.
+- **Mediatheksdatum**: Das Datum, an dem das Medienset in die Mediathek aufgenommen wurde. Dieses Feld ist optional, wird jedoch in den meisten Fällen automatisch durch das zugehörige Python-Skript gesetzt, sobald das Medienset integriert wird.
+
+Die `Metadaten.yaml`-Datei ist eine YAML-Datei, die die wichtigsten Informationen zu einem Medienset speichert. Die Pflichtfelder sind für alle Medienset-Typen bindend, während die optionalen Felder spezifisch für den Video-Typ sind. Zusätzlich gibt es ein Pflichtfeld, das die Spezifikationsversion angibt, um die Kompatibilität sicherzustellen. Ein Beispiel ist unten dargestellt, wobei alle Arrays inline dargestellt sind.
 
 > **Hinweis**: Wenn Double Quotes (`"`) in den Werten verwendet werden, müssen diese entsprechend escaped werden. Zum Beispiel: `"Das ist ein \"Beispiel\" mit Anführungszeichen."` oder alternativ mit Single Quotes (`'`).
 
 ```yaml
+Spezifikationsversion: "0.5"
 Id: "01JA0X08NCSKRSB6VF4C51MEB6"
 Titel: "Wanderung auf den Napf mit Übernachtung"
 Typ: "Video"
 Untertyp: "Ereignis"
 Erstellungsjahr: "2024"
+Mediatheksdatum: "2024-11-05"
 Aufnahmedatum: "2024-10-10"
 Beschreibung: "Als ganze Familie auf dem Gipfel des Napfs mit einer prächtigen Rundumsicht in die Alpen und das Mittelland einschliesslich Übernachtung im Berghotel."
 Copyright: "© Patrick Kurmann 2024"
@@ -125,15 +132,15 @@ Dauer_in_Sekunden: 425
 
 #### 4.2.1. Pflichtfelder (für alle Medienset-Typen)
 
+- **Spezifikationsversion**: Die Version der Medienset-Spezifikation, die für das Medienset verwendet wurde (z.B. "0.5").
 - **Id**: Eindeutige Identifikationsnummer für das Medienset (wird als ULID vergeben).
 - **Titel**: Der Titel des Mediensets.
 - **Typ**: Haupttyp des Mediensets (z.B. "Video").
-- **Erstellungsjahr**: Das Jahr der Erstellung des Mediensets, im Format YYYY.
 
 Für bestimmte Untertypen können zusätzliche Pflichtfelder vorgeschrieben sein. Zum Beispiel:
 
 - **Ereignis**: Zusätzlich zu den allgemeinen Pflichtfeldern muss das **Aufnahmedatum** (im Format YYYY-MM-DD) angegeben werden.
-- **Rückblick**: Zusätzlich zu den allgemeinen Pflichtfeldern muss der **Zeitraum** (im Format "YYYY", "YYYY-YYYY" oder "Monat Jahr bis Monat Jahr") angegeben werden.**
+- **Rückblick**: Zusätzlich zu den allgemeinen Pflichtfeldern muss der **Zeitraum** (im Format "YYYY", "YYYY-YYYY" oder "Monat Jahr bis Monat Jahr") angegeben werden.\*\*
 
 #### 4.2.2. Optionale Felder (spezifisch für Video-Mediensets)
 
@@ -166,3 +173,4 @@ Falls die Metadaten.yaml-Datei bereits existiert und überschrieben werden soll,
 Bestehende ID übernommen.
 Metadaten erfolgreich gespeichert.
 ```
+
