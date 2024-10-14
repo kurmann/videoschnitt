@@ -1,6 +1,6 @@
 # Kurmann-Medienset Spezifikation
 
-Version 0.5 vom 12. Oktober 2024. Autor: *Patrick Kurmann*
+Version 0.5 vom 14. Oktober 2024. Autor: *Patrick Kurmann*
 
 ## 1. Überblick
 
@@ -97,7 +97,7 @@ Die `Metadaten.yaml`-Datei enthält alle relevanten Informationen zu einem Medie
 
 ### 4.1. Allgemeine Struktur der `Metadaten.yaml`
 
-Die `Metadaten.yaml`-Datei ist für alle Medienset-Typen relevant. Andere Typen wie Dokument, Fotoalbum oder Audio können zusätzliche oder andere Eigenschaften haben. Es gibt verschiedene Datumsfelder, um den Lebenszyklus des Mediensets abzubilden:
+Die `Metadaten.yaml`-Datei ist für alle Medienset-Typen relevant. Andere Typen wie Dokument, Fotoalbum oder Audio können zusätzliche oder andere Eigenschaften haben. Es gibt verschiedene optionale Datumsfelder, um den Lebenszyklus des Mediensets abzubilden:
 
 - **Aufnahmedatum**: Das Datum, an dem die Medien aufgenommen wurden (z.B. das Filmdatum eines Videos). Dieses Feld ist insbesondere für den Untertyp "Ereignis" relevant.
 - **Erstellungsdatum**: Das Datum, an dem das Medienset zusammengestellt und der Videoschnitt abgeschlossen wurde. Dieses Feld ist optional und vor allem für Videos relevant.
@@ -134,9 +134,6 @@ Dauer_in_Sekunden: 425
 - **Id**: Eindeutige Identifikationsnummer für das Medienset (wird als ULID vergeben).
 - **Titel**: Der Titel des Mediensets.
 - **Typ**: Haupttyp des Mediensets (z.B. "Video").
-- **Erstellungsdatum**: Das Datum, an dem das Medienset erstellt wurde (z.B. Videoschnitt), im Format YYYY-MM-DD (optional).
-- **Bearbeitungsdatum**: Das Datum der letzten Änderung des Mediensets, im Format YYYY-MM-DD (optional).
-- **Mediatheksdatum**: Das Datum, an dem das Medienset in die Mediathek aufgenommen wurde, im Format YYYY-MM-DD (optional).
 
 Für bestimmte Untertypen können zusätzliche Pflichtfelder vorgeschrieben sein. Zum Beispiel:
 
@@ -174,4 +171,3 @@ Falls die Metadaten.yaml-Datei bereits existiert und überschrieben werden soll,
 Bestehende ID übernommen.
 Metadaten erfolgreich gespeichert.
 ```
-
