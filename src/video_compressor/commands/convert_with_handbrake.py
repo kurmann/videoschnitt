@@ -19,6 +19,8 @@ VIDEO_EXTENSIONS = [
     ".f4v", ".rm", ".rmvb"
 ]
 
+app = typer.Typer()
+
 def convert_videos_with_handbrake_command(
     directory: str = typer.Argument(..., help="Pfad zum Verzeichnis mit den Videodateien"),
     preset_file: str = typer.Option(
@@ -31,16 +33,18 @@ def convert_videos_with_handbrake_command(
 ):
     """
     Konvertiert alle nicht H.264 oder HEVC Videos in einem Verzeichnis nach HEVC mit HandBrakeCLI.
+    WebM-Dateien mit H.264 oder HEVC werden ohne Neukodierung in einen MP4-Container remuxt.
     """
     # Zähler initialisieren
     total_videos = 0
     converted_videos = 0
+    remuxed_videos = 0
     skipped_videos = 0
     pending_videos = 0
 
     # Listen für spätere Aktionen
     original_files_to_delete: List[str] = []
-    compressed_files_to_rename: List[str] = []
+    processed_files: List[str] = []
 
     # Überprüfen, ob das Verzeichnis existiert
     if not os.path.isdir(directory):
@@ -63,20 +67,14 @@ def convert_videos_with_handbrake_command(
         typer.secho("Keine Videodateien zum Konvertieren gefunden.", fg=typer.colors.YELLOW)
         raise typer.Exit()
 
-    typer.secho(f"Insgesamt {total_videos} Videodateien gefunden. Beginne mit der Konvertierung...", fg=typer.colors.BLUE)
+    typer.secho(f"Insgesamt {total_videos} Videodatei(en) gefunden. Beginne mit der Konvertierung...", fg=typer.colors.BLUE)
 
     for index, video_file in enumerate(video_files, start=1):
         file_path = os.path.join(directory, video_file)
         codec = get_video_codec(file_path)
 
         if codec is None:
-            typer.secho(f"[{index}/{total_videos}] Konnte Videocodec für '{video_file}' nicht ermitteln. Datei wird übersprungen.", fg=typer.colors.RED)
-            skipped_videos += 1
-            pending_videos -= 1
-            continue
-
-        if codec.lower() in ['h264', 'hevc']:
-            typer.secho(f"[{index}/{total_videos}] '{video_file}' hat bereits einen kompatiblen Codec ({codec}).", fg=typer.colors.GREEN)
+            typer.secho(f"[{index}/{total_videos}] Konnte Codec für '{video_file}' nicht ermitteln. Datei wird übersprungen.", fg=typer.colors.RED)
             skipped_videos += 1
             pending_videos -= 1
             continue
@@ -93,60 +91,105 @@ def convert_videos_with_handbrake_command(
             pending_videos -= 1
             continue
 
-        # Baue den HandBrakeCLI Befehl
-        cmd = [
-            'HandBrakeCLI',
-            '--preset-import-file', preset_file,
-            '--preset', preset,
-            '-i', file_path,
-            '-o', output_path
-        ]
+        # Prüfe, ob die Datei eine WebM-Datei mit HEVC oder H.264 ist
+        if extension.lower() == '.webm' and codec.lower() in ['hevc', 'h264']:
+            typer.secho(f"[{index}/{total_videos}] '{video_file}' wird ohne Neukodierung in MP4 remuxt...", fg=typer.colors.YELLOW)
 
-        typer.secho(f"[{index}/{total_videos}] Konvertiere '{video_file}' mit HandBrakeCLI...", fg=typer.colors.YELLOW)
-        logger.debug(f"Führe HandBrakeCLI mit folgendem Befehl aus: {' '.join(cmd)}")
+            # Baue den FFmpeg-Befehl zum Remuxen
+            cmd = [
+                'ffmpeg',
+                '-y',  # Überschreibt bestehende Dateien ohne Nachfrage
+                '-i', file_path,
+                '-c', 'copy',
+                '-movflags', 'faststart',  # Optional für bessere Streaming-Performance
+                output_path
+            ]
 
-        try:
-            # Führe den HandBrakeCLI Prozess aus und gebe die Ausgaben aus
-            process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+            logger.debug(f"Führe FFmpeg mit folgendem Befehl aus: {' '.join(cmd)}")
 
-            for line in process.stdout:
-                print(line, end='')
+            # Führe den FFmpeg-Prozess aus
+            process = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
-            process.wait()
-            returncode = process.returncode
-
-            if returncode != 0:
-                typer.secho(f"Fehler bei der Konvertierung von '{video_file}'.", fg=typer.colors.RED)
+            if process.returncode != 0:
+                typer.secho(f"Fehler beim Remuxen von '{video_file}':\n{process.stderr}", fg=typer.colors.RED)
                 skipped_videos += 1
                 pending_videos -= 1
                 continue
 
-            # Speichere die Dateien für spätere Aktionen
-            original_files_to_delete.append(file_path)
-            compressed_files_to_rename.append(output_path)
-
-            typer.secho(f"Erfolgreich konvertiert: '{output_file}'", fg=typer.colors.GREEN)
-            converted_videos += 1
+            typer.secho(f"Erfolgreich remuxt: '{output_file}'", fg=typer.colors.GREEN)
+            remuxed_videos += 1
             pending_videos -= 1
 
-            # Fortschritt anzeigen
-            typer.secho(f"Fortschritt: {converted_videos} konvertiert, {skipped_videos} übersprungen, {pending_videos} verbleibend.", fg=typer.colors.BLUE)
+            # Speichere die Dateien für spätere Aktionen
+            original_files_to_delete.append(file_path)
+            processed_files.append(output_path)
 
-        except KeyboardInterrupt:
-            typer.secho("Abbruchsignal erhalten. Beende laufenden HandBrakeCLI-Prozess...", fg=typer.colors.RED)
-            process.terminate()
-            process.wait()
-            raise typer.Exit()
+        # Überspringe bereits kompatible MP4-Dateien mit HEVC oder H.264
+        elif extension.lower() == '.mp4' and codec.lower() in ['hevc', 'h264']:
+            typer.secho(f"[{index}/{total_videos}] '{video_file}' ist bereits ein MP4 mit Codec '{codec}'. Datei wird übersprungen.", fg=typer.colors.GREEN)
+            skipped_videos += 1
+            pending_videos -= 1
+            continue
 
-    typer.secho(f"\nKonvertierung abgeschlossen.", fg=typer.colors.GREEN)
+        else:
+            # Ansonsten konvertiere mit HandBrakeCLI
+            typer.secho(f"[{index}/{total_videos}] Konvertiere '{video_file}' mit HandBrakeCLI...", fg=typer.colors.YELLOW)
+
+            # Baue den HandBrakeCLI Befehl
+            cmd = [
+                'HandBrakeCLI',
+                '--preset-import-file', preset_file,
+                '--preset', preset,
+                '-i', file_path,
+                '-o', output_path
+            ]
+
+            logger.debug(f"Führe HandBrakeCLI mit folgendem Befehl aus: {' '.join(cmd)}")
+
+            try:
+                # Führe den HandBrakeCLI Prozess aus und gebe die Ausgaben aus
+                process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+
+                for line in process.stdout:
+                    print(line, end='')
+
+                process.wait()
+                returncode = process.returncode
+
+                if returncode != 0:
+                    typer.secho(f"Fehler bei der Konvertierung von '{video_file}'.", fg=typer.colors.RED)
+                    skipped_videos += 1
+                    pending_videos -= 1
+                    continue
+
+                typer.secho(f"Erfolgreich konvertiert: '{output_file}'", fg=typer.colors.GREEN)
+                converted_videos += 1
+                pending_videos -= 1
+
+                # Speichere die Dateien für spätere Aktionen
+                original_files_to_delete.append(file_path)
+                processed_files.append(output_path)
+
+            except KeyboardInterrupt:
+                typer.secho("Abbruchsignal erhalten. Beende laufenden HandBrakeCLI-Prozess...", fg=typer.colors.RED)
+                process.terminate()
+                process.wait()
+                raise typer.Exit()
+
+        # Fortschritt anzeigen nach jeder Datei
+        typer.secho(f"Fortschritt: {converted_videos + remuxed_videos} verarbeitet, {skipped_videos} übersprungen, {pending_videos} verbleibend.", fg=typer.colors.BLUE)
+
+    typer.secho(f"\nVerarbeitung abgeschlossen.", fg=typer.colors.GREEN)
     typer.secho(f"{converted_videos} Videos wurden konvertiert.", fg=typer.colors.GREEN)
+    typer.secho(f"{remuxed_videos} Videos wurden remuxt.", fg=typer.colors.GREEN)
     typer.secho(f"{skipped_videos} Videos wurden übersprungen.", fg=typer.colors.YELLOW)
 
-    # Nach der Konvertierung: Entscheide, ob Originale gelöscht und Dateien umbenannt werden sollen
-    if not keep_original and converted_videos > 0:
-        delete_confirm = typer.confirm(f"Möchten Sie die {converted_videos} Originaldatei(en) löschen und die komprimierten Dateien umbenennen?")
+    # Nach der Verarbeitung: Entscheide, ob Originale gelöscht und Dateien umbenannt werden sollen
+    total_processed = converted_videos + remuxed_videos
+    if not keep_original and total_processed > 0:
+        delete_confirm = typer.confirm(f"Möchten Sie die {total_processed} Originaldatei(en) löschen und die verarbeiteten Dateien umbenennen?")
         if delete_confirm:
-            for original_file, compressed_file in zip(original_files_to_delete, compressed_files_to_rename):
+            for original_file, processed_file in zip(original_files_to_delete, processed_files):
                 # Lösche die Originaldatei
                 try:
                     os.remove(original_file)
@@ -155,20 +198,20 @@ def convert_videos_with_handbrake_command(
                     typer.secho(f"Fehler beim Löschen der Originaldatei '{os.path.basename(original_file)}': {e}", fg=typer.colors.RED)
                     continue  # Fahre mit der nächsten Datei fort
 
-                # Benenne die komprimierte Datei um (Postfix entfernen)
-                base_name, extension = os.path.splitext(os.path.basename(original_file))
-                new_output_file = f"{base_name}{extension}"
+                # Benenne die verarbeitete Datei um (Postfix entfernen und korrekte Erweiterung setzen)
+                base_name, original_extension = os.path.splitext(os.path.basename(original_file))
+                new_output_file = f"{base_name}{OUTPUT_EXTENSION}"
                 new_output_path = os.path.join(directory, new_output_file)
                 try:
-                    os.rename(compressed_file, new_output_path)
+                    os.rename(processed_file, new_output_path)
                     typer.secho(f"Ausgabedatei wurde umbenannt zu '{new_output_file}'.", fg=typer.colors.GREEN)
                 except Exception as e:
-                    typer.secho(f"Fehler beim Umbenennen der Ausgabedatei '{os.path.basename(compressed_file)}': {e}", fg=typer.colors.RED)
+                    typer.secho(f"Fehler beim Umbenennen der Ausgabedatei '{os.path.basename(processed_file)}': {e}", fg=typer.colors.RED)
         else:
-            typer.secho("Originaldateien wurden beibehalten. Komprimierte Dateien behalten das Postfix.", fg=typer.colors.YELLOW)
+            typer.secho("Originaldateien wurden beibehalten. Verarbeitete Dateien behalten das Postfix.", fg=typer.colors.YELLOW)
     else:
-        if converted_videos > 0:
-            typer.secho("Originaldateien wurden beibehalten. Komprimierte Dateien behalten das Postfix.", fg=typer.colors.YELLOW)
+        if total_processed > 0:
+            typer.secho("Originaldateien wurden beibehalten. Verarbeitete Dateien behalten das Postfix.", fg=typer.colors.YELLOW)
 
 def main():
     typer.run(convert_videos_with_handbrake_command)

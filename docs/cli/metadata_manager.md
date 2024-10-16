@@ -24,6 +24,7 @@ $ metadata-manager [OPTIONS] COMMAND [ARGS]...
 * `get-resolution`: Gibt die Auflösungskategorie einer...
 * `get-title`: Liest den "Title"-Tag aus den Metadaten...
 * `get-video-codec`: Gibt den Videocodec einer Datei zurück.
+* `get-video-container`: Ermittelt den Container-Typ einer...
 * `is-hevc-a`: Überprüft, ob eine Videodatei HEVC-A ist...
 * `show-metadata`: Zeigt die Metadaten einer Datei an.
 * `show-metadata-with-exiftool`: Zeigt die Metadaten einer Datei an,...
@@ -254,6 +255,24 @@ $ metadata-manager get-video-codec [OPTIONS] FILE_PATH
 **Arguments**:
 
 * `FILE_PATH`: Pfad zur Videodatei, deren Codec abgerufen werden soll  [required]
+
+**Options**:
+
+* `--help`: Show this message and exit.
+
+## `metadata-manager get-video-container`
+
+Ermittelt den Container-Typ einer Videodatei mittels ffprobe.
+
+**Usage**:
+
+```console
+$ metadata-manager get-video-container [OPTIONS] FILE_PATH
+```
+
+**Arguments**:
+
+* `FILE_PATH`: [required]
 
 **Options**:
 
