@@ -30,6 +30,7 @@ config-manager = "config_manager.app:app"
 metadata-manager = "metadata_manager.app:app"
 mediaset-manager = "mediaset_manager.app:app"
 video-compressor = "video_compressor.app:app"
+movie-integrator = "movie_integrator.app:app"
 
 [project.urls]
 Homepage = "https://github.com/kurmann/videoschnitt"
