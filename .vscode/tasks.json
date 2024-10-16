@@ -140,7 +140,7 @@
             "group": "build"
         },
         {
-            "label": "generate-cli-docs-ffmpeg-compressor",
+            "label": "generate-cli-docs-video-compressor",
             "type": "shell",
             "command": "python",
             "args": [
@@ -150,7 +150,7 @@
                 "utils",
                 "docs",
                 "--name",
-                "ffmpeg-compressor",
+                "video-compressor",
                 "--output",
                 "${workspaceFolder}/docs/cli/video_compressor.md"
             ],
@@ -174,7 +174,7 @@
                 "generate-cli-docs-config-manager",
                 "generate-cli-docs-metadata-manager",
                 "generate-cli-docs-mediaset-manager",
-                "generate-cli-docs-ffmpeg-compressor"  // Neuer Eintrag hinzugefügt
+                "generate-cli-docs-video-compressor"  // Neuer Eintrag hinzugefügt
             ],
             "problemMatcher": [],
             "group": {
