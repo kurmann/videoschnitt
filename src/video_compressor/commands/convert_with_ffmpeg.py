@@ -1,4 +1,4 @@
-# src/ffmpeg_compressor/commands/convert_to_hevc.py
+# src/video_compressor/commands/convert_to_hevc.py
 
 import typer
 import os
@@ -19,7 +19,7 @@ VIDEO_EXTENSIONS = [
     ".f4v", ".rm", ".rmvb"
 ]
 
-def convert_videos_to_hevc_command(
+def convert_videos_with_ffmpeg(
     directory: str = typer.Argument(..., help="Pfad zum Verzeichnis mit den Videodateien"),
     quality_index: str = typer.Option(QUALITY_INDEX, help="Qualitätsindex für ffmpeg (CRF-Wert)"),
     postfix: str = typer.Option(POSTFIX, help="Postfix für die Ausgabedateien")
@@ -117,7 +117,7 @@ def convert_videos_to_hevc_command(
     typer.secho(f"{skipped_videos} Videos wurden übersprungen.", fg=typer.colors.YELLOW)
 
 def main():
-    typer.run(convert_videos_to_hevc_command)
+    typer.run(convert_videos_with_ffmpeg)
 
 if __name__ == "__main__":
     main()

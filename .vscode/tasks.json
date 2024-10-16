@@ -146,13 +146,13 @@
             "args": [
                 "-m",
                 "typer",
-                "${workspaceFolder}/src/ffmpeg_compressor/app.py",
+                "${workspaceFolder}/src/video_compressor/app.py",
                 "utils",
                 "docs",
                 "--name",
                 "ffmpeg-compressor",
                 "--output",
-                "${workspaceFolder}/docs/cli/ffmpeg_compressor.md"
+                "${workspaceFolder}/docs/cli/video_compressor.md"
             ],
             "problemMatcher": [],
             "options": {
