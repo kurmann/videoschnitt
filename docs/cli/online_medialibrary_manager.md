@@ -55,15 +55,6 @@ Diese Methode verwendet die bereitgestellten Videodateien und Metadaten, um eine
 die die Videos in verschiedenen Auflösungen anzeigt. Zusätzlich wird ein OpenGraph-Bild erstellt, das für
 die Vorschau auf sozialen Medien verwendet werden kann.
 
-Args:
-    metadata_source (str): Pfad zur Videodatei, aus der die Metadaten extrahiert werden sollen.
-    high_res_file (str): Pfad zur hochauflösenden Videodatei (4K HEVC).
-    mid_res_file (str): Pfad zur mittelauflösenden Videodatei (HD).
-    artwork_image (str): Pfad zum Vorschaubild.
-    output_file (str): Name der Ausgabedatei für das HTML (Standard: 'index.html').
-    download_file (str): Optionaler Pfad zur Download-Datei (z.B. ZIP-Datei).
-    base_url (str): Basis-URL für die OG-Metadaten.
-
 **Usage**:
 
 ```console

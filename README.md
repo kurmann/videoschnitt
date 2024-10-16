@@ -29,6 +29,7 @@ Ein Beispiel für eine solche Erweiterung ist das Konzept der **Kurmann-Mediense
 - [Configuration Manager](/docs/cli/config_manager.md)
 - [Medienset Manager](/docs/cli/mediaset_manager.md)
 - [Video Compressor](/docs/cli/video_compressor.md)
+- [Movie Integrator](/docs/cli/movie_integrator.md)
 
 Die Grundlage für die CLI ist das [CLI-Design](/docs/cli_design.md)
 
