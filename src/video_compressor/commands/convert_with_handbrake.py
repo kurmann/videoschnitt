@@ -2,6 +2,7 @@
 
 import typer
 import os
+from typing import List
 from metadata_manager.commands.get_video_codec import get_video_codec
 import subprocess
 import logging
@@ -25,7 +26,8 @@ def convert_videos_with_handbrake_command(
         help="Pfad zur Preset-Datei (JSON)"
     ),
     preset: str = typer.Option("YouTube", help="Name des HandBrakeCLI Presets"),
-    postfix: str = typer.Option(POSTFIX, help="Postfix für die Ausgabedateien")
+    postfix: str = typer.Option(POSTFIX, help="Postfix für die Ausgabedateien"),
+    keep_original: bool = typer.Option(False, "--keep-original", help="Originaldateien behalten und nicht löschen")
 ):
     """
     Konvertiert alle nicht H.264 oder HEVC Videos in einem Verzeichnis nach HEVC mit HandBrakeCLI.
@@ -35,6 +37,10 @@ def convert_videos_with_handbrake_command(
     converted_videos = 0
     skipped_videos = 0
     pending_videos = 0
+
+    # Listen für spätere Aktionen
+    original_files_to_delete: List[str] = []
+    compressed_files_to_rename: List[str] = []
 
     # Überprüfen, ob das Verzeichnis existiert
     if not os.path.isdir(directory):
@@ -76,14 +82,16 @@ def convert_videos_with_handbrake_command(
             continue
 
         # Erstelle den Ausgabedateinamen
-        base_name, _ = os.path.splitext(video_file)
+        base_name, extension = os.path.splitext(video_file)
         output_file = f"{base_name}{postfix}{OUTPUT_EXTENSION}"
         output_path = os.path.join(directory, output_file)
 
-        # Informiere den Benutzer, wenn die Ausgabedatei bereits existiert und überschreibe sie
+        # Überprüfe, ob die Ausgabedatei bereits existiert
         if os.path.exists(output_path):
-            typer.secho(f"Ausgabedatei '{output_file}' existiert bereits und wird überschrieben.", fg=typer.colors.YELLOW)
-            os.remove(output_path)
+            typer.secho(f"[{index}/{total_videos}] Ausgabedatei '{output_file}' existiert bereits. Datei wird übersprungen.", fg=typer.colors.YELLOW)
+            skipped_videos += 1
+            pending_videos -= 1
+            continue
 
         # Baue den HandBrakeCLI Befehl
         cmd = [
@@ -113,6 +121,10 @@ def convert_videos_with_handbrake_command(
                 pending_videos -= 1
                 continue
 
+            # Speichere die Dateien für spätere Aktionen
+            original_files_to_delete.append(file_path)
+            compressed_files_to_rename.append(output_path)
+
             typer.secho(f"Erfolgreich konvertiert: '{output_file}'", fg=typer.colors.GREEN)
             converted_videos += 1
             pending_videos -= 1
@@ -129,6 +141,34 @@ def convert_videos_with_handbrake_command(
     typer.secho(f"\nKonvertierung abgeschlossen.", fg=typer.colors.GREEN)
     typer.secho(f"{converted_videos} Videos wurden konvertiert.", fg=typer.colors.GREEN)
     typer.secho(f"{skipped_videos} Videos wurden übersprungen.", fg=typer.colors.YELLOW)
+
+    # Nach der Konvertierung: Entscheide, ob Originale gelöscht und Dateien umbenannt werden sollen
+    if not keep_original and converted_videos > 0:
+        delete_confirm = typer.confirm(f"Möchten Sie die {converted_videos} Originaldatei(en) löschen und die komprimierten Dateien umbenennen?")
+        if delete_confirm:
+            for original_file, compressed_file in zip(original_files_to_delete, compressed_files_to_rename):
+                # Lösche die Originaldatei
+                try:
+                    os.remove(original_file)
+                    typer.secho(f"Originaldatei '{os.path.basename(original_file)}' wurde gelöscht.", fg=typer.colors.GREEN)
+                except Exception as e:
+                    typer.secho(f"Fehler beim Löschen der Originaldatei '{os.path.basename(original_file)}': {e}", fg=typer.colors.RED)
+                    continue  # Fahre mit der nächsten Datei fort
+
+                # Benenne die komprimierte Datei um (Postfix entfernen)
+                base_name, extension = os.path.splitext(os.path.basename(original_file))
+                new_output_file = f"{base_name}{extension}"
+                new_output_path = os.path.join(directory, new_output_file)
+                try:
+                    os.rename(compressed_file, new_output_path)
+                    typer.secho(f"Ausgabedatei wurde umbenannt zu '{new_output_file}'.", fg=typer.colors.GREEN)
+                except Exception as e:
+                    typer.secho(f"Fehler beim Umbenennen der Ausgabedatei '{os.path.basename(compressed_file)}': {e}", fg=typer.colors.RED)
+        else:
+            typer.secho("Originaldateien wurden beibehalten. Komprimierte Dateien behalten das Postfix.", fg=typer.colors.YELLOW)
+    else:
+        if converted_videos > 0:
+            typer.secho("Originaldateien wurden beibehalten. Komprimierte Dateien behalten das Postfix.", fg=typer.colors.YELLOW)
 
 def main():
     typer.run(convert_videos_with_handbrake_command)
