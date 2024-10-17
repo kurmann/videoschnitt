@@ -18,6 +18,7 @@ $ emby-integrator [OPTIONS] COMMAND [ARGS]...
 
 * `convert-image`: Konvertiere ein einzelnes Bild in das...
 * `generate-nfo-xml`: Generiert die NFO-Metadatendatei und gibt...
+* `group-files`: Gruppiert Dateien mit gleichen Basenamen...
 * `rename-artwork`: Benennt alle JPG, JPEG und PNG-Dateien in...
 * `reset-permissions`: Setzt die Berechtigungen eines...
 * `scan-media`: Scannt ein Verzeichnis nach Bilddateien...
@@ -76,6 +77,25 @@ $ emby-integrator generate-nfo-xml [OPTIONS] FILE_PATH
 
 **Options**:
 
+* `--help`: Show this message and exit.
+
+## `emby-integrator group-files`
+
+Gruppiert Dateien mit gleichen Basenamen in Unterverzeichnisse.
+
+**Usage**:
+
+```console
+$ emby-integrator group-files [OPTIONS] DIRECTORY
+```
+
+**Arguments**:
+
+* `DIRECTORY`: Pfad zum Verzeichnis, das gruppiert werden soll  [required]
+
+**Options**:
+
+* `-i, --ignore-suffix TEXT`: Liste von Suffixen, die beim Gruppieren ignoriert werden sollen (case-insensitive)  [default: -poster, -artwork, -fanart]
 * `--help`: Show this message and exit.
 
 ## `emby-integrator rename-artwork`
