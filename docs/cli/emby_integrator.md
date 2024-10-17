@@ -18,8 +18,9 @@ $ emby-integrator [OPTIONS] COMMAND [ARGS]...
 
 * `convert-image`: Konvertiere ein einzelnes Bild in das...
 * `generate-nfo-xml`: Generiert die NFO-Metadatendatei und gibt...
-* `list-metadata-command`: Extrahiere die Metadaten aus einer Datei...
-* `scan-media-command`: Scannt ein Verzeichnis nach Bilddateien...
+* `rename-artwork`: Benennt alle JPG, JPEG und PNG-Dateien in...
+* `reset-permissions`: Setzt die Berechtigungen eines...
+* `scan-media`: Scannt ein Verzeichnis nach Bilddateien...
 * `write-nfo-file`: Generiert die NFO-Metadatendatei und...
 
 ## `emby-integrator convert-image`
@@ -77,51 +78,46 @@ $ emby-integrator generate-nfo-xml [OPTIONS] FILE_PATH
 
 * `--help`: Show this message and exit.
 
-## `emby-integrator list-metadata-command`
+## `emby-integrator rename-artwork`
 
-Extrahiere die Metadaten aus einer Datei und gebe sie aus.
-
-Diese Methode extrahiert relevante Metadaten wie Dateiname, Größe, Erstellungsdatum, Dauer, Videoformat 
-und andere Informationen aus der Datei mithilfe von ExifTool. Falls das Flag `--json-output` gesetzt wird, 
-wird die Ausgabe im JSON-Format zurückgegeben.
-
-Args:
-    file_path (str): Der Pfad zur Datei, aus der die Metadaten extrahiert werden sollen.
-    json_output (bool): Optional. Wenn gesetzt, wird die Ausgabe im JSON-Format dargestellt. Standard ist `False`.
-
-Returns:
-    None: Gibt die extrahierten Metadaten in einer menschenlesbaren Form oder als JSON zurück, je nach dem Wert von `json_output`.
-
-Beispiel:
-    $ emby-integrator get-metadata /path/to/video.mov
-
-    Ausgabe:
-    FileName: video.mov
-    Directory: /path/to
-    FileSize: 123456 bytes
-    FileModificationDateTime: 2024-08-10 10:30:00
-    ...
-
-Raises:
-    FileNotFoundError: Wenn die angegebene Datei nicht existiert.
-    ValueError: Wenn keine Metadaten extrahiert werden konnten.
+Benennt alle JPG, JPEG und PNG-Dateien in einem Verzeichnis (inkl. Unterverzeichnisse) um,
+indem das Suffix '-poster' hinzugefügt oder ersetzt wird.
 
 **Usage**:
 
 ```console
-$ emby-integrator list-metadata-command [OPTIONS] FILE_PATH
+$ emby-integrator rename-artwork [OPTIONS] DIRECTORY
 ```
 
 **Arguments**:
 
-* `FILE_PATH`: [required]
+* `DIRECTORY`: Pfad zum Verzeichnis mit den Artwork-Dateien  [required]
 
 **Options**:
 
-* `--json-output / --no-json-output`: [default: no-json-output]
 * `--help`: Show this message and exit.
 
-## `emby-integrator scan-media-command`
+## `emby-integrator reset-permissions`
+
+Setzt die Berechtigungen eines Verzeichnisses und optional aller Unterverzeichnisse und Dateien zurück.
+Verzeichnisse erhalten 755, Dateien 644.
+
+**Usage**:
+
+```console
+$ emby-integrator reset-permissions [OPTIONS] DIRECTORY
+```
+
+**Arguments**:
+
+* `DIRECTORY`: Pfad zum Verzeichnis, dessen Berechtigungen zurückgesetzt werden sollen  [required]
+
+**Options**:
+
+* `--recursive / --no-recursive`: Rekursiv alle Unterverzeichnisse bearbeiten  [default: recursive]
+* `--help`: Show this message and exit.
+
+## `emby-integrator scan-media`
 
 Scannt ein Verzeichnis nach Bilddateien (.png, .jpg, .jpeg) und QuickTime-Dateien (.mov),
 gruppiert sie als Mediaserver-Set basierend auf den Bilddateien und listet unvollständige Gruppen auf.
@@ -177,7 +173,7 @@ Ausgabe im JSON-Format:
 **Usage**:
 
 ```console
-$ emby-integrator scan-media-command [OPTIONS] MEDIA_DIR
+$ emby-integrator scan-media [OPTIONS] MEDIA_DIR
 ```
 
 **Arguments**:

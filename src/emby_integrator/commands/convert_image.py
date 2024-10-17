@@ -4,6 +4,8 @@ import os
 import typer
 from emby_integrator.image_manager import convert_image_to_adobe_rgb, delete_image
 
+app = typer.Typer()
+
 def convert_image_command(
     image_path: str,
     no_confirm: bool = typer.Option(
