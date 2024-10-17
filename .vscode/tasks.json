@@ -117,6 +117,75 @@
             "group": "build"
         },
         {
+            "label": "generate-cli-docs-mediaset-manager",
+            "type": "shell",
+            "command": "python",
+            "args": [
+                "-m",
+                "typer",
+                "${workspaceFolder}/src/mediaset_manager/app.py",
+                "utils",
+                "docs",
+                "--name",
+                "mediaset-manager",
+                "--output",
+                "${workspaceFolder}/docs/cli/mediaset_manager.md"
+            ],
+            "problemMatcher": [],
+            "options": {
+                "env": {
+                    "PYTHONPATH": "${workspaceFolder}/src"
+                }
+            },
+            "group": "build"
+        },
+        {
+            "label": "generate-cli-docs-video-compressor",
+            "type": "shell",
+            "command": "python",
+            "args": [
+                "-m",
+                "typer",
+                "${workspaceFolder}/src/video_compressor/app.py",
+                "utils",
+                "docs",
+                "--name",
+                "video-compressor",
+                "--output",
+                "${workspaceFolder}/docs/cli/video_compressor.md"
+            ],
+            "problemMatcher": [],
+            "options": {
+                "env": {
+                    "PYTHONPATH": "${workspaceFolder}/src"
+                }
+            },
+            "group": "build"
+        },
+        {
+            "label": "generate-cli-docs-movie-integrator",
+            "type": "shell",
+            "command": "python",
+            "args": [
+                "-m",
+                "typer",
+                "${workspaceFolder}/src/movie_integrator/app.py",
+                "utils",
+                "docs",
+                "--name",
+                "movie-integrator",
+                "--output",
+                "${workspaceFolder}/docs/cli/movie_integrator.md"
+            ],
+            "problemMatcher": [],
+            "options": {
+                "env": {
+                    "PYTHONPATH": "${workspaceFolder}/src"
+                }
+            },
+            "group": "build"
+        },
+        {
             "label": "generate-all-cli-docs",
             "type": "shell",
             "command": "echo",
@@ -126,7 +195,10 @@
                 "generate-cli-docs-emby-integrator",
                 "generate-cli-docs-online-medialibrary-manager",
                 "generate-cli-docs-config-manager",
-                "generate-cli-docs-metadata-manager"
+                "generate-cli-docs-metadata-manager",
+                "generate-cli-docs-mediaset-manager",
+                "generate-cli-docs-video-compressor",
+                "generate-cli-docs-movie-integrator"
             ],
             "problemMatcher": [],
             "group": {
