@@ -10,7 +10,7 @@ import os
 import xml.etree.ElementTree as ET
 from datetime import datetime
 from emby_integrator.xml_utils import indent
-from metadata_manager import parse_date_from_string
+from metadata_manager.commands.get_recording_date import parse_date_from_string
 
 class CustomProductionInfuseMetadata:
     """
