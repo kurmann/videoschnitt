@@ -15,13 +15,15 @@ $ mediaset-manager [OPTIONS] COMMAND [ARGS]...
 **Commands**:
 
 * `create-metadata-file`: Erstellt eine Metadaten.yaml-Datei für ein...
+* `create-video-metadata-file`: Erstellt eine Metadaten.yaml-Datei für ein...
 * `get-recording-date`: Extrahiert das Aufnahmedatum aus Dateiname...
 * `get-resolution`: Gibt die Auflösungskategorie einer...
 * `list-mediasets`: Listet alle Mediensets im angegebenen...
 
 ## `mediaset-manager create-metadata-file`
 
-Erstellt eine Metadaten.yaml-Datei für ein gegebenes Medienset basierend auf einer Metadaten-Quelle.
+Erstellt eine Metadaten.yaml-Datei für ein gegebenes Medienset basierend auf der Mediadatei.
+Erkennt automatisch den Medientyp und verwendet den entsprechenden spezifischen Command.
 
 **Usage**:
 
@@ -31,10 +33,41 @@ $ mediaset-manager create-metadata-file [OPTIONS] METADATA_SOURCE
 
 **Arguments**:
 
-* `METADATA_SOURCE`: Pfad zur Metadaten-Quelle (z.B. eine Videodatei)  [required]
+* `METADATA_SOURCE`: Pfad zur Mediadatei (z.B. eine Videodatei)  [required]
 
 **Options**:
 
+* `--help`: Show this message and exit.
+
+## `mediaset-manager create-video-metadata-file`
+
+Erstellt eine Metadaten.yaml-Datei für ein Video-Medienset mit Untertyp "Ereignis" oder "Rückblick".
+
+**Usage**:
+
+```console
+$ mediaset-manager create-video-metadata-file [OPTIONS] TITLE ERSTELLUNGSJAHR
+```
+
+**Arguments**:
+
+* `TITLE`: Titel des Mediensets  [required]
+* `ERSTELLUNGSJAHR`: Jahr der Originalerstellung  [required]
+
+**Options**:
+
+* `-s, --subtype TEXT`: Untertyp des Mediensets (Ereignis, Rückblick)
+* `-ry, --aufnahmejahr INTEGER`: Aufnahmejahr für Untertyp 'Ereignis'
+* `-rd, --aufnahmedatum TEXT`: Aufnahmedatum (YYYY-MM-DD) für Untertyp 'Ereignis'
+* `-p, --zeitraum TEXT`: Zeitraum für Untertyp 'Rückblick' (z.B. '2023', '2022-2023', 'Januar 2023 bis Dezember 2023')
+* `-d, --description TEXT`: Beschreibung des Mediensets
+* `-st, --studio TEXT`: Studio oder Ort der Produktion
+* `-k, --keywords TEXT`: Schlüsselwörter, durch Kommata getrennt
+* `-a, --album TEXT`: Album-Name
+* `-ve, --video-editor TEXT`: Personen für den Videoschnitt, durch Kommata getrennt
+* `-ph, --photographers TEXT`: Personen für die Kameraführung, durch Kommata getrennt
+* `-du, --duration INTEGER`: Dauer des Videos in Sekunden  [default: 0]
+* `-l, --language TEXT`: Sprache der Metadaten-Datei (ISO-639-1)  [default: de-CH]
 * `--help`: Show this message and exit.
 
 ## `mediaset-manager get-recording-date`
