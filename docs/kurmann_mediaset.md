@@ -1,39 +1,40 @@
 # Kurmann-Medienset Spezifikation
 
-Version 0.5 vom 14. Oktober 2024. Autor: *Patrick Kurmann*
+**Version 0.6 vom 17. Oktober 2024**\
+**Autor: Patrick Kurmann**
 
 ## 1. Überblick
 
-Ein **Kurmann-Medienset** ist eine standardisierte Sammlung von Mediendateien, die zu einem bestimmten Ereignis, Thema oder Projekt gehören und in einem eigenen Verzeichnis organisiert sind. Jedes Medienset enthält sowohl die Medien selbst als auch eine strukturierte Metadaten-Datei (`Metadaten.yaml`), welche die wichtigsten Informationen über das Set beschreibt. Die Metadaten-Datei ermöglicht eine effiziente Archivierung, Kategorisierung und zukünftige Verarbeitung der Mediendateien.
+Ein Kurmann-Medienset ist eine standardisierte Sammlung von Mediendateien, die zu einem bestimmten Ereignis, Thema oder Projekt gehören und in einem eigenen Verzeichnis organisiert sind. Jedes Medienset enthält sowohl die Medien selbst als auch eine strukturierte Metadaten-Datei (`Metadaten.yaml`), welche die wichtigsten Informationen über das Set beschreibt. Die Metadaten-Datei ermöglicht eine effiziente Archivierung, Kategorisierung und zukünftige Verarbeitung der Mediendateien.
 
-**Version 0.5** fokussiert sich weiterhin ausschließlich auf **Video**-basierte Mediensets. Weitere Medientypen wie **Dokument**, **Foto** und **Audio** sind vorgesehen und werden in zukünftigen Versionen ergänzt. Alle Medientypen werden gemeinsame obligatorische Eigenschaften besitzen: **Id**, **Titel**, **Typ** und **Datum**.
+Version 0.6 erweitert die Spezifikation um klar strukturierte Tabellen für gemeinsame und spezifische Eigenschaften, was die Erweiterbarkeit auf andere Medientypen wie Audio, Fotoalbum oder Dokumente erleichtert. Der Fokus liegt weiterhin auf Video-basierten Mediensets, wobei die grundlegenden Pflichtfelder für alle Medientypen definiert sind.
 
-### Eigenschaften eines Kurmann-Mediensets:
+### Eigenschaften eines Kurmann-Mediensets
 
-1. **Ein Verzeichnis pro Medienset**:
+1. **Ein Verzeichnis pro Medienset**
 
    - Jedes Medienset wird in einem eigenen Verzeichnis gespeichert, dessen Name sich aus dem Aufnahmedatum und dem Projekttitel zusammensetzt.
-   - Beispiel: `2024-10-10_10_Wanderung_auf_den_Napf_mit_Übernachtung/`.
+   - Beispiel: `2024-10-10_Wanderung_auf_den_Napf_mit_Übernachtung/`
 
-2. **Verschiedene Mediendateien**:
+2. **Verschiedene Mediendateien**
 
    - Ein Medienset enthält mehrere Mediendateien (z.B. Videos in verschiedenen Auflösungen, Titelbilder, Projektdateien), die nach ihrem Zweck benannt sind (z.B. `Medienserver.mov`, `Internet-4K.m4v`, `Titelbild.png`).
 
-3. **Zentrale Metadaten-Datei**:
+3. **Zentrale Metadaten-Datei**
 
    - Jede Sammlung enthält eine Datei namens `Metadaten.yaml`, welche die strukturierten Informationen zum Medienset enthält (z.B. Titel, Datum, Dauer des Videos, beteiligte Personen).
 
-4. **Ein Typ pro Medienset**:
+4. **Ein Typ pro Medienset**
 
    - Ein Medienset hat einen klar definierten Medientyp, wie Video, Foto, Dokument oder Audio. Mischformen gibt es nicht, aber ein Medienset kann verschiedene unterstützende Dateien wie Projekte oder Titelbilder enthalten.
 
-5. **Zentrale Identifikationsnummer (ID)**:
+5. **Zentrale Identifikationsnummer (ID)**
 
    - Jedes Medienset hat eine eindeutige ID (basierend auf einer ULID), die in der `Metadaten.yaml` gespeichert wird. Diese ID bleibt konstant, auch wenn der Titel oder das Datum des Mediensets geändert wird.
 
-6. **Zukunftssicherheit durch Typen**:
+6. **Zukunftssicherheit durch Typen**
 
-   - Die aktuelle Version fokussiert sich auf Video-basierte Mediensets. In Zukunft sind auch Foto-, Dokument- und Audio-basierte Mediensets vorgesehen, welche jedoch auf der gleichen Struktur basieren. Alle Medientypen teilen sich die grundlegenden Pflichtfelder (ID, Titel, Datum, Typ). Zusätzliche Pflichtfelder sind abhängig vom jeweiligen Medienset-Untertyp.
+   - Die aktuelle Version fokussiert sich auf Video-basierte Mediensets. In Zukunft sind auch Foto-, Dokument- und Audio-basierte Mediensets vorgesehen, welche jedoch auf der gleichen Struktur basieren. Alle Medientypen teilen sich die grundlegenden Pflichtfelder (ID, Titel, Typ, Erstellung, Mediatheksdatum). Zusätzliche Pflichtfelder sind abhängig vom jeweiligen Medienset-Untertyp.
 
 ## 2. Verzeichnisstruktur
 
@@ -43,19 +44,32 @@ Die Verzeichnisstruktur gilt für alle Medienset-Typen. Jedes Medienset wird in 
 
 Der Name des Verzeichnisses besteht immer aus dem Datum und dem Titel des Mediensets:
 
-```yaml
+```
 [YYYY-MM-DD]_[Titel]/
+```
+
+**Beispiel:**
+
+```
+2024-10-10_Wanderung_auf_den_Napf_mit_Übernachtung/
+├── Internet-4K.m4v
+├── Internet-HD.m4v
+├── Medienserver.mov
+├── Master.mov
+├── Titelbild.png
+├── Projekt.fcpbundle
+└── Metadaten.yaml
 ```
 
 ## 3. Inhalt des Verzeichnisses pro Medienset-Typ
 
-In dieser Spezifikation wird nur der Video-Medienset-Typ beschrieben.
+In dieser Spezifikation wird nur der Video-Medienset-Typ detailliert beschrieben.
 
-#### 3.1 Video-Medienset Struktur
+### 3.1 Video-Medienset Struktur
 
 Die folgende Struktur beschreibt den Inhalt eines Video-basierten Mediensets:
 
-```yaml
+```
 [YYYY-MM-DD]_[Titel]/
 ├── Internet-4K.m4v
 ├── Internet-HD.m4v
@@ -66,20 +80,7 @@ Die folgende Struktur beschreibt den Inhalt eines Video-basierten Mediensets:
 └── Metadaten.yaml
 ```
 
-### Beispiel:
-
-```yaml
-2024-10-10_10_Wanderung_auf_den_Napf_mit_Übernachtung/
-├── Internet-4K.m4v
-├── Internet-HD.m4v
-├── Medienserver.mov
-├── Master.mov
-├── Titelbild.png
-├── Projekt.fcpbundle
-└── Metadaten.yaml
-```
-
-#### 3.2. Dateinamenkonventionen für Video-Mediensets
+### Dateinamenkonventionen für Video-Mediensets
 
 Innerhalb des Video-Medienset-Verzeichnisses sind die Dateien nach ihrem Zweck benannt, was die Identifikation und Verarbeitung der Dateien erleichtert.
 
@@ -95,82 +96,101 @@ Innerhalb des Video-Medienset-Verzeichnisses sind die Dateien nach ihrem Zweck b
 
 Die `Metadaten.yaml`-Datei enthält alle relevanten Informationen zu einem Medienset. Diese Datei ermöglicht eine strukturierte Speicherung und einfache Weiterverarbeitung der Metadaten.
 
-### 4.1. Allgemeine Struktur der `Metadaten.yaml`
+### 4.1 Allgemeine Struktur der `Metadaten.yaml`
 
 Die `Metadaten.yaml`-Datei ist für alle Medienset-Typen relevant. Andere Typen wie Dokument, Fotoalbum oder Audio können zusätzliche oder andere Eigenschaften haben. Es gibt verschiedene optionale Datumsfelder, um den Lebenszyklus des Mediensets abzubilden:
 
-- **Aufnahmedatum**: Das Datum, an dem die Medien aufgenommen wurden (z.B. das Filmdatum eines Videos). Dieses Feld ist insbesondere für den Untertyp "Ereignis" relevant.
+- **Aufnahmedatum**: Das Datum, an dem die Medien aufgenommen wurden (z.B. das Filmdatum eines Videos). Dieses Feld ist insbesondere für den Untertyp “Ereignis” relevant.
 - **Erstellungsdatum**: Das Datum, an dem das Medienset zusammengestellt und der Videoschnitt abgeschlossen wurde. Dieses Feld ist optional und vor allem für Videos relevant.
 - **Bearbeitungsdatum**: Das Datum, an dem das Medienset zuletzt angepasst wurde, z.B. bei einer Korrektur oder einer neuen Version eines Videos. Dieses Feld ist optional.
-- **Mediatheksdatum**: Das Datum, an dem das Medienset in die Mediathek aufgenommen wurde. Dieses Feld ist optional, wird jedoch in den meisten Fällen automatisch durch das zugehörige Python-Skript gesetzt, sobald das Medienset integriert wird.
+- **Mediatheksdatum**: Das Datum, an dem das Medienset in die Mediathek aufgenommen wurde. Dieses Feld ist obligatorisch und wird automatisch durch das zugehörige Python-Skript gesetzt, sobald das Medienset integriert wird.
 
-Die `Metadaten.yaml`-Datei ist eine YAML-Datei, die die wichtigsten Informationen zu einem Medienset speichert. Die Pflichtfelder sind für alle Medienset-Typen bindend, während die optionalen Felder spezifisch für den Video-Typ sind. Zusätzlich gibt es ein Pflichtfeld, das die Spezifikationsversion angibt, um die Kompatibilität sicherzustellen. Ein Beispiel ist unten dargestellt, wobei alle Arrays inline dargestellt sind.
+### Beispiel für eine `Metadaten.yaml`
 
-> **Hinweis**: Wenn Double Quotes (`"`) in den Werten verwendet werden, müssen diese entsprechend escaped werden. Zum Beispiel: `"Das ist ein \"Beispiel\" mit Anführungszeichen."` oder alternativ mit Single Quotes (`'`).
+**Für Untertyp “Ereignis”**:
 
 ```yaml
-Spezifikationsversion: "0.5"
+Spezifikationsversion: "0.6"
 Id: "01JA0X08NCSKRSB6VF4C51MEB6"
 Titel: "Wanderung auf den Napf mit Übernachtung"
 Typ: "Video"
 Untertyp: "Ereignis"
-Erstellungsjahr: "2024"
-Mediatheksdatum: "2024-11-05"
+Erstellung: "2024"
+Mediatheksdatum: "2024-10-17"
 Aufnahmedatum: "2024-10-10"
 Beschreibung: "Als ganze Familie auf dem Gipfel des Napfs mit einer prächtigen Rundumsicht in die Alpen und das Mittelland einschliesslich Übernachtung im Berghotel."
-Copyright: "© Patrick Kurmann 2024"
-Veröffentlichungsdatum: "2024-10-12"
-Studio: "Privates Videoschnitt-Studio Lyssach"
-Schlüsselwörter: ["Touren", "Familie"]
+Schlüsselwörter:
+  - "Touren"
+  - "Familie"
 Album: "Familie Kurmann-Glück"
-Videoschnitt: ["Patrick Kurmann"]
-Aufnahmen: ["Patrick Kurmann", "Kathrin Glück"]
+Videoschnitt:
+  - "Patrick Kurmann"
+Kameraführung:
+  - "Patrick Kurmann"
 Dauer_in_Sekunden: 425
+Studio: "Privates Videoschnitt-Studio Lyssach"
 ```
 
-### 4.2. Beschreibung der Felder
+**Für Untertyp “Rückblick”**:
 
-#### 4.2.1. Pflichtfelder (für alle Medienset-Typen)
-
-- **Spezifikationsversion**: Die Version der Medienset-Spezifikation, die für das Medienset verwendet wurde (z.B. "0.5").
-- **Id**: Eindeutige Identifikationsnummer für das Medienset (wird als ULID vergeben).
-- **Titel**: Der Titel des Mediensets.
-- **Typ**: Haupttyp des Mediensets (z.B. "Video").
-
-Für bestimmte Untertypen können zusätzliche Pflichtfelder vorgeschrieben sein. Zum Beispiel:
-
-- **Ereignis**: Zusätzlich zu den allgemeinen Pflichtfeldern muss das **Aufnahmedatum** (im Format YYYY-MM-DD) angegeben werden.
-- **Rückblick**: Zusätzlich zu den allgemeinen Pflichtfeldern muss der **Zeitraum** (im Format "YYYY", "YYYY-YYYY" oder "Monat Jahr bis Monat Jahr") angegeben werden.\*\*
-
-#### 4.2.2. Optionale Felder (spezifisch für Video-Mediensets)
-
-- **Beschreibung**: Eine detaillierte Beschreibung des Mediensets.
-- **Copyright**: Informationen über den Copyright-Inhaber.
-- **Veröffentlichungsdatum**: Das Datum, an dem das Medienset veröffentlicht wurde, im Format YYYY-MM-DD.
-- **Studio**: Informationen über das Studio oder den Ort der Produktion (z.B. Privates Videoschnitt-Studio Lyssach).
-- **Schlüsselwörter**: Eine Liste von Schlüsselwörtern zur Kategorisierung des Mediensets. Beispiel: `["Touren", "Familie"]`
-- **Album**: Der Name des Albums oder der Sammlung, zu dem das Medienset gehört.
-- **Videoschnitt**: Eine Liste der Personen, die für den Videoschnitt verantwortlich sind. Beispiel: `["Patrick Kurmann"]`
-- **Aufnahmen**: Eine Liste der Personen, die an den Aufnahmen beteiligt waren. Beispiel: `["Patrick Kurmann", "Kathrin Glück"]`
-- **Dauer\_in\_Sekunden**: Die Gesamtdauer des Videos in Sekunden (gerundet).
-- **Untertyp**: Ein spezifischer Untertyp des Videos, z.B. "Ereignis" oder "Rückblick". Falls nicht angegeben, wird "nicht spezifiziert" verwendet.. Falls nicht angegeben, wird "nicht spezifiziert" verwendet.
-
-## 5. Generierung der `Metadaten.yaml`
-
-Um die `Metadaten.yaml`-Datei automatisch zu erstellen, wird ein Typer-Command bereitgestellt. Die aktuelle Version unterstützt ausschließlich Video-basierte Mediensets. Andere Medientypen werden in zukünftigen Versionen unterstützt.
-
-### 5.1. Nutzung des `create-metadata-file` Commands
-
-Um die Metadaten.yaml-Datei für ein Video-basiertes Medienset zu generieren, führe folgenden Befehl in deinem Terminal aus:
-
-```
-mediaset-manager create-metadata-file '/Pfad/zur/Medienserver.mov'
+```yaml
+Spezifikationsversion: "0.6"
+Id: "01JAF1DFEWXZX9N9N5PRZ97KC3"
+Titel: "Rückblick auf das Jahr 2023"
+Typ: "Video"
+Untertyp: "Rückblick"
+Erstellung: "2023"
+Mediatheksdatum: "2024-10-18"
+Zeitraum: "2023"
+Beschreibung: "Ein Rückblick auf die wichtigsten Ereignisse und Projekte des Jahres 2023."
+Schlüsselwörter:
+  - "Rückblick"
+  - "Jahresbericht"
+Album: "Jahresberichte"
+Videoschnitt:
+  - "Patrick Kurmann"
+Kameraführung:
+  - "Patrick Kurmann"
+  - "Kathrin Glück"
+Dauer_in_Sekunden: 300
+Studio: "Privates Videoschnitt-Studio Lyssach"
 ```
 
-Falls die Metadaten.yaml-Datei bereits existiert und überschrieben werden soll, übernimmt die CLI die bestehende Id.
+## 6. Tabellenübersicht der Metadatenfelder
 
-```
-Bestehende ID übernommen.
-Metadaten erfolgreich gespeichert.
-```
+### 6.1 Gemeinsame Eigenschaften für alle Mediensets
+
+| Feldname              | Beschreibung                                                                                                                     | Pflichtfeld |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ----------- |
+| Spezifikationsversion | Die Version der Medienset-Spezifikation, die für das Medienset verwendet wurde (z.B. "0.6").                                     | Ja          |
+| Id                    | Eindeutige Identifikationsnummer für das Medienset (ULID).                                                                       | Ja          |
+| Titel                 | Der Titel des Mediensets.                                                                                                        | Ja          |
+| Typ                   | Haupttyp des Mediensets, z.B. "Video", "Audio", "Fotoalbum", "Dokument" etc.                                                     | Ja          |
+| Erstellung            | Das Jahr oder das genaue Datum der Erstellung des Mediensets (Format: "YYYY" oder "YYYY-MM-DD"). (Pflichtfeld, eines der beiden) | Ja          |
+| Mediatheksdatum       | Das Datum, an dem das Medienset in die Mediathek aufgenommen wurde (Format: "YYYY-MM-DD").                                       | Ja          |
+| Beschreibung          | Eine detaillierte Beschreibung des Mediensets.                                                                                   | Nein        |
+| Schlüsselwörter       | Eine Liste von Schlüsselwörtern zur Kategorisierung des Mediensets.                                                              | Nein        |
+| Album                 | Der Name des Albums oder der Sammlung, zu dem das Medienset gehört.                                                              | Nein        |
+
+### 6.2 Gemeinsame Eigenschaften für alle Videos
+
+| Feldname            | Beschreibung                                                                       | Pflichtfeld |
+| ------------------- | ---------------------------------------------------------------------------------- | ----------- |
+| Videoschnitt        | Eine Liste der Personen, die für den Videoschnitt verantwortlich sind.             | Nein        |
+| Kameraführung       | Eine oder mehrere Personen, die für die Kameraführung verantwortlich sind.         | Nein        |
+| Studio              | Informationen über das Studio oder den Ort der Produktion.                         | Nein        |
+| Untertyp            | Spezifischer Untertyp des Mediensets, z.B. "Ereignis" oder "Rückblick". (Optional) | Nein        |
+| Dauer\_in\_Sekunden | Die Gesamtdauer des Videos in Sekunden.                                            | Nein        |
+
+### 6.3 Spezifische Pflichtfelder für den Untertyp “Ereignis”
+
+| Feldname                     | Beschreibung                                                                                                                                         | Pflichtfeld |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
+| Aufnahmejahr / Aufnahmedatum | Das Jahr, in dem die Aufnahme stattgefunden hat oder das genaue Datum der Aufnahme im Format YYYY-MM-DD. (Eines der beiden Felder ist obligatorisch) | Ja          |
+
+### 6.4 Spezifische Pflichtfelder für den Untertyp “Rückblick”
+
+| Feldname | Beschreibung                                                                                                               | Pflichtfeld |
+| -------- | -------------------------------------------------------------------------------------------------------------------------- | ----------- |
+| Zeitraum | Der Zeitraum des Rückblicks, flexibel im Format (z.B. "2023", "2022-2023", "Januar 2023 bis Dezember 2023"). (Pflichtfeld) | Ja          |
 

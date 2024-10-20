@@ -104,4 +104,4 @@ def scan_media_command(media_dir: Path, json_output: bool = False):
         typer.secho(f"Ein Fehler ist aufgetreten: {e}", fg=typer.colors.RED)
 
 def register(app: typer.Typer):
-    app.command()(scan_media_command)
+    app.command(name="scan-media")(scan_media_command)
