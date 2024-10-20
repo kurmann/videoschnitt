@@ -1,117 +1,66 @@
-# src/mediaset_manager/commands/create_metadata_file.py
-
 import os
-import yaml
-import ulid
 import logging
 import typer
 from datetime import datetime
-
-from metadata_manager.loader import aggregate_metadata  # Importiere die aggregierte Metadaten-Funktion
-from metadata_manager.commands.get_recording_date import parse_recording_date_from_filename
+from mediaset_manager.commands.create_video_metadata_file import create_video_metadata_file
 
 logger = logging.getLogger(__name__)
 app = typer.Typer()
 
-def generate_ulid() -> str:
-    return ulid.new().str
+# Unterstützte Video-Extensions
+VIDEO_EXTENSIONS = {'.mp4', '.mov', '.m4v', '.avi', '.mkv'}
 
 @app.command("create-metadata-file")
 def create_metadata_file(
-    metadata_source: str = typer.Argument(..., help="Pfad zur Metadaten-Quelle (z.B. eine Videodatei)")
+    metadata_source: str = typer.Argument(..., help="Pfad zur Mediadatei (z.B. eine Videodatei)")
 ):
     """
-    Erstellt eine Metadaten.yaml-Datei für ein gegebenes Medienset basierend auf einer Metadaten-Quelle.
+    Erstellt eine Metadaten.yaml-Datei für ein gegebenes Medienset basierend auf der Mediadatei.
+    Erkennt automatisch den Medientyp und verwendet den entsprechenden spezifischen Command.
     """
     if not os.path.isfile(metadata_source):
         typer.secho(f"Die Datei '{metadata_source}' existiert nicht.", fg=typer.colors.RED)
         raise typer.Exit(code=1)
     
-    # Bestimme den Namen und Pfad der Metadaten-Datei
-    file_basename = os.path.basename(metadata_source)
-    project_name = os.path.splitext(file_basename)[0]
-    directory = os.path.dirname(metadata_source)
-    metadata_filename = f"{file_basename}.yaml"
-    metadata_path = os.path.join(directory, metadata_filename)
+    _, ext = os.path.splitext(metadata_source)
+    ext = ext.lower()
     
-    # Überprüfe, ob die Metadaten-Datei bereits existiert
-    existing_id = None
-    if os.path.exists(metadata_path):
-        overwrite = typer.confirm(f"Die Datei '{metadata_filename}' existiert bereits. Möchten Sie sie überschreiben?")
-        if overwrite:
-            # Lade die bestehende Metadaten-Datei und extrahiere die Id
-            try:
-                with open(metadata_path, 'r', encoding='utf-8') as yaml_file:
-                    existing_metadaten = yaml.safe_load(yaml_file)
-                existing_id = existing_metadaten.get("Id")
-                if existing_id:
-                    typer.secho("Bestehende ID übernommen.", fg=typer.colors.BLUE)
-                else:
-                    typer.secho("Keine bestehende ID gefunden. Neue ID wird generiert.", fg=typer.colors.YELLOW)
-            except Exception as e:
-                logger.warning(f"Fehler beim Lesen der bestehenden Metadaten-Datei: {e}")
-                typer.secho(f"Fehler beim Lesen der bestehenden Metadaten-Datei: {e}", fg=typer.colors.RED)
-                raise typer.Exit(code=1)
-        else:
-            typer.secho("Operation abgebrochen. Die bestehende Metadaten-Datei wurde nicht überschrieben.", fg=typer.colors.YELLOW)
-            raise typer.Exit()
-    
-    try:
-        # Aggregiere die Metadaten
-        metadata = aggregate_metadata(metadata_source)
+    if ext in VIDEO_EXTENSIONS:
+        # Extrahiere notwendige Metadaten aus dem Dateinamen, z.B. "2024-10-10_Wanderung_auf_den_Napf.m4v"
+        filename = os.path.basename(metadata_source)
+        parts = filename.split('_')
+        if len(parts) < 2:
+            typer.secho("Der Dateiname muss das Format 'Erstellung_Title.ext' haben.", fg=typer.colors.RED)
+            raise typer.Exit(code=1)
+        creation_part = parts[0]
+        title_part = '_'.join(parts[1:]).rsplit('.', 1)[0].replace('_', ' ')
         
-        # Extrahiere das Aufnahmedatum
-        recording_date = parse_recording_date_from_filename(project_name)
-        if not recording_date:
-            # Falls das Datum nicht aus dem Projektnamen extrahiert werden kann, verwende das Änderungsdatum der Datei
-            recording_date = datetime.fromtimestamp(os.path.getmtime(metadata_source))
-            logger.info(f"Verwende das Änderungsdatum der Datei für '{metadata_source}': {recording_date.strftime('%Y-%m-%d')}")
-        
-        # Generiere eine ULID für das Medienset, falls keine bestehende Id vorhanden ist
-        if not existing_id:
-            medienset_id = generate_ulid()
-        else:
-            medienset_id = existing_id
-        
-        # Verarbeitung der Dauer (in Sekunden)
-        duration_str = metadata.get("Duration", "0")
+        # Validierung und Flexibilität des Erstellungsdatums
         try:
-            if isinstance(duration_str, str) and duration_str.lower().endswith('s'):
-                duration_seconds = round(float(duration_str.rstrip('s ').strip()))
+            if len(creation_part) == 4:
+                # Nur Jahr
+                creation = creation_part
+            elif len(creation_part) == 10:
+                # Vollständiges Datum
+                creation_obj = datetime.strptime(creation_part, "%Y-%m-%d")
+                creation = creation_obj.strftime("%Y-%m-%d")
             else:
-                duration_seconds = round(float(duration_str))
+                raise ValueError
         except ValueError:
-            logger.warning(f"Ungültiges Format für Dauer: '{duration_str}'. Setze Dauer auf 0.")
-            duration_seconds = 0
+            typer.secho(f"Das Erstellungsdatum '{creation_part}' im Dateinamen ist kein gültiges Datum (erwartet 'YYYY' oder 'YYYY-MM-DD').", fg=typer.colors.RED)
+            raise typer.Exit(code=1)
         
-        # Erstelle die Metadatenstruktur
-        metadaten = {
-            "Id": medienset_id,
-            "Titel": metadata.get("Title", ""),
-            "Aufnahmedatum": recording_date.strftime("%Y-%m-%d"),
-            "Beschreibung": metadata.get("Description", ""),
-            "Copyright": metadata.get("Copyright", ""),
-            "Veröffentlichungsdatum": metadata.get("releasedate", ""),
-            "Studio": metadata.get("Studio", ""),
-            "Schlüsselwörter": [kw.strip() for kw in metadata.get("Keywords", "").split(',') if kw.strip()],
-            "Album": metadata.get("Album", ""),
-            "Videoschnitt": [metadata.get("Producer", "")] if metadata.get("Producer", "") else [],
-            "Aufnahmen": [metadata.get("Author", "")] if metadata.get("Author", "") else [],
-            "Dauer_in_Sekunden": duration_seconds  # in Sekunden, gerundet
-        }
+        # Extrahiere das Jahr aus dem Erstellungsdatum für die Verzeichnisbenennung
+        erstellungsjahr = creation.split('-')[0]
         
-        # Bereinige leere Felder und Listen
-        metadaten = {k: v for k, v in metadaten.items() if v}
-        
-        # Speichere die Metadaten in der YAML-Datei
-        with open(metadata_path, 'w', encoding='utf-8') as yaml_file:
-            yaml.dump(metadaten, yaml_file, allow_unicode=True, sort_keys=False, default_flow_style=False)
-        
-        typer.secho(f"Metadaten erfolgreich in '{metadata_path}' gespeichert.", fg=typer.colors.GREEN)
-    
-    except Exception as e:
-        logger.error(f"Fehler beim Generieren der Metadaten: {e}")
-        typer.secho(f"Fehler beim Generieren der Metadaten: {e}", fg=typer.colors.RED)
+        # Delegiere die Erstellung an den spezifischen Video-Command
+        create_video_metadata_file(
+            title=title_part,
+            erstellungsjahr=erstellungsjahr,
+            subtype=None  # Der spezifische Command fragt nach dem Untertyp
+        )
+    else:
+        typer.secho(f"Medientyp mit der Erweiterung '{ext}' wird derzeit nicht unterstützt.", fg=typer.colors.RED)
         raise typer.Exit(code=1)
 
 if __name__ == "__main__":
