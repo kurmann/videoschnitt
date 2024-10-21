@@ -1,0 +1,35 @@
+name: Release Drafter
+
+on:
+  push:
+    # Nur für den "master" (oder "main") Branch, auf dem der Release-Draft erstellt werden soll
+    branches:
+      - master
+  pull_request:
+    # Diese Events werden benötigt, wenn du die Autolabeler-Funktion nutzt
+    types: [opened, reopened, synchronize]
+
+permissions:
+  contents: read
+
+jobs:
+  update_release_draft:
+    permissions:
+      contents: write  # Erforderlich, um Releases zu schreiben
+      pull-requests: write  # Erforderlich für den Autolabeler
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4  # Nutze die neueste Version des Checkout-Action
+      - uses: actions/setup-node@v4  # Nutze die neueste Version des Setup-Node-Action
+        with:
+          node-version: 18  # Verwende die empfohlene Node-Version 18
+      
+      - run: npm ci  # Installiere die Node-Abhängigkeiten (optional)
+      - run: npm test  # Führe Tests aus (optional)
+
+      # Draft der nächsten Release-Notes, wenn Pull Requests in "master" gemerged werden
+      - uses: release-drafter/release-drafter@v6  # Verwende die neueste Version von Release Drafter
+        with:
+          config-name: .github/release.yml  # Optional: Angabe der Konfigurationsdatei (relativ zu .github/)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Authentifizierung über das GitHub Token
