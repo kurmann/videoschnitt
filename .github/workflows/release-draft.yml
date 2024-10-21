@@ -14,22 +14,16 @@ permissions:
 
 jobs:
   update_release_draft:
-    permissions:
-      contents: write  # Erforderlich, um Releases zu schreiben
-      pull-requests: write  # Erforderlich für den Autolabeler
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4  # Nutze die neueste Version des Checkout-Action
-      - uses: actions/setup-node@v4  # Nutze die neueste Version des Setup-Node-Action
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: 18  # Verwende die empfohlene Node-Version 18
+          node-version: 18
       
-      - run: npm ci  # Installiere die Node-Abhängigkeiten (optional)
-      - run: npm test  # Führe Tests aus (optional)
+      # Führe Tests nur aus, wenn ein Node.js-Projekt vorhanden ist
+      # - run: npm test
 
-      # Draft der nächsten Release-Notes, wenn Pull Requests in "master" gemerged werden
-      - uses: release-drafter/release-drafter@v6  # Verwende die neueste Version von Release Drafter
-        with:
-          config-name: .github/release.yml  # Optional: Angabe der Konfigurationsdatei (relativ zu .github/)
+      - uses: release-drafter/release-drafter@v6
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Authentifizierung über das GitHub Token
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
