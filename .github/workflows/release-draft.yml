@@ -24,6 +24,6 @@ jobs:
       # Führe Tests nur aus, wenn ein Node.js-Projekt vorhanden ist
       # - run: npm test
 
-      - uses: release-drafter/release-drafter@v6
+      - uses: release-drafter/release-drafter@v5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
