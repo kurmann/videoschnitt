@@ -1,43 +1,49 @@
-name-template: 'v$RESOLVED_VERSION'
-tag-template: 'v$RESOLVED_VERSION'
+# Konfigurationsdatei für das Release-Drafter-Tool.
+# release-drafter-config.yml
 
+# Definiert die Vorlage für den Namen des Releases.
+name-template: 'v$RESOLVED_VERSION' # Automatisch erhöhte Versionsnummer
+
+# Definiert die Vorlage für den Namen des Release-Tags.
+tag-template: 'v$RESOLVED_VERSION' # Automatisch erhöhte Versionsnummer
+
+# Kategorien für das Changelog, identifiziert durch Labels auf Pull Requests.
 categories:
   - title: 'Features'
     labels:
-      - 'feature'
       - 'enhancement'
   - title: 'Bug Fixes'
     labels:
-      - 'fix'
-      - 'bugfix'
       - 'bug'
-  - title: 'Maintenance'
-    label: 'chore'
+  - title: 'Dokumentation'
+    labels:
+      - 'documentation'
 
-# Vorlage für jede Änderung (Pull Request), inklusive Titel, Autor und Body (PR Beschreibung).
+# Layout des Changelogs, formatiert nach den Änderungen in den Pull Requests.
+template: |
+  ## Änderungen
+  $CHANGES
+
+# Vorlage für jede Änderung (Pull Request), einschließlich Beschreibung.
 change-template: |
   ### $TITLE (@$AUTHOR) [#$NUMBER]
-
+  
   $BODY
 
-# Definiert die Zeichen, die in den Titeln korrekt escaped werden sollen.
-change-title-escapes: '\<*_&' 
+# PRs mit diesen Labels aus den Release Notes ausschließen
+exclude-labels:
+  - 'ignore-in-release-notes'
 
-# Version-Resolver, der die Art der Versionserhöhung basierend auf Labels festlegt.
+# Version-Resolver bestimmt die Art der Versionserhöhung basierend auf den PR Labels.
 version-resolver:
   major:
     labels:
-      - 'major'
+      - 'breaking'
   minor:
     labels:
-      - 'minor'
+      - 'enhancement'
   patch:
     labels:
-      - 'patch'
+      - 'bug'
+      - 'documentation'
   default: patch
-
-# Vorlage für das gesamte Release-Template, mit allen PR-Änderungen.
-template: |
-  ## Changes
-
-  $CHANGES
