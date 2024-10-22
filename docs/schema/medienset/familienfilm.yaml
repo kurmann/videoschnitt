@@ -1,0 +1,95 @@
+# Schema für Familienfilme, erweitert das Basisschema
+---
+$schema: "http://json-schema.org/draft-07/schema#"
+title: "Kurmann-Medienset Familienfilm Schema"
+allOf:
+  - $ref: "basis.yaml"
+properties:
+  Typ:
+    const: "Familienfilm"
+  Untertyp:
+    type: "string"
+    enum: ["Ereignis", "Rückblick"]
+    description: "Spezifischer Untertyp des Mediensets."
+  Videoschnitt:
+    type: "array"
+    items:
+      type: "string"
+    description: "Personen, die für den Videoschnitt verantwortlich sind."
+  Kameraführung:
+    type: "array"
+    items:
+      type: "string"
+    description: "Personen, die für die Kameraführung verantwortlich sind."
+  Studio:
+    type: "string"
+    description: "Informationen über das Studio oder den Ort der Produktion."
+  Dauer_in_Sekunden:
+    type: "integer"
+    minimum: 0
+    description: "Gesamtdauer des Films in Sekunden."
+  Filmfassung_Name:
+    type: "string"
+    description: "Name der Filmfassung (z. B. 'Filmfassung für Familie')."
+  Filmfassung_Beschreibung:
+    type: "string"
+    description: "Beschreibung der Filmfassung."
+  Mediendateien:
+    type: "object"
+    properties:
+      Titelbild:
+        type: "string"
+        description: "Titelbild des Mediensets."
+      Video_Medienserver:
+        type: "string"
+        description: "Datei für den Medienserver."
+      Videos_fuer_Internetstreaming:
+        type: "object"
+        properties:
+          4K:
+            type: "string"
+            description: "4K-Version."
+          HD:
+            type: "string"
+            description: "HD-Version."
+          SD:
+            type: "string"
+            description: "SD-Version."
+    required:
+      - Titelbild
+    additionalProperties: false
+required:
+  - Untertyp
+  - Mediendateien
+oneOf:
+  - if:
+      properties:
+        Untertyp:
+          const: "Ereignis"
+    then:
+      required:
+        - Aufnahmedatum
+      properties:
+        Aufnahmedatum:
+          type: "string"
+          format: "date"
+          description: "Datum der Aufnahme."
+  - if:
+      properties:
+        Untertyp:
+          const: "Rückblick"
+    then:
+      required:
+        - Zeitraum
+      properties:
+        Zeitraum:
+          type: "string"
+          description: "Zeitraum des Rückblicks."
+anyOf:
+  - properties:
+      Mediendateien:
+        required: ["Video_Medienserver"]
+  - properties:
+      Mediendateien:
+        required: ["Videos_fuer_Internetstreaming"]
+additionalProperties: true

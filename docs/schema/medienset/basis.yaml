@@ -1,0 +1,56 @@
+# Basisschema für Kurmann-Medienset
+---
+$schema: "http://json-schema.org/draft-07/schema#"
+title: "Kurmann-Medienset Basisschema"
+type: "object"
+properties:
+  Spezifikationsversion:
+    type: "string"
+    description: "Version der Medienset-Spezifikation."
+  Id:
+    type: "string"
+    pattern: "^[0-9A-Z]{26}$"
+    description: "Eindeutige Identifikationsnummer für das Medienset (ULID)."
+  Titel:
+    type: "string"
+    description: "Titel des Mediensets."
+  Typ:
+    type: "string"
+    description: "Haupttyp des Mediensets."
+  Jahr:
+    type: "string"
+    pattern: "^[0-9]{4}$"
+    description: "Jahr des Mediensets."
+  Mediatheksdatum:
+    type: "string"
+    format: "date"
+    description: "Datum, an dem das Medienset in die Mediathek integriert wurde."
+  Beschreibung:
+    type: "string"
+    description: "Detaillierte Beschreibung des Mediensets."
+  Notiz:
+    type: "string"
+    description: "Interne Bemerkungen zum Medienset."
+  Schlüsselwörter:
+    type: "array"
+    items:
+      type: "string"
+    description: "Liste von Schlüsselwörtern zur Kategorisierung."
+  Album:
+    type: "string"
+    description: "Name des Albums oder der Sammlung."
+  Version:
+    type: "integer"
+    minimum: 1
+    description: "Versionsnummer des Mediensets."
+  Versionskommentar:
+    type: "string"
+    description: "Kommentar zur Version."
+required:
+  - Spezifikationsversion
+  - Id
+  - Titel
+  - Typ
+  - Jahr
+  - Mediatheksdatum
+additionalProperties: true
