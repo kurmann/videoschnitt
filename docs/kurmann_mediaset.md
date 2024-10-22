@@ -1,23 +1,19 @@
 # Kurmann-Medienset Spezifikation
 
-**Version 0.9 vom 21. Oktober 2024**  
+**Version 1.0 vom 21. Oktober 2024**  
 **Autor: Patrick Kurmann**
 
 ## 1. Überblick
 
-Ein Kurmann-Medienset ist eine standardisierte Sammlung von Mediendateien, die zu einem bestimmten Ereignis, Thema oder Projekt gehören und in einem eigenen Verzeichnis organisiert sind. Jedes Medienset enthält sowohl die Medien selbst als auch eine strukturierte Metadaten-Datei (`Metadaten.yaml`), welche die wichtigsten Informationen über das Set beschreibt. Die Metadaten-Datei ermöglicht eine effiziente Archivierung, Kategorisierung und zukünftige Verarbeitung der Mediendateien.
+Ein Kurmann-Medienset ist eine standardisierte Sammlung von Mediendateien zu einem bestimmten Ereignis, Thema oder Projekt, organisiert in einem eigenen Verzeichnis. Jedes Medienset enthält die Medien selbst sowie eine strukturierte Metadaten-Datei (`Metadaten.yaml`), die die wichtigsten Informationen über das Set beschreibt. Die Metadaten-Datei ermöglicht eine effiziente Archivierung, Kategorisierung und zukünftige Verarbeitung der Mediendateien.
 
-### Änderungen gegenüber Version 0.8
+### Änderungen gegenüber Version 0.9
 
-- **Einführung eines YAML-Schemas:** Die `Metadaten.yaml`-Dateien werden nun durch ein YAML-Schema validiert, um die Struktur und Konsistenz der Metadaten zu gewährleisten. Kommentare in den YAML-Dateien wurden entfernt, um sie kurz und übersichtlich zu halten. Die Schemas sind im Verzeichnis `schema/medienset/` verfügbar und können über die absoluten URLs referenziert werden:
-  - **[Basisschema](https://raw.githubusercontent.com/kurmann/videoschnitt/refs/heads/main/docs/schema/medienset/basis.yaml)**
-  - **[Familienfilm-Schema](https://raw.githubusercontent.com/kurmann/videoschnitt/refs/heads/main/docs/schema/medienset/familienfilm.yaml)**
+- **Entfernung der `Mediendateien` aus der `Metadaten.yaml`:** Die Mediendateien werden nicht mehr in der `Metadaten.yaml` aufgeführt. Das Dateisystem dient als Single Point of Truth für die Mediendateien. Dies vereinfacht die Struktur und vermeidet Redundanz.
+  
+- **Klarstellung der Verzeichnisstruktur für Filmfassungen:** Es wurde bestätigt, dass es immer eine Standardfassung gibt, die im Hauptverzeichnis liegt. Zusätzliche Filmfassungen werden in entsprechend benannten Unterverzeichnissen abgelegt, und diese müssen mit dem Attribut `Filmfassung_Name` in den Metadaten übereinstimmen.
 
-- **Anpassungen bei den Mediendateien:** Es wurde klargestellt, dass nur das Titelbild, die `Metadaten.yaml` und mindestens eine Videodatei (entweder vom Typ Internet oder Medienserver) zwingend sind. Obwohl die Videodateien optional sind, muss mindestens eine vorhanden sein.
-
-- **Neuorganisation der Versionierung:** Die Struktur für vorherige Versionen wurde angepasst. Vorherige Versionen werden in einem Unterverzeichnis namens `Vorherige_Version` oder `Vorherige_Versionen` abgelegt. Dies ermöglicht eine bessere Übersichtlichkeit und Organisation der verschiedenen Versionen eines Mediensets.
-
-- **Einführung von Filmfassungs-Metadaten:** Für Familienfilme können nun optionale Attribute `Filmfassung_Name` und `Filmfassung_Beschreibung` in der `Metadaten.yaml` angegeben werden. Wenn das Attribut `Filmfassung_Name` vorhanden ist, muss es ein Unterverzeichnis mit diesem Namen geben (abgeleitet mit Unterstrichen und nur ASCII-Zeichen). Diese beschreiben spezielle Filmfassungen, die in entsprechenden Unterverzeichnissen gespeichert sind.
+- **Vereinfachung der Beispiele:** In den Beispielen für Versionen und Filmfassungen wurden die Inhalte der Unterverzeichnisse abgekürzt, um die Übersichtlichkeit zu verbessern.
 
 ## 2. Verzeichnisstruktur
 
@@ -50,80 +46,13 @@ Der Name des Verzeichnisses besteht immer aus dem Jahr und dem Titel des Mediens
 
 - **Eindeutige Titel pro Jahr:** Innerhalb eines Jahres muss jeder Medienset-Titel eindeutig sein.
 
-## 3. Versionierung und Filmfassungen
+## 3. Inhalt des Verzeichnisses pro Medienset-Typ
 
-### Aktuelle Version
+In dieser Spezifikation wird der **Familienfilm**-Medienset-Typ detailliert beschrieben.
 
-Die aktuelle Version eines Mediensets befindet sich immer direkt im Wurzelverzeichnis des Mediensets oder der jeweiligen Filmfassung. Dies erleichtert den direkten Zugriff, ohne manuell in Unterverzeichnisse navigieren zu müssen. Die Versionsnummer ist im Attribut **`Version`** der `Metadaten.yaml` angegeben.
+### 3.1 Familienfilm-Medienset Struktur
 
-### Vorherige Versionen
-
-- **Eine vorherige Version:** Wenn es nur eine frühere Version gibt, wird diese in einem Unterverzeichnis namens `Vorherige_Version` abgelegt, welches direkt die Dateien der vorherigen Version enthält.
-
-- **Mehrere vorherige Versionen:** Wenn es mehrere frühere Versionen gibt, werden diese in einem Unterverzeichnis namens `Vorherige_Versionen` abgelegt. Dieses enthält Unterverzeichnisse `Version_X` für jede Version, in denen die Dateien der jeweiligen Version liegen.
-
-### Filmfassungen
-
-Filmfassungen für bestimmte Zielgruppen werden in separaten Unterverzeichnissen organisiert. Wenn in der `Metadaten.yaml` das optionale Attribut `Filmfassung_Name` vorhanden ist, muss es ein entsprechendes Unterverzeichnis mit diesem Namen geben (abgeleitet mit Unterstrichen und nur ASCII-Zeichen).
-
-**Beispiel:**
-
-Attribut `Filmfassung_Name`: "Filmfassung für Familie"  
-Unterverzeichnis: `Filmfassung_fuer_Familie/`
-
-**Beispiel für Versionen und Filmfassungen:**
-
-```
-2024_Wanderung_auf_den_Napf_mit_Uebernachtung/
-├── Filmfassung_fuer_Familie/
-│   ├── Video-Internet-4K.m4v
-│   ├── Video-Internet-HD.m4v
-│   ├── Video-Internet-SD.m4v
-│   ├── Video-Medienserver.mov
-│   ├── Titelbild.png
-│   ├── Projekt.tar
-│   ├── Metadaten.yaml
-│   └── Vorherige_Version/
-│       ├── Video-Internet-4K.m4v
-│       ├── Video-Internet-HD.m4v
-│       ├── Video-Internet-SD.m4v
-│       ├── Video-Medienserver.mov
-│       ├── Titelbild.png
-│       ├── Projekt.tar
-│       └── Metadaten.yaml
-├── Video-Internet-4K.m4v
-├── Video-Internet-HD.m4v
-├── Video-Internet-SD.m4v
-├── Video-Medienserver.mov
-├── Titelbild.png
-├── Projekt.tar
-├── Metadaten.yaml
-└── Vorherige_Versionen/
-    ├── Version_1/
-    │   ├── Video-Internet-4K.m4v
-    │   ├── Video-Internet-HD.m4v
-    │   ├── Video-Internet-SD.m4v
-    │   ├── Video-Medienserver.mov
-    │   ├── Titelbild.png
-    │   ├── Projekt.tar
-    │   └── Metadaten.yaml
-    └── Version_2/
-        ├── Video-Internet-4K.m4v
-        ├── Video-Internet-HD.m4v
-        ├── Video-Internet-SD.m4v
-        ├── Video-Medienserver.mov
-        ├── Titelbild.png
-        ├── Projekt.tar
-        └── Metadaten.yaml
-```
-
-## 4. Inhalt des Verzeichnisses pro Medienset-Typ
-
-In dieser Spezifikation wird nur der **Familienfilm**-Medienset-Typ detailliert beschrieben.
-
-### 4.1 Familienfilm-Medienset Struktur
-
-Die folgende Struktur beschreibt den Inhalt eines Familienfilm-basierten Mediensets:
+Die folgende Struktur beschreibt den Inhalt eines Familienfilm-Mediensets:
 
 ```
 [YYYY]_[Titel]/
@@ -136,11 +65,9 @@ Die folgende Struktur beschreibt den Inhalt eines Familienfilm-basierten Mediens
 └── Metadaten.yaml          (zwingend)
 ```
 
-**Wichtig:** Obwohl die Videodateien optional sind, muss **mindestens eine Videodatei** vorhanden sein (entweder `Video-Medienserver.mov` oder eine der `Video-Internet-*.m4v` Dateien).
+**Wichtig:** Mindestens eine Videodatei muss vorhanden sein (entweder `Video-Medienserver.mov` oder eine der `Video-Internet-*.m4v` Dateien).
 
 ### Dateinamenkonventionen für Familienfilm-Mediensets
-
-Innerhalb des Familienfilm-Medienset-Verzeichnisses sind die Dateien nach ihrem Zweck benannt, was die Identifikation und Verarbeitung der Dateien erleichtert.
 
 - **Video-Internet-4K.m4v**: Hochauflösende Version für das Internet (4K) (optional)
 - **Video-Internet-HD.m4v**: HD-Version für das Internet (optional)
@@ -148,9 +75,58 @@ Innerhalb des Familienfilm-Medienset-Verzeichnisses sind die Dateien nach ihrem 
 - **Video-Medienserver.mov**: Datei für den Medienserver (optional)
 - **Titelbild.png**: Titelbild des Mediensets (zwingend)
 - **Projekt.tar**: Archivierte Projektdatei (optional)
-- **Metadaten.yaml**: Metadaten-Datei, die alle relevanten Informationen zum Medienset enthält (zwingend)
+- **Metadaten.yaml**: Metadaten-Datei mit allen relevanten Informationen (zwingend)
 
-**Hinweis zu Dateitypen:** Abgesehen von der `Metadaten.yaml` sind die Dateitypen nicht vorgegeben. Die Medienserver-Datei kann z. B. auch eine `.mp4` oder `.m4v` sein. Die Projektdatei kann beliebige Formate haben und sollte bei mehreren Dateien archiviert werden.
+**Hinweis zu Dateitypen:** Abgesehen von der `Metadaten.yaml` sind die Dateitypen nicht vorgegeben.
+
+## 4. Versionierung und Filmfassungen
+
+### Aktuelle Version
+
+Die aktuelle Version eines Mediensets befindet sich immer direkt im Wurzelverzeichnis des Mediensets oder der jeweiligen Filmfassung. Dies erleichtert den direkten Zugriff, ohne in Unterverzeichnisse navigieren zu müssen. Die Versionsnummer ist im Attribut **`Version`** der `Metadaten.yaml` angegeben.
+
+### Vorherige Versionen
+
+- **Eine vorherige Version:** Wenn es nur eine frühere Version gibt, wird diese in einem Unterverzeichnis namens `Vorherige_Version` abgelegt.
+
+- **Mehrere vorherige Versionen:** Bei mehreren früheren Versionen werden diese in einem Unterverzeichnis namens `Vorherige_Versionen` abgelegt. Dieses enthält Unterverzeichnisse `Version_X` für jede Version.
+
+**Beispiel:**
+
+```
+Vorherige_Versionen/
+├── Version_1/
+│   └── (...)  [Inhalt der Version 1]
+└── Version_2/
+    └── (...)  [Inhalt der Version 2]
+```
+
+### Filmfassungen
+
+Es gibt immer eine Standardfassung, die direkt im Hauptverzeichnis des Mediensets liegt. Filmfassungen für bestimmte Zielgruppen werden in separaten Unterverzeichnissen organisiert. Wenn in der `Metadaten.yaml` das optionale Attribut `Filmfassung_Name` vorhanden ist, muss ein entsprechendes Unterverzeichnis mit diesem Namen existieren (abgeleitet mit Unterstrichen und nur ASCII-Zeichen).
+
+**Beispiel:**
+
+Attribut `Filmfassung_Name`: "Filmfassung für Familie"  
+Unterverzeichnis: `Filmfassung_fuer_Familie/`
+
+**Beispiel für Versionen und Filmfassungen:**
+
+```
+2024_Wanderung_auf_den_Napf_mit_Uebernachtung/
+├── Filmfassung_fuer_Familie/
+│   ├── Video-Internet-4K.m4v
+│   ├── ...
+│   └── Vorherige_Version/
+│       └── (...)  [Inhalt der vorherigen Version]
+├── Video-Internet-4K.m4v
+├── ...
+└── Vorherige_Versionen/
+    ├── Version_1/
+    │   └── (...)  [Inhalt der Version 1]
+    └── Version_2/
+        └── (...)  [Inhalt der Version 2]
+```
 
 ## 5. Metadaten-Datei (`Metadaten.yaml`)
 
@@ -158,11 +134,7 @@ Die `Metadaten.yaml`-Datei enthält alle relevanten Informationen zu einem Medie
 
 ### 5.1 Verwendung des YAML-Schemas
 
-Die `Metadaten.yaml`-Datei verweist auf das entsprechende Schema, welches im Verzeichnis `schema/medienset/` verfügbar ist. Das Schema stellt sicher, dass die Metadaten konsistent und korrekt strukturiert sind.
-
-**Einbindung des Schemas in der `Metadaten.yaml`:**
-
-Am Anfang der `Metadaten.yaml`-Datei wird das Schema mit der absoluten URL referenziert:
+Die `Metadaten.yaml`-Datei verweist auf das entsprechende Schema, welches über die absoluten URLs verfügbar ist:
 
 ```yaml
 $schema: "https://raw.githubusercontent.com/kurmann/videoschnitt/refs/heads/main/docs/schema/medienset/familienfilm.yaml"
@@ -173,7 +145,7 @@ $schema: "https://raw.githubusercontent.com/kurmann/videoschnitt/refs/heads/main
 ```yaml
 $schema: "https://raw.githubusercontent.com/kurmann/videoschnitt/refs/heads/main/docs/schema/medienset/familienfilm.yaml"
 
-Spezifikationsversion: "0.9"
+Spezifikationsversion: "1.0"
 Id: "01JA0X08NCSKRSB6VF4C51MEB6"
 Titel: "Wanderung auf den Napf mit Übernachtung"
 Typ: "Familienfilm"
@@ -183,7 +155,7 @@ Aufnahmedatum: "2024-10-10"
 Mediatheksdatum: "2024-10-21"
 Version: 1
 Beschreibung: "Als ganze Familie auf dem Gipfel des Napfs mit einer prächtigen Rundumsicht..."
-Notiz: "Erstes Video mit Apple Log-Aufnahme."
+Notiz: "Überarbeitung der Titelanimation."
 Schlüsselwörter:
   - "Touren"
   - "Familie"
@@ -195,10 +167,7 @@ Kameraführung:
 Dauer_in_Sekunden: 425
 Studio: "Privates Videoschnitt-Studio Lyssach"
 Filmfassung_Name: "Filmfassung für Familie"
-Filmfassung_Beschreibung: "Mit längerer Szene mit den Vorbereitungen zuhause und der Autofahrt zur Wiggerehütte."
-Mediendateien:
-  Titelbild: "file:Titelbild.png"
-  Video_Medienserver: "file:Video-Medienserver.mov"
+Filmfassung_Beschreibung: "Mit längerer Szene mit den Kindervelos auf dem Parcours."
 ```
 
 ### 5.3 Beispiel für eine `Metadaten.yaml` für Untertyp "Rückblick"
@@ -206,7 +175,7 @@ Mediendateien:
 ```yaml
 $schema: "https://raw.githubusercontent.com/kurmann/videoschnitt/refs/heads/main/docs/schema/medienset/familienfilm.yaml"
 
-Spezifikationsversion: "0.9"
+Spezifikationsversion: "1.0"
 Id: "01JAF1DFEWXZX9N9N5PRZ97KC3"
 Titel: "Rückblick auf das Jahr 2023"
 Typ: "Familienfilm"
@@ -229,16 +198,9 @@ Kameraführung:
   - "Kathrin Glück"
 Dauer_in_Sekunden: 300
 Studio: "Privates Videoschnitt-Studio Lyssach"
-Mediendateien:
-  Titelbild: "file:Titelbild.png"
-  Videos_fuer_Internetstreaming:
-    HD: "file:Video-Internet-HD.m4v"
-    SD: "file:Video-Internet-SD.m4v"
 ```
 
-**Hinweis zu den Mediendateien:** In diesen Beispielen sind nur die zwingenden Dateien (Titelbild und mindestens eine Videodatei) enthalten. Die Videodateien sind mit dem `file:`-Schema angegeben, sodass sie in unterstützten Editoren direkt geöffnet werden können.
-
-**Wichtig:** In den YAML-Metadaten-Dateien können Unicode-Zeichen, einschließlich Umlauten, verwendet werden. Die Beschränkung auf ASCII-Zeichen gilt nur für Verzeichnis- und Dateinamen.
+**Hinweis:** In den `Metadaten.yaml`-Dateien werden keine Mediendateien mehr aufgeführt. Die Mediendateien sind im Dateisystem organisiert und folgen den in der Spezifikation festgelegten Konventionen.
 
 ## 6. Tabellenübersicht der Metadatenfelder
 
@@ -246,7 +208,7 @@ Mediendateien:
 
 | Feldname              | Beschreibung                                                                                                                      | Pflichtfeld |
 | --------------------- | --------------------------------------------------------------------------------------------------------------------------------- | ----------- |
-| Spezifikationsversion | Version der Medienset-Spezifikation, die für das Medienset verwendet wurde (z. B. "0.9").                                         | Ja          |
+| Spezifikationsversion | Version der Medienset-Spezifikation, die für das Medienset verwendet wurde (z. B. "1.0").                                         | Ja          |
 | Id                    | Eindeutige Identifikationsnummer für das Medienset (ULID).                                                                        | Ja          |
 | Titel                 | Titel des Mediensets.                                                                                                             | Ja          |
 | Typ                   | Haupttyp des Mediensets, z. B. "Familienfilm", "Audio", "Fotoalbum", "Dokument" etc.                                              | Ja          |
@@ -270,7 +232,6 @@ Mediendateien:
 | Dauer_in_Sekunden        | Gesamtdauer des Films in Sekunden.                                                                                       | Nein        |
 | Filmfassung_Name         | Name der Filmfassung (z. B. "Filmfassung für Familie"). Wenn vorhanden, muss ein entsprechendes Unterverzeichnis existieren. | Nein        |
 | Filmfassung_Beschreibung | Beschreibung der Filmfassung.                                                                                            | Nein        |
-| Mediendateien            | Informationen zu den Mediendateien, einschließlich Dateipfaden.                                                          | Ja          |
 
 ### 6.3 Spezifische Pflichtfelder für den Untertyp "Ereignis"
 
@@ -284,23 +245,21 @@ Mediendateien:
 | -------- | ------------------------------------------------------------------------------------------------------------- | ----------- |
 | Zeitraum | Zeitraum des Rückblicks, flexibel im Format (z. B. "2023", "2022-2023", "Januar 2023 bis Dezember 2023").     | Ja          |
 
-### 6.5 Mediendateien
-
-Innerhalb des Feldes `Mediendateien` sind folgende Unterfelder definiert:
-
-| Feldname                      | Beschreibung                                                                | Pflichtfeld |
-| ----------------------------- | --------------------------------------------------------------------------- | ----------- |
-| Titelbild                     | Titelbild des Mediensets.                                                   | Ja          |
-| Video_Medienserver            | Datei für den Medienserver.                                                 | Nein        |
-| Videos_fuer_Internetstreaming | Videos für Internetstreaming in verschiedenen Auflösungen (4K, HD, SD).     | Nein        |
-| Projektdatei                  | Archivierte Projektdatei.                                                   | Nein        |
-
-**Hinweis:** Mindestens eine Videodatei (entweder `Video_Medienserver` oder `Videos_fuer_Internetstreaming`) muss vorhanden sein.
-
 ## 7. Validierung der `Metadaten.yaml`
 
-Die Validierung der `Metadaten.yaml`-Datei erfolgt mithilfe des YAML-Schemas, welches im Verzeichnis `schema/medienset/` verfügbar ist. Durch die Verwendung des Schemas wird sichergestellt, dass die Metadaten vollständig und korrekt sind.
+Die Validierung der `Metadaten.yaml`-Datei erfolgt mithilfe des YAML-Schemas, welches über die absoluten URLs verfügbar ist. Durch die Verwendung des Schemas wird sichergestellt, dass die Metadaten vollständig und korrekt sind.
 
 ## 8. Fazit
 
-Die Kurmann-Medienset Spezifikation in Version 0.9 bietet eine klare und strukturierte Methode zur Organisation von Mediensets, insbesondere für Familienfilme. Die Einführung eines YAML-Schemas zur Validierung der `Metadaten.yaml`-Dateien erhöht die Konsistenz und erleichtert die Verarbeitung der Metadaten. Durch die klare Definition von Pflichtfeldern und optionalen Elementen wird Flexibilität ermöglicht, ohne die Integrität der Mediensets zu beeinträchtigen.
+Die Kurmann-Medienset Spezifikation in Version 1.0 bietet eine klare und strukturierte Methode zur Organisation von Mediensets, insbesondere für Familienfilme. Durch die Vereinfachungen und die Fokussierung auf das Dateisystem als Single Point of Truth für Mediendateien wird die Verwaltung erleichtert und Redundanz vermieden.
+
+## Anhang: YAML-Schema-Dateien
+
+Die YAML-Schema-Dateien sind über die folgenden absoluten URLs verfügbar:
+
+- **[Basisschema](https://raw.githubusercontent.com/kurmann/videoschnitt/refs/heads/main/docs/schema/medienset/basis.yaml)**
+- **[Familienfilm-Schema](https://raw.githubusercontent.com/kurmann/videoschnitt/refs/heads/main/docs/schema/medienset/familienfilm.yaml)**
+
+## 9. Verwendung der Schemas
+
+Um die `Metadaten.yaml`-Dateien zu validieren, können Sie einen YAML-Editor oder ein Tool verwenden, das JSON Schema unterstützt. Durch den Verweis auf das Schema am Anfang der `Metadaten.yaml`-Datei wird die Validierung automatisch ermöglicht.
