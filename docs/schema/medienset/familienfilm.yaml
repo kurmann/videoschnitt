@@ -3,7 +3,7 @@
 $schema: "http://json-schema.org/draft-07/schema#"
 title: "Kurmann-Medienset Familienfilm Schema"
 allOf:
-  - $ref: "basis.yaml"
+  - $ref: "https://raw.githubusercontent.com/kurmann/videoschnitt/refs/heads/main/docs/schema/medienset/basis.yaml"
 properties:
   Typ:
     const: "Familienfilm"
@@ -30,37 +30,12 @@ properties:
     description: "Gesamtdauer des Films in Sekunden."
   Filmfassung_Name:
     type: "string"
-    description: "Name der Filmfassung (z. B. 'Filmfassung für Familie')."
+    description: "Name der Filmfassung (z. B. 'Filmfassung für Familie'). Wenn vorhanden, muss ein entsprechendes Unterverzeichnis existieren."
   Filmfassung_Beschreibung:
     type: "string"
     description: "Beschreibung der Filmfassung."
-  Mediendateien:
-    type: "object"
-    properties:
-      Titelbild:
-        type: "string"
-        description: "Titelbild des Mediensets."
-      Video_Medienserver:
-        type: "string"
-        description: "Datei für den Medienserver."
-      Videos_fuer_Internetstreaming:
-        type: "object"
-        properties:
-          4K:
-            type: "string"
-            description: "4K-Version."
-          HD:
-            type: "string"
-            description: "HD-Version."
-          SD:
-            type: "string"
-            description: "SD-Version."
-    required:
-      - Titelbild
-    additionalProperties: false
 required:
   - Untertyp
-  - Mediendateien
 oneOf:
   - if:
       properties:
@@ -85,11 +60,4 @@ oneOf:
         Zeitraum:
           type: "string"
           description: "Zeitraum des Rückblicks."
-anyOf:
-  - properties:
-      Mediendateien:
-        required: ["Video_Medienserver"]
-  - properties:
-      Mediendateien:
-        required: ["Videos_fuer_Internetstreaming"]
 additionalProperties: true
