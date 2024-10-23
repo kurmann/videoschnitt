@@ -14,102 +14,82 @@ $ mediaset-manager [OPTIONS] COMMAND [ARGS]...
 
 **Commands**:
 
-* `create-metadata-file`: Erstellt eine Metadaten.yaml-Datei für ein...
-* `create-video-metadata-file`: Erstellt eine Metadaten.yaml-Datei für ein...
-* `get-recording-date`: Extrahiert das Aufnahmedatum aus Dateiname...
-* `get-resolution`: Gibt die Auflösungskategorie einer...
+* `create-homemovie`: Erstellt ein Medienset-Verzeichnis und...
+* `create-homemovie-metadata-file`: Erstellt die Metadaten.yaml-Datei im...
 * `list-mediasets`: Listet alle Mediensets im angegebenen...
+* `validate-directory`: Überprüft, ob ein Verzeichnis ein gültiges...
+* `validate-mediaset`: Führt sowohl die Metadaten- als auch die...
+* `validate-metadata`: Validiert die Metadaten.yaml-Datei gegen...
 
-## `mediaset-manager create-metadata-file`
+## `mediaset-manager create-homemovie`
 
-Erstellt eine Metadaten.yaml-Datei für ein gegebenes Medienset basierend auf der Mediadatei.
-Erkennt automatisch den Medientyp und verwendet den entsprechenden spezifischen Command.
+Erstellt ein Medienset-Verzeichnis und eine Metadaten.yaml-Datei.
+Dateien werden verschoben und umbenannt. Es erfolgt eine Bestätigung vor dem Verschieben.
+Bei bestehenden Dateien wird nachgefragt, ob diese überschrieben werden sollen.
 
 **Usage**:
 
 ```console
-$ mediaset-manager create-metadata-file [OPTIONS] METADATA_SOURCE
+$ mediaset-manager create-homemovie [OPTIONS]
 ```
-
-**Arguments**:
-
-* `METADATA_SOURCE`: Pfad zur Mediadatei (z.B. eine Videodatei)  [required]
 
 **Options**:
 
+* `--jahr INTEGER`: Jahr des Mediensets
+* `--titel TEXT`: Titel des Mediensets
+* `-m, --media-server-file PATH`: Pfad zur Medienserver-Videodatei
+* `-4k, --internet-4k-file PATH`: Pfad zur 4K-Internet-Videodatei
+* `-hd, --internet-hd-file PATH`: Pfad zur HD-Internet-Videodatei
+* `-sd, --internet-sd-file PATH`: Pfad zur SD-Internet-Videodatei
+* `-p, --projekt-datei PATH`: Pfad zur Projektdatei
+* `-t, --titelbild PATH`: Pfad zum Titelbild (Titelbild.png)
+* `--metadata-source PATH`: Datei zur Extraktion von Metadaten
+* `--typ TEXT`: Typ des Mediensets
+* `--untertyp TEXT`: Untertyp des Mediensets (Ereignis/Rückblick)
+* `--aufnahmedatum TEXT`: Aufnahmedatum (YYYY-MM-DD) für Untertyp 'Ereignis'
+* `--zeitraum TEXT`: Zeitraum für Untertyp 'Rückblick'
+* `--beschreibung TEXT`: Beschreibung des Mediensets
+* `--notiz TEXT`: Interne Bemerkungen zum Medienset
+* `--schluesselwoerter TEXT`: Schlüsselwörter zur Kategorisierung, durch Komma getrennt
+* `--album TEXT`: Name des Albums oder der Sammlung
+* `--videoschnitt TEXT`: Personen für den Videoschnitt, durch Komma getrennt
+* `--kamerafuehrung TEXT`: Personen für die Kameraführung, durch Komma getrennt
+* `--dauer-in-sekunden INTEGER`: Gesamtdauer des Films in Sekunden
+* `--studio TEXT`: Studio oder Ort der Produktion
+* `--filmfassung-name TEXT`: Name der Filmfassung
+* `--filmfassung-beschreibung TEXT`: Beschreibung der Filmfassung
 * `--help`: Show this message and exit.
 
-## `mediaset-manager create-video-metadata-file`
+## `mediaset-manager create-homemovie-metadata-file`
 
-Erstellt eine Metadaten.yaml-Datei für ein Video-Medienset mit Untertyp "Ereignis" oder "Rückblick".
-
-**Usage**:
-
-```console
-$ mediaset-manager create-video-metadata-file [OPTIONS] TITLE ERSTELLUNGSJAHR
-```
-
-**Arguments**:
-
-* `TITLE`: Titel des Mediensets  [required]
-* `ERSTELLUNGSJAHR`: Jahr der Originalerstellung  [required]
-
-**Options**:
-
-* `-s, --subtype TEXT`: Untertyp des Mediensets (Ereignis, Rückblick)
-* `-ry, --aufnahmejahr INTEGER`: Aufnahmejahr für Untertyp 'Ereignis'
-* `-rd, --aufnahmedatum TEXT`: Aufnahmedatum (YYYY-MM-DD) für Untertyp 'Ereignis'
-* `-p, --zeitraum TEXT`: Zeitraum für Untertyp 'Rückblick' (z.B. '2023', '2022-2023', 'Januar 2023 bis Dezember 2023')
-* `-d, --description TEXT`: Beschreibung des Mediensets
-* `-st, --studio TEXT`: Studio oder Ort der Produktion
-* `-k, --keywords TEXT`: Schlüsselwörter, durch Kommata getrennt
-* `-a, --album TEXT`: Album-Name
-* `-ve, --video-editor TEXT`: Personen für den Videoschnitt, durch Kommata getrennt
-* `-ph, --photographers TEXT`: Personen für die Kameraführung, durch Kommata getrennt
-* `-du, --duration INTEGER`: Dauer des Videos in Sekunden  [default: 0]
-* `-l, --language TEXT`: Sprache der Metadaten-Datei (ISO-639-1)  [default: de-CH]
-* `--help`: Show this message and exit.
-
-## `mediaset-manager get-recording-date`
-
-Extrahiert das Aufnahmedatum aus Dateiname oder Titel.
-
-Gibt einen Fehler aus, wenn kein Datum gefunden wird. Standardmäßig wird zuerst aus dem Dateinamen extrahiert (Rang 1)
-und bei Misserfolg aus dem Titel (Rang 2), wenn ein Dateipfad angegeben ist.
+Erstellt die Metadaten.yaml-Datei im angegebenen Verzeichnis oder im aktuellen Verzeichnis.
 
 **Usage**:
 
 ```console
-$ mediaset-manager get-recording-date [OPTIONS] FILE_NAME
+$ mediaset-manager create-homemovie-metadata-file [OPTIONS]
 ```
-
-**Arguments**:
-
-* `FILE_NAME`: Dateiname, aus dem das Aufnahmedatum extrahiert werden soll  [required]
 
 **Options**:
 
-* `-f, --file-path TEXT`: Pfad zur Datei, um das Datum aus dem Titel zu extrahieren
-* `-n, --filename-only`: Extrahiere das Aufnahmedatum nur aus dem Dateinamen
-* `--help`: Show this message and exit.
-
-## `mediaset-manager get-resolution`
-
-Gibt die Auflösungskategorie einer Videodatei zurück (SD, 720p, 1080p, 2K, 4K)
-sowie die exakte Auflösung in Pixeln (Höhe × Breite).
-
-**Usage**:
-
-```console
-$ mediaset-manager get-resolution [OPTIONS] FILE_PATH
-```
-
-**Arguments**:
-
-* `FILE_PATH`: Pfad zur Videodatei, um die Auflösungskategorie zu bestimmen  [required]
-
-**Options**:
-
+* `--titel TEXT`: Titel des Mediensets
+* `--jahr INTEGER`: Jahr des Mediensets
+* `--typ TEXT`: Typ des Mediensets
+* `--untertyp TEXT`: Untertyp des Mediensets (Ereignis/Rückblick)
+* `--aufnahmedatum TEXT`: Aufnahmedatum (YYYY-MM-DD) für Untertyp 'Ereignis'
+* `--zeitraum TEXT`: Zeitraum für Untertyp 'Rückblick'
+* `--beschreibung TEXT`: Beschreibung des Mediensets
+* `--notiz TEXT`: Interne Bemerkungen zum Medienset
+* `--schluesselwoerter TEXT`: Schlüsselwörter zur Kategorisierung, durch Komma getrennt
+* `--album TEXT`: Name des Albums oder der Sammlung
+* `--videoschnitt TEXT`: Personen für den Videoschnitt, durch Komma getrennt
+* `--kamerafuehrung TEXT`: Personen für die Kameraführung, durch Komma getrennt
+* `--dauer-in-sekunden INTEGER`: Gesamtdauer des Films in Sekunden
+* `--studio TEXT`: Studio oder Ort der Produktion
+* `--filmfassung-name TEXT`: Name der Filmfassung
+* `--filmfassung-beschreibung TEXT`: Beschreibung der Filmfassung
+* `--metadata-source PATH`: Datei zur Extraktion von Metadaten
+* `-o, --output PATH`: Ausgabepfad inklusive Dateiname (z.B., /path/to/Metadaten.yaml)
 * `--help`: Show this message and exit.
 
 ## `mediaset-manager list-mediasets`
@@ -131,4 +111,58 @@ $ mediaset-manager list-mediasets [OPTIONS] DIRECTORY
 
 * `-a, --additional-dir TEXT`: Optionales zusätzliches Verzeichnis mit Mediendateien
 * `--json`: Gibt die Ausgabe als JSON zurück
+* `--help`: Show this message and exit.
+
+## `mediaset-manager validate-directory`
+
+Überprüft, ob ein Verzeichnis ein gültiges Medienset ist.
+
+**Usage**:
+
+```console
+$ mediaset-manager validate-directory [OPTIONS] DIRECTORY_PATH
+```
+
+**Arguments**:
+
+* `DIRECTORY_PATH`: Pfad zum Medienset-Verzeichnis  [required]
+
+**Options**:
+
+* `--help`: Show this message and exit.
+
+## `mediaset-manager validate-mediaset`
+
+Führt sowohl die Metadaten- als auch die Verzeichnisvalidierung durch.
+
+**Usage**:
+
+```console
+$ mediaset-manager validate-mediaset [OPTIONS] DIRECTORY_PATH
+```
+
+**Arguments**:
+
+* `DIRECTORY_PATH`: Pfad zum Medienset-Verzeichnis  [required]
+
+**Options**:
+
+* `--help`: Show this message and exit.
+
+## `mediaset-manager validate-metadata`
+
+Validiert die Metadaten.yaml-Datei gegen das YAML-Schema.
+
+**Usage**:
+
+```console
+$ mediaset-manager validate-metadata [OPTIONS] METADATA_PATH
+```
+
+**Arguments**:
+
+* `METADATA_PATH`: Pfad zur Metadaten.yaml Datei  [required]
+
+**Options**:
+
 * `--help`: Show this message and exit.
