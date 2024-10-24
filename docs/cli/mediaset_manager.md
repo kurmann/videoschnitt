@@ -16,10 +16,7 @@ $ mediaset-manager [OPTIONS] COMMAND [ARGS]...
 
 * `auto-create-homemovies`: Sucht im angegebenen Verzeichnis nach...
 * `create-homemovie`: Erstellt ein Medienset-Verzeichnis und...
-* `list-mediasets`: Listet alle Mediensets im angegebenen...
-* `validate-directory`: Überprüft, ob ein Verzeichnis ein gültiges...
-* `validate-mediaset`: Führt sowohl die Metadaten- als auch die...
-* `validate-metadata`: Validiert die Metadaten.yaml-Datei gegen...
+* `integrate-mediaset`: Integriert ein einzelnes Medienset in die...
 
 ## `mediaset-manager auto-create-homemovies`
 
@@ -79,77 +76,23 @@ $ mediaset-manager create-homemovie [OPTIONS] METADATA_SOURCE
 * `--no-prompt / --no-no-prompt`: [default: no-no-prompt]
 * `--help`: Show this message and exit.
 
-## `mediaset-manager list-mediasets`
+## `mediaset-manager integrate-mediaset`
 
-Listet alle Mediensets im angegebenen Verzeichnis auf und klassifiziert die Dateien.
-Optional durchsucht ein zusätzliches Verzeichnis nach Mediendateien.
-
-**Usage**:
-
-```console
-$ mediaset-manager list-mediasets [OPTIONS] DIRECTORY
-```
-
-**Arguments**:
-
-* `DIRECTORY`: Hauptverzeichnis mit den Mediendateien  [required]
-
-**Options**:
-
-* `-a, --additional-dir TEXT`: Optionales zusätzliches Verzeichnis mit Mediendateien
-* `--json`: Gibt die Ausgabe als JSON zurück
-* `--help`: Show this message and exit.
-
-## `mediaset-manager validate-directory`
-
-Überprüft, ob ein Verzeichnis ein gültiges Medienset ist.
+Integriert ein einzelnes Medienset in die Mediathek. Verschiebt es in das passende Jahresverzeichnis.
 
 **Usage**:
 
 ```console
-$ mediaset-manager validate-directory [OPTIONS] DIRECTORY_PATH
+$ mediaset-manager integrate-mediaset [OPTIONS] MEDIENSET_DIR MEDIATHEK_DIR
 ```
 
 **Arguments**:
 
-* `DIRECTORY_PATH`: Pfad zum Medienset-Verzeichnis  [required]
+* `MEDIENSET_DIR`: Das Medienset-Verzeichnis, das in die Mediathek integriert werden soll.  [required]
+* `MEDIATHEK_DIR`: Das Hauptverzeichnis der Mediathek, in das das Medienset integriert werden soll.  [required]
 
 **Options**:
 
-* `--help`: Show this message and exit.
-
-## `mediaset-manager validate-mediaset`
-
-Führt sowohl die Metadaten- als auch die Verzeichnisvalidierung durch.
-
-**Usage**:
-
-```console
-$ mediaset-manager validate-mediaset [OPTIONS] DIRECTORY_PATH
-```
-
-**Arguments**:
-
-* `DIRECTORY_PATH`: Pfad zum Medienset-Verzeichnis  [required]
-
-**Options**:
-
-* `--help`: Show this message and exit.
-
-## `mediaset-manager validate-metadata`
-
-Validiert die Metadaten.yaml-Datei gegen das YAML-Schema.
-
-**Usage**:
-
-```console
-$ mediaset-manager validate-metadata [OPTIONS] METADATA_PATH
-```
-
-**Arguments**:
-
-* `METADATA_PATH`: Pfad zur Metadaten.yaml Datei  [required]
-
-**Options**:
-
+* `-v, --version TEXT`: Versionierungsoption: 'overwrite' oder 'new'.
+* `--no-prompt`: Unterdrückt die Nachfrage bei der Integration.
 * `--help`: Show this message and exit.
