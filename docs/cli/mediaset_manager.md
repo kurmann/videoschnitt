@@ -14,82 +14,69 @@ $ mediaset-manager [OPTIONS] COMMAND [ARGS]...
 
 **Commands**:
 
+* `auto-create-homemovies`: Sucht im angegebenen Verzeichnis nach...
 * `create-homemovie`: Erstellt ein Medienset-Verzeichnis und...
 * `list-mediasets`: Listet alle Mediensets im angegebenen...
 * `validate-directory`: Überprüft, ob ein Verzeichnis ein gültiges...
 * `validate-mediaset`: Führt sowohl die Metadaten- als auch die...
 * `validate-metadata`: Validiert die Metadaten.yaml-Datei gegen...
 
-## `mediaset-manager create-homemovie`
+## `mediaset-manager auto-create-homemovies`
 
-Erstellt ein Medienset-Verzeichnis und eine Metadaten.yaml-Datei basierend auf einer Videodatei.
-Dateien werden gesucht, klassifiziert und in das Medienset-Verzeichnis verschoben.
-Es erfolgt eine Bestätigung vor dem Verschieben.
-Bei bestehenden Dateien wird nachgefragt, ob diese überschrieben werden sollen.
-
-Prozess:
-1. Ermittlung des Titels:
-   Der Titel wird aus den Metadaten der Metadatenquelle (Referenzdatei) extrahiert.
-   Falls der Titel im Format "YYYY-MM-DD Titel" vorliegt, wird das Datum extrahiert und als 'aufnahmedatum' verwendet.
-   Der extrahierte Titel kann durch Angabe von '--titel' überschrieben werden.
-
-2. Sammlung passender Dateien:
-   Sucht in Verzeichnis 1 (Verzeichnis der Metadatenquelle) und optional im zusätzlichen Verzeichnis nach Dateien,
-   deren Dateinamen mit dem vollständigen Titel (inklusive Datum) beginnen.
-   Nur Dateien, die mit dem vollständigen Titel beginnen, werden berücksichtigt.
-
-3. Klassifizierung der Dateien:
-   Videodateien werden anhand von Auflösung ('Image Height') und Bitrate ('Avg Bitrate') klassifiziert.
-   Medienserver-Datei: Bitrate > 50 Mbps.
-   Internet-Dateien:
-     - SD: Vertikale Auflösung ≤ 540 Pixel.
-     - HD: Vertikale Auflösung = 1080 Pixel.
-     - 4K: Vertikale Auflösung ≥ 2048 Pixel.
-   Titelbild:
-   Bevorzugt wird eine PNG-Datei, die mit dem vollständigen Titel beginnt.
-   Falls keine PNG-Datei gefunden wird, wird eine JPG/JPEG-Datei verwendet.
-
-4. Erstellen des Medienset-Verzeichnisses:
-   Das Verzeichnis wird nach dem Muster '{Jahr}_{Titel}' erstellt.
-   Der Titel wird dabei dateisystemkonform formatiert.
-
-5. Verschieben und Umbenennen der Dateien:
-   Die klassifizierten Dateien werden in das Medienset-Verzeichnis verschoben.
-   Die Dateien werden gemäß den erwarteten Dateinamen umbenannt.
-
-6. Erstellen der Metadaten.yaml:
-   Die Metadaten werden gesammelt und in der 'Metadaten.yaml' im Medienset-Verzeichnis gespeichert.
-   Alle Optionen können verwendet werden, um die extrahierten Metadaten zu überschreiben.
-
-Hinweise:
-- Vertikale Auflösung und Bitrate werden mit 'exiftool' aus den Dateien ausgelesen.
-- Stellen Sie sicher, dass 'exiftool' installiert und im Systempfad verfügbar ist.
+Sucht im angegebenen Verzeichnis nach Mediendateien und erstellt automatisch Mediensets basierend auf den Metadaten.
 
 **Usage**:
 
 ```console
-$ mediaset-manager create-homemovie [OPTIONS]
+$ mediaset-manager auto-create-homemovies [OPTIONS] SEARCH_DIR
 ```
+
+**Arguments**:
+
+* `SEARCH_DIR`: Das Verzeichnis, in dem nach Mediendateien gesucht werden soll.  [required]
 
 **Options**:
 
-* `-ms, --metadata-source PATH`: Pfad zur Videodatei zur Extraktion von Metadaten (Referenzdatei).  [required]
-* `-amd, --additional-media-dir PATH`: Zusätzliches Verzeichnis zur Suche nach Mediendateien.
-* `--titel TEXT`: Titel des Mediensets.
-* `--jahr INTEGER`: Jahr des Mediensets.
-* `--untertyp TEXT`: Untertyp des Mediensets (Ereignis/Rückblick).
-* `--aufnahmedatum TEXT`: Aufnahmedatum (YYYY-MM-DD) für Untertyp 'Ereignis'.
-* `--zeitraum TEXT`: Zeitraum für Untertyp 'Rückblick'.
-* `--beschreibung TEXT`: Beschreibung des Mediensets.
-* `--notiz TEXT`: Interne Bemerkungen zum Medienset.
-* `--schluesselwoerter TEXT`: Schlüsselwörter zur Kategorisierung, getrennt durch Komma oder Semikolon.
-* `--album TEXT`: Name des Albums oder der Sammlung.
-* `--videoschnitt TEXT`: Personen für den Videoschnitt, getrennt durch Komma oder Semikolon.
-* `--kamerafuehrung TEXT`: Personen für die Kameraführung, getrennt durch Komma oder Semikolon.
-* `--dauer-in-sekunden INTEGER`: Gesamtdauer des Films in Sekunden.
-* `--studio TEXT`: Studio oder Ort der Produktion.
-* `--filmfassung-name TEXT`: Name der Filmfassung.
-* `--filmfassung-beschreibung TEXT`: Beschreibung der Filmfassung.
+* `-amd, --additional-media-dir DIRECTORY`: Zusätzliches Verzeichnis zur Suche nach Mediendateien.
+* `--no-prompt`: Unterdrückt die Nachfrage beim Verschieben der Dateien.
+* `--help`: Show this message and exit.
+
+## `mediaset-manager create-homemovie`
+
+Erstellt ein Medienset-Verzeichnis und eine Metadaten.yaml-Datei basierend auf einer Videodatei.
+Dateien werden gesucht, klassifiziert und in das Medienset-Verzeichnis verschoben.
+Es erfolgt eine Bestätigung vor dem Verschieben, es sei denn, 'no_prompt' wurde angegeben.
+Bei bestehenden Dateien wird nachgefragt, ob diese überschrieben werden sollen.
+
+**Usage**:
+
+```console
+$ mediaset-manager create-homemovie [OPTIONS] METADATA_SOURCE
+```
+
+**Arguments**:
+
+* `METADATA_SOURCE`: [required]
+
+**Options**:
+
+* `--additional-media-dir PATH`
+* `--titel TEXT`
+* `--jahr INTEGER`
+* `--untertyp TEXT`
+* `--aufnahmedatum TEXT`
+* `--zeitraum TEXT`
+* `--beschreibung TEXT`
+* `--notiz TEXT`
+* `--schluesselwoerter TEXT`
+* `--album TEXT`
+* `--videoschnitt TEXT`
+* `--kamerafuehrung TEXT`
+* `--dauer-in-sekunden INTEGER`
+* `--studio TEXT`
+* `--filmfassung-name TEXT`
+* `--filmfassung-beschreibung TEXT`
+* `--no-prompt / --no-no-prompt`: [default: no-no-prompt]
 * `--help`: Show this message and exit.
 
 ## `mediaset-manager list-mediasets`
