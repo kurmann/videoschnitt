@@ -13,6 +13,9 @@ import yaml
 
 app = typer.Typer()
 
+# Modulvariable für das Schema
+SCHEMA_URL = "https://raw.githubusercontent.com/kurmann/videoschnitt/main/docs/schema/medienset/familienfilm.yaml"
+
 def extract_metadata(file_path):
     command = ['exiftool', '-j', str(file_path)]
     result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
@@ -361,6 +364,7 @@ def create_homemovie(
 
         # Sammle die Metadaten
         metadaten = {
+            "$schema": SCHEMA_URL,  # Schema-URL als Modulvariable
             "Spezifikationsversion": "1.0",
             "Id": medienset_id,
             "Titel": titel,
