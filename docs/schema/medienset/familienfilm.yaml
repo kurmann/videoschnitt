@@ -3,7 +3,7 @@
 $schema: "http://json-schema.org/draft-07/schema#"
 title: "Kurmann-Medienset Familienfilm Schema"
 allOf:
-  - $ref: "https://raw.githubusercontent.com/kurmann/videoschnitt/refs/heads/main/docs/schema/medienset/basis.yaml"
+  - $ref: "https://raw.githubusercontent.com/kurmann/videoschnitt/main/docs/schema/medienset/basis.yaml"
 properties:
   Typ:
     const: "Familienfilm"
