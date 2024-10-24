@@ -371,7 +371,8 @@ def create_homemovie(
             "Typ": typ,  # Immer 'Familienfilm'
             "Untertyp": untertyp,
             "Jahr": str(jahr),
-            "Version": 1
+            "Version": 1,
+            "Mediatheksdatum": datetime.now().strftime("%Y-%m-%d"),  # Hinzugefügt
         }
 
         if untertyp == "Ereignis":
