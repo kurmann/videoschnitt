@@ -3,207 +3,539 @@
 import typer
 from pathlib import Path
 from typing import Optional
-from mediaset_manager.utils import sanitize_filename
-from mediaset_manager.commands.create_homemovie_metadata_file import (
-    create_homemovie_metadata_file,
-    extract_metadata,
-    parse_date,
-    extract_date_and_title_from_name,
-)
+from mediaset_manager.utils import sanitize_filename, generate_ulid
 import shutil
 from datetime import datetime
+import re
+import subprocess
+import json
+import yaml
 
 app = typer.Typer()
 
+def extract_metadata(file_path):
+    command = ['exiftool', '-j', str(file_path)]
+    result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    if result.returncode != 0:
+        raise Exception(f"Error running exiftool: {result.stderr}")
+    metadata = json.loads(result.stdout)[0]
+    return metadata
+
+def parse_date(date_str):
+    for fmt in ('%Y:%m:%d %H:%M:%S', '%Y:%m:%d', '%Y-%m-%d'):
+        try:
+            return datetime.strptime(date_str, fmt).date()
+        except ValueError:
+            continue
+    return None
+
+def extract_date_and_title_from_name(name):
+    # Match patterns like 'YYYY-MM-DD Titel'
+    match = re.match(r'(\d{4}-\d{2}-\d{2})\s+(.*)', name)
+    if match:
+        date_part = match.group(1)
+        title_part = match.group(2)
+        date_obj = parse_date(date_part)
+        if date_obj:
+            return date_obj.strftime('%Y-%m-%d'), title_part
+    return None, name
+
+def split_list_field(value):
+    """
+    Splits a string into a list using commas and semicolons as separators.
+    """
+    if not value:
+        return []
+    return [item.strip() for item in re.split(r'[;,]', value)]
+
 @app.command("create-homemovie")
 def create_homemovie(
-    jahr: Optional[int] = typer.Option(None, help="Jahr des Mediensets"),
-    titel: Optional[str] = typer.Option(None, help="Titel des Mediensets"),
-    media_server_file: Optional[Path] = typer.Option(
-        None, "--media-server-file", "-m", help="Pfad zur Medienserver-Videodatei"
+    metadata_source: Path = typer.Option(
+        ...,
+        "--metadata-source",
+        "-ms",
+        help="Pfad zur Videodatei zur Extraktion von Metadaten (Referenzdatei).",
     ),
-    internet_4k_file: Optional[Path] = typer.Option(
-        None, "--internet-4k-file", "-4k", help="Pfad zur 4K-Internet-Videodatei"
+    additional_media_dir: Optional[Path] = typer.Option(
+        None,
+        "--additional-media-dir",
+        "-amd",
+        help="Zusätzliches Verzeichnis zur Suche nach Mediendateien.",
     ),
-    internet_hd_file: Optional[Path] = typer.Option(
-        None, "--internet-hd-file", "-hd", help="Pfad zur HD-Internet-Videodatei"
-    ),
-    internet_sd_file: Optional[Path] = typer.Option(
-        None, "--internet-sd-file", "-sd", help="Pfad zur SD-Internet-Videodatei"
-    ),
-    projektdatei: Optional[Path] = typer.Option(
-        None, "--projekt-datei", "-p", help="Pfad zur Projektdatei"
-    ),
-    titelbild: Optional[Path] = typer.Option(
-        None, "--titelbild", "-t", help="Pfad zum Titelbild (Titelbild.png)"
-    ),
-    metadata_source: Optional[Path] = typer.Option(
-        None, help="Datei zur Extraktion von Metadaten"
-    ),
-    typ: Optional[str] = typer.Option(None, help="Typ des Mediensets"),
+    titel: Optional[str] = typer.Option(None, help="Titel des Mediensets."),
+    jahr: Optional[int] = typer.Option(None, help="Jahr des Mediensets."),
+    # Option 'typ' entfernt, da immer 'Familienfilm'
     untertyp: Optional[str] = typer.Option(
         None,
-        help="Untertyp des Mediensets (Ereignis/Rückblick)",
+        help="Untertyp des Mediensets (Ereignis/Rückblick).",
         callback=lambda ctx, param, value: value.capitalize() if value else value,
     ),
     aufnahmedatum: Optional[str] = typer.Option(
-        None, help="Aufnahmedatum (YYYY-MM-DD) für Untertyp 'Ereignis'"
+        None, help="Aufnahmedatum (YYYY-MM-DD) für Untertyp 'Ereignis'."
     ),
     zeitraum: Optional[str] = typer.Option(
-        None, help="Zeitraum für Untertyp 'Rückblick'"
+        None, help="Zeitraum für Untertyp 'Rückblick'."
     ),
     beschreibung: Optional[str] = typer.Option(
-        None, help="Beschreibung des Mediensets"
+        None, help="Beschreibung des Mediensets."
     ),
-    notiz: Optional[str] = typer.Option(None, help="Interne Bemerkungen zum Medienset"),
+    notiz: Optional[str] = typer.Option(None, help="Interne Bemerkungen zum Medienset."),
     schluesselwoerter: Optional[str] = typer.Option(
-        None, help="Schlüsselwörter zur Kategorisierung, durch Komma getrennt"
+        None, help="Schlüsselwörter zur Kategorisierung, getrennt durch Komma oder Semikolon."
     ),
     album: Optional[str] = typer.Option(
-        None, help="Name des Albums oder der Sammlung"
+        None, help="Name des Albums oder der Sammlung."
     ),
     videoschnitt: Optional[str] = typer.Option(
-        None, help="Personen für den Videoschnitt, durch Komma getrennt"
+        None, help="Personen für den Videoschnitt, getrennt durch Komma oder Semikolon."
     ),
     kamerafuehrung: Optional[str] = typer.Option(
-        None, help="Personen für die Kameraführung, durch Komma getrennt"
+        None, help="Personen für die Kameraführung, getrennt durch Komma oder Semikolon."
     ),
     dauer_in_sekunden: Optional[int] = typer.Option(
-        None, help="Gesamtdauer des Films in Sekunden"
+        None, help="Gesamtdauer des Films in Sekunden."
     ),
     studio: Optional[str] = typer.Option(
-        None, help="Studio oder Ort der Produktion"
+        None, help="Studio oder Ort der Produktion."
     ),
     filmfassung_name: Optional[str] = typer.Option(
-        None, help="Name der Filmfassung"
+        None, help="Name der Filmfassung."
     ),
     filmfassung_beschreibung: Optional[str] = typer.Option(
-        None, help="Beschreibung der Filmfassung"
+        None, help="Beschreibung der Filmfassung."
     ),
 ):
     """
-    Erstellt ein Medienset-Verzeichnis und eine Metadaten.yaml-Datei.
-    Dateien werden verschoben und umbenannt. Es erfolgt eine Bestätigung vor dem Verschieben.
+    Erstellt ein Medienset-Verzeichnis und eine Metadaten.yaml-Datei basierend auf einer Videodatei.
+    Dateien werden gesucht, klassifiziert und in das Medienset-Verzeichnis verschoben.
+    Es erfolgt eine Bestätigung vor dem Verschieben.
     Bei bestehenden Dateien wird nachgefragt, ob diese überschrieben werden sollen.
-    """
-    # Überprüfe, ob mindestens eine Videodatei angegeben ist
-    video_files = {
-        "media_server": media_server_file,
-        "internet_4k": internet_4k_file,
-        "internet_hd": internet_hd_file,
-        "internet_sd": internet_sd_file,
-    }
-    provided_videos = [f for f in video_files.values() if f is not None]
 
-    if not provided_videos:
+    Prozess:
+    1. Ermittlung des Titels:
+       Der Titel wird aus den Metadaten der Metadatenquelle (Referenzdatei) extrahiert.
+       Falls der Titel im Format "YYYY-MM-DD Titel" vorliegt, wird das Datum extrahiert und als 'aufnahmedatum' verwendet.
+       Der extrahierte Titel kann durch Angabe von '--titel' überschrieben werden.
+
+    2. Sammlung passender Dateien:
+       Sucht in Verzeichnis 1 (Verzeichnis der Metadatenquelle) und optional im zusätzlichen Verzeichnis nach Dateien,
+       deren Dateinamen mit dem vollständigen Titel (inklusive Datum) beginnen.
+       Nur Dateien, die mit dem vollständigen Titel beginnen, werden berücksichtigt.
+
+    3. Klassifizierung der Dateien:
+       Videodateien werden anhand von Auflösung ('Image Height') und Bitrate ('Avg Bitrate') klassifiziert.
+       Medienserver-Datei: Bitrate > 50 Mbps.
+       Internet-Dateien:
+         - SD: Vertikale Auflösung ≤ 540 Pixel.
+         - HD: Vertikale Auflösung = 1080 Pixel.
+         - 4K: Vertikale Auflösung ≥ 2048 Pixel.
+       Titelbild:
+       Bevorzugt wird eine PNG-Datei, die mit dem vollständigen Titel beginnt.
+       Falls keine PNG-Datei gefunden wird, wird eine JPG/JPEG-Datei verwendet.
+
+    4. Erstellen des Medienset-Verzeichnisses:
+       Das Verzeichnis wird nach dem Muster '{Jahr}_{Titel}' erstellt.
+       Der Titel wird dabei dateisystemkonform formatiert.
+
+    5. Verschieben und Umbenennen der Dateien:
+       Die klassifizierten Dateien werden in das Medienset-Verzeichnis verschoben.
+       Die Dateien werden gemäß den erwarteten Dateinamen umbenannt.
+
+    6. Erstellen der Metadaten.yaml:
+       Die Metadaten werden gesammelt und in der 'Metadaten.yaml' im Medienset-Verzeichnis gespeichert.
+       Alle Optionen können verwendet werden, um die extrahierten Metadaten zu überschreiben.
+
+    Hinweise:
+    - Vertikale Auflösung und Bitrate werden mit 'exiftool' aus den Dateien ausgelesen.
+    - Stellen Sie sicher, dass 'exiftool' installiert und im Systempfad verfügbar ist.
+    """
+
+    # Überprüfen, ob die Metadatenquelle existiert
+    if not metadata_source.is_file():
         typer.secho(
-            "Es muss mindestens eine Videodatei angegeben werden (Medienserver oder eine Internet-Videodatei).",
+            f"Die Metadatenquelle '{metadata_source}' existiert nicht.",
             fg=typer.colors.RED,
         )
         raise typer.Exit(code=1)
 
-    # Metadaten extrahieren vor dem Verschieben
-    if metadata_source:
-        try:
-            metadata = extract_metadata(metadata_source)
-            if not titel:
-                name = (
-                    metadata.get("Title")
-                    or metadata.get("DisplayName")
-                    or metadata.get("Name")
-                )
-                if name:
-                    extracted_date, extracted_title = extract_date_and_title_from_name(
-                        name
+    # Metadaten aus der Metadatenquelle extrahieren (vor dem Verschieben)
+    try:
+        metadata = extract_metadata(metadata_source)
+    except Exception as e:
+        typer.secho(f"Fehler beim Extrahieren der Metadaten: {e}", fg=typer.colors.RED)
+        raise typer.Exit(code=1)
+
+    # Ermitteln des Titels aus den Metadaten
+    if not titel:
+        name = (
+            metadata.get("Title")
+            or metadata.get("DisplayName")
+            or metadata.get("Name")
+        )
+        if name:
+            extracted_date, extracted_title = extract_date_and_title_from_name(name)
+            if extracted_date and not aufnahmedatum:
+                aufnahmedatum = extracted_date
+            else:
+                # Wenn kein Datum aus dem Titel extrahiert werden kann
+                if not aufnahmedatum:
+                    typer.secho(
+                        "Warnung: Kein Aufnahmedatum aus dem Titel extrahiert. Verwende das Änderungsdatum der Datei.",
+                        fg=typer.colors.YELLOW,
                     )
-                    if extracted_date and not aufnahmedatum:
-                        aufnahmedatum = extracted_date
-                    else:
-                        # Wenn kein Datum aus dem Titel extrahiert werden kann
-                        if not aufnahmedatum:
-                            typer.secho(
-                                "Warnung: Kein Aufnahmedatum aus dem Titel extrahiert. Verwende das Änderungsdatum der Datei.",
-                                fg=typer.colors.YELLOW,
-                            )
-                            modification_time = datetime.fromtimestamp(
-                                metadata_source.stat().st_mtime
-                            )
-                            aufnahmedatum = modification_time.strftime("%Y-%m-%d")
-                    titel = extracted_title
-            if not jahr:
-                if aufnahmedatum:
-                    jahr = parse_date(aufnahmedatum).year
-                else:
-                    date_fields = [
-                        "ContentCreateDate",
-                        "CreateDate",
-                        "ModifyDate",
-                        "MediaCreateDate",
-                        "MediaModifyDate",
-                        "CreationDate",
-                    ]
-                    for date_field in date_fields:
-                        date_str = metadata.get(date_field)
-                        if date_str:
-                            date_obj = parse_date(date_str)
-                            if date_obj:
-                                jahr = date_obj.year
-                                if not aufnahmedatum:
-                                    aufnahmedatum = date_obj.strftime("%Y-%m-%d")
-                                break
-        except Exception as e:
+                    modification_time = datetime.fromtimestamp(
+                        metadata_source.stat().st_mtime
+                    )
+                    aufnahmedatum = modification_time.strftime("%Y-%m-%d")
+            titel = extracted_title
+            full_title = name  # Vollständiger Titel inkl. Datum für das Matching
+        else:
             typer.secho(
-                f"Fehler beim Extrahieren der Metadaten: {e}", fg=typer.colors.RED
+                "Kein Titel konnte aus den Metadaten extrahiert werden.",
+                fg=typer.colors.RED,
             )
             raise typer.Exit(code=1)
+    else:
+        # Wenn '--titel' angegeben wurde, verwenden wir diesen sowohl als Titel als auch für das Matching
+        titel = titel
+        full_title = titel
 
-    # Wenn titel oder jahr immer noch nicht vorhanden, Benutzer zur Eingabe auffordern
-    if not titel:
-        titel = typer.prompt("Bitte geben Sie den Titel des Mediensets ein")
+    # Ermitteln des Jahres
     if not jahr:
-        jahr = typer.prompt("Bitte geben Sie das Jahr des Mediensets ein", type=int)
+        if aufnahmedatum:
+            jahr = parse_date(aufnahmedatum).year
+        else:
+            date_fields = [
+                "ContentCreateDate",
+                "CreateDate",
+                "ModifyDate",
+                "MediaCreateDate",
+                "MediaModifyDate",
+                "CreationDate",
+            ]
+            for date_field in date_fields:
+                date_str = metadata.get(date_field)
+                if date_str:
+                    date_obj = parse_date(date_str)
+                    if date_obj:
+                        jahr = date_obj.year
+                        if not aufnahmedatum:
+                            aufnahmedatum = date_obj.strftime("%Y-%m-%d")
+                        break
+            if not jahr:
+                # Verwende das Änderungsdatum der Metadatenquelle
+                modification_time = datetime.fromtimestamp(
+                    metadata_source.stat().st_mtime
+                )
+                jahr = modification_time.year
+                if not aufnahmedatum:
+                    aufnahmedatum = modification_time.strftime("%Y-%m-%d")
 
-    # Generiere den Verzeichnisnamen gemäß Spezifikation
+    # Setze Standardwerte für 'typ' und 'untertyp' falls nicht angegeben
+    typ = "Familienfilm"  # Standardwert
+    if not untertyp:
+        untertyp = metadata.get('AppleProappsShareCategory', 'Ereignis')
+        untertyp = untertyp.capitalize()
+
+    # Verzeichnis 1 (Verzeichnis der Metadatenquelle)
+    verzeichnis1 = metadata_source.parent
+
+    # Funktion zum Finden von Dateien, deren Dateinamen mit dem vollständigen Titel beginnen
+    def find_matching_files(directory: Path, full_title: str):
+        matching_files = []
+        if directory and directory.is_dir():
+            for file in directory.iterdir():
+                if file.is_file() and file.name.startswith(full_title):
+                    matching_files.append(file)
+        return matching_files
+
+    # Dateien sammeln
+    all_matching_files = []
+
+    # Suche in Verzeichnis 1
+    matching_files_verzeichnis1 = find_matching_files(verzeichnis1, full_title)
+    all_matching_files.extend(matching_files_verzeichnis1)
+
+    # Suche im zusätzlichen Verzeichnis
+    if additional_media_dir:
+        matching_files_additional = find_matching_files(additional_media_dir, full_title)
+        all_matching_files.extend(matching_files_additional)
+
+    # Prüfen, ob Dateien gefunden wurden
+    if not all_matching_files:
+        typer.secho(
+            "Es wurden keine Dateien gefunden, die mit dem Titel beginnen.",
+            fg=typer.colors.RED,
+        )
+        raise typer.Exit(code=1)
+
+    # Initialisierung
+    media_server_file = None
+    internet_files = {
+        "sd": None,
+        "hd": None,
+        "4k": None,
+    }
+    titelbild = None
+
+    # Unterstützte Video- und Bildformate
+    VIDEO_EXTENSIONS = [".mov", ".mp4", ".m4v"]
+    IMAGE_EXTENSIONS = [".png", ".jpg", ".jpeg"]
+
+    # Klassifizierung der Dateien
+    for file in all_matching_files:
+        file_ext = file.suffix.lower()
+
+        if file_ext in VIDEO_EXTENSIONS:
+            # Es ist eine Videodatei
+            try:
+                file_metadata = extract_metadata(file)
+                image_height = int(file_metadata.get("ImageHeight", 0))
+                avg_bitrate_str = file_metadata.get("AvgBitrate", "")
+                # Extrahiere die numerische Bitrate in Mbps
+                avg_bitrate_match = re.search(r"([\d\.]+)\s*Mbps", avg_bitrate_str)
+                if avg_bitrate_match:
+                    avg_bitrate = float(avg_bitrate_match.group(1))
+                else:
+                    avg_bitrate = 0.0
+            except Exception as e:
+                typer.secho(
+                    f"Fehler beim Extrahieren der Metadaten von '{file}': {e}",
+                    fg=typer.colors.RED,
+                )
+                continue
+
+            # Klassifizierung
+            if avg_bitrate > 50:
+                # Medienserver-Datei
+                if not media_server_file:
+                    media_server_file = file
+            else:
+                # Internet-Dateien
+                if image_height <= 540 and not internet_files["sd"]:
+                    internet_files["sd"] = file
+                elif image_height == 1080 and not internet_files["hd"]:
+                    internet_files["hd"] = file
+                elif image_height >= 2048 and not internet_files["4k"]:
+                    internet_files["4k"] = file
+                else:
+                    # Datei passt in keine Kategorie
+                    pass  # Optional: Warnung ausgeben
+        elif file_ext in IMAGE_EXTENSIONS:
+            # Es ist eine Bilddatei
+            if not titelbild:
+                if file_ext == ".png":
+                    titelbild = file
+                elif file_ext in [".jpg", ".jpeg"] and (not titelbild or titelbild.suffix.lower() != ".png"):
+                    titelbild = file
+        else:
+            # Unbekannter Dateityp
+            pass
+
+    # Generiere den Verzeichnisnamen
     sanitized_title = sanitize_filename(titel)
     directory_name = f"{jahr}_{sanitized_title}"
+    directory_path = verzeichnis1 / directory_name
 
-    # Bestimme den Basispfad für das Medienset-Verzeichnis
-    if metadata_source:
-        base_path = metadata_source.parent
-    elif media_server_file:
-        base_path = media_server_file.parent
+    # Erstelle das Medienset-Verzeichnis
+    if not directory_path.exists():
+        try:
+            directory_path.mkdir(parents=True, exist_ok=True)
+            typer.secho(
+                f"Verzeichnis '{directory_name}' wurde erstellt.", fg=typer.colors.GREEN
+            )
+        except Exception as e:
+            typer.secho(
+                f"Fehler beim Erstellen des Verzeichnisses: {e}", fg=typer.colors.RED
+            )
+            raise typer.Exit(code=1)
     else:
-        # Verwende den Pfad der ersten verfügbaren Internet-Datei
-        for file in [internet_4k_file, internet_hd_file, internet_sd_file]:
-            if file:
-                base_path = file.parent
-                break
+        typer.secho(
+            f"Verzeichnis '{directory_name}' existiert bereits.",
+            fg=typer.colors.YELLOW,
+        )
+
+    # Dateien zum Verschieben vorbereiten
+    EXPECTED_FILENAMES = {
+        "media_server": "Video-Medienserver.mov",
+        "internet_4k": "Video-Internet-4K.m4v",
+        "internet_hd": "Video-Internet-HD.m4v",
+        "internet_sd": "Video-Internet-SD.m4v",
+    }
+
+    files_to_move = []
+
+    if media_server_file:
+        files_to_move.append(
+            (media_server_file, directory_path / EXPECTED_FILENAMES["media_server"])
+        )
+
+    if internet_files["4k"]:
+        files_to_move.append(
+            (internet_files["4k"], directory_path / EXPECTED_FILENAMES["internet_4k"])
+        )
+
+    if internet_files["hd"]:
+        files_to_move.append(
+            (internet_files["hd"], directory_path / EXPECTED_FILENAMES["internet_hd"])
+        )
+
+    if internet_files["sd"]:
+        files_to_move.append(
+            (internet_files["sd"], directory_path / EXPECTED_FILENAMES["internet_sd"])
+        )
+
+    if titelbild:
+        expected_titelbild_name = (
+            "Titelbild.png"
+            if titelbild.suffix.lower() == ".png"
+            else "Titelbild.jpg"
+        )
+        files_to_move.append((titelbild, directory_path / expected_titelbild_name))
+
+
+    # Bereite die Werte für 'videoschnitt' und 'kamerafuehrung' vor
+    if videoschnitt:
+        videoschnitt_list = split_list_field(videoschnitt)
+    else:
+        # Versuche, 'Producer' aus den Metadaten zu verwenden
+        producer = metadata.get('Producer')
+        if producer:
+            videoschnitt_list = split_list_field(producer)
         else:
-            base_path = Path.cwd()  # Aktuelles Verzeichnis
+            videoschnitt_list = None
 
-    directory_path = base_path / directory_name
+    if kamerafuehrung:
+        kamerafuehrung_list = split_list_field(kamerafuehrung)
+    else:
+        # Versuche, 'Director' aus den Metadaten zu verwenden
+        director = metadata.get('Director')
+        if director:
+            kamerafuehrung_list = split_list_field(director)
+        else:
+            kamerafuehrung_list = None
 
-    # Erstelle die Metadaten.yaml-Datei vor dem Verschieben der Dateien
+    # Erstelle die Metadaten.yaml vor dem Verschieben der Dateien
     try:
-        create_homemovie_metadata_file(
-            titel=titel,
-            jahr=jahr,
-            typ=typ,
-            untertyp=untertyp,
-            aufnahmedatum=aufnahmedatum,
-            zeitraum=zeitraum,
-            beschreibung=beschreibung,
-            notiz=notiz,
-            schluesselwoerter=schluesselwoerter,
-            album=album,
-            videoschnitt=videoschnitt,
-            kamerafuehrung=kamerafuehrung,
-            dauer_in_sekunden=dauer_in_sekunden,
-            studio=studio,
-            filmfassung_name=filmfassung_name,
-            filmfassung_beschreibung=filmfassung_beschreibung,
-            metadata_source=metadata_source,
-            output=directory_path / "Metadaten.yaml",
+        # Generiere eine neue ULID
+        medienset_id = generate_ulid()
+
+        # Überprüfe erforderliche Felder
+        fehlende_felder = []
+        if not titel:
+            fehlende_felder.append("titel")
+        if not jahr:
+            fehlende_felder.append("jahr")
+        if untertyp == "Ereignis" and not aufnahmedatum:
+            fehlende_felder.append("aufnahmedatum")
+        if untertyp == "Rückblick" and not zeitraum:
+            fehlende_felder.append("zeitraum")
+        if fehlende_felder:
+            typer.secho(f"Die folgenden erforderlichen Felder fehlen: {', '.join(fehlende_felder)}", fg=typer.colors.RED)
+            raise typer.Exit(code=1)
+
+        # Sammle die Metadaten
+        metadaten = {
+            "Spezifikationsversion": "1.0",
+            "Id": medienset_id,
+            "Titel": titel,
+            "Typ": typ,  # Immer 'Familienfilm'
+            "Untertyp": untertyp,
+            "Jahr": str(jahr),
+            "Version": 1
+        }
+
+        if untertyp == "Ereignis":
+            metadaten["Aufnahmedatum"] = aufnahmedatum
+        elif untertyp == "Rückblick":
+            metadaten["Zeitraum"] = zeitraum
+
+        # Beschreibung aus Parameter oder Metadaten
+        if beschreibung:
+            metadaten["Beschreibung"] = beschreibung
+        else:
+            description = metadata.get('Description')
+            if description:
+                metadaten["Beschreibung"] = description
+
+        # Notiz aus Parameter (keine Metadatenquelle)
+        if notiz:
+            metadaten["Notiz"] = notiz
+
+        # Schlüsselwörter aus Parameter oder Metadaten
+        if schluesselwoerter:
+            metadaten["Schlüsselwörter"] = split_list_field(schluesselwoerter)
+        else:
+            genre = metadata.get('Genre')
+            if genre:
+                metadaten["Schlüsselwörter"] = split_list_field(genre)
+
+        # Album aus Parameter oder Metadaten
+        if album:
+            metadaten["Album"] = album
+        else:
+            album_meta = metadata.get('Album')
+            if album_meta:
+                metadaten["Album"] = album_meta
+
+        # Videoschnitt
+        if videoschnitt_list:
+            metadaten["Videoschnitt"] = videoschnitt_list
+
+        # Kameraführung
+        if kamerafuehrung_list:
+            metadaten["Kameraführung"] = kamerafuehrung_list
+
+        # Dauer in Sekunden
+        if dauer_in_sekunden:
+            metadaten["Dauer_in_Sekunden"] = dauer_in_sekunden
+        else:
+            # Versuche, die Dauer aus den Metadaten zu erhalten
+            duration_str = metadata.get('Duration')
+            if duration_str:
+                try:
+                    if ':' in duration_str:
+                        # Dauer in Form von '0:01:19'
+                        time_parts = list(map(float, duration_str.split(':')))
+                        if len(time_parts) == 3:
+                            h, m, s = time_parts
+                        elif len(time_parts) == 2:
+                            h = 0
+                            m, s = time_parts
+                        else:
+                            h = m = 0
+                            s = time_parts[0]
+                        dauer_in_sekunden = int(h * 3600 + m * 60 + s)
+                    else:
+                        # Dauer in Form von '19.83 s'
+                        dauer_in_sekunden = int(float(duration_str.replace(' s', '').strip()))
+                    metadaten["Dauer_in_Sekunden"] = dauer_in_sekunden
+                except ValueError:
+                    pass
+
+        # Studio aus Parameter oder Metadaten
+        if studio:
+            metadaten["Studio"] = studio
+        else:
+            studio_meta = metadata.get('Studio')
+            if studio_meta:
+                metadaten["Studio"] = studio_meta
+
+        # Filmfassung Name und Beschreibung
+        if filmfassung_name:
+            metadaten["Filmfassung_Name"] = filmfassung_name
+        if filmfassung_beschreibung:
+            metadaten["Filmfassung_Beschreibung"] = filmfassung_beschreibung
+
+        # Erstelle das Ausgabepfad für die Metadaten.yaml
+        metadata_path = directory_path / "Metadaten.yaml"
+
+        # Schreibe die Metadaten.yaml-Datei
+        with open(metadata_path, 'w', encoding='utf-8') as yaml_file:
+            yaml.dump(metadaten, yaml_file, allow_unicode=True, sort_keys=False, default_flow_style=False)
+        typer.secho(
+            f"Metadaten.yaml wurde erstellt unter '{metadata_path.relative_to(directory_path.parent)}'.",
+            fg=typer.colors.GREEN,
         )
     except Exception as e:
         typer.secho(
@@ -211,118 +543,40 @@ def create_homemovie(
         )
         raise typer.Exit(code=1)
 
-    # Informiere den Benutzer über das Verschieben und Umbenennen der Dateien
+    # Informiere den Benutzer über die Dateien, die verschoben werden
     typer.secho(
-        f"Alle angegebenen Dateien werden in das Verzeichnis '{directory_path}' verschoben und umbenannt.",
+        f"Die folgenden Dateien werden in das Verzeichnis '{directory_name}' verschoben und umbenannt:",
         fg=typer.colors.YELLOW,
     )
-    proceed = typer.confirm("Möchtest du fortfahren?")
+    for src, dest in files_to_move:
+        src_rel = src.name  # Nur der Dateiname
+        dest_rel = dest.relative_to(directory_path.parent)
+        typer.echo(f" - '{src_rel}' -> '{dest_rel}'")
+    proceed = typer.confirm("Möchten Sie fortfahren?")
     if not proceed:
         typer.secho("Abgebrochen.", fg=typer.colors.RED)
         raise typer.Exit()
 
-    # Erstelle das Verzeichnis, falls es nicht existiert
-    if not directory_path.exists():
-        try:
-            directory_path.mkdir(parents=True, exist_ok=True)
-            typer.secho(f"Verzeichnis '{directory_path}' wurde erstellt.", fg=typer.colors.GREEN)
-        except Exception as e:
-            typer.secho(f"Fehler beim Erstellen des Verzeichnisses: {e}", fg=typer.colors.RED)
-            raise typer.Exit(code=1)
-    else:
-        typer.secho(f"Verzeichnis '{directory_path}' existiert bereits.", fg=typer.colors.YELLOW)
-
-    # Erwartete Dateinamen für Videodateien
-    EXPECTED_VIDEO_FILES = {
-        "media_server": "Video-Medienserver.mov",
-        "internet_4k": "Video-Internet-4K.m4v",
-        "internet_hd": "Video-Internet-HD.m4v",
-        "internet_sd": "Video-Internet-SD.m4v",
-    }
-
-    # Umbenennen und Verschieben der Videodateien
-    for key, file_path in video_files.items():
-        if file_path:
-            if not file_path.is_file():
-                typer.secho(f"Videodatei '{file_path}' existiert nicht.", fg=typer.colors.RED)
-                continue
-            destination = directory_path / EXPECTED_VIDEO_FILES[key]
-            if destination.exists():
-                overwrite = typer.confirm(
-                    f"Die Datei '{destination}' existiert bereits. Möchtest du sie überschreiben?"
-                )
-                if not overwrite:
-                    typer.secho(f"Überspringe das Verschieben von '{file_path}'.", fg=typer.colors.YELLOW)
-                    continue
-            try:
-                shutil.move(str(file_path), destination)
+    # Dateien verschieben
+    for src, dest in files_to_move:
+        if dest.exists():
+            overwrite = typer.confirm(
+                f"Die Datei '{dest.name}' existiert bereits. Möchten Sie sie überschreiben?"
+            )
+            if not overwrite:
                 typer.secho(
-                    f"Datei '{file_path}' wurde nach '{destination}' verschoben und umbenannt.",
-                    fg=typer.colors.GREEN,
+                    f"Überspringe das Verschieben von '{src.name}'.", fg=typer.colors.YELLOW
                 )
-            except Exception as e:
-                typer.secho(f"Fehler beim Verschieben der Datei '{file_path}': {e}", fg=typer.colors.RED)
-
-    # Verschiebe die Projektdatei, falls angegeben
-    if projektdatei:
-        if not projektdatei.is_file():
-            typer.secho(f"Projektdatei '{projektdatei}' existiert nicht.", fg=typer.colors.RED)
-        else:
-            destination = directory_path / projektdatei.name
-            if destination.exists():
-                overwrite = typer.confirm(
-                    f"Die Datei '{destination}' existiert bereits. Möchtest du sie überschreiben?"
-                )
-                if not overwrite:
-                    typer.secho(f"Überspringe das Verschieben von '{projektdatei}'.", fg=typer.colors.YELLOW)
-                else:
-                    try:
-                        shutil.move(str(projektdatei), destination)
-                        typer.secho(
-                            f"Projektdatei '{projektdatei}' wurde nach '{destination}' verschoben.",
-                            fg=typer.colors.GREEN,
-                        )
-                    except Exception as e:
-                        typer.secho(f"Fehler beim Verschieben der Projektdatei '{projektdatei}': {e}", fg=typer.colors.RED)
-            else:
-                try:
-                    shutil.move(str(projektdatei), destination)
-                    typer.secho(
-                        f"Projektdatei '{projektdatei}' wurde nach '{destination}' verschoben.",
-                        fg=typer.colors.GREEN,
-                    )
-                except Exception as e:
-                    typer.secho(f"Fehler beim Verschieben der Projektdatei '{projektdatei}': {e}", fg=typer.colors.RED)
-
-    # Verschiebe das Titelbild, falls angegeben, und benenne es zu 'Titelbild.png' um
-    if titelbild:
-        if not titelbild.is_file():
-            typer.secho(f"Titelbild-Datei '{titelbild}' existiert nicht.", fg=typer.colors.RED)
-        else:
-            destination = directory_path / "Titelbild.png"
-            if destination.exists():
-                overwrite = typer.confirm(
-                    f"Die Datei '{destination}' existiert bereits. Möchtest du sie überschreiben?"
-                )
-                if not overwrite:
-                    typer.secho(f"Überspringe das Verschieben von '{titelbild}'.", fg=typer.colors.YELLOW)
-                else:
-                    try:
-                        shutil.move(str(titelbild), destination)
-                        typer.secho(
-                            f"Titelbild '{titelbild}' wurde nach '{destination}' verschoben und umbenannt.",
-                            fg=typer.colors.GREEN,
-                        )
-                    except Exception as e:
-                        typer.secho(f"Fehler beim Verschieben des Titelbildes '{titelbild}': {e}", fg=typer.colors.RED)
-            else:
-                try:
-                    shutil.move(str(titelbild), destination)
-                    typer.secho(
-                        f"Titelbild '{titelbild}' wurde nach '{destination}' verschoben und umbenannt.",
-                        fg=typer.colors.GREEN,
-                    )
-                except Exception as e:
-                    typer.secho(f"Fehler beim Verschieben des Titelbildes '{titelbild}': {e}", fg=typer.colors.RED)
+                continue
+        try:
+            shutil.move(str(src), dest)
+            typer.secho(
+                f"Datei '{src.name}' wurde nach '{dest.relative_to(directory_path.parent)}' verschoben und umbenannt.",
+                fg=typer.colors.GREEN,
+            )
+        except Exception as e:
+            typer.secho(
+                f"Fehler beim Verschieben der Datei '{src.name}': {e}", fg=typer.colors.RED
+            )
 
     typer.secho("\nMedienset wurde erfolgreich erstellt.", fg=typer.colors.GREEN)
