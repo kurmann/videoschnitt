@@ -111,15 +111,15 @@ Die `metadaten.yaml` enthält alle relevanten Metadaten des Mediensets. Diese we
 
 | Metadaten.yaml Feld        | Quelle (EXIFTool-Feld)       | Verarbeitung                               |
 |---------------------------|-----------------------------|-------------------------------------------|
-| Spezifikationsversion     | -                           | Fester Wert: ‘1.0’                       |
+| Spezifikationsversion     | -                           | Fester Wert: '1.0'                        |
 | Id                        | -                           | Generierte ULID                           |
 | Titel                     | Title, DisplayName, Name    | Wie in EXIFTool, ggf. überschrieben       |
-| Typ                       | -                           | Fester Wert: ‘Familienfilm’              |
-| Untertyp                  | AppleProappsShareCategory   | Standard: ‘Ereignis’, Großschreibung      |
+| Typ                       | -                           | Fester Wert: 'Familienfilm'               |
+| Untertyp                  | AppleProappsShareCategory   | Standard: 'Ereignis', Großschreibung      |
 | Jahr                      | Aus Aufnahmedatum oder Datum| Jahr extrahiert, ggf. aus Änderungsdatum  |
 | Version                   | -                           | Fester Wert: 1                            |
-| Aufnahmedatum             | Aus Titel oder Metadaten    | Datum im Format ‘YYYY-MM-DD’              |
-| Zeitraum                  | -                           | Nur bei Untertyp ‘Rückblick’             |
+| Aufnahmedatum             | Aus Titel oder Metadaten    | Datum im Format 'YYYY-MM-DD'              |
+| Zeitraum                  | -                           | Nur bei Untertyp 'Rückblick'              |
 | Beschreibung              | Description                 | Text, ggf. überschrieben                  |
 | Notiz                     | -                           | Nur aus Benutzerangabe                    |
 | Schlüsselwörter           | Genre                       | Getrennt durch Komma oder Semikolon       |
@@ -138,7 +138,7 @@ Die `metadaten.yaml` enthält alle relevanten Metadaten des Mediensets. Diese we
   - Kann durch Benutzerangabe überschrieben werden.
 - **Untertyp**:
   - Wird aus AppleProappsShareCategory extrahiert.
-  - Standardwert: ‘Ereignis’.
+  - Standardwert: 'Ereignis'.
   - Großschreibung des ersten Buchstabens.
 - **Aufnahmedatum**:
   - Wird aus dem Titel extrahiert, wenn dieser im Format `YYYY-MM-DD Titel` vorliegt.
@@ -155,7 +155,7 @@ Die `metadaten.yaml` enthält alle relevanten Metadaten des Mediensets. Diese we
 
 ```yaml
 Spezifikationsversion: '1.0'
-Id: 01JAZC4E1E147SPCKPG8834Y9D
+Id: 01JAZBG8DQ82J63NQDP1ZRS1EQ
 Titel: Leah will Krokodil zeigen (Test)
 Typ: Familienfilm
 Untertyp: Ereignis
@@ -191,6 +191,11 @@ Dauer_in_Sekunden: 19
 - **Typ**: Immer 'Familienfilm'.
 - **Untertyp**: Standardmäßig 'Ereignis', falls nicht anders angegeben.
 - **Version**: Immer 1.
+
+### 12.4 Unterstützung von Final Cut Pro
+
+- Die Erstellung des Familienfilms geht davon aus, dass das Video in Final Cut Pro erstellt wurde und bei den Projektmetadaten die Werte entsprechend während des Videoschnitts hinterlegt werden, um eine optimale Metadaten-Unterstützung zu gewährleisten.
+- Es werden auch Mediendateien unterstützt, die nicht aus Final Cut Pro stammen, allerdings können möglicherweise nicht alle Metadaten korrekt gelesen werden.
 
 ## 13. Ablauf des Algorithmus
 
