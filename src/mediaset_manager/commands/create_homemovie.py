@@ -48,106 +48,31 @@ def split_list_field(value):
         return []
     return [item.strip() for item in re.split(r'[;,]', value)]
 
-@app.command("create-homemovie")
 def create_homemovie(
-    metadata_source: Path = typer.Option(
-        ...,
-        "--metadata-source",
-        "-ms",
-        help="Pfad zur Videodatei zur Extraktion von Metadaten (Referenzdatei).",
-    ),
-    additional_media_dir: Optional[Path] = typer.Option(
-        None,
-        "--additional-media-dir",
-        "-amd",
-        help="Zusätzliches Verzeichnis zur Suche nach Mediendateien.",
-    ),
-    titel: Optional[str] = typer.Option(None, help="Titel des Mediensets."),
-    jahr: Optional[int] = typer.Option(None, help="Jahr des Mediensets."),
-    # Option 'typ' entfernt, da immer 'Familienfilm'
-    untertyp: Optional[str] = typer.Option(
-        None,
-        help="Untertyp des Mediensets (Ereignis/Rückblick).",
-        callback=lambda ctx, param, value: value.capitalize() if value else value,
-    ),
-    aufnahmedatum: Optional[str] = typer.Option(
-        None, help="Aufnahmedatum (YYYY-MM-DD) für Untertyp 'Ereignis'."
-    ),
-    zeitraum: Optional[str] = typer.Option(
-        None, help="Zeitraum für Untertyp 'Rückblick'."
-    ),
-    beschreibung: Optional[str] = typer.Option(
-        None, help="Beschreibung des Mediensets."
-    ),
-    notiz: Optional[str] = typer.Option(None, help="Interne Bemerkungen zum Medienset."),
-    schluesselwoerter: Optional[str] = typer.Option(
-        None, help="Schlüsselwörter zur Kategorisierung, getrennt durch Komma oder Semikolon."
-    ),
-    album: Optional[str] = typer.Option(
-        None, help="Name des Albums oder der Sammlung."
-    ),
-    videoschnitt: Optional[str] = typer.Option(
-        None, help="Personen für den Videoschnitt, getrennt durch Komma oder Semikolon."
-    ),
-    kamerafuehrung: Optional[str] = typer.Option(
-        None, help="Personen für die Kameraführung, getrennt durch Komma oder Semikolon."
-    ),
-    dauer_in_sekunden: Optional[int] = typer.Option(
-        None, help="Gesamtdauer des Films in Sekunden."
-    ),
-    studio: Optional[str] = typer.Option(
-        None, help="Studio oder Ort der Produktion."
-    ),
-    filmfassung_name: Optional[str] = typer.Option(
-        None, help="Name der Filmfassung."
-    ),
-    filmfassung_beschreibung: Optional[str] = typer.Option(
-        None, help="Beschreibung der Filmfassung."
-    ),
+    metadata_source: Path,
+    additional_media_dir: Optional[Path] = None,
+    titel: Optional[str] = None,
+    jahr: Optional[int] = None,
+    untertyp: Optional[str] = None,
+    aufnahmedatum: Optional[str] = None,
+    zeitraum: Optional[str] = None,
+    beschreibung: Optional[str] = None,
+    notiz: Optional[str] = None,
+    schluesselwoerter: Optional[str] = None,
+    album: Optional[str] = None,
+    videoschnitt: Optional[str] = None,
+    kamerafuehrung: Optional[str] = None,
+    dauer_in_sekunden: Optional[int] = None,
+    studio: Optional[str] = None,
+    filmfassung_name: Optional[str] = None,
+    filmfassung_beschreibung: Optional[str] = None,
+    no_prompt: bool = False,
 ):
     """
     Erstellt ein Medienset-Verzeichnis und eine Metadaten.yaml-Datei basierend auf einer Videodatei.
     Dateien werden gesucht, klassifiziert und in das Medienset-Verzeichnis verschoben.
-    Es erfolgt eine Bestätigung vor dem Verschieben.
+    Es erfolgt eine Bestätigung vor dem Verschieben, es sei denn, 'no_prompt' wurde angegeben.
     Bei bestehenden Dateien wird nachgefragt, ob diese überschrieben werden sollen.
-
-    Prozess:
-    1. Ermittlung des Titels:
-       Der Titel wird aus den Metadaten der Metadatenquelle (Referenzdatei) extrahiert.
-       Falls der Titel im Format "YYYY-MM-DD Titel" vorliegt, wird das Datum extrahiert und als 'aufnahmedatum' verwendet.
-       Der extrahierte Titel kann durch Angabe von '--titel' überschrieben werden.
-
-    2. Sammlung passender Dateien:
-       Sucht in Verzeichnis 1 (Verzeichnis der Metadatenquelle) und optional im zusätzlichen Verzeichnis nach Dateien,
-       deren Dateinamen mit dem vollständigen Titel (inklusive Datum) beginnen.
-       Nur Dateien, die mit dem vollständigen Titel beginnen, werden berücksichtigt.
-
-    3. Klassifizierung der Dateien:
-       Videodateien werden anhand von Auflösung ('Image Height') und Bitrate ('Avg Bitrate') klassifiziert.
-       Medienserver-Datei: Bitrate > 50 Mbps.
-       Internet-Dateien:
-         - SD: Vertikale Auflösung ≤ 540 Pixel.
-         - HD: Vertikale Auflösung = 1080 Pixel.
-         - 4K: Vertikale Auflösung ≥ 2048 Pixel.
-       Titelbild:
-       Bevorzugt wird eine PNG-Datei, die mit dem vollständigen Titel beginnt.
-       Falls keine PNG-Datei gefunden wird, wird eine JPG/JPEG-Datei verwendet.
-
-    4. Erstellen des Medienset-Verzeichnisses:
-       Das Verzeichnis wird nach dem Muster '{Jahr}_{Titel}' erstellt.
-       Der Titel wird dabei dateisystemkonform formatiert.
-
-    5. Verschieben und Umbenennen der Dateien:
-       Die klassifizierten Dateien werden in das Medienset-Verzeichnis verschoben.
-       Die Dateien werden gemäß den erwarteten Dateinamen umbenannt.
-
-    6. Erstellen der Metadaten.yaml:
-       Die Metadaten werden gesammelt und in der 'Metadaten.yaml' im Medienset-Verzeichnis gespeichert.
-       Alle Optionen können verwendet werden, um die extrahierten Metadaten zu überschreiben.
-
-    Hinweise:
-    - Vertikale Auflösung und Bitrate werden mit 'exiftool' aus den Dateien ausgelesen.
-    - Stellen Sie sicher, dass 'exiftool' installiert und im Systempfad verfügbar ist.
     """
 
     # Überprüfen, ob die Metadatenquelle existiert
@@ -196,7 +121,7 @@ def create_homemovie(
             )
             raise typer.Exit(code=1)
     else:
-        # Wenn '--titel' angegeben wurde, verwenden wir diesen sowohl als Titel als auch für das Matching
+        # Wenn 'titel' angegeben wurde, verwenden wir diesen sowohl als Titel als auch für das Matching
         titel = titel
         full_title = titel
 
@@ -232,10 +157,11 @@ def create_homemovie(
                     aufnahmedatum = modification_time.strftime("%Y-%m-%d")
 
     # Setze Standardwerte für 'typ' und 'untertyp' falls nicht angegeben
-    typ = "Familienfilm"  # Standardwert
-    if not untertyp:
-        untertyp = metadata.get('AppleProappsShareCategory', 'Ereignis')
+    typ = "Familienfilm"  # Immer 'Familienfilm'
+    if untertyp:
         untertyp = untertyp.capitalize()
+    else:
+        untertyp = metadata.get('AppleProappsShareCategory', 'Ereignis').capitalize()
 
     # Verzeichnis 1 (Verzeichnis der Metadatenquelle)
     verzeichnis1 = metadata_source.parent
@@ -392,7 +318,6 @@ def create_homemovie(
             else "Titelbild.jpg"
         )
         files_to_move.append((titelbild, directory_path / expected_titelbild_name))
-
 
     # Bereite die Werte für 'videoschnitt' und 'kamerafuehrung' vor
     if videoschnitt:
@@ -552,17 +477,23 @@ def create_homemovie(
         src_rel = src.name  # Nur der Dateiname
         dest_rel = dest.relative_to(directory_path.parent)
         typer.echo(f" - '{src_rel}' -> '{dest_rel}'")
-    proceed = typer.confirm("Möchten Sie fortfahren?")
-    if not proceed:
-        typer.secho("Abgebrochen.", fg=typer.colors.RED)
-        raise typer.Exit()
+
+    if not no_prompt:
+        proceed = typer.confirm("Möchten Sie fortfahren?")
+        if not proceed:
+            typer.secho("Abgebrochen.", fg=typer.colors.RED)
+            raise typer.Exit()
+    else:
+        typer.secho("Verschiebe Dateien ohne weitere Nachfrage...", fg=typer.colors.YELLOW)
 
     # Dateien verschieben
     for src, dest in files_to_move:
         if dest.exists():
-            overwrite = typer.confirm(
-                f"Die Datei '{dest.name}' existiert bereits. Möchten Sie sie überschreiben?"
-            )
+            overwrite = True
+            if not no_prompt:
+                overwrite = typer.confirm(
+                    f"Die Datei '{dest.name}' existiert bereits. Möchten Sie sie überschreiben?"
+                )
             if not overwrite:
                 typer.secho(
                     f"Überspringe das Verschieben von '{src.name}'.", fg=typer.colors.YELLOW
@@ -580,3 +511,88 @@ def create_homemovie(
             )
 
     typer.secho("\nMedienset wurde erfolgreich erstellt.", fg=typer.colors.GREEN)
+
+@app.command("create-homemovie")
+def create_homemovie_cli(
+    metadata_source: Path = typer.Option(
+        ...,
+        "--metadata-source",
+        "-ms",
+        help="Pfad zur Videodatei zur Extraktion von Metadaten (Referenzdatei).",
+    ),
+    additional_media_dir: Optional[Path] = typer.Option(
+        None,
+        "--additional-media-dir",
+        "-amd",
+        help="Zusätzliches Verzeichnis zur Suche nach Mediendateien.",
+    ),
+    titel: Optional[str] = typer.Option(None, help="Titel des Mediensets."),
+    jahr: Optional[int] = typer.Option(None, help="Jahr des Mediensets."),
+    untertyp: Optional[str] = typer.Option(
+        None,
+        help="Untertyp des Mediensets (Ereignis/Rückblick).",
+    ),
+    aufnahmedatum: Optional[str] = typer.Option(
+        None, help="Aufnahmedatum (YYYY-MM-DD) für Untertyp 'Ereignis'."
+    ),
+    zeitraum: Optional[str] = typer.Option(
+        None, help="Zeitraum für Untertyp 'Rückblick'."
+    ),
+    beschreibung: Optional[str] = typer.Option(
+        None, help="Beschreibung des Mediensets."
+    ),
+    notiz: Optional[str] = typer.Option(None, help="Interne Bemerkungen zum Medienset."),
+    schluesselwoerter: Optional[str] = typer.Option(
+        None, help="Schlüsselwörter zur Kategorisierung, getrennt durch Komma oder Semikolon."
+    ),
+    album: Optional[str] = typer.Option(
+        None, help="Name des Albums oder der Sammlung."
+    ),
+    videoschnitt: Optional[str] = typer.Option(
+        None, help="Personen für den Videoschnitt, getrennt durch Komma oder Semikolon."
+    ),
+    kamerafuehrung: Optional[str] = typer.Option(
+        None, help="Personen für die Kameraführung, getrennt durch Komma oder Semikolon."
+    ),
+    dauer_in_sekunden: Optional[int] = typer.Option(
+        None, help="Gesamtdauer des Films in Sekunden."
+    ),
+    studio: Optional[str] = typer.Option(
+        None, help="Studio oder Ort der Produktion."
+    ),
+    filmfassung_name: Optional[str] = typer.Option(
+        None, help="Name der Filmfassung."
+    ),
+    filmfassung_beschreibung: Optional[str] = typer.Option(
+        None, help="Beschreibung der Filmfassung."
+    ),
+    no_prompt: bool = typer.Option(
+        False,
+        "--no-prompt",
+        help="Unterdrückt die Nachfrage beim Verschieben der Dateien."
+    ),
+):
+    """
+    Kommandozeilenfunktion für die Erstellung eines Mediensets.
+    Ruft die Implementierungsfunktion auf und übergibt die Parameter.
+    """
+    create_homemovie(
+        metadata_source=metadata_source,
+        additional_media_dir=additional_media_dir,
+        titel=titel,
+        jahr=jahr,
+        untertyp=untertyp,
+        aufnahmedatum=aufnahmedatum,
+        zeitraum=zeitraum,
+        beschreibung=beschreibung,
+        notiz=notiz,
+        schluesselwoerter=schluesselwoerter,
+        album=album,
+        videoschnitt=videoschnitt,
+        kamerafuehrung=kamerafuehrung,
+        dauer_in_sekunden=dauer_in_sekunden,
+        studio=studio,
+        filmfassung_name=filmfassung_name,
+        filmfassung_beschreibung=filmfassung_beschreibung,
+        no_prompt=no_prompt,
+    )
