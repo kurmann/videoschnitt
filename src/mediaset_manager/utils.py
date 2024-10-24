@@ -1,5 +1,7 @@
 # mediaset_manager/utils.py
 
+from pathlib import Path
+from typing import List
 import ulid
 
 def sanitize_filename(name: str) -> str:
@@ -23,20 +25,3 @@ def generate_ulid() -> str:
     Generiert eine neue ULID.
     """
     return ulid.new().str
-
-def validate_video_files(video_files: list, min_size: int = 100 * 1024) -> list:
-    """
-    Überprüft, ob die Videodateien größer als min_size sind.
-
-    Args:
-        video_files (list): Liste von Path-Objekten zu den Videodateien.
-        min_size (int): Mindestgröße in Bytes. Standard: 100 KB.
-
-    Returns:
-        list: Liste der Dateien, die die Mindestgröße nicht erfüllen.
-    """
-    small_files = []
-    for video in video_files:
-        if video.stat().st_size < min_size:
-            small_files.append(video)
-    return small_files
