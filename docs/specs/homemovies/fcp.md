@@ -1,33 +1,33 @@
-## **Automatisierte Workflow-Spezifikation: Final Cut Pro zu Emby NFO-Metadatendateien**
+## ***Automatisierte Workflow-Spezifikation: Final Cut Pro zu Emby NFO-Metadatendateien***
 
-**Version 1.1 vom 26. Oktober 2024**  
-**Autor: Patrick Kurmann**
+***Version 1.1 vom 26. Oktober 2024***\
+***Autor: Patrick Kurmann***
 
-### Inhaltsverzeichnis
+### *Inhaltsverzeichnis*
 
-1. [Einleitung](#1-einleitung)
-    - 1.1 [Versionierung und Änderungen](#11-versionierung-und-änderungen)
-2. [Überblick](#2-überblick)
-3. [Anforderungen](#3-anforderungen)
-4. [Projektmetadaten in Final Cut Pro](#4-projektmetadaten-in-final-cut-pro)
-    - 4.1 Titel
-    - 4.2 Beschreibung
-    - 4.3 Fassung (Version)
-    - 4.4 Keywords
-    - 4.5 Titelbild
-    - 4.6 Album
-    - 4.7 Mapping der FCP-Felder zu EXIF-Tags und NFO-Tags
+1. [*Einleitung*](#1-einleitung)
+   - *1.1 *[*Versionierung und Änderungen*](#11-versionierung-und-änderungen)
+2. [*Überblick*](#2-überblick)
+3. [*Anforderungen*](#3-anforderungen)
+4. [*Projektmetadaten in Final Cut Pro*](#4-projektmetadaten-in-final-cut-pro)
+   - *4.1 Titel*
+   - *4.2 Beschreibung*
+   - *4.3 Fassung (Version)*
+   - *4.4 Keywords*
+   - *4.5 Titelbild*
+   - 4.6 Album
+   - 4.7 Mapping der FCP-Felder zu EXIF-Tags und NFO-Tags
 5. [Automatisierte NFO-Erstellung](#5-automatisierte-nfo-erstellung)
-    - 5.1 Beschreibung-Verarbeitung
-    - 5.2 Generierung der NFO-Datei
-    - 5.3 Titelbild-Konvertierung
+   - 5.1 Beschreibung-Verarbeitung
+   - 5.2 Generierung der NFO-Datei
+   - 5.3 Titelbild-Konvertierung
 6. [Zusätzliche Empfehlungen](#6-zusätzliche-empfehlungen)
-    - 6.1 Editierbarkeit der NFO-Dateien
-    - 6.2 Metadatensynchronisation (Optional)
-    - 6.3 Ausschluss von Final Cut Pro Keywords
+   - 6.1 Editierbarkeit der NFO-Dateien
+   - 6.2 Metadatensynchronisation (Optional)
+   - 6.3 Ausschluss von Final Cut Pro Keywords
 7. [Beispiele](#7-beispiele)
-    - 7.1 Beispielhafte Projektmetadaten in Final Cut Pro
-    - 7.2 Generierte NFO-Datei
+   - 7.1 Beispielhafte Projektmetadaten in Final Cut Pro
+   - 7.2 Generierte NFO-Datei
 8. [Fazit](#8-fazit)
 
 ### 1. Einleitung
@@ -37,10 +37,12 @@
 Diese Spezifikation wurde von **Version 1.0** auf **Version 1.1** aktualisiert. Die wesentlichen Änderungen umfassen:
 
 - **Änderung der Titel-Verarbeitung:**
+
   - **Version 1.0:** Das Aufnahmedatum wurde als Präfix im Titel verwendet und im Dateinamen vorangestellt.
   - **Version 1.1:** Das Aufnahmedatum wird nun manuell im Feld "Datum" in Final Cut Pro als ISO-Datum (`YYYY-MM-DD`) eingetragen. Der Titel enthält ausschließlich den Namen des Videos ohne vorangestelltes Datum. Der Dateiname enthält kein ISO-Datum mehr vorangestellt; dieses ist nun in den Metadaten verankert.
 
 - **Anpassung der Feldzuordnungen zur Vereinfachung:**
+
   - **Kategorie:** Wird nun direkt für die Emby-Sets (Sammlungen) verwendet, anstatt in der Beschreibung eingebettet zu werden. Dies vereinfacht das Parsing und reduziert die Komplexität.
   - **Attribute:** Wird ausschließlich für die manuellen Tags genutzt, z.B. `Apple Log`. Dadurch entfällt die Notwendigkeit, Tags aus der Beschreibung zu extrahieren.
   - **Genre:** Standardmäßig auf "Family" gesetzt, um eine einheitliche Kategorisierung der Familienfilme zu gewährleisten.
@@ -61,7 +63,6 @@ Diese Spezifikation beschreibt den automatisierten Workflow vom Videoschnitt in 
 - **Emby Mediathek:** Medienserver, der die generierten NFO-Dateien zur Metadatenpflege nutzt.
 - **Dateisystem:** Strukturierte Verzeichnisse gemäß der [Emby Mediathek Spezifikation für Familienfilme Version 1.5](docs/specs/emby_media_family_films.md).
 
-
 ### 4. Projektmetadaten in Final Cut Pro
 
 Um eine automatische Erstellung der NFO-Dateien zu ermöglichen, müssen folgende Projektmetadaten in Final Cut Pro hinterlegt werden:
@@ -79,79 +80,87 @@ Um eine automatische Erstellung der NFO-Dateien zu ermöglichen, müssen folgend
 #### 4.2 Beschreibung
 
 - **Format für Sammlungen und Tags:**
+
   - **Sammlungen:** `Sammlung: Familienausflüge, Familie, Ausflüge` oder `Sammlungen: Familienausflüge, Familie, Ausflüge`
   - **Tags:** `Tags: Apple Log, Sport` oder `Tag: Apple Log, Sport`
+
 - **Beispiel:**
 
-Sammlung: Familienausflüge, Familie, Ausflüge
-Tags: Apple Log, Sport
-Text: Dieses Video zeigt den XCO-Finale der ÖKK Bike Revolution 2024 in Huttwil.
+  Sammlung: **Familienausflüge, Familie, Ausflüge**
+  Tags: **Apple Log, Sport**
+  Text: Dieses Video zeigt den XCO-Finale der ÖKK Bike Revolution 2024 in Huttwil.
 
 - **Hinweise:**
-- Das Skript erkennt und extrahiert die Sammlungen und Tags basierend auf diesem Format.
-- Das Aufnahmedatum wird nicht in der Beschreibung hinterlegt, sondern im Feld "Datum" manuell als ISO-Datum eingetragen.
+
+  - Das Skript erkennt und extrahiert die Sammlungen und Tags basierend auf diesem Format.
+  - Das Aufnahmedatum wird nicht in der Beschreibung hinterlegt, sondern im Feld "Datum" manuell als ISO-Datum eingetragen.
 
 #### 4.3 Fassung (Version)
 
 - **Format im Titel:** `[Fassung für Verein]`
 - **Beispiel:** `Paula MTB-Finale Huttwil [Fassung für Verein]`
 - **Richtlinien:**
-- Ähnliche Handhabung wie bei Titeln für Ereignisse zur Eindeutigkeit.
+  - Ähnliche Handhabung wie bei Titeln für Ereignisse zur Eindeutigkeit.
 
 #### 4.4 Keywords
 
 - **Manuelle Erstellung:** Anstelle der automatischen Erstellung durch Final Cut Pro werden die Tags manuell im Feld "Attribute" gesetzt, z.B. `Apple Log`.
 - **Verwendung:** Diese Keywords werden in den Metadaten des Videos enthalten und von Emby verwendet.
 - **Vorteil:**
-- Vermeidung des mühsamen Herausparsens von Tags aus der Beschreibung.
-- Präzisere und zielgerichtete Tagging-Möglichkeiten.
+  - Vermeidung des mühsamen Herausparsens von Tags aus der Beschreibung.
+  - Präzisere und zielgerichtete Tagging-Möglichkeiten.
 
 #### 4.5 Titelbild
 
 - **Format in Final Cut Pro:** PNG
 - **Anmerkung:** Das exportierte Titelbild ist häufig im Rec.2020 Farbraum aufgrund der Dolby Vision HLG Bearbeitung.
 - **Anforderungen für Emby:**
-- **Format:** JPG
-- **Farbraum:** Adobe RGB
-- **Hinweis:** Das Automatisierungsskript muss das Titelbild entsprechend konvertieren.
+  - **Format:** JPG
+  - **Farbraum:** Adobe RGB
+  - **Hinweis:** Das Automatisierungsskript sollte das Titelbild entsprechend konvertieren, um eine verlustfreie Umwandlung zu gewährleisten.
 
 #### 4.6 Album
 
 - **Format:** Im Projektmetadatenfeld von Final Cut Pro wird das Album definiert, z.B. `Album: Familie Kurmann Glück`.
 - **Beispiel:** `Album: Familie Kurmann Glück`
 - **Hinweise:**
-- Das Skript liest die Album-Information aus und organisiert die Medien entsprechend in der Emby-Mediathek.
-- Albums dienen der thematischen Gruppierung und Berechtigungssteuerung.
+  - Das Skript liest die Album-Information aus und organisiert die Medien entsprechend in der Emby-Mediathek.
+  - Alben dienen der thematischen Gruppierung und Berechtigungssteuerung.
 
 #### 4.7 Mapping der FCP-Felder zu EXIF-Tags und NFO-Tags
 
 Um die Felder von Final Cut Pro korrekt den EXIF-Tags und NFO-Tags zuzuordnen, wird die folgende Zuordnung verwendet:
 
 ##### Titel
+
 - **Final Cut Pro Feldname:** **Titel**
 - **EXIF-Tag:** `Title`
 - **NFO-Tag:** `<title>`
 - **Beschreibung:** Der Titel des Videos, wird in Emby prominent angezeigt.
 
 ##### Beschreibung
+
 - **Final Cut Pro Feldname:** **Beschreibung**
 - **EXIF-Tag:** `Description`
 - **NFO-Tag:** `<plot>`, `<description>`
 - **Beschreibung:** Die Beschreibung des Videos, wird in Emby unter dem Vorschaubild angezeigt.
 
 ##### Attribute
+
 - **Final Cut Pro Feldname:** **Attribute**
 - **EXIF-Tag:** -
 - **NFO-Tag:** `<keywords>`
 - **Beschreibung:** Manuell gesetzte Tags zur zusätzlichen Beschreibung außerhalb der EXIF-Daten, werden in Emby verwendet, um zusätzliche Suchbegriffe bereitzustellen.
 
 ##### Ersteller
+
 - **Final Cut Pro Feldname:** **Ersteller**
 - **EXIF-Tag:** `Author`
 - **NFO-Tag:** `<author>`, `<producers>`
 - **Beschreibung:** Der Autor oder Ersteller des Videos, wird in Emby unter den Produktionsdetails angezeigt.
 
 ##### Datum
+
 - **Final Cut Pro Feldname:** **Datum**
 - **EXIF-Tag:** `Creation Date`
 - **NFO-Tag:** `<premiered>`, `<releasedate>`, `<published>`, `<dateadded>`
@@ -163,30 +172,35 @@ Um die Felder von Final Cut Pro korrekt den EXIF-Tags und NFO-Tags zuzuordnen, w
   - Angesichts der Tatsache, dass das Video automatisch (mit unserem Algorithmus) nach dem Export in die Emby-Mediathek übernommen wird, kann man das ungefähr auch als **Videoschnittdatum** interpretieren.
 
 ##### Genre
+
 - **Final Cut Pro Feldname:** **Genre**
 - **EXIF-Tag:** `Genre`
 - **NFO-Tag:** `<genre>`
 - **Beschreibung:** Das Genre des Videos, wird in Emby zur Kategorisierung verwendet. Im Sinne der Familienfilme ist dieses Feld immer auf "Family" gesetzt.
 
 ##### Kategorie
+
 - **Final Cut Pro Feldname:** **Kategorie**
 - **EXIF-Tag:** -
 - **NFO-Tag:** `<set>`
 - **Beschreibung:** Wird nun für die Emby-Sets (Sammlungen) verwendet. Die Berechtigungsgruppe und Themengruppe (z.B. "Familie Kurmann", "Kurmann-Glück Highlights") werden über das Album gesteuert. Dieses Feld bleibt aktuell unausgefüllt, wenn es nicht für ein Set verwendet wird.
 
 ##### Produktion
+
 - **Final Cut Pro Feldname:** **Produktion**
 - **EXIF-Tag:** `Producer`
 - **NFO-Tag:** `<producer>`
 - **Beschreibung:** Der Produzent des Videos, wird in Emby unter den Produktionsdetails angezeigt. Der Name des Videoschnitts wird hier im Format "Vorname Name" eingetragen. Bei mehreren Produzenten werden diese durch Semikolon getrennt.
 
 ##### Regie
+
 - **Final Cut Pro Feldname:** **Regie**
 - **EXIF-Tag:** `Director`
 - **NFO-Tag:** `<director>`
 - **Beschreibung:** Der Regisseur des Videos, wird in Emby unter den Regisseurdetails angezeigt. Alle Personen, die die Originalaufnahmen beigesteuert haben, werden hier eingetragen, getrennt durch Semikolon.
 
 ##### Sendung
+
 - **Final Cut Pro Feldname:** **Sendung**
 - **EXIF-Tag:** `Album`
 - **NFO-Tag:** -
@@ -195,9 +209,11 @@ Um die Felder von Final Cut Pro korrekt den EXIF-Tags und NFO-Tags zuzuordnen, w
 **Hinweise zur Zuordnung und Sonderlogik:**
 
 ##### Mapping Einfluss
+
 - Die Zuordnung der Final Cut Pro-Feldnamen zu den EXIF-Tags kann nicht direkt beeinflusst werden. Unser Automatisierungsskript übernimmt die Überführung der relevanten EXIF-Tags in die entsprechenden NFO-Tags.
 
 ##### Sonderlogik in Final Cut Pro
+
 - **Sammlungen und Tags:** Werden nun über das Feld "Kategorie" für Emby-Sets (Sammlungen) und das Feld "Attribute" für Tags gesetzt, was eine klare Strukturierung und einfache Extraktion durch das Skript ermöglicht.
 - **Titelpräfix:** Wird nicht mehr verwendet. Stattdessen wird das Aufnahmedatum manuell im Feld "Datum" als ISO-Datum eingetragen, und der Titel enthält nur den Namen des Videos.
 
@@ -210,90 +226,90 @@ Ein Python-Skript (oder ein anderes geeignetes Tool) übernimmt die folgenden Sc
 #### 5.1 Generierung der NFO-Datei
 
 1. **Vorlage der NFO-Struktur:**
- - Nutzung der extrahierten Metadaten zur Befüllung der XML-Tags.
- - Einbindung des Aufnahmedatums im `<plot>`-Tag mit dem Wochentagskürzel.
- - Übernahme des Videoschnittdatums in das `<dateadded>`-Tag.
+
+- Nutzung der extrahierten Metadaten zur Befüllung der XML-Tags.
+- Einbindung des Aufnahmedatums im `<plot>`-Tag mit dem Wochentagskürzel.
+- Übernahme des Videoschnittdatums in das `<dateadded>`-Tag.
 
 2. **Beispielhafte NFO-Datei:**
 
-  ```xml
-  <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-  <movie>
-    <plot><![CDATA[So. 15.09.2024. Dieses Video zeigt den XCO-Finale der ÖKK Bike Revolution 2024 in Huttwil.]]></plot>
-    <title>Paula MTB-Finale Huttwil</title>
-    <year>2024</year>
-    <sorttitle>Paula MTB-Finale Huttwil</sorttitle>
-    <premiered>2024-09-15</premiered>
-    <releasedate>2024-09-15</releasedate>
-    <copyright>© Patrick Kurmann 2024</copyright>
-    <published>2024-09-15</published>
-    <keywords>Familienausflüge,Familie,Ausflüge,Apple Log,Sport</keywords>
-    <producers>
-      <name>Patrick Kurmann</name>
-    </producers>
-    <directors>
-      <name>Patrick Kurmann</name>
-      <name>Kathrin Glück</name>
-    </directors>
-    <tag>Apple Log</tag>
-    <tag>Sport</tag>
-    <set>
-      <name>Familienausflüge</name>
-    </set>
-    <set>
-      <name>Familie</name>
-    </set>
-    <set>
-      <name>Ausflüge</name>
-    </set>
-    <actor>
-      <name>Paula Gorycka</name>
-      <role>Rennfahrerin</role>
-      <type>Actor</type>
-    </actor>
-    <actor>
-      <name>Andreas Kurmann sr</name>
-      <role>Teamchef</role>
-      <type>Actor</type>
-    </actor>
-    <actor>
-      <name>Patrick Kurmann</name>
-      <role>Videoschnitt</role>
-      <type>Actor</type>
-    </actor>
-    <actor>
-      <name>Patrick Kurmann</name>
-      <role>Filmaufnahmen</role>
-      <type>Actor</type>
-    </actor>
-    <actor>
-      <name>Silvan Kurmann</name>
-      <role>Filmaufnahmen</role>
-      <type>Actor</type>
-    </actor>
-    <dateadded>2024-04-27</dateadded>
-  </movie>
-  ```
+```xml
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<movie>
+  <plot><![CDATA[So. 15.09.2024. Dieses Video zeigt den XCO-Finale der ÖKK Bike Revolution 2024 in Huttwil.]]></plot>
+  <title>Paula MTB-Finale Huttwil</title>
+  <year>2024</year>
+  <sorttitle>Paula MTB-Finale Huttwil</sorttitle>
+  <premiered>2024-09-15</premiered>
+  <releasedate>2024-09-15</releasedate>
+  <copyright>© Patrick Kurmann 2024</copyright>
+  <published>2024-09-15</published>
+  <keywords>Familienausflüge,Familie,Ausflüge,Apple Log,Sport</keywords>
+  <producers>
+    <name>Patrick Kurmann</name>
+  </producers>
+  <directors>
+    <name>Patrick Kurmann</name>
+    <name>Kathrin Glück</name>
+  </directors>
+  <tag>Apple Log</tag>
+  <tag>Sport</tag>
+  <set>
+    <name>Familienausflüge</name>
+  </set>
+  <set>
+    <name>Familie</name>
+  </set>
+  <set>
+    <name>Ausflüge</name>
+  </set>
+  <actor>
+  <name>Paula Gorycka</name>
+    <role>Rennfahrerin</role>
+    <type>Actor</type>
+  </actor>
+  <actor>
+    <name>Andreas Kurmann sr</name>
+    <role>Teamchef</role>
+    <type>Actor</type>
+  </actor>
+  <actor>
+    <name>Patrick Kurmann</name>
+  <type>Producer</type>
+</actor>
+  <actor>
+  <name>Patrick Kurmann</name>
+  <type>Director</type>
+</actor>
+  <actor>
+  <name>Silvan Kurmann</name>
+  <type>Director</type>
+</actor>
+  <dateadded>2024-04-27</dateadded>
+</movie>
+```
 
 #### 5.2 Titelbild-Konvertierung
 
 - **Ausgangslage:**
-- Titelbild in Final Cut Pro: PNG, Rec.2020
+  - Titelbild in Final Cut Pro: PNG, Rec.2020
 - **Anforderungen:**
-- Konvertierung zu JPG und Adobe RGB
-- **Hinweis:** Die Konvertierung des Titelbildes muss in geeigneter Weise erfolgen, ist jedoch nicht Teil dieser Spezifikation.
+  - Konvertierung zu JPG und Adobe RGB
+  - **Hinweis:** Die Konvertierung des Titelbildes sollte automatisiert und verlustfrei erfolgen.
 
 ### 6. Zusätzliche Empfehlungen
 
 #### 6.1 Editierbarkeit der NFO-Dateien
 
-- **Vorgenerierte NFO-Dateien:** 
-- Die NFO-Dateien werden automatisch erstellt und bedürfen keiner manuellen Anpassung.
-- Dies minimiert Fehler und sorgt für Konsistenz.
+- **Vorgenerierte NFO-Dateien:**
 
-- **Emby Metadaten-Editor:** 
-- Änderungen und Korrekturen können direkt im Emby Metadaten-Editor vorgenommen werden.
-- Emby fungiert als Single-Point-of-Truth für die Metadaten.
+  - Die NFO-Dateien werden automatisch erstellt und bedürfen keiner manuellen Anpassung.
+  - Dies minimiert Fehler und sorgt für Konsistenz.
+
+- **Emby Metadaten-Editor:**
+
+  - Änderungen und Korrekturen können direkt im Emby Metadaten-Editor vorgenommen werden.
+  - Emby fungiert als **Single-Point-of-Truth** (eine zentrale Quelle für die Wahrheit) für die Metadaten.
 
 #### 6.2 Metadatensynchronisation (Optional)
 
@@ -311,14 +327,17 @@ Ein Python-Skript (oder ein anderes geeignetes Tool) übernimmt die folgenden Sc
 #### 7.1 Beispielhafte Projektmetadaten in Final Cut Pro
 
 - **Titel:** `Paula MTB-Finale Huttwil`
+
 - **Beschreibung:**
 
-Sammlung: Familienausflüge, Familie, Ausflüge
-Tags: Apple Log, Sport
-Text: Dieses Video zeigt den XCO-Finale der ÖKK Bike Revolution 2024 in Huttwil.
+  Sammlung: **Familienausflüge, Familie, Ausflüge**
+  Tags: **Apple Log, Sport**
+  Text: Dieses Video zeigt den XCO-Finale der ÖKK Bike Revolution 2024 in Huttwil.
 
 - **Album:** `Familie Kurmann Glück`
+
 - **Datum:** `2024-09-15` (ISO-Format)
+
 - **Titelbild:** `titelbild.png` (Rec.2020, PNG)
 
 #### 7.2 Generierte NFO-Datei
@@ -326,59 +345,56 @@ Text: Dieses Video zeigt den XCO-Finale der ÖKK Bike Revolution 2024 in Huttwil
 ```xml
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <movie>
-<plot><![CDATA[So. 15.09.2024. Dieses Video zeigt den XCO-Finale der ÖKK Bike Revolution 2024 in Huttwil.]]></plot>
-<title>Paula MTB-Finale Huttwil</title>
-<year>2024</year>
-<sorttitle>Paula MTB-Finale Huttwil</sorttitle>
-<premiered>2024-09-15</premiered>
-<releasedate>2024-09-15</releasedate>
-<copyright>© Patrick Kurmann 2024</copyright>
-<published>2024-09-15</published>
-<keywords>Familienausflüge,Familie,Ausflüge,Apple Log,Sport</keywords>
-<producers>
-  <name>Patrick Kurmann</name>
-</producers>
-<directors>
-  <name>Patrick Kurmann</name>
-  <name>Kathrin Glück</name>
-</directors>
-<tag>Apple Log</tag>
-<tag>Sport</tag>
-<set>
-  <name>Familienausflüge</name>
-</set>
-<set>
-  <name>Familie</name>
-</set>
-<set>
-  <name>Ausflüge</name>
-</set>
-<actor>
-  <name>Paula Gorycka</name>
-  <role>Rennfahrerin</role>
-  <type>Actor</type>
-</actor>
-<actor>
-  <name>Andreas Kurmann sr</name>
-  <role>Teamchef</role>
-  <type>Actor</type>
-</actor>
-<actor>
-  <name>Patrick Kurmann</name>
-  <role>Videoschnitt</role>
-  <type>Actor</type>
-</actor>
-<actor>
-  <name>Patrick Kurmann</name>
-  <role>Filmaufnahmen</role>
-  <type>Actor</type>
-</actor>
-<actor>
-  <name>Silvan Kurmann</name>
-  <role>Filmaufnahmen</role>
-  <type>Actor</type>
-</actor>
-<dateadded>2024-04-27</dateadded>
+  <plot><![CDATA[So. 15.09.2024. Dieses Video zeigt den XCO-Finale der ÖKK Bike Revolution 2024 in Huttwil.]]></plot>
+  <title>Paula MTB-Finale Huttwil</title>
+  <year>2024</year>
+  <sorttitle>Paula MTB-Finale Huttwil</sorttitle>
+  <premiered>2024-09-15</premiered>
+  <releasedate>2024-09-15</releasedate>
+  <copyright>© Patrick Kurmann 2024</copyright>
+  <published>2024-09-15</published>
+  <keywords>Familienausflüge,Familie,Ausflüge,Apple Log,Sport</keywords>
+  <producers>
+    <name>Patrick Kurmann</name>
+  </producers>
+  <directors>
+    <name>Patrick Kurmann</name>
+    <name>Kathrin Glück</name>
+  </directors>
+  <tag>Apple Log</tag>
+  <tag>Sport</tag>
+  <set>
+    <name>Familienausflüge</name>
+  </set>
+  <set>
+    <name>Familie</name>
+  </set>
+  <set>
+    <name>Ausflüge</name>
+  </set>
+  <actor>
+    <name>Paula Gorycka</name>
+    <role>Rennfahrerin</role>
+    <type>Actor</type>
+  </actor>
+  <actor>
+    <name>Andreas Kurmann sr</name>
+    <role>Teamchef</role>
+    <type>Actor</type>
+  </actor>
+  <actor>
+    <name>Patrick Kurmann</name>
+    <type>Director</type>
+  </actor>
+  <actor>
+    <name>Patrick Kurmann</name>
+    <type>Producer</type>
+  </actor>
+  <actor>
+    <name>Silvan Kurmann</name>
+    <type>Producer</type>
+  </actor>
+  <dateadded>2024-10-26</dateadded>
 </movie>
 ```
 
@@ -387,3 +403,4 @@ Text: Dieses Video zeigt den XCO-Finale der ÖKK Bike Revolution 2024 in Huttwil
 Diese Spezifikation bietet einen klaren und strukturierten Ansatz zur automatisierten Erstellung von NFO-Metadatendateien aus Final Cut Pro Projekten. Durch die genaue Vorgabe der erforderlichen Projektmetadaten und die Nutzung eines automatisierten Skripts wird der Workflow effizienter gestaltet, der manuelle Aufwand minimiert und die Konsistenz der Metadaten gewährleistet. Der empfohlene Workflow fördert eine nahtlose Integration in die Emby-Mediathek und stellt sicher, dass alle Metadaten korrekt und vollständig sind. Zusätzliche Empfehlungen wie die Metadatensynchronisation bieten Flexibilität für zukünftige Erweiterungen und Anpassungen.
 
 Ende der Spezifikation
+
