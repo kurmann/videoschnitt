@@ -17,7 +17,7 @@ Diese Übersicht fasst die drei zentralen Spezifikationen zur Organisation und A
 - Nutzung von NFO-Dateien zur detaillierten Metadatenverwaltung.
 - Integration von Alben zur Steuerung von Berechtigungen und Freigaben.
 
-**[Verlinkung zur vollständigen Spezifikation](homemovies_emby.md)**
+**Verlinkung vollständige Spezifikation [](homemovies_emby.md)**
 
 ### 2. **Automatisierte Workflow-Spezifikation: Final Cut Pro zu Emby NFO-Metadatendateien**
 
@@ -33,7 +33,7 @@ Diese Übersicht fasst die drei zentralen Spezifikationen zur Organisation und A
 - Sicherstellung der Konsistenz zwischen Final Cut Pro Projekten und der Emby Mediathek.
 - Effiziente Integration von Alben und Jahresverzeichnissen.
 
-**Verlinkung zur vollständigen Spezifikation:** [Automatisierte Workflow-Spezifikation: Final Cut Pro zu Emby NFO-Metadatendateien](#)
+**Verlinkung vollständige Spezifikation: [homemovies_final_cut_workflow.md](homemovies_final_cut_workflow.md)**
 
 ### 3. **iCloud Ablagespezifikation für Familienfilme**
 
