@@ -19,6 +19,7 @@ $ emby-integrator [OPTIONS] COMMAND [ARGS]...
 * `convert-image`: Konvertiere ein einzelnes Bild in das...
 * `generate-nfo-xml`: Generiert die NFO-Metadatendatei und gibt...
 * `group-files`: Gruppiert Dateien mit gleichen Basenamen...
+* `integrate-homemovie`: Integriert einen Familienfilm in die...
 * `rename-artwork`: Benennt alle JPG, JPEG und PNG-Dateien in...
 * `reset-permissions`: Setzt die Berechtigungen eines...
 * `scan-media`: Scannt ein Verzeichnis nach Bilddateien...
@@ -96,6 +97,28 @@ $ emby-integrator group-files [OPTIONS] DIRECTORY
 **Options**:
 
 * `-i, --ignore-suffix TEXT`: Liste von Suffixen, die beim Gruppieren ignoriert werden sollen (case-insensitive)  [default: -poster, -artwork, -fanart]
+* `--help`: Show this message and exit.
+
+## `emby-integrator integrate-homemovie`
+
+Integriert einen Familienfilm in die Emby-Mediathek. Verschiebt die Videodatei und optional das Titelbild in das passende Verzeichnis und erstellt die erforderlichen Metadaten.
+
+**Usage**:
+
+```console
+$ emby-integrator integrate-homemovie [OPTIONS] VIDEO_FILE MEDIATHEK_DIR
+```
+
+**Arguments**:
+
+* `VIDEO_FILE`: Der Pfad zur Videodatei, die in die Mediathek integriert werden soll.  [required]
+* `MEDIATHEK_DIR`: Das Hauptverzeichnis der Emby-Mediathek, in das der Familienfilm integriert werden soll.  [required]
+
+**Options**:
+
+* `-i, --title-image FILE`: Der Pfad zum optionalen Titelbild.
+* `-v, --version TEXT`: Versionierungsoption: 'overwrite' oder 'new'.
+* `--no-prompt`: Unterdrückt die Nachfrage bei der Integration.
 * `--help`: Show this message and exit.
 
 ## `emby-integrator rename-artwork`
