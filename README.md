@@ -31,6 +31,7 @@ Ein Beispiel für eine solche Erweiterung ist das Konzept der **Kurmann-Mediense
 - [Video Compressor](/docs/cli/video_compressor.md)
 - [Movie Integrator](/docs/cli/movie_integrator.md)
 - [iCloud Drive Integrator](docs/cli/iclouddrive_integrator.md)
+- [Final Cut Pro Integrator](docs/cli/fcp_integrator.md)
 
 Die Grundlage für die CLI ist das [CLI-Design](/docs/cli_design.md)
 
