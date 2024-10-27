@@ -1,8 +1,8 @@
-# src/emby_integrator/commands/integrate_homemovie.py
+# src/homemovie_integrator.py
 
 import typer
 from pathlib import Path
-from typing import Optional
+from typing import Optional, List, Dict
 import shutil
 from datetime import datetime
 import subprocess
@@ -14,7 +14,7 @@ app = typer.Typer()
 
 # Konfiguriere das Logging
 logging.basicConfig(
-    filename='integrate_homemovie.log',
+    filename='homemovie_integrator.log',
     filemode='a',
     format='%(asctime)s - %(levelname)s - %(message)s',
     level=logging.DEBUG  # Setze auf DEBUG für detailliertes Logging
@@ -71,7 +71,7 @@ def extract_metadata(file_path: Path) -> dict:
     relevant_keys = [
         "Title", "Description", "Author", "Keywords", "Producer",
         "Director", "Album", "CreateDate", "Artist", "DisplayName",
-        "CreationDate"
+        "CreationDate", "VideoCodec"
     ]
     filtered_metadata = {key: metadata.get(key, '') for key in relevant_keys}
     
@@ -226,7 +226,7 @@ def convert_image_to_adobe_rgb(input_file: Path, output_file: Path) -> None:
     
     # Verwende SIPS, um das Format zu ändern und das Farbprofil anzupassen
     command = [
-        "sips", "-s", "format", "jpeg", "-m", ADOBE_RGB_PROFILE, str(input_file), "--out", str(output_file)  # Korrigiert: output_image zu output_file
+        "sips", "-s", "format", "jpeg", "-m", ADOBE_RGB_PROFILE, str(input_file), "--out", str(output_file)
     ]
     
     try:
@@ -238,48 +238,21 @@ def convert_image_to_adobe_rgb(input_file: Path, output_file: Path) -> None:
         typer.secho(f"Fehler beim Konvertieren von {input_file}: {e}", fg=typer.colors.RED)
         raise
 
-@app.command()
-def integrate_homemovie(
-    video_file: Path = typer.Argument(
-        ...,
-        exists=True,
-        file_okay=True,
-        dir_okay=False,
-        readable=True,
-        help="Der Pfad zur Videodatei, die in die Mediathek integriert werden soll."
-    ),
-    title_image: Optional[Path] = typer.Option(
-        None,
-        "--title-image",
-        "-i",
-        exists=True,
-        file_okay=True,
-        dir_okay=False,
-        readable=True,
-        help="Der Pfad zum optionalen Titelbild."
-    ),
-    mediathek_dir: Path = typer.Argument(
-        ...,
-        exists=True,
-        file_okay=False,
-        dir_okay=True,
-        writable=True,
-        readable=True,
-        help="Das Hauptverzeichnis der Emby-Mediathek, in das der Familienfilm integriert werden soll."
-    ),
-    overwrite_existing: bool = typer.Option(
-        False,
-        "--overwrite-existing",
-        help="Überschreibt bestehende Dateien ohne Rückfrage, wenn diese existieren."
-    ),
-    delete_source_files: bool = typer.Option(
-        False,
-        "--delete-source-files",
-        help="Löscht die Quelldateien nach erfolgreicher Integration."
-    )
-):
+def integrate_single_homemovie(
+    video_file: Path,
+    title_image: Optional[Path],
+    mediathek_dir: Path,
+    overwrite_existing: bool,
+    delete_source_files: bool
+) -> None:
     """
-    Integriert einen Familienfilm in die Emby-Mediathek. Kopiert die Videodatei und optional das Titelbild in das passende Verzeichnis und erstellt die erforderlichen Metadaten.
+    Führt die Integration eines einzelnen Familienfilms durch.
+    
+    :param video_file: Path zur Videodatei
+    :param title_image: Optional Path zum Titelbild
+    :param mediathek_dir: Path zum Hauptverzeichnis der Emby-Mediathek
+    :param overwrite_existing: Bool, ob bestehende Dateien überschrieben werden sollen
+    :param delete_source_files: Bool, ob Quelldateien gelöscht werden sollen
     """
     typer.secho(f"Integriere Familienfilm '{video_file}' in die Mediathek...", fg=typer.colors.BLUE)
     
@@ -367,10 +340,14 @@ def integrate_homemovie(
         logger.error(f"Fehler beim Erstellen der NFO-Datei: {e}")
         raise typer.Exit(code=1)
     
-    # Schritt 7: Kopiere die Videodatei ins Zielverzeichnis
+    # Schritt 7: Kopiere die Videodatei ins Zielverzeichnis mit Benachrichtigung und Dateigröße
     try:
         video_ext = video_file.suffix.lower()
         target_video_path = ziel_jahr_dir / f"{base_filename}{video_ext}"
+        
+        file_size_gb = video_file.stat().st_size / (1024 ** 3)
+        typer.secho(f"Beginne mit dem Kopieren von '{video_file}' ({file_size_gb:.2f} GB)...", fg=typer.colors.BLUE)
+        logger.info(f"Beginne mit dem Kopieren von '{video_file}' ({file_size_gb:.2f} GB)...")
         
         shutil.copy2(video_file, target_video_path)
         typer.secho(f"Videodatei wurde nach '{target_video_path}' kopiert.", fg=typer.colors.GREEN)
@@ -433,4 +410,211 @@ def integrate_homemovie(
     
     typer.secho("Familienfilm-Integration erfolgreich abgeschlossen.", fg=typer.colors.GREEN)
     logger.info(f"Familienfilm '{video_file}' erfolgreich integriert in '{ziel_jahr_dir}'.")
-    raise typer.Exit(code=0)
+    # Kein typer.Exit(code=0) hier; einfach zurückkehren
+
+@app.command("integrate_homemovie")
+def integrate_homemovie(
+    video_file: Path = typer.Argument(
+        ...,
+        exists=True,
+        file_okay=True,
+        dir_okay=False,
+        readable=True,
+        help="Der Pfad zur Videodatei, die in die Mediathek integriert werden soll."
+    ),
+    title_image: Optional[Path] = typer.Option(
+        None,
+        "--title-image",
+        "-i",
+        exists=True,
+        file_okay=True,
+        dir_okay=False,
+        readable=True,
+        help="Der Pfad zum optionalen Titelbild."
+    ),
+    mediathek_dir: Path = typer.Argument(
+        ...,
+        exists=True,
+        file_okay=False,
+        dir_okay=True,
+        writable=True,
+        readable=True,
+        help="Das Hauptverzeichnis der Emby-Mediathek, in das der Familienfilm integriert werden soll."
+    ),
+    overwrite_existing: bool = typer.Option(
+        False,
+        "--overwrite-existing",
+        help="Überschreibt bestehende Dateien ohne Rückfrage, wenn diese existieren."
+    ),
+    delete_source_files: bool = typer.Option(
+        False,
+        "--delete-source-files",
+        help="Löscht die Quelldateien nach erfolgreicher Integration."
+    )
+):
+    """
+    Integriert einen Familienfilm in die Emby-Mediathek. Kopiert die Videodatei und optional das Titelbild in das passende Verzeichnis und erstellt die erforderlichen Metadaten.
+    """
+    integrate_single_homemovie(
+        video_file=video_file,
+        title_image=title_image,
+        mediathek_dir=mediathek_dir,
+        overwrite_existing=overwrite_existing,
+        delete_source_files=delete_source_files
+    )
+
+@app.command("integrate_homemovies")
+def integrate_homemovies(
+    search_dir: Path = typer.Argument(
+        ...,
+        exists=True,
+        file_okay=False,
+        dir_okay=True,
+        readable=True,
+        help="Das Verzeichnis, in dem nach Mediendateien gesucht werden soll."
+    ),
+    additional_dir: Optional[Path] = typer.Option(
+        None,
+        "--additional-dir",
+        "-ad",
+        exists=True,
+        file_okay=False,
+        dir_okay=True,
+        readable=True,
+        help="Zusätzliches Verzeichnis zur Suche nach Mediendateien."
+    ),
+    mediathek_dir: Path = typer.Argument(
+        ...,
+        exists=True,
+        file_okay=False,
+        dir_okay=True,
+        writable=True,
+        readable=True,
+        help="Das Hauptverzeichnis der Emby-Mediathek, in das die Familienfilme integriert werden sollen."
+    ),
+    overwrite_existing: bool = typer.Option(
+        False,
+        "--overwrite-existing",
+        help="Überschreibt bestehende Dateien ohne Rückfrage, wenn diese existieren."
+    ),
+    delete_source_files: bool = typer.Option(
+        False,
+        "--delete-source-files",
+        help="Löscht die Quelldateien nach erfolgreicher Integration."
+    )
+):
+    """
+    Integriert mehrere Familienfilme aus einem Verzeichnis (und optional einem weiteren) in die Emby-Mediathek.
+    """
+    typer.secho(f"Integriere mehrere Familienfilme aus '{search_dir}' in die Mediathek...", fg=typer.colors.BLUE)
+    
+    directories = [search_dir]
+    if additional_dir:
+        directories.append(additional_dir)
+        typer.secho(f"Zusätzliches Verzeichnis hinzugefügt: '{additional_dir}'", fg=typer.colors.BLUE)
+    
+    # Schritt 1: Sammeln aller unterstützten Videodateien ohne ProRes
+    media_files: List[Path] = []
+    for dir_path in directories:
+        typer.secho(f"Durchsuche Verzeichnis: '{dir_path}'", fg=typer.colors.BLUE)
+        for file_path in dir_path.rglob('*'):
+            if file_path.is_file() and file_path.suffix.lower() in ['.mov', '.mp4', '.m4v']:
+                try:
+                    metadata = extract_metadata(file_path)
+                    # Überprüfe, ob der Codec nicht ProRes ist
+                    video_codec = metadata.get('VideoCodec', '').strip()
+                    if video_codec not in ['Apple ProRes 422', 'Apple ProRes 422 HQ', 'Apple ProRes 4444', 'Apple ProRes 4444 XQ']:
+                        media_files.append(file_path)
+                        logger.debug(f"Hinzufügen von '{file_path}' zur Liste der Mediendateien.")
+                    else:
+                        typer.secho(f"Überspringe ProRes-Datei: '{file_path}'", fg=typer.colors.YELLOW)
+                        logger.info(f"Überspringe ProRes-Datei: '{file_path}'")
+                except Exception as e:
+                    typer.secho(f"Fehler beim Verarbeiten von '{file_path}': {e}", fg=typer.colors.RED)
+                    logger.error(f"Fehler beim Verarbeiten von '{file_path}': {e}")
+                    continue
+    
+    if not media_files:
+        typer.secho("Keine unterstützten Mediendateien gefunden.", fg=typer.colors.YELLOW)
+        raise typer.Exit()
+    
+    # Schritt 2: Gruppierung der Mediendateien nach Titel
+    groups: Dict[str, Dict[str, List[Path]]] = {}
+    for file_path in media_files:
+        try:
+            metadata = extract_metadata(file_path)
+            title = metadata.get('Title') or metadata.get('DisplayName') or file_path.stem
+            title = sanitize_filename(title)
+            if not title:
+                typer.secho(f"Keine Titel-Metadaten in '{file_path}' gefunden. Datei wird übersprungen.", fg=typer.colors.YELLOW)
+                logger.warning(f"Keine Titel-Metadaten in '{file_path}' gefunden. Datei wird übersprungen.")
+                continue
+            if title not in groups:
+                groups[title] = {
+                    'videos': [],
+                    'images': []
+                }
+            groups[title]['videos'].append(file_path)
+            logger.debug(f"Datei '{file_path}' zur Gruppe '{title}' hinzugefügt.")
+        except Exception as e:
+            typer.secho(f"Fehler beim Gruppieren von '{file_path}': {e}", fg=typer.colors.RED)
+            logger.error(f"Fehler beim Gruppieren von '{file_path}': {e}")
+            continue
+    
+    if not groups:
+        typer.secho("Keine Gruppen von Mediendateien mit gemeinsamen Titeln gefunden.", fg=typer.colors.YELLOW)
+        raise typer.Exit()
+    
+    # Schritt 3: Suche nach zugehörigen Titelbildern und Auswahl der besten Videodatei
+    for title, files in groups.items():
+        # Bevorzugt das größte Video als die beste Qualität
+        if len(files['videos']) > 1:
+            sorted_videos = sorted(files['videos'], key=lambda f: f.stat().st_size, reverse=True)
+            best_video = sorted_videos[0]
+            groups[title]['videos'] = [best_video]
+            typer.secho(f"Mehrere Videos gefunden für '{title}'. Wähle die größte Datei: '{best_video}'", fg=typer.colors.GREEN)
+            logger.info(f"Mehrere Videos gefunden für '{title}'. Wähle die größte Datei: '{best_video}'")
+        else:
+            best_video = files['videos'][0]
+        
+        # Suche nach zugehörigem Titelbild, bevorzugt PNG über JPG
+        image_found = False
+        for ext in ['.png', '.jpg', '.jpeg']:
+            image_file = Path(best_video.parent) / f"{title}{ext}"
+            if image_file.exists() and image_file.suffix.lower() in SUPPORTED_IMAGE_FORMATS:
+                groups[title]['images'].append(image_file)
+                typer.secho(f"Gefundenes Titelbild für '{title}': '{image_file}'", fg=typer.colors.GREEN)
+                logger.info(f"Gefundenes Titelbild für '{title}': '{image_file}'")
+                image_found = True
+                break  # Bevorzugt das erste gefundene Bild in der Reihenfolge PNG, JPG, JPEG
+        if not image_found:
+            typer.secho(f"Kein passendes Titelbild für '{title}' gefunden.", fg=typer.colors.YELLOW)
+            logger.warning(f"Kein passendes Titelbild für '{title}' gefunden.")
+    
+    # Schritt 4: Integration der Mediensets
+    typer.secho("\nBeginne mit der Integration der Mediensets...", fg=typer.colors.BLUE)
+    for title, files in groups.items():
+        video_file = files['videos'][0]
+        title_image = files['images'][0] if files['images'] else None
+        typer.secho(f"\nIntegriere Medienset '{title}'...", fg=typer.colors.CYAN)
+        try:
+            integrate_single_homemovie(
+                video_file=video_file,
+                title_image=title_image,
+                mediathek_dir=mediathek_dir,
+                overwrite_existing=overwrite_existing,
+                delete_source_files=delete_source_files
+            )
+        except typer.Exit as e:
+            if e.code != 0:
+                typer.secho(f"Fehler beim Integrieren von '{title}': {e}", fg=typer.colors.RED)
+                logger.error(f"Fehler beim Integrieren von '{title}': {e}")
+            # Wenn e.code == 0, dies war eine erfolgreiche Integration, keine Aktion nötig
+            continue  # Fahre mit dem nächsten Medienset fort
+        except Exception as e:
+            typer.secho(f"Unbekannter Fehler beim Integrieren von '{title}': {e}", fg=typer.colors.RED)
+            logger.error(f"Unbekannter Fehler beim Integrieren von '{title}': {e}")
+            continue  # Fahre mit dem nächsten Medienset fort
+    
+    typer.secho("\nIntegration aller Mediensets abgeschlossen.", fg=typer.colors.GREEN)
+    logger.info("Integration aller Mediensets abgeschlossen.")
