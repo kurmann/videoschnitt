@@ -186,6 +186,29 @@
             "group": "build"
         },
         {
+            "label": "generate-cli-docs-iclouddrive_integrator",
+            "type": "shell",
+            "command": "python",
+            "args": [
+                "-m",
+                "typer",
+                "${workspaceFolder}/src/iclouddrive_integrator/app.py",
+                "utils",
+                "docs",
+                "--name",
+                "iclouddrive-integrator",
+                "--output",
+                "${workspaceFolder}/docs/cli/iclouddrive_integrator.md"
+            ],
+            "problemMatcher": [],
+            "options": {
+                "env": {
+                    "PYTHONPATH": "${workspaceFolder}/src"
+                }
+            },
+            "group": "build"
+        },
+        {
             "label": "generate-all-cli-docs",
             "type": "shell",
             "command": "echo",
@@ -198,7 +221,8 @@
                 "generate-cli-docs-metadata-manager",
                 "generate-cli-docs-mediaset-manager",
                 "generate-cli-docs-video-compressor",
-                "generate-cli-docs-movie-integrator"
+                "generate-cli-docs-movie-integrator",
+                "generate-cli-docs-iclouddrive-integrator"
             ],
             "problemMatcher": [],
             "group": {
