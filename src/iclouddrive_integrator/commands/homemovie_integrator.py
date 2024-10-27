@@ -1,10 +1,10 @@
 # src/iclouddrive_integrator/commands/homemovie_integrator.py
 
+import subprocess
 import typer
 from pathlib import Path
-from typing import Optional, List, Dict
+from typing import Optional
 import shutil
-import subprocess
 from datetime import datetime
 import json
 import logging
@@ -21,9 +21,6 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 SUPPORTED_VIDEO_FORMATS = ['.mov', '.mp4', '.m4v']
-SUPPORTED_IMAGE_FORMATS = [".jpg", ".jpeg", ".png"]
-POSTER_SUFFIX = "-poster"
-NFO_SUFFIX = ".nfo"
 
 def sanitize_filename(filename: str) -> str:
     """Bereinigt den Dateinamen, um nur erlaubte Zeichen zu enthalten."""
@@ -93,38 +90,19 @@ def delete_source_file(file_path: Path, delete_source: bool) -> None:
             typer.secho(f"Quelldatei nicht gelöscht: {file_path}", fg=typer.colors.YELLOW)
             logger.info(f"Quelldatei nicht gelöscht: {file_path}")
 
-@app.command()
-def integrate_homemovie(
-    video_file: Path = typer.Argument(
-        ...,
-        exists=True,
-        file_okay=True,
-        dir_okay=False,
-        readable=True,
-        help="Der Pfad zur Videodatei, die in die Mediathek integriert werden soll."
-    ),
-    icloud_dir: Path = typer.Argument(
-        ...,
-        exists=True,
-        file_okay=False,
-        dir_okay=True,
-        writable=True,
-        readable=True,
-        help="Das Zielverzeichnis in iCloud."
-    ),
-    overwrite_existing: bool = typer.Option(
-        False,
-        "--overwrite-existing",
-        help="Überschreibt bestehende Dateien ohne Rückfrage, wenn diese existieren."
-    ),
-    delete_source: bool = typer.Option(
-        False,
-        "--delete-source",
-        help="Löscht die Quelldateien nach erfolgreicher Integration ohne Rückfrage."
-    )
-):
+def integrate_homemovie_to_icloud(
+    video_file: Path,
+    icloud_dir: Path,
+    overwrite_existing: bool,
+    delete_source: bool
+) -> None:
     """
-    Integriert eine einzelne Heimvideo-Datei in iCloud Drive.
+    Integrates a single homemovie into iCloud Drive.
+
+    :param video_file: Path to the video file.
+    :param icloud_dir: Path to the iCloud directory.
+    :param overwrite_existing: Whether to overwrite existing files.
+    :param delete_source: Whether to delete the source file after integration.
     """
     typer.secho(f"Integriere Video '{video_file}' in iCloud...", fg=typer.colors.BLUE)
     logger.info(f"Beginne Integration von: {video_file}")
@@ -169,12 +147,78 @@ def integrate_homemovie(
     if delete_source:
         delete_source_file(video_file, delete_source=True)
 
-@app.command("integrate_homemovies")
+def integrate_homemovie(
+    video_file: Path = typer.Argument(
+        ...,
+        exists=True,
+        file_okay=True,
+        dir_okay=False,
+        readable=True,
+        help="Der Pfad zur Videodatei, die in die Mediathek integriert werden soll."
+    ),
+    icloud_dir: Path = typer.Argument(
+        ...,
+        exists=True,
+        file_okay=False,
+        dir_okay=True,
+        writable=True,
+        readable=True,
+        help="Das Zielverzeichnis in iCloud."
+    ),
+    overwrite_existing: bool = typer.Option(
+        False,
+        "--overwrite-existing",
+        help="Überschreibt bestehende Dateien ohne Rückfrage, wenn diese existieren."
+    ),
+    delete_source: bool = typer.Option(
+        False,
+        "--delete-source",
+        help="Löscht die Quelldateien nach erfolgreicher Integration ohne Rückfrage."
+    )
+):
+    """
+    Integriert eine einzelne Heimvideo-Datei in iCloud Drive.
+    """
+    integrate_homemovie_to_icloud(
+        video_file=video_file,
+        icloud_dir=icloud_dir,
+        overwrite_existing=overwrite_existing,
+        delete_source=delete_source
+    )
+
 def integrate_homemovies(
-    search_dir: Path = typer.Argument(..., exists=True, file_okay=False, dir_okay=True, readable=True, help="Das Verzeichnis mit Mediendateien."),
-    additional_dir: Optional[Path] = typer.Option(None, "--additional-dir", "-ad", exists=True, file_okay=False, dir_okay=True, readable=True, help="Zusätzliches Verzeichnis."),
-    icloud_dir: Path = typer.Argument(..., exists=True, file_okay=False, dir_okay=True, writable=True, readable=True, help="Das Zielverzeichnis in iCloud."),
-    overwrite_existing: bool = typer.Option(False, "--overwrite-existing", help="Überschreibt bestehende Dateien."),
+    search_dir: Path = typer.Argument(
+        ...,
+        exists=True,
+        file_okay=False,
+        dir_okay=True,
+        readable=True,
+        help="Das Verzeichnis mit Mediendateien."
+    ),
+    additional_dir: Optional[Path] = typer.Option(
+        None,
+        "--additional-dir",
+        "-ad",
+        exists=True,
+        file_okay=False,
+        dir_okay=True,
+        readable=True,
+        help="Zusätzliches Verzeichnis."
+    ),
+    icloud_dir: Path = typer.Argument(
+        ...,
+        exists=True,
+        file_okay=False,
+        dir_okay=True,
+        writable=True,
+        readable=True,
+        help="Das Zielverzeichnis in iCloud."
+    ),
+    overwrite_existing: bool = typer.Option(
+        False,
+        "--overwrite-existing",
+        help="Überschreibt bestehende Dateien."
+    ),
     delete_source: bool = typer.Option(
         False,
         "--delete-source",
@@ -194,60 +238,30 @@ def integrate_homemovies(
     for dir_path in directories:
         for file_path in dir_path.rglob('*'):
             if file_path.is_file() and file_path.suffix.lower() in SUPPORTED_VIDEO_FORMATS:
-                metadata = extract_metadata(file_path)
-                video_codec = metadata.get('VideoCodec', '').strip()
-                if video_codec not in ['Apple ProRes 422', 'Apple ProRes 422 HQ']:
-                    media_files.append(file_path)
+                media_files.append(file_path)
     
-    groups: Dict[str, Dict[str, List[Path]]] = {}
-    for file_path in media_files:
-        metadata = extract_metadata(file_path)
-        title = sanitize_filename(metadata.get('Title') or file_path.stem)
-        if not title:
-            continue
-        if title not in groups:
-            groups[title] = {'videos': [], 'images': []}
-        groups[title]['videos'].append(file_path)
+    typer.secho(f"Gefundene Mediendateien: {len(media_files)}", fg=typer.colors.BLUE)
+    logger.info(f"Gefundene Mediendateien: {len(media_files)}")
     
-    for title, files in groups.items():
-        best_video = max(files['videos'], key=lambda f: f.stat().st_size)
-        typer.secho(f"Integriere Medienset '{title}'...", fg=typer.colors.CYAN)
-        logger.info(f"Integriere Medienset '{title}' mit Datei '{best_video}'")
-        
-        metadata = extract_metadata(best_video)
-        ziel_dir = determine_target_directory(icloud_dir, metadata)
-        sanitized_title = sanitize_filename(metadata.get('Title'))
+    for video_file in media_files:
         try:
-            creation_date = datetime.strptime(metadata.get('CreationDate', ''), '%Y:%m:%d')
-            jahr = str(creation_date.year)
-        except ValueError:
-            try:
-                creation_date = datetime.strptime(metadata.get('CreationDate', ''), '%Y-%m-%d')
-                jahr = str(creation_date.year)
-            except ValueError:
-                jahr = 'Unknown'
-        
-        base_filename = f"{sanitized_title} ({jahr})"
-        
-        existing_files = list(ziel_dir.glob(f"{base_filename}*"))
-        if existing_files and not overwrite_existing:
-            typer.secho(f"Dateien für '{base_filename}' existieren bereits.", fg=typer.colors.YELLOW)
-            if not typer.confirm(f"Bestehende Dateien überschreiben?"):
-                logger.info(f"Integration abgebrochen für '{base_filename}': Bestehende Dateien wurden nicht überschrieben.")
-                continue
-        
-        video_target = ziel_dir / f"{base_filename}{best_video.suffix}"
-        try:
-            shutil.copy2(best_video, video_target)
-            logger.info(f"Video '{best_video}' kopiert nach '{video_target}'.")
-            typer.secho(f"Video '{best_video}' kopiert nach '{video_target}'.", fg=typer.colors.GREEN)
+            integrate_homemovie_to_icloud(
+                video_file=video_file,
+                icloud_dir=icloud_dir,
+                overwrite_existing=overwrite_existing,
+                delete_source=delete_source
+            )
+        except typer.Exit:
+            typer.secho(f"Integration abgebrochen für '{video_file}'.", fg=typer.colors.RED)
+            logger.error(f"Integration abgebrochen für '{video_file}'.")
+            continue  # Fahre mit der nächsten Datei fort
         except Exception as e:
-            logger.error(f"Fehler beim Kopieren der Datei '{best_video}': {e}")
-            typer.secho(f"Fehler beim Kopieren der Datei '{best_video}': {e}", fg=typer.colors.RED)
-            continue
-        
-        if delete_source:
-            delete_source_file(best_video, delete_source=True)
+            typer.secho(f"Unbekannter Fehler bei der Integration von '{video_file}': {e}", fg=typer.colors.RED)
+            logger.error(f"Unbekannter Fehler bei der Integration von '{video_file}': {e}")
+            continue  # Fahre mit der nächsten Datei fort
+    
+    typer.secho("Integration mehrerer Heimvideo-Dateien abgeschlossen.", fg=typer.colors.GREEN)
+    logger.info("Integration mehrerer Heimvideo-Dateien abgeschlossen.")
 
 if __name__ == "__main__":
     app()

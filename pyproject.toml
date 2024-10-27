@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "kurmann-videoschnitt"
-version = "0.81.0"
+version = "0.82.0"
 description = "Sammlung von Werkzeugen zur Automatisierungen im privaten Videoschnitt"
 readme = "README.md"
 requires-python = ">=3.8,<4.0"
@@ -35,6 +35,7 @@ mediaset-manager = "mediaset_manager.app:app"
 video-compressor = "video_compressor.app:app"
 movie-integrator = "movie_integrator.app:app"
 iclouddrive-integrator = "iclouddrive_integrator.app:app"
+fcp-integrator = "fcp_integrator.app:app"
 
 [project.urls]
 Homepage = "https://github.com/kurmann/videoschnitt"

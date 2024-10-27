@@ -209,6 +209,29 @@
             "group": "build"
         },
         {
+            "label": "generate-cli-docs-fcp_integrator",
+            "type": "shell",
+            "command": "python",
+            "args": [
+                "-m",
+                "typer",
+                "${workspaceFolder}/src/fcp_integrator/app.py",
+                "utils",
+                "docs",
+                "--name",
+                "fcp-integrator",
+                "--output",
+                "${workspaceFolder}/docs/cli/fcp_integrator.md"
+            ],
+            "problemMatcher": [],
+            "options": {
+                "env": {
+                    "PYTHONPATH": "${workspaceFolder}/src"
+                }
+            },
+            "group": "build"
+        },
+        {
             "label": "generate-all-cli-docs",
             "type": "shell",
             "command": "echo",
@@ -222,7 +245,8 @@
                 "generate-cli-docs-mediaset-manager",
                 "generate-cli-docs-video-compressor",
                 "generate-cli-docs-movie-integrator",
-                "generate-cli-docs-iclouddrive-integrator"
+                "generate-cli-docs-iclouddrive-integrator",
+                "generate-cli-docs-fcp_integrator"
             ],
             "problemMatcher": [],
             "group": {

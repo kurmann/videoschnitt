@@ -238,23 +238,23 @@ def convert_image_to_adobe_rgb(input_file: Path, output_file: Path) -> None:
         typer.secho(f"Fehler beim Konvertieren von {input_file}: {e}", fg=typer.colors.RED)
         raise
 
-def integrate_single_homemovie(
+def integrate_homemovie_to_emby(
     video_file: Path,
     title_image: Optional[Path],
-    mediathek_dir: Path,
+    emby_dir: Path,
     overwrite_existing: bool,
     delete_source_files: bool
 ) -> None:
     """
-    Führt die Integration eines einzelnen Familienfilms durch.
-    
-    :param video_file: Path zur Videodatei
-    :param title_image: Optional Path zum Titelbild
-    :param mediathek_dir: Path zum Hauptverzeichnis der Emby-Mediathek
-    :param overwrite_existing: Bool, ob bestehende Dateien überschrieben werden sollen
-    :param delete_source_files: Bool, ob Quelldateien gelöscht werden sollen
+    Führt die Integration eines einzelnen Familienfilms in die Emby Mediathek durch.
+
+    :param video_file: Path zur Videodatei.
+    :param title_image: Optional Path zum Titelbild.
+    :param emby_dir: Path zum Emby Mediathek Verzeichnis.
+    :param overwrite_existing: Ob bestehende Dateien überschrieben werden sollen.
+    :param delete_source_files: Ob Quelldateien nach erfolgreicher Integration gelöscht werden sollen.
     """
-    typer.secho(f"Integriere Familienfilm '{video_file}' in die Mediathek...", fg=typer.colors.BLUE)
+    typer.secho(f"Integriere Familienfilm '{video_file}' in die Emby Mediathek...", fg=typer.colors.BLUE)
     
     # Schritt 1: Extrahiere Metadaten
     try:
@@ -273,7 +273,7 @@ def integrate_single_homemovie(
         raise typer.Exit(code=1)
     
     # Schritt 2: Bestimme das Zielverzeichnis (/Album/Jahr/)
-    ziel_jahr_dir = determine_target_directory(mediathek_dir, metadata)
+    ziel_jahr_dir = determine_target_directory(emby_dir, metadata)
     
     # Bestimme den neuen Dateinamen: Titel (Jahr).ext
     sanitized_title = sanitize_filename(metadata.get('Title'))
@@ -288,10 +288,10 @@ def integrate_single_homemovie(
     # Schritt 3: Überprüfe, ob die Dateien bereits existieren
     existing_files = list(ziel_jahr_dir.glob(f"{base_filename}*"))
     if existing_files and overwrite_existing:
-        typer.secho(f"Dateien für '{base_filename}' existieren bereits in der Mediathek.", fg=typer.colors.YELLOW)
+        typer.secho(f"Dateien für '{base_filename}' existieren bereits in der Emby Mediathek.", fg=typer.colors.YELLOW)
         typer.secho("Überschreibe bestehende Dateien ohne Nachfrage...", fg=typer.colors.YELLOW)
     elif existing_files:
-        typer.secho(f"Dateien für '{base_filename}' existieren bereits in der Mediathek.", fg=typer.colors.YELLOW)
+        typer.secho(f"Dateien für '{base_filename}' existieren bereits in der Emby Mediathek.", fg=typer.colors.YELLOW)
         proceed = typer.confirm(f"Möchtest du die bestehenden Dateien für '{base_filename}' überschreiben?")
         if not proceed:
             typer.secho("Abgebrochen.", fg=typer.colors.RED)
@@ -412,7 +412,6 @@ def integrate_single_homemovie(
     logger.info(f"Familienfilm '{video_file}' erfolgreich integriert in '{ziel_jahr_dir}'.")
     # Kein typer.Exit(code=0) hier; einfach zurückkehren
 
-@app.command("integrate_homemovie")
 def integrate_homemovie(
     video_file: Path = typer.Argument(
         ...,
@@ -455,15 +454,14 @@ def integrate_homemovie(
     """
     Integriert einen Familienfilm in die Emby-Mediathek. Kopiert die Videodatei und optional das Titelbild in das passende Verzeichnis und erstellt die erforderlichen Metadaten.
     """
-    integrate_single_homemovie(
+    integrate_homemovie_to_emby(
         video_file=video_file,
         title_image=title_image,
-        mediathek_dir=mediathek_dir,
+        emby_dir=mediathek_dir,
         overwrite_existing=overwrite_existing,
         delete_source_files=delete_source_files
     )
 
-@app.command("integrate_homemovies")
 def integrate_homemovies(
     search_dir: Path = typer.Argument(
         ...,
@@ -598,10 +596,10 @@ def integrate_homemovies(
         title_image = files['images'][0] if files['images'] else None
         typer.secho(f"\nIntegriere Medienset '{title}'...", fg=typer.colors.CYAN)
         try:
-            integrate_single_homemovie(
+            integrate_homemovie_to_emby(
                 video_file=video_file,
                 title_image=title_image,
-                mediathek_dir=mediathek_dir,
+                emby_dir=mediathek_dir,
                 overwrite_existing=overwrite_existing,
                 delete_source_files=delete_source_files
             )
@@ -618,3 +616,6 @@ def integrate_homemovies(
     
     typer.secho("\nIntegration aller Mediensets abgeschlossen.", fg=typer.colors.GREEN)
     logger.info("Integration aller Mediensets abgeschlossen.")
+
+if __name__ == "__main__":
+    app()
