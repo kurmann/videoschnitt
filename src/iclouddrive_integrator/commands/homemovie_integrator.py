@@ -11,7 +11,7 @@ import logging
 
 app = typer.Typer()
 
-# Logging-Konfiguration
+# Konfiguriere das Logging
 logging.basicConfig(
     filename='integrate_homemovie_icloud.log',
     filemode='a',
@@ -21,6 +21,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 SUPPORTED_VIDEO_FORMATS = ['.mov', '.mp4', '.m4v']
+SUPPORTED_AUDIO_FORMATS = ['.m4a', '.mp3', '.aac']  # Hinzugefügt: Unterstützte Audioformate
 
 def sanitize_filename(filename: str) -> str:
     """Bereinigt den Dateinamen, um nur erlaubte Zeichen zu enthalten."""
@@ -66,6 +67,30 @@ def determine_target_directory(icloud_dir: Path, metadata: dict) -> Path:
     ziel_jahr_dir.mkdir(parents=True, exist_ok=True)
     return ziel_jahr_dir
 
+def is_file_being_processed(video_file: Path) -> bool:
+    """
+    Prüft, ob zu der Videodatei entsprechende .sb-* Dateien existieren.
+    """
+    sb_files = list(video_file.parent.glob(f"{video_file.name}.sb-*"))
+    return len(sb_files) > 0
+
+def delete_associated_audio_files(video_file: Path, title: str):
+    """
+    Löscht alle Audiodateien, die zum Videotitel gehören.
+    """
+    # Erstelle ein Muster für den Dateinamen basierend auf unterstützten Audioformaten
+    for ext in SUPPORTED_AUDIO_FORMATS:
+        audio_pattern = f"{title}*{ext}"
+        audio_files = list(video_file.parent.glob(audio_pattern))
+        for audio_file in audio_files:
+            try:
+                audio_file.unlink()
+                typer.secho(f"Audiodatei '{audio_file}' wurde gelöscht.", fg=typer.colors.GREEN)
+                logger.info(f"Audiodatei '{audio_file}' wurde gelöscht.")
+            except Exception as e:
+                typer.secho(f"Fehler beim Löschen der Audiodatei '{audio_file}': {e}", fg=typer.colors.RED)
+                logger.error(f"Fehler beim Löschen der Audiodatei '{audio_file}': {e}")
+
 def delete_source_file(file_path: Path, delete_source: bool) -> None:
     """Löscht die Quelldatei nach Bestätigung oder ohne Rückfrage, wenn delete_source=True."""
     if delete_source:
@@ -90,6 +115,12 @@ def delete_source_file(file_path: Path, delete_source: bool) -> None:
             typer.secho(f"Quelldatei nicht gelöscht: {file_path}", fg=typer.colors.YELLOW)
             logger.info(f"Quelldatei nicht gelöscht: {file_path}")
 
+def delete_source_files_after_integration(video_file: Path, sanitized_title: str):
+    """
+    Löscht die zugehörigen Audiodateien nach der Integration des Videos.
+    """
+    delete_associated_audio_files(video_file, sanitized_title)
+
 def integrate_homemovie_to_icloud(
     video_file: Path,
     icloud_dir: Path,
@@ -107,6 +138,13 @@ def integrate_homemovie_to_icloud(
     typer.secho(f"Integriere Video '{video_file}' in iCloud...", fg=typer.colors.BLUE)
     logger.info(f"Beginne Integration von: {video_file}")
 
+    # Schritt 1: Überprüfe, ob die Datei gerade verarbeitet wird
+    if is_file_being_processed(video_file):
+        typer.secho(f"Überspringe Datei, die gerade verarbeitet wird: '{video_file}'", fg=typer.colors.YELLOW)
+        logger.info(f"Überspringe Datei, die gerade verarbeitet wird: '{video_file}'")
+        return  # Überspringe die Verarbeitung dieser Datei
+
+    # Schritt 2: Extrahiere Metadaten
     metadata = extract_metadata(video_file)
     if not metadata.get('Title') or not metadata.get('CreationDate'):
         typer.secho("Essentielle Metadaten 'Title' oder 'CreationDate' fehlen.", fg=typer.colors.RED)
@@ -145,7 +183,36 @@ def integrate_homemovie_to_icloud(
         raise typer.Exit(code=1)
     
     if delete_source:
-        delete_source_file(video_file, delete_source=True)
+        try:
+            video_file.unlink()
+            typer.secho(f"Videodatei '{video_file}' wurde gelöscht.", fg=typer.colors.GREEN)
+            logger.info(f"Videodatei '{video_file}' wurde gelöscht.")
+            
+            # Lösche die zugehörigen Audiodateien
+            delete_source_files_after_integration(video_file, sanitized_title)
+        except Exception as e:
+            typer.secho(f"Fehler beim Löschen der Videodatei: {e}", fg=typer.colors.RED)
+            logger.error(f"Fehler beim Löschen der Videodatei: {e}")
+        
+    else:
+        if video_file.exists():
+            proceed = typer.confirm("Möchtest du die Quelldateien nach erfolgreicher Integration löschen?")
+            if proceed:
+                try:
+                    video_file.unlink()
+                    typer.secho(f"Videodatei '{video_file}' wurde gelöscht.", fg=typer.colors.GREEN)
+                    logger.info(f"Videodatei '{video_file}' wurde gelöscht.")
+                    
+                    # Lösche die zugehörigen Audiodateien
+                    delete_source_files_after_integration(video_file, sanitized_title)
+                except Exception as e:
+                    typer.secho(f"Fehler beim Löschen der Videodatei: {e}", fg=typer.colors.RED)
+                    logger.error(f"Fehler beim Löschen der Videodatei: {e}")
+            else:
+                typer.secho("Quelldateien wurden nicht gelöscht.", fg=typer.colors.YELLOW)
+    
+    typer.secho("Integration in iCloud Drive erfolgreich abgeschlossen.", fg=typer.colors.GREEN)
+    logger.info(f"Integration in iCloud Drive abgeschlossen für '{video_file}'.")
 
 def integrate_homemovie(
     video_file: Path = typer.Argument(
@@ -186,6 +253,7 @@ def integrate_homemovie(
         delete_source=delete_source
     )
 
+@app.command()
 def integrate_homemovies(
     search_dir: Path = typer.Argument(
         ...,
@@ -228,21 +296,39 @@ def integrate_homemovies(
     """
     Integriert mehrere Heimvideo-Dateien in iCloud Drive.
     """
+    typer.secho(f"Gefundene Mediendateien aus '{search_dir}' und '{additional_dir}' werden integriert...", fg=typer.colors.BLUE)
+    
     directories = [search_dir]
     if additional_dir:
         directories.append(additional_dir)
-        typer.secho(f"Zusätzliches Verzeichnis: '{additional_dir}'", fg=typer.colors.BLUE)
+        typer.secho(f"Zusätzliches Verzeichnis hinzugefügt: '{additional_dir}'", fg=typer.colors.BLUE)
         logger.info(f"Zusätzliches Verzeichnis hinzugefügt: {additional_dir}")
     
-    media_files = []
+    # Schritt 1: Sammeln aller unterstützten Videodateien
+    media_files: List[Path] = []
     for dir_path in directories:
+        typer.secho(f"Durchsuche Verzeichnis: '{dir_path}'", fg=typer.colors.BLUE)
+        logger.info(f"Durchsuche Verzeichnis: '{dir_path}'")
         for file_path in dir_path.rglob('*'):
             if file_path.is_file() and file_path.suffix.lower() in SUPPORTED_VIDEO_FORMATS:
+                # Überprüfe, ob die Datei gerade verarbeitet wird
+                if is_file_being_processed(file_path):
+                    typer.secho(f"Überspringe Datei, die gerade verarbeitet wird: '{file_path}'", fg=typer.colors.YELLOW)
+                    logger.info(f"Überspringe Datei, die gerade verarbeitet wird: '{file_path}'")
+                    continue  # Fahre mit der nächsten Datei fort
+                
                 media_files.append(file_path)
+                logger.debug(f"Hinzufügen von '{file_path}' zur Liste der Mediendateien.")
     
     typer.secho(f"Gefundene Mediendateien: {len(media_files)}", fg=typer.colors.BLUE)
     logger.info(f"Gefundene Mediendateien: {len(media_files)}")
     
+    if not media_files:
+        typer.secho("Keine unterstützten Mediendateien gefunden.", fg=typer.colors.YELLOW)
+        logger.warning("Keine unterstützten Mediendateien gefunden.")
+        raise typer.Exit()
+    
+    # Schritt 2: Integration jeder Mediendatei
     for video_file in media_files:
         try:
             integrate_homemovie_to_icloud(
