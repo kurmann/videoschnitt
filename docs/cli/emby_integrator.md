@@ -19,7 +19,8 @@ $ emby-integrator [OPTIONS] COMMAND [ARGS]...
 * `convert-image`: Konvertiere ein einzelnes Bild in das...
 * `generate-nfo-xml`: Generiert die NFO-Metadatendatei und gibt...
 * `group-files`: Gruppiert Dateien mit gleichen Basenamen...
-* `integrate-homemovie`: Integriert einen Familienfilm in die...
+* `integrate-homemovies`: Integriert mehrere Familienfilme aus einem...
+* `list-mediafiles`: Sucht im angegebenen Verzeichnis (und...
 * `rename-artwork`: Benennt alle JPG, JPEG und PNG-Dateien in...
 * `reset-permissions`: Setzt die Berechtigungen eines...
 * `scan-media`: Scannt ein Verzeichnis nach Bilddateien...
@@ -99,26 +100,45 @@ $ emby-integrator group-files [OPTIONS] DIRECTORY
 * `-i, --ignore-suffix TEXT`: Liste von Suffixen, die beim Gruppieren ignoriert werden sollen (case-insensitive)  [default: -poster, -artwork, -fanart]
 * `--help`: Show this message and exit.
 
-## `emby-integrator integrate-homemovie`
+## `emby-integrator integrate-homemovies`
 
-Integriert einen Familienfilm in die Emby-Mediathek. Verschiebt die Videodatei und optional das Titelbild in das passende Verzeichnis und erstellt die erforderlichen Metadaten.
+Integriert mehrere Familienfilme aus einem Verzeichnis (und optional einem weiteren) in die Emby-Mediathek.
 
 **Usage**:
 
 ```console
-$ emby-integrator integrate-homemovie [OPTIONS] VIDEO_FILE MEDIATHEK_DIR
+$ emby-integrator integrate-homemovies [OPTIONS] SEARCH_DIR MEDIATHEK_DIR
 ```
 
 **Arguments**:
 
-* `VIDEO_FILE`: Der Pfad zur Videodatei, die in die Mediathek integriert werden soll.  [required]
-* `MEDIATHEK_DIR`: Das Hauptverzeichnis der Emby-Mediathek, in das der Familienfilm integriert werden soll.  [required]
+* `SEARCH_DIR`: Das Verzeichnis, in dem nach Mediendateien gesucht werden soll.  [required]
+* `MEDIATHEK_DIR`: Das Hauptverzeichnis der Emby-Mediathek, in das die Familienfilme integriert werden sollen.  [required]
 
 **Options**:
 
-* `-i, --title-image FILE`: Der Pfad zum optionalen Titelbild.
-* `-v, --version TEXT`: Versionierungsoption: 'overwrite' oder 'new'.
-* `--no-prompt`: Unterdrückt die Nachfrage bei der Integration.
+* `-ad, --additional-dir DIRECTORY`: Zusätzliches Verzeichnis zur Suche nach Mediendateien.
+* `--overwrite-existing`: Überschreibt bestehende Dateien ohne Rückfrage, wenn diese existieren.
+* `--delete-source-files`: Löscht die Quelldateien nach erfolgreicher Integration.
+* `--help`: Show this message and exit.
+
+## `emby-integrator list-mediafiles`
+
+Sucht im angegebenen Verzeichnis (und optional einem weiteren) nach Mediendateien, gruppiert sie nach Titel und listet zusammengehörende Dateien auf.
+
+**Usage**:
+
+```console
+$ emby-integrator list-mediafiles [OPTIONS] SEARCH_DIR
+```
+
+**Arguments**:
+
+* `SEARCH_DIR`: Das Verzeichnis, in dem nach Mediendateien gesucht werden soll.  [required]
+
+**Options**:
+
+* `-amd, --additional-media-dir DIRECTORY`: Zusätzliches Verzeichnis zur Suche nach Mediendateien.
 * `--help`: Show this message and exit.
 
 ## `emby-integrator rename-artwork`

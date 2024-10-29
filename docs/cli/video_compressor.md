@@ -1,6 +1,8 @@
 # `video-compressor`
 
 Konvertiert alle nicht H.264 oder HEVC Videos in einem Verzeichnis nach HEVC mit HandBrakeCLI.
+WebM-Dateien mit H.264 oder HEVC werden ohne Neukodierung in einen MP4-Container remuxt.
+Mit der Option --force-remux-mp4-h264 werden MP4-Dateien mit H.264 Codec ebenfalls remuxt.
 
 **Usage**:
 
@@ -18,6 +20,7 @@ $ video-compressor [OPTIONS] DIRECTORY
 * `--preset TEXT`: Name des HandBrakeCLI Presets  [default: YouTube]
 * `--postfix TEXT`: Postfix für die Ausgabedateien  [default: -hevc]
 * `--keep-original`: Originaldateien behalten und nicht löschen
+* `--force-remux-mp4-h264`: Erzwingt das Remuxing von MP4-Dateien mit H.264 Codec.
 * `--install-completion`: Install completion for the current shell.
 * `--show-completion`: Show completion for the current shell, to copy it or customize the installation.
 * `--help`: Show this message and exit.

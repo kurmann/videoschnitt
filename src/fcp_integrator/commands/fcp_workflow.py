@@ -1,4 +1,4 @@
-# src/fcp_integrator/commands/run_workflow.py
+# src/fcp_integrator/commands/fcp_workflow.py
 
 import typer
 from pathlib import Path

@@ -1,4 +1,4 @@
-# src/homemovie_integrator.py
+# src/emby_integrator/commands/homemovie_integrator.py
 
 import typer
 from pathlib import Path
@@ -28,6 +28,7 @@ NFO_SUFFIX = ".nfo"
 # Konstante für Adobe RGB Profil
 ADOBE_RGB_PROFILE = "/System/Library/ColorSync/Profiles/AdobeRGB1998.icc"
 SUPPORTED_IMAGE_FORMATS = [".jpg", ".jpeg", ".png"]
+SUPPORTED_AUDIO_FORMATS = [".m4a", ".mp3", ".aac"]  # Passe die Formate nach Bedarf an
 
 # Manuelle Zuordnung der Wochentage zu deutschen Abkürzungen
 WEEKDAY_MAP = {
@@ -180,12 +181,6 @@ def generate_metadata_xml(metadata: dict, base_filename: str) -> ET.Element:
         if tag:
             ET.SubElement(movie, 'tag').text = tag
     
-    # Entferne die Sets-Logik vollständig
-    # Alle bisherigen Referenzen zu 'Category' und 'set' wurden entfernt
-    
-    # Entferne das <dateadded> Tag
-    # ET.SubElement(movie, 'dateadded').text = dateadded  # Entfernt
-    
     return movie
 
 def write_nfo(nfo_path: Path, xml_element: ET.Element):
@@ -199,6 +194,8 @@ def write_nfo(nfo_path: Path, xml_element: ET.Element):
                 elem.text = i + "  "
             for child in elem:
                 indent_xml(child, level+1)
+                if not child.tail or not child.tail.strip():
+                    child.tail = i
             if not child.tail or not child.tail.strip():
                 child.tail = i
         if level and (not elem.tail or not elem.tail.strip()):
@@ -237,6 +234,30 @@ def convert_image_to_adobe_rgb(input_file: Path, output_file: Path) -> None:
         logger.error(f"Fehler beim Konvertieren von {input_file}: {e}")
         typer.secho(f"Fehler beim Konvertieren von {input_file}: {e}", fg=typer.colors.RED)
         raise
+
+def is_file_being_processed(video_file: Path) -> bool:
+    """
+    Prüft, ob zu der Videodatei entsprechende .sb-* Dateien existieren.
+    """
+    sb_files = list(video_file.parent.glob(f"{video_file.name}.sb-*"))
+    return len(sb_files) > 0
+
+def delete_associated_audio_files(video_file: Path, title: str):
+    """
+    Löscht alle Audiodateien, die zum Videotitel gehören.
+    """
+    # Erstelle ein Muster für den Dateinamen
+    audio_patterns = [f"{title}*{ext}" for ext in SUPPORTED_AUDIO_FORMATS]
+    for pattern in audio_patterns:
+        audio_files = list(video_file.parent.glob(pattern))
+        for audio_file in audio_files:
+            try:
+                audio_file.unlink()
+                typer.secho(f"Audiodatei '{audio_file}' wurde gelöscht.", fg=typer.colors.GREEN)
+                logger.info(f"Audiodatei '{audio_file}' wurde gelöscht.")
+            except Exception as e:
+                typer.secho(f"Fehler beim Löschen der Audiodatei '{audio_file}': {e}", fg=typer.colors.RED)
+                logger.error(f"Fehler beim Löschen der Audiodatei '{audio_file}': {e}")
 
 def integrate_homemovie_to_emby(
     video_file: Path,
@@ -319,11 +340,6 @@ def integrate_homemovie_to_emby(
             
             convert_image_to_adobe_rgb(title_image, output_image)
             konvertierte_bilder.append(output_image)
-            
-            # Falls das Eingabebild ein PNG ist, bereits eine JPG-Version erstellt
-            if title_image.suffix.lower() == ".png":
-                # Keine zusätzliche Aktion erforderlich, da die Funktion bereits eine JPG erstellt
-                pass
         except Exception as e:
             typer.secho(f"Fehler bei der Bildkonvertierung: {e}", fg=typer.colors.RED)
             logger.error(f"Fehler bei der Bildkonvertierung: {e}")
@@ -358,14 +374,7 @@ def integrate_homemovie_to_emby(
         raise typer.Exit(code=1)
     
     # Schritt 8: Kopiere die konvertierten Titelbilder ins Zielverzeichnis
-    for converted_image in konvertierte_bilder:
-        try:
-            # Da die Bilder bereits im Zielverzeichnis erstellt und benannt wurden, ist keine weitere Aktion erforderlich
-            pass
-        except Exception as e:
-            typer.secho(f"Fehler beim Kopieren des Titelbildes: {e}", fg=typer.colors.RED)
-            logger.error(f"Fehler beim Kopieren des Titelbildes: {e}")
-            raise typer.Exit(code=1)
+    # (Bereits erledigt, da die Funktion convert_image_to_adobe_rgb das Bild direkt im Zielverzeichnis erstellt)
     
     # Schritt 9: Optional, lösche die Quelldateien
     if delete_source_files:
@@ -373,6 +382,9 @@ def integrate_homemovie_to_emby(
             video_file.unlink()
             typer.secho(f"Videodatei '{video_file}' wurde gelöscht.", fg=typer.colors.GREEN)
             logger.info(f"Videodatei '{video_file}' wurde gelöscht.")
+            
+            # Lösche die zugehörigen Audiodateien
+            delete_associated_audio_files(video_file, sanitized_title)
         except Exception as e:
             typer.secho(f"Fehler beim Löschen der Videodatei: {e}", fg=typer.colors.RED)
             logger.error(f"Fehler beim Löschen der Videodatei: {e}")
@@ -393,6 +405,9 @@ def integrate_homemovie_to_emby(
                     video_file.unlink()
                     typer.secho(f"Videodatei '{video_file}' wurde gelöscht.", fg=typer.colors.GREEN)
                     logger.info(f"Videodatei '{video_file}' wurde gelöscht.")
+                    
+                    # Lösche die zugehörigen Audiodateien
+                    delete_associated_audio_files(video_file, sanitized_title)
                 except Exception as e:
                     typer.secho(f"Fehler beim Löschen der Videodatei: {e}", fg=typer.colors.RED)
                     logger.error(f"Fehler beim Löschen der Videodatei: {e}")
@@ -410,7 +425,6 @@ def integrate_homemovie_to_emby(
     
     typer.secho("Familienfilm-Integration erfolgreich abgeschlossen.", fg=typer.colors.GREEN)
     logger.info(f"Familienfilm '{video_file}' erfolgreich integriert in '{ziel_jahr_dir}'.")
-    # Kein typer.Exit(code=0) hier; einfach zurückkehren
 
 def integrate_homemovie(
     video_file: Path = typer.Argument(
@@ -462,6 +476,7 @@ def integrate_homemovie(
         delete_source_files=delete_source_files
     )
 
+@app.command()
 def integrate_homemovies(
     search_dir: Path = typer.Argument(
         ...,
@@ -517,6 +532,12 @@ def integrate_homemovies(
         typer.secho(f"Durchsuche Verzeichnis: '{dir_path}'", fg=typer.colors.BLUE)
         for file_path in dir_path.rglob('*'):
             if file_path.is_file() and file_path.suffix.lower() in ['.mov', '.mp4', '.m4v']:
+                # Überprüfe, ob die Datei gerade verarbeitet wird
+                if is_file_being_processed(file_path):
+                    typer.secho(f"Überspringe Datei, die gerade verarbeitet wird: '{file_path}'", fg=typer.colors.YELLOW)
+                    logger.info(f"Überspringe Datei, die gerade verarbeitet wird: '{file_path}'")
+                    continue  # Fahre mit der nächsten Datei fort
+                
                 try:
                     metadata = extract_metadata(file_path)
                     # Überprüfe, ob der Codec nicht ProRes ist
@@ -607,7 +628,6 @@ def integrate_homemovies(
             if e.code != 0:
                 typer.secho(f"Fehler beim Integrieren von '{title}': {e}", fg=typer.colors.RED)
                 logger.error(f"Fehler beim Integrieren von '{title}': {e}")
-            # Wenn e.code == 0, dies war eine erfolgreiche Integration, keine Aktion nötig
             continue  # Fahre mit dem nächsten Medienset fort
         except Exception as e:
             typer.secho(f"Unbekannter Fehler beim Integrieren von '{title}': {e}", fg=typer.colors.RED)
