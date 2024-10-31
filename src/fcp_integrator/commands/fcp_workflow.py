@@ -19,7 +19,6 @@ logging.basicConfig(
     level=logging.DEBUG
 )
 logger = logging.getLogger(__name__)
-
 @app.command("run")
 def run_workflow(
     search_dir: Path = typer.Argument(
@@ -97,8 +96,8 @@ def run_workflow(
             delete_source=False  # Originaldateien bleiben erhalten
         )
     except Exception as e:
+        logger.exception("Fehler bei der Integration in iCloud Drive")
         typer.secho(f"Fehler bei der Integration in iCloud Drive: {e}", fg=typer.colors.RED)
-        logger.error(f"Fehler bei der Integration in iCloud Drive: {e}")
         raise typer.Exit(code=1)
     
     # Schritt 2: Integration in Emby Mediathek
@@ -114,8 +113,8 @@ def run_workflow(
             delete_source_files=True
         )
     except Exception as e:
+        logger.exception("Fehler bei der Integration in Emby Mediathek")
         typer.secho(f"Fehler bei der Integration in Emby Mediathek: {e}", fg=typer.colors.RED)
-        logger.error(f"Fehler bei der Integration in Emby Mediathek: {e}")
         raise typer.Exit(code=1)
     
     typer.secho("\nWorkflow abgeschlossen.", fg=typer.colors.GREEN)
