@@ -3,7 +3,7 @@
 import subprocess
 import typer
 from pathlib import Path
-from typing import Optional
+from typing import List, Optional
 import shutil
 from datetime import datetime
 import json
