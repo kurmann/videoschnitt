@@ -1,7 +1,5 @@
 # src/emby_integrator/commands/homemovie_integrator.py
 
-import re
-import unicodedata
 import typer
 from pathlib import Path
 from typing import Optional, List, Dict
@@ -11,6 +9,8 @@ import subprocess
 import json
 import xml.etree.ElementTree as ET
 import logging
+import re
+import unicodedata
 
 app = typer.Typer()
 
@@ -272,6 +272,28 @@ def delete_associated_audio_files(video_file: Path, title: str):
                 typer.secho(f"Fehler beim Löschen der Audiodatei '{audio_file}': {e}", fg=typer.colors.RED)
                 logger.error(f"Fehler beim Löschen der Audiodatei '{audio_file}': {e}")
 
+def delete_associated_files_based_on_title(directory: Path, title: str):
+    """
+    Löscht alle Dateien im Verzeichnis, die mit dem gegebenen Titel beginnen.
+    Dies umfasst PNG, M4A und andere zugehörige Dateiformate.
+    
+    :param directory: Das Verzeichnis, in dem die Dateien gesucht werden sollen.
+    :param title: Der Titel, der als Präfix der zu löschenden Dateien dient.
+    """
+    # Erstelle ein Muster, das den Titel als Präfix hat
+    pattern = f"{title}.*"
+    for associated_file in directory.glob(pattern):
+        try:
+            # Vermeide das Löschen der Videodatei selbst, falls sie noch existiert
+            # Hier kannst du spezifische Bedingungen hinzufügen, falls nötig
+            if associated_file.is_file():
+                associated_file.unlink()
+                typer.secho(f"Lösche zugehörige Datei: {associated_file}", fg=typer.colors.GREEN)
+                logger.info(f"Lösche zugehörige Datei: {associated_file}")
+        except Exception as e:
+            typer.secho(f"Fehler beim Löschen der Datei {associated_file}: {e}", fg=typer.colors.RED)
+            logger.error(f"Fehler beim Löschen der Datei {associated_file}: {e}")
+
 def integrate_homemovie_to_emby(
     video_file: Path,
     title_image: Optional[Path],
@@ -386,10 +408,7 @@ def integrate_homemovie_to_emby(
         logger.error(f"Fehler beim Kopieren der Videodatei: {e}")
         raise typer.Exit(code=1)
     
-    # Schritt 8: Kopiere die konvertierten Titelbilder ins Zielverzeichnis
-    # (Bereits erledigt, da die Funktion convert_image_to_adobe_rgb das Bild direkt im Zielverzeichnis erstellt)
-    
-    # Schritt 9: Optional, lösche die Quelldateien
+    # Schritt 8: Optional, lösche die Quelldateien
     if delete_source_files:
         try:
             video_file.unlink()
@@ -398,18 +417,17 @@ def integrate_homemovie_to_emby(
             
             # Lösche die zugehörigen Audiodateien
             delete_associated_audio_files(video_file, sanitized_title)
-        except Exception as e:
-            typer.secho(f"Fehler beim Löschen der Videodatei: {e}", fg=typer.colors.RED)
-            logger.error(f"Fehler beim Löschen der Videodatei: {e}")
-        
-        if title_image:
-            try:
+            
+            # Lösche alle anderen zugehörigen Dateien basierend auf dem Titel
+            delete_associated_files_based_on_title(video_file.parent, sanitized_title)
+            
+            if title_image:
                 title_image.unlink()
                 typer.secho(f"Titelbild '{title_image}' wurde gelöscht.", fg=typer.colors.GREEN)
                 logger.info(f"Titelbild '{title_image}' wurde gelöscht.")
-            except Exception as e:
-                typer.secho(f"Fehler beim Löschen des Titelbildes: {e}", fg=typer.colors.RED)
-                logger.error(f"Fehler beim Löschen des Titelbildes: {e}")
+        except Exception as e:
+            typer.secho(f"Fehler beim Löschen der Quelldateien: {e}", fg=typer.colors.RED)
+            logger.error(f"Fehler beim Löschen der Quelldateien: {e}")
     else:
         if konvertierte_bilder or video_file.exists() or title_image:
             proceed = typer.confirm("Möchtest du die Quelldateien nach erfolgreicher Integration löschen?")
@@ -421,6 +439,10 @@ def integrate_homemovie_to_emby(
                     
                     # Lösche die zugehörigen Audiodateien
                     delete_associated_audio_files(video_file, sanitized_title)
+                    
+                    # Lösche alle anderen zugehörigen Dateien basierend auf dem Titel
+                    delete_associated_files_based_on_title(video_file.parent, sanitized_title)
+                    
                 except Exception as e:
                     typer.secho(f"Fehler beim Löschen der Videodatei: {e}", fg=typer.colors.RED)
                     logger.error(f"Fehler beim Löschen der Videodatei: {e}")
@@ -435,61 +457,10 @@ def integrate_homemovie_to_emby(
                         logger.error(f"Fehler beim Löschen des Titelbildes: {e}")
             else:
                 typer.secho("Quelldateien wurden nicht gelöscht.", fg=typer.colors.YELLOW)
-    
+
     typer.secho("Familienfilm-Integration erfolgreich abgeschlossen.", fg=typer.colors.GREEN)
     logger.info(f"Familienfilm '{video_file}' erfolgreich integriert in '{ziel_jahr_dir}'.")
 
-def integrate_homemovie(
-    video_file: Path = typer.Argument(
-        ...,
-        exists=True,
-        file_okay=True,
-        dir_okay=False,
-        readable=True,
-        help="Der Pfad zur Videodatei, die in die Mediathek integriert werden soll."
-    ),
-    title_image: Optional[Path] = typer.Option(
-        None,
-        "--title-image",
-        "-i",
-        exists=True,
-        file_okay=True,
-        dir_okay=False,
-        readable=True,
-        help="Der Pfad zum optionalen Titelbild."
-    ),
-    mediathek_dir: Path = typer.Argument(
-        ...,
-        exists=True,
-        file_okay=False,
-        dir_okay=True,
-        writable=True,
-        readable=True,
-        help="Das Hauptverzeichnis der Emby-Mediathek, in das der Familienfilm integriert werden soll."
-    ),
-    overwrite_existing: bool = typer.Option(
-        False,
-        "--overwrite-existing",
-        help="Überschreibt bestehende Dateien ohne Rückfrage, wenn diese existieren."
-    ),
-    delete_source_files: bool = typer.Option(
-        False,
-        "--delete-source-files",
-        help="Löscht die Quelldateien nach erfolgreicher Integration."
-    )
-):
-    """
-    Integriert einen Familienfilm in die Emby-Mediathek. Kopiert die Videodatei und optional das Titelbild in das passende Verzeichnis und erstellt die erforderlichen Metadaten.
-    """
-    integrate_homemovie_to_emby(
-        video_file=video_file,
-        title_image=title_image,
-        emby_dir=mediathek_dir,
-        overwrite_existing=overwrite_existing,
-        delete_source_files=delete_source_files
-    )
-
-@app.command()
 def integrate_homemovies(
     search_dir: Path = typer.Argument(
         ...,
@@ -635,7 +606,7 @@ def integrate_homemovies(
                 title_image=title_image,
                 emby_dir=mediathek_dir,
                 overwrite_existing=overwrite_existing,
-                delete_source_files=delete_source_files
+                delete_source_files=delete_source_files  # Übergebe das Flag
             )
         except typer.Exit as e:
             if e.code != 0:
