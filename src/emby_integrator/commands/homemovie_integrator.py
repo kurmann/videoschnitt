@@ -1,5 +1,7 @@
 # src/emby_integrator/commands/homemovie_integrator.py
 
+import re
+import unicodedata
 import typer
 from pathlib import Path
 from typing import Optional, List, Dict
@@ -43,9 +45,20 @@ WEEKDAY_MAP = {
 
 def sanitize_filename(filename: str) -> str:
     """
-    Entfernt ungültige Zeichen aus dem Dateinamen.
+    Entfernt ungültige Zeichen aus dem Dateinamen, erlaubt jedoch Umlaute und bestimmte Sonderzeichen.
+    Normalisiert den Unicode.
     """
-    return "".join(c for c in filename if c.isalnum() or c in " .-_()").rstrip()
+    # Unicode-Normalisierung
+    filename = unicodedata.normalize('NFC', filename)
+    
+    # Definiere eine Whitelist für erlaubte Zeichen, einschließlich Umlaute und bestimmte Sonderzeichen
+    whitelist = re.compile(r'[^A-Za-z0-9 äöüÄÖÜß.\-_()]')
+    
+    sanitized = whitelist.sub('', filename).rstrip()
+    
+    logger.debug(f"Original filename: '{filename}' -> Sanitized filename: '{sanitized}'")
+    
+    return sanitized
 
 def extract_metadata(file_path: Path) -> dict:
     """
