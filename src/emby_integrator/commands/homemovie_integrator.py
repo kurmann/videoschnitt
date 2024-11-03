@@ -43,23 +43,6 @@ WEEKDAY_MAP = {
     6: "So."
 }
 
-def sanitize_filename(filename: str) -> str:
-    """
-    Entfernt ungültige Zeichen aus dem Dateinamen, erlaubt jedoch Umlaute und bestimmte Sonderzeichen.
-    Normalisiert den Unicode.
-    """
-    # Unicode-Normalisierung
-    filename = unicodedata.normalize('NFC', filename)
-    
-    # Definiere eine Whitelist für erlaubte Zeichen, einschließlich Umlaute und bestimmte Sonderzeichen
-    whitelist = re.compile(r'[^A-Za-z0-9 äöüÄÖÜß.\-_()]')
-    
-    sanitized = whitelist.sub('', filename).rstrip()
-    
-    logger.debug(f"Original filename: '{filename}' -> Sanitized filename: '{sanitized}'")
-    
-    return sanitized
-
 def extract_metadata(file_path: Path) -> dict:
     """
     Extrahiert relevante Metadaten aus der Videodatei mithilfe von ExifTool.
@@ -99,8 +82,7 @@ def determine_target_directory(mediathek_dir: Path, metadata: dict) -> Path:
     Bestimmt das Zielverzeichnis basierend auf den Metadaten.
     Struktur: /Mediathek/[Album]/[Jahr]/
     """
-    album = metadata.get("Album", "Unbekanntes Album")
-    sanitized_album = sanitize_filename(album)
+    sanitized_album = metadata.get("Album", "Unbekanntes Album")
     ziel_album_dir = mediathek_dir / sanitized_album
     ziel_album_dir.mkdir(parents=True, exist_ok=True)
     
@@ -332,7 +314,7 @@ def integrate_homemovie_to_emby(
     ziel_jahr_dir = determine_target_directory(emby_dir, metadata)
     
     # Bestimme den neuen Dateinamen: Titel (Jahr).ext
-    sanitized_title = sanitize_filename(metadata.get('Title'))
+    sanitized_title = metadata.get('Title')
     try:
         creation_date = datetime.strptime(metadata.get('CreationDate'), '%Y:%m:%d')
         jahr = str(creation_date.year)
@@ -547,7 +529,6 @@ def integrate_homemovies(
         try:
             metadata = extract_metadata(file_path)
             title = metadata.get('Title') or metadata.get('DisplayName') or file_path.stem
-            title = sanitize_filename(title)
             if not title:
                 typer.secho(f"Keine Titel-Metadaten in '{file_path}' gefunden. Datei wird übersprungen.", fg=typer.colors.YELLOW)
                 logger.warning(f"Keine Titel-Metadaten in '{file_path}' gefunden. Datei wird übersprungen.")
