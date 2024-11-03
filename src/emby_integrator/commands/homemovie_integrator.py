@@ -9,8 +9,6 @@ import subprocess
 import json
 import xml.etree.ElementTree as ET
 import logging
-import re
-import unicodedata
 
 app = typer.Typer()
 
@@ -314,14 +312,14 @@ def integrate_homemovie_to_emby(
     ziel_jahr_dir = determine_target_directory(emby_dir, metadata)
     
     # Bestimme den neuen Dateinamen: Titel (Jahr).ext
-    sanitized_title = metadata.get('Title')
+    title = metadata.get('Title')
     try:
         creation_date = datetime.strptime(metadata.get('CreationDate'), '%Y:%m:%d')
         jahr = str(creation_date.year)
     except (ValueError, TypeError):
         jahr = 'Unknown'
     
-    base_filename = f"{sanitized_title} ({jahr})"
+    base_filename = f"{title} ({jahr})"
     
     # Schritt 3: Überprüfe, ob die Dateien bereits existieren
     existing_files = list(ziel_jahr_dir.glob(f"{base_filename}*"))
@@ -398,15 +396,16 @@ def integrate_homemovie_to_emby(
             logger.info(f"Videodatei '{video_file}' wurde gelöscht.")
             
             # Lösche die zugehörigen Audiodateien
-            delete_associated_audio_files(video_file, sanitized_title)
+            delete_associated_audio_files(video_file, title)
             
             # Lösche alle anderen zugehörigen Dateien basierend auf dem Titel
-            delete_associated_files_based_on_title(video_file.parent, sanitized_title)
+            delete_associated_files_based_on_title(video_file.parent, title)
             
-            if title_image:
-                title_image.unlink()
-                typer.secho(f"Titelbild '{title_image}' wurde gelöscht.", fg=typer.colors.GREEN)
-                logger.info(f"Titelbild '{title_image}' wurde gelöscht.")
+            # Entferne die explizite Löschung des title_image
+            # if title_image:
+            #     title_image.unlink()
+            #     typer.secho(f"Titelbild '{title_image}' wurde gelöscht.", fg=typer.colors.GREEN)
+            #     logger.info(f"Titelbild '{title_image}' wurde gelöscht.")
         except Exception as e:
             typer.secho(f"Fehler beim Löschen der Quelldateien: {e}", fg=typer.colors.RED)
             logger.error(f"Fehler beim Löschen der Quelldateien: {e}")
@@ -420,10 +419,10 @@ def integrate_homemovie_to_emby(
                     logger.info(f"Videodatei '{video_file}' wurde gelöscht.")
                     
                     # Lösche die zugehörigen Audiodateien
-                    delete_associated_audio_files(video_file, sanitized_title)
+                    delete_associated_audio_files(video_file, title)
                     
                     # Lösche alle anderen zugehörigen Dateien basierend auf dem Titel
-                    delete_associated_files_based_on_title(video_file.parent, sanitized_title)
+                    delete_associated_files_based_on_title(video_file.parent, title)
                     
                 except Exception as e:
                     typer.secho(f"Fehler beim Löschen der Videodatei: {e}", fg=typer.colors.RED)
