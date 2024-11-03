@@ -1,8 +1,6 @@
 # src/iclouddrive_integrator/commands/homemovie_integrator.py
 
-import re
 import subprocess
-import unicodedata
 import typer
 from pathlib import Path
 from typing import List, Optional
@@ -25,23 +23,6 @@ logger = logging.getLogger(__name__)
 SUPPORTED_VIDEO_FORMATS = ['.mov', '.mp4', '.m4v']
 SUPPORTED_AUDIO_FORMATS = ['.m4a', '.mp3', '.aac']  # Hinzugefügt: Unterstützte Audioformate
 
-def sanitize_filename(filename: str) -> str:
-    """
-    Entfernt ungültige Zeichen aus dem Dateinamen, erlaubt jedoch Umlaute und bestimmte Sonderzeichen.
-    Normalisiert den Unicode.
-    """
-    # Unicode-Normalisierung
-    filename = unicodedata.normalize('NFC', filename)
-    
-    # Definiere eine Whitelist für erlaubte Zeichen, einschließlich Umlaute und bestimmte Sonderzeichen
-    whitelist = re.compile(r'[^A-Za-z0-9 äöüÄÖÜß.\-_()]')
-    
-    sanitized = whitelist.sub('', filename).rstrip()
-    
-    logger.debug(f"Original filename: '{filename}' -> Sanitized filename: '{sanitized}'")
-    
-    return sanitized
-
 def extract_metadata(file_path: Path) -> dict:
     """Extrahiert Metadaten aus der Datei mittels ExifTool."""
     command = ['exiftool', '-json', str(file_path)]
@@ -57,8 +38,7 @@ def extract_metadata(file_path: Path) -> dict:
 
 def determine_target_directory(icloud_dir: Path, metadata: dict) -> Path:
     """Bestimmt das Zielverzeichnis in iCloud basierend auf den Metadaten."""
-    album = metadata.get("Album", "Unbekanntes Album")
-    sanitized_album = sanitize_filename(album)
+    sanitized_album = metadata.get("Album", "Unbekanntes Album")
     ziel_album_dir = icloud_dir / sanitized_album
     ziel_album_dir.mkdir(parents=True, exist_ok=True)
     
@@ -167,7 +147,7 @@ def integrate_homemovie_to_icloud(
         raise typer.Exit(code=1)
     
     ziel_dir = determine_target_directory(icloud_dir, metadata)
-    sanitized_title = sanitize_filename(metadata.get('Title'))
+    sanitized_title = metadata.get('Title')
     try:
         creation_date = datetime.strptime(metadata.get('CreationDate', ''), '%Y:%m:%d')
         jahr = str(creation_date.year)

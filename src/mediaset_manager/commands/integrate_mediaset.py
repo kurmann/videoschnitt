@@ -7,11 +7,6 @@ import shutil
 from datetime import datetime
 import yaml
 
-from mediaset_manager.utils import sanitize_filename
-# Entfernen Sie den Import von validate_mediaset, da die Validierung nicht mehr durchgeführt wird
-# from mediaset_manager.commands.validate_mediaset import validate_mediaset
-import sys
-
 app = typer.Typer(help="Befehl zur Integration eines Mediensets in die Mediathek.")
 
 def read_metadata(metadata_path: Path) -> dict:
@@ -137,8 +132,7 @@ def integrate_medienset_logic(
     ziel_jahr_dir.mkdir(parents=True, exist_ok=True)
 
     # Bestimmen des Ziel-Medienset-Verzeichnisses
-    sanitized_title = sanitize_filename(titel)
-    ziel_medisenset_dir = ziel_jahr_dir / f"{jahr}_{sanitized_title}"
+    ziel_medisenset_dir = ziel_jahr_dir / f"{jahr}_{titel}"
 
     # Schritt 3: Überprüfen, ob das Medienset bereits existiert
     if ziel_medisenset_dir.exists():

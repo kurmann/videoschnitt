@@ -1,7 +1,5 @@
 # mediaset_manager/commands/list_mediafiles.py
 
-import re
-import unicodedata
 import typer
 from pathlib import Path
 from typing import Optional, List, Dict
@@ -26,23 +24,6 @@ SUPPORTED_IMAGE_FORMATS = ['.jpg', '.jpeg', '.png']
 
 # ProRes-Codec-Bezeichnung (Anpassung je nach ExifTool-Ausgabe)
 PRORES_CODECS = ['Apple ProRes 422', 'Apple ProRes 422 HQ', 'Apple ProRes 4444', 'Apple ProRes 4444 XQ']
-
-def sanitize_filename(filename: str) -> str:
-    """
-    Entfernt ungültige Zeichen aus dem Dateinamen, erlaubt jedoch Umlaute und bestimmte Sonderzeichen.
-    Normalisiert den Unicode.
-    """
-    # Unicode-Normalisierung
-    filename = unicodedata.normalize('NFC', filename)
-    
-    # Definiere eine Whitelist für erlaubte Zeichen, einschließlich Umlaute und bestimmte Sonderzeichen
-    whitelist = re.compile(r'[^A-Za-z0-9 äöüÄÖÜß.\-_()]')
-    
-    sanitized = whitelist.sub('', filename).rstrip()
-    
-    logger.debug(f"Original filename: '{filename}' -> Sanitized filename: '{sanitized}'")
-    
-    return sanitized
 
 def extract_metadata(file_path: Path) -> dict:
     """
@@ -138,7 +119,6 @@ def list_mediafiles(
         try:
             metadata = extract_metadata(file_path)
             title = metadata.get('Title') or metadata.get('DisplayName') or file_path.stem
-            title = sanitize_filename(title)
             if not title:
                 typer.secho(f"Keine Titel-Metadaten in '{file_path}' gefunden. Datei wird übersprungen.", fg=typer.colors.YELLOW)
                 logger.warning(f"Keine Titel-Metadaten in '{file_path}' gefunden. Datei wird übersprungen.")

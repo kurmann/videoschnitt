@@ -3,7 +3,7 @@
 import typer
 from pathlib import Path
 from typing import Optional
-from mediaset_manager.utils import sanitize_filename, generate_ulid
+from mediaset_manager.utils import generate_ulid
 import shutil
 from datetime import datetime
 import re
@@ -262,7 +262,7 @@ def create_homemovie(
             pass
 
     # Generiere den Verzeichnisnamen
-    sanitized_title = sanitize_filename(titel)
+    sanitized_title = titel
     directory_name = f"{jahr}_{sanitized_title}"
     directory_path = verzeichnis1 / directory_name
 
