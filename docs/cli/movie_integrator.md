@@ -1,7 +1,7 @@
 # `movie-integrator`
 
-Verschiebt alle Dateien aus dem Quellverzeichnis in das Zielverzeichnis, erhält die relative Verzeichnisstruktur
-und gruppiert Dateien mit demselben Namen (unterschiedlichen Erweiterungen) in Ordnern mit dem Dateinamen ohne Erweiterung.
+Verschiebt alle Dateien aus dem Quellverzeichnis in das Zielverzeichnis,
+erhält die relative Verzeichnisstruktur und integriert Artwork-Dateien.
 
 **Usage**:
 
