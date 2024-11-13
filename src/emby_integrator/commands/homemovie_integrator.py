@@ -10,6 +10,7 @@ import json
 import xml.etree.ElementTree as ET
 import logging
 from emby_integrator.config_manager import load_config
+import xml.dom.minidom  # Hinzugefügt für bessere XML-Formatierung
 
 app = typer.Typer()
 
@@ -18,7 +19,7 @@ logging.basicConfig(
     filename='homemovie_integrator.log',
     filemode='a',
     format='%(asctime)s - %(levelname)s - %(message)s',
-    level=logging.INFO  # Setze auf DEBUG für detailliertes Logging
+    level=logging.INFO  # Setze auf INFO für allgemeines Logging
 )
 logger = logging.getLogger(__name__)
 
@@ -96,6 +97,7 @@ def determine_target_directory(mediathek_dir: Path, metadata: dict, config: Dict
     album = metadata.get("Album", "Unbekanntes Album")
     ziel_album_dir = mediathek_dir / album
     ziel_album_dir.mkdir(parents=True, exist_ok=True)
+    logger.debug(f"Erstelle oder finde Album-Verzeichnis: '{ziel_album_dir}'")
     
     # Bestimme das Jahresverzeichnis
     try:
@@ -103,9 +105,11 @@ def determine_target_directory(mediathek_dir: Path, metadata: dict, config: Dict
         jahr = str(creation_date.year)
     except (ValueError, TypeError):
         jahr = 'Unknown'
+        logger.warning(f"Unbekanntes Jahr für 'CreationDate': {metadata.get('CreationDate')}")
     
     ziel_jahr_dir = ziel_album_dir / jahr
     ziel_jahr_dir.mkdir(parents=True, exist_ok=True)
+    logger.debug(f"Erstelle oder finde Jahres-Verzeichnis: '{ziel_jahr_dir}'")
     
     # Erstelle ein Unterverzeichnis mit dem Namen der Videodatei
     title = metadata.get('Title', "Unbekannter Titel")
@@ -117,7 +121,6 @@ def determine_target_directory(mediathek_dir: Path, metadata: dict, config: Dict
     base_filename = f"{title} ({jahr})"
     ziel_sub_dir = ziel_jahr_dir / base_filename
     ziel_sub_dir.mkdir(parents=True, exist_ok=True)
-    
     logger.debug(f"Ziel-Unterverzeichnis erstellt: '{ziel_sub_dir}'")
     
     return ziel_sub_dir  # Rückgabe des Unterverzeichnisses
@@ -125,11 +128,11 @@ def determine_target_directory(mediathek_dir: Path, metadata: dict, config: Dict
 def generate_metadata_xml(metadata: dict, base_filename: str, config: Dict) -> ET.Element:
     """
     Erstellt das XML-Element für die NFO-Datei basierend auf den extrahierten Metadaten.
-    Anpassung:
-    - Jedes Tag wird einzeln als <tag> Element hinzugefügt.
-    - Das <keywords> Element wird komplett weggelassen.
-    - Rollen werden basierend auf Metadaten oder Standardrollen aus config.toml hinzugefügt.
-    - Gruppierungen werden als zusätzliche <tag> Elemente hinzugefügt.
+    Anpassungen:
+    - Entferne die Hinzufügung von Gruppierungstags.
+    - Erstelle Produzenten als zusätzliche Direktoren, sofern sie sich von den vorhandenen Direktoren unterscheiden.
+    - Verarbeite Gruppennamen in den Actors und füge ihre Mitglieder als einzelne Actors hinzu.
+    - Weiche das <role>-Tag aus, wenn keine Default-Rolle vorhanden ist.
     """
     movie = ET.Element('movie')
     
@@ -143,86 +146,111 @@ def generate_metadata_xml(metadata: dict, base_filename: str, config: Dict) -> E
             plot_text = f"{weekday_german} {creation_date.strftime('%d.%m.%Y')}. {metadata.get('Description', '')}"
         except ValueError:
             plot_text = metadata.get('Description', '')
+            logger.warning(f"Fehler beim Parsen des 'CreationDate': {creation_date_str}")
     else:
         plot_text = metadata.get('Description', '')
+        logger.warning("Keine 'CreationDate' in den Metadaten gefunden.")
     
     movie_plot = ET.SubElement(movie, 'plot')
-    movie_plot.text = plot_text  # CDATA entfernt
+    movie_plot.text = plot_text
+    logger.debug(f"Plot hinzugefügt: {plot_text}")
     
     # Weitere Felder gemäß Spezifikation
     ET.SubElement(movie, 'title').text = metadata.get('Title', 'Unbekannt')
+    logger.debug(f"Title hinzugefügt: {metadata.get('Title', 'Unbekannt')}")
+    
     try:
         year = str(datetime.strptime(metadata.get('CreationDate', ''), '%Y:%m:%d').year)
     except ValueError:
         year = 'Unknown'
+        logger.warning(f"Unbekanntes Jahr für 'CreationDate': {metadata.get('CreationDate')}")
     ET.SubElement(movie, 'year').text = year
+    logger.debug(f"Year hinzugefügt: {year}")
+    
     ET.SubElement(movie, 'sorttitle').text = metadata.get('Title', 'Unbekannt')
+    logger.debug(f"Sorttitle hinzugefügt: {metadata.get('Title', 'Unbekannt')}")
     
     try:
         premiered = datetime.strptime(metadata.get('CreationDate', ''), '%Y:%m:%d').strftime('%Y-%m-%d')
     except ValueError:
         premiered = ''
+        logger.warning(f"Ungültiges Datum für 'premiered': {metadata.get('CreationDate')}")
     ET.SubElement(movie, 'premiered').text = premiered
     ET.SubElement(movie, 'releasedate').text = premiered
     ET.SubElement(movie, 'published').text = premiered
-    
-    # **Entferne das <keywords> Element**
-    # ET.SubElement(movie, 'keywords').text = keywords  # Entfernt
-    
-    # Produzenten als <actor> Tags mit <type>Producer</type>
-    producers = [p.strip() for p in metadata.get('Producer', '').split(',') if p.strip()]
-    if not producers:
-        producers = [p.strip() for p in metadata.get('Author', '').split(',') if p.strip()]
-    for producer in producers:
-        actor_elem = ET.SubElement(movie, 'actor')
-        ET.SubElement(actor_elem, 'name').text = producer
-        ET.SubElement(actor_elem, 'type').text = "Producer"
+    logger.debug(f"Premiere, ReleaseDate und Published hinzugefügt: {premiered}")
     
     # Direktoren: Mehrere <director> Tags ohne parent <directors>
     directors = [d.strip() for d in metadata.get('Director', '').split(';') if d.strip()]
     for director in directors:
         ET.SubElement(movie, 'director').text = director
+        logger.debug(f"Hinzufügen von Director: {director}")
+    
+    # Produzenten als zusätzliche Direktoren, sofern sie sich von den bestehenden Direktoren unterscheiden
+    producers = [p.strip() for p in metadata.get('Producer', '').split(',') if p.strip()]
+    if not producers:
+        producers = [p.strip() for p in metadata.get('Author', '').split(',') if p.strip()]
+    for producer in producers:
+        if producer not in directors:
+            ET.SubElement(movie, 'director').text = producer
+            logger.debug(f"Hinzufügen von zusätzlichem Director (Producer): {producer}")
+        else:
+            logger.debug(f"Producer '{producer}' ist bereits ein Director und wird nicht erneut hinzugefügt.")
     
     # Akteure: Direkt unter <movie> mit <role> Tag
     artists = [a.strip() for a in metadata.get('Artist', '').split(';') if a.strip()]
     for artist in artists:
-        if '(' in artist and artist.endswith(')'):
-            # Extrahiere den Namen und die Rolle aus den Klammern
-            name, role = artist.split('(', 1)
-            name = name.strip()
-            role = role[:-1].strip()  # Entfernt das schließende ')'
+        if artist in config.get('groups', {}):
+            # Der Artist ist eine Gruppe, füge alle Gruppenmitglieder als Akteure hinzu
+            group_members = config['groups'][artist]
+            logger.debug(f"Artist '{artist}' ist eine Gruppe. Füge ihre Mitglieder als Akteure hinzu.")
+            for member_full_name in group_members:
+                actor_elem = ET.SubElement(movie, 'actor')
+                ET.SubElement(actor_elem, 'name').text = member_full_name
+                # Hole die Rolle aus default_roles, wenn vorhanden
+                role = config.get('default_roles', {}).get(member_full_name)
+                if role:
+                    ET.SubElement(actor_elem, 'role').text = role
+                    logger.debug(f"Hinzufügen von Actor: {member_full_name} mit Rolle: {role}")
+                ET.SubElement(actor_elem, 'type').text = "Actor"
+                logger.debug(f"Hinzufügen von Actor: {member_full_name} als Actor.")
         else:
-            name = artist
-            role = config.get('default_roles', {}).get(name, "Familienmitglied")  # Standardrolle
-        
-        # **Namenszusammenführung basierend auf config.toml**
-        name_parts = name.split()
-        if len(name_parts) == 1:
-            # Nur Vorname vorhanden, erweitere zu vollständigem Namen
-            full_name = config.get('name_mappings', {}).get(name, name)
-        else:
-            full_name = name  # Vollständiger Name bereits vorhanden
-        
-        actor_elem = ET.SubElement(movie, 'actor')
-        ET.SubElement(actor_elem, 'name').text = full_name
-        ET.SubElement(actor_elem, 'type').text = "Actor"
-        ET.SubElement(actor_elem, 'role').text = role
-    
-    # **Hinzufügen der <tag> Elemente für Gruppierungen**
-    # Bestimme, welche Gruppen im aktuellen Film vertreten sind
-    groups = config.get('groups', {})
-    present_groups = []
-    for group_name, members in groups.items():
-        for member in members:
-            # Nutze den vollständigen Namen nach Mapping
-            mapped_member = config.get('name_mappings', {}).get(member.split()[0], member)
-            if mapped_member in [actor_elem.find('name').text for actor_elem in movie.findall('actor')]:
-                present_groups.append(group_name)
-                break  # Füge die Gruppe nur einmal hinzu, wenn mindestens ein Mitglied vorhanden ist
-    
-    # Füge Gruppierungstags hinzu
-    for group in present_groups:
-        ET.SubElement(movie, 'tag').text = group
+            # Der Artist ist ein einzelner Actor, verarbeite wie gewohnt
+            if '(' in artist and artist.endswith(')'):
+                # Extrahiere den Namen und die Rolle aus den Klammern
+                name, role = artist.split('(', 1)
+                name = name.strip()
+                role = role[:-1].strip()  # Entfernt das schließende ')'
+                logger.debug(f"Artist '{artist}' hat eine spezifische Rolle: {role}")
+            else:
+                name = artist
+                # **Anpassung: Zuweisung der Rolle basierend auf 'full_name'**
+                name_parts = name.split()
+                if len(name_parts) == 1:
+                    # Nur Vorname vorhanden, erweitere zu vollständigem Namen
+                    full_name = config.get('name_mappings', {}).get(name, name)
+                    if full_name != name:
+                        logger.debug(f"Namenszusammenführung: {name} -> {full_name}")
+                    else:
+                        logger.warning(f"Kein Mapping gefunden für Namen: {name}")
+                else:
+                    full_name = name  # Vollständiger Name bereits vorhanden
+                    logger.debug(f"Vollständiger Name verwendet: {full_name}")
+                
+                # Hole die Rolle aus default_roles, wenn vorhanden
+                role = config.get('default_roles', {}).get(full_name)
+                if role:
+                    logger.debug(f"Artist '{full_name}' hat die Rolle: {role}")
+                else:
+                    logger.debug(f"Keine Rolle für Artist '{full_name}' gefunden.")
+            
+            actor_elem = ET.SubElement(movie, 'actor')
+            ET.SubElement(actor_elem, 'name').text = full_name
+            if 'role' in locals() and role:
+                ET.SubElement(actor_elem, 'role').text = role
+                logger.debug(f"Hinzufügen von Actor: {full_name} mit Rolle: {role}")
+            ET.SubElement(actor_elem, 'type').text = "Actor"
+            logger.debug(f"Hinzufügen von Actor: {full_name} als Actor.")
     
     # **Hinzufügen der <tag> Elemente für Keywords**
     keywords = metadata.get('Keywords', '')
@@ -231,30 +259,25 @@ def generate_metadata_xml(metadata: dict, base_filename: str, config: Dict) -> E
         tags = [tag.strip() for tag in keywords.split(',') if tag.strip()]
         for tag in tags:
             ET.SubElement(movie, 'tag').text = tag
+            logger.debug(f"Hinzufügen von Keyword-Tag: {tag}")
     
     return movie
 
 def write_nfo(nfo_path: Path, xml_element: ET.Element):
     """
-    Schreibt das XML-Element in eine NFO-Datei.
+    Schreibt das XML-Element in eine NFO-Datei mit korrektem Einrücken.
     """
-    def indent_xml(elem, level=0):
-        i = "\n" + level*"  "
-        if len(elem):
-            if not elem.text or not elem.text.strip():
-                elem.text = i + "  "
-            for child in elem:
-                indent_xml(child, level+1)
-                if not child.tail or not child.tail.strip():
-                    child.tail = i
-            if not child.tail or not child.tail.strip():
-                elem.tail = i
-        if level and (not elem.tail or not elem.tail.strip()):
-            elem.tail = i
+    # Konvertiere das ElementTree-Element in einen String
+    rough_string = ET.tostring(xml_element, 'utf-8')
     
-    indent_xml(xml_element)
-    tree = ET.ElementTree(xml_element)
-    tree.write(nfo_path, encoding='utf-8', xml_declaration=True)
+    # Verwende minidom, um das XML zu parsen und zu formatieren
+    reparsed = xml.dom.minidom.parseString(rough_string)
+    pretty_xml = reparsed.toprettyxml(indent="  ")
+    
+    # Schreibe das formatierten XML in die NFO-Datei
+    with nfo_path.open('w', encoding='utf-8') as f:
+        f.write(pretty_xml)
+    
     typer.secho(f"NFO-Datei wurde erfolgreich erstellt: {nfo_path}", fg=typer.colors.GREEN)
     logger.info(f"NFO-Datei erstellt: {nfo_path}")
 
@@ -267,9 +290,11 @@ def convert_image_to_adobe_rgb(input_file: Path, output_file: Path) -> None:
     :param output_file: Pfad zur Ausgabedatei (JPEG).
     """
     if input_file.suffix.lower() not in SUPPORTED_IMAGE_FORMATS:
+        logger.error("❌ Eingabedatei muss eine PNG- oder JPG/JPEG-Datei sein.")
         raise ValueError("Eingabedatei muss eine PNG- oder JPG/JPEG-Datei sein.")
     
     if output_file.suffix.lower() != ".jpg":
+        logger.error("❌ Ausgabedatei muss eine JPG-Datei sein.")
         raise ValueError("Ausgabedatei muss eine JPG-Datei sein.")
     
     # Verwende SIPS, um das Format zu ändern und das Farbprofil anzupassen
@@ -282,8 +307,8 @@ def convert_image_to_adobe_rgb(input_file: Path, output_file: Path) -> None:
         logger.info(f"Erfolgreich konvertiert: {input_file} -> {output_file}")
         typer.secho(f"Bild erfolgreich konvertiert: {input_file} -> {output_file}", fg=typer.colors.GREEN)
     except subprocess.CalledProcessError as e:
-        logger.error(f"Fehler beim Konvertieren von {input_file}: {e}")
-        typer.secho(f"Fehler beim Konvertieren von {input_file}: {e}", fg=typer.colors.RED)
+        logger.error(f"❌ Fehler beim Konvertieren von {input_file}: {e}")
+        typer.secho(f"❌ Fehler beim Konvertieren von {input_file}: {e}", fg=typer.colors.RED)
         raise
 
 def is_file_being_processed(video_file: Path) -> bool:
@@ -310,21 +335,21 @@ def delete_associated_audio_files(video_file: Path, title: str):
                 typer.secho(f"Fehler beim Löschen der Audiodatei '{audio_file}': {e}", fg=typer.colors.RED)
                 logger.error(f"Fehler beim Löschen der Audiodatei '{audio_file}': {e}")
 
-def delete_associated_files_based_on_title(directory: Path, title: str):
+def delete_associated_files_based_on_title(directory: Path, title: str, video_extensions: List[str] = ['.mov', '.mp4', '.m4v']):
     """
     Löscht alle Dateien im Verzeichnis, die mit dem gegebenen Titel beginnen.
-    Dies umfasst PNG, M4A und andere zugehörige Dateiformate.
+    Dies umfasst PNG, M4A und andere zugehörige Dateiformate, aber schließt die Hauptvideodatei aus.
     
     :param directory: Das Verzeichnis, in dem die Dateien gesucht werden sollen.
     :param title: Der Titel, der als Präfix der zu löschenden Dateien dient.
+    :param video_extensions: Liste der Videodateierweiterungen, die ausgeschlossen werden sollen.
     """
     # Erstelle ein Muster, das den Titel als Präfix hat
     pattern = f"{title}.*"
     for associated_file in directory.glob(pattern):
         try:
             # Vermeide das Löschen der Videodatei selbst, falls sie noch existiert
-            # Hier kannst du spezifische Bedingungen hinzufügen, falls nötig
-            if associated_file.is_file():
+            if associated_file.is_file() and not any(associated_file.name.endswith(ext) for ext in video_extensions):
                 associated_file.unlink()
                 typer.secho(f"Lösche zugehörige Datei: {associated_file}", fg=typer.colors.GREEN)
                 logger.info(f"Lösche zugehörige Datei: {associated_file}")
@@ -351,12 +376,14 @@ def integrate_homemovie_to_emby(
     :param config: Geladene Konfigurationsdaten aus config.toml.
     """
     typer.secho(f"Integriere Familienfilm '{video_file}' in die Emby Mediathek...", fg=typer.colors.BLUE)
+    logger.info(f"Integriere Familienfilm '{video_file}' in die Emby Mediathek.")
     
     # Schritt 1: Extrahiere Metadaten
     try:
         metadata = extract_metadata(video_file)
     except Exception as e:
         typer.secho(f"Fehler beim Extrahieren der Metadaten: {e}", fg=typer.colors.RED)
+        logger.error(f"Fehler beim Extrahieren der Metadaten: {e}")
         raise typer.Exit(code=1)
     
     # Debug: Ausgabe der Metadaten zur Überprüfung
@@ -378,6 +405,7 @@ def integrate_homemovie_to_emby(
         jahr = str(creation_date.year)
     except (ValueError, TypeError):
         jahr = 'Unknown'
+        logger.warning(f"Unbekanntes Jahr für 'CreationDate': {metadata.get('CreationDate')}")
     base_filename = f"{title} ({jahr})"
     
     # Schritt 3: Überprüfe, ob die Dateien bereits existieren
@@ -385,6 +413,7 @@ def integrate_homemovie_to_emby(
     if existing_files and overwrite_existing:
         typer.secho(f"Dateien für '{base_filename}' existieren bereits in der Emby Mediathek.", fg=typer.colors.YELLOW)
         typer.secho("Überschreibe bestehende Dateien ohne Nachfrage...", fg=typer.colors.YELLOW)
+        logger.warning(f"Dateien für '{base_filename}' existieren bereits und werden überschrieben.")
     elif existing_files:
         typer.secho(f"Dateien für '{base_filename}' existieren bereits in der Emby Mediathek.", fg=typer.colors.YELLOW)
         proceed = typer.confirm(f"Möchtest du die bestehenden Dateien für '{base_filename}' überschreiben?")
@@ -393,6 +422,7 @@ def integrate_homemovie_to_emby(
             logger.info(f"Integration abgebrochen durch den Benutzer. Existierende Dateien für: {base_filename}")
             raise typer.Exit(code=1)
         typer.secho(f"Überschreibe bestehende Dateien für '{base_filename}'.", fg=typer.colors.YELLOW)
+        logger.info(f"Überschreibe bestehende Dateien für '{base_filename}'.")
     
     # Schritt 4: Zielverzeichnis ist bereits erstellt worden (determine_target_directory)
     
@@ -406,15 +436,17 @@ def integrate_homemovie_to_emby(
             
             convert_image_to_adobe_rgb(title_image, output_poster)
             konvertierte_bilder.append(output_poster)
+            logger.info(f"Poster-Bild konvertiert: {output_poster}")
             
             # Erstelle 'fanart.jpg' als Kopie von 'poster.jpg'
             fanart_filename = "fanart.jpg"
             output_fanart = ziel_sub_dir / fanart_filename
             shutil.copy2(output_poster, output_fanart)
             konvertierte_bilder.append(output_fanart)
+            logger.info(f"Fanart-Bild erstellt: {output_fanart}")
             
             typer.secho(f"Fanart-Bild wurde erstellt: '{output_fanart}'", fg=typer.colors.GREEN)
-            logger.info(f"Fanart-Bild erstellt: '{output_fanart}'")
+            logger.debug(f"Fanart-Bild wurde erstellt: '{output_fanart}'")
         except Exception as e:
             typer.secho(f"Fehler bei der Bildkonvertierung: {e}", fg=typer.colors.RED)
             logger.error(f"Fehler bei der Bildkonvertierung: {e}")
@@ -497,6 +529,7 @@ def integrate_homemovie_to_emby(
                         logger.error(f"Fehler beim Löschen des Titelbildes: {e}")
             else:
                 typer.secho("Quelldateien wurden nicht gelöscht.", fg=typer.colors.YELLOW)
+                logger.info("Quelldateien wurden nicht gelöscht.")
     
     typer.secho("Familienfilm-Integration erfolgreich abgeschlossen.", fg=typer.colors.GREEN)
     logger.info(f"Familienfilm '{video_file}' erfolgreich integriert in '{ziel_sub_dir}'.")
@@ -544,15 +577,18 @@ def integrate_homemovies(
     Integriert mehrere Familienfilme aus einem Verzeichnis (und optional einem weiteren) in die Emby-Mediathek.
     """
     typer.secho(f"Integriere mehrere Familienfilme aus '{search_dir}' in die Mediathek...", fg=typer.colors.BLUE)
+    logger.info(f"Starte Integration in Emby Mediathek...")
     
     # Lade die Konfiguration aus config.toml
     config_path = Path(__file__).parent.parent.parent.parent / "config.toml"  # Annahme: config.toml ist im Root-Verzeichnis
     config = load_config(config_path)
+    logger.info(f"Konfiguration geladen: {config_path}")
     
     directories = [search_dir]
     if additional_dir:
         directories.append(additional_dir)
         typer.secho(f"Zusätzliches Verzeichnis hinzugefügt: '{additional_dir}'", fg=typer.colors.BLUE)
+        logger.info(f"Zusätzliches Verzeichnis hinzugefügt: '{additional_dir}'")
     
     # Schritt 1: Sammeln aller unterstützten Videodateien ohne ProRes
     media_files: List[Path] = []
@@ -563,7 +599,7 @@ def integrate_homemovies(
                 # Überprüfe, ob die Datei gerade verarbeitet wird
                 if is_file_being_processed(file_path):
                     typer.secho(f"Überspringe Datei, die gerade verarbeitet wird: '{file_path}'", fg=typer.colors.YELLOW)
-                    logger.info(f"Überspringe Datei, die gerade verarbeitet wird: '{file_path}'")
+                    logger.info(f"Überspringe Datei, die gerade verarbeitet wird: {file_path}")
                     continue  # Fahre mit der nächsten Datei fort
                 
                 try:
@@ -575,7 +611,7 @@ def integrate_homemovies(
                         logger.debug(f"Hinzufügen von '{file_path}' zur Liste der Mediendateien.")
                     else:
                         typer.secho(f"Überspringe ProRes-Datei: '{file_path}'", fg=typer.colors.YELLOW)
-                        logger.info(f"Überspringe ProRes-Datei: '{file_path}'")
+                        logger.info(f"Überspringe ProRes-Datei: {file_path}")
                 except Exception as e:
                     typer.secho(f"Fehler beim Verarbeiten von '{file_path}': {e}", fg=typer.colors.RED)
                     logger.error(f"Fehler beim Verarbeiten von '{file_path}': {e}")
@@ -583,6 +619,7 @@ def integrate_homemovies(
     
     if not media_files:
         typer.secho("Keine unterstützten Mediendateien gefunden.", fg=typer.colors.YELLOW)
+        logger.warning("Keine unterstützten Mediendateien gefunden.")
         raise typer.Exit()
     
     # Schritt 2: Gruppierung der Mediendateien nach Titel
@@ -610,6 +647,7 @@ def integrate_homemovies(
     
     if not groups:
         typer.secho("Keine Gruppen von Mediendateien mit gemeinsamen Titeln gefunden.", fg=typer.colors.YELLOW)
+        logger.warning("Keine Gruppen von Mediendateien mit gemeinsamen Titeln gefunden.")
         raise typer.Exit()
     
     # Schritt 3: Suche nach zugehörigen Titelbildern und Auswahl der besten Videodatei
