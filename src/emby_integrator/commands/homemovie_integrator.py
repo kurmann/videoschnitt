@@ -2,15 +2,14 @@
 
 import typer
 from pathlib import Path
-from typing import Optional, List, Dict
+from typing import Dict, List, Optional
 import shutil
 from datetime import datetime
 import subprocess
 import json
 import xml.etree.ElementTree as ET
 import logging
-import re
-import unicodedata
+from emby_integrator.config_manager import load_config
 
 app = typer.Typer()
 
@@ -19,7 +18,7 @@ logging.basicConfig(
     filename='homemovie_integrator.log',
     filemode='a',
     format='%(asctime)s - %(levelname)s - %(message)s',
-    level=logging.DEBUG  # Setze auf DEBUG für detailliertes Logging
+    level=logging.INFO  # Setze auf DEBUG für detailliertes Logging
 )
 logger = logging.getLogger(__name__)
 
@@ -89,9 +88,9 @@ def extract_metadata(file_path: Path) -> dict:
     
     return filtered_metadata
 
-def determine_target_directory(mediathek_dir: Path, metadata: dict) -> Path:
+def determine_target_directory(mediathek_dir: Path, metadata: dict, config: Dict) -> Path:
     """
-    Bestimmt das Zielverzeichnis basierend auf den Metadaten.
+    Bestimmt das Zielverzeichnis basierend auf den Metadaten und der Konfiguration.
     Struktur: /Mediathek/[Album]/[Jahr]/[Titel (Jahr)]/
     """
     album = metadata.get("Album", "Unbekanntes Album")
@@ -123,11 +122,14 @@ def determine_target_directory(mediathek_dir: Path, metadata: dict) -> Path:
     
     return ziel_sub_dir  # Rückgabe des Unterverzeichnisses
 
-def generate_metadata_xml(metadata: dict, base_filename: str) -> ET.Element:
+def generate_metadata_xml(metadata: dict, base_filename: str, config: Dict) -> ET.Element:
     """
     Erstellt das XML-Element für die NFO-Datei basierend auf den extrahierten Metadaten.
-    Anpassung: Jedes Tag wird einzeln als <tag> Element hinzugefügt.
-    Das <keywords> Element wird komplett weggelassen.
+    Anpassung:
+    - Jedes Tag wird einzeln als <tag> Element hinzugefügt.
+    - Das <keywords> Element wird komplett weggelassen.
+    - Rollen werden basierend auf Metadaten oder Standardrollen aus config.toml hinzugefügt.
+    - Gruppierungen werden als zusätzliche <tag> Elemente hinzugefügt.
     """
     movie = ET.Element('movie')
     
@@ -163,7 +165,9 @@ def generate_metadata_xml(metadata: dict, base_filename: str) -> ET.Element:
     ET.SubElement(movie, 'premiered').text = premiered
     ET.SubElement(movie, 'releasedate').text = premiered
     ET.SubElement(movie, 'published').text = premiered
-
+    
+    # **Entferne das <keywords> Element**
+    # ET.SubElement(movie, 'keywords').text = keywords  # Entfernt
     
     # Produzenten als <actor> Tags mit <type>Producer</type>
     producers = [p.strip() for p in metadata.get('Producer', '').split(',') if p.strip()]
@@ -179,23 +183,48 @@ def generate_metadata_xml(metadata: dict, base_filename: str) -> ET.Element:
     for director in directors:
         ET.SubElement(movie, 'director').text = director
     
-    # Akteure: Direkt unter <movie> ohne übergeordnetes <actors> Tag
+    # Akteure: Direkt unter <movie> mit <role> Tag
     artists = [a.strip() for a in metadata.get('Artist', '').split(';') if a.strip()]
     for artist in artists:
         if '(' in artist and artist.endswith(')'):
+            # Extrahiere den Namen und die Rolle aus den Klammern
             name, role = artist.split('(', 1)
             name = name.strip()
             role = role[:-1].strip()  # Entfernt das schließende ')'
-            actor_elem = ET.SubElement(movie, 'actor')
-            ET.SubElement(actor_elem, 'name').text = name
-            ET.SubElement(actor_elem, 'role').text = role
-            ET.SubElement(actor_elem, 'type').text = "Actor"
         else:
-            actor_elem = ET.SubElement(movie, 'actor')
-            ET.SubElement(actor_elem, 'name').text = artist
-            ET.SubElement(actor_elem, 'type').text = "Actor"
+            name = artist
+            role = config.get('default_roles', {}).get(name, "Familienmitglied")  # Standardrolle
+        
+        # **Namenszusammenführung basierend auf config.toml**
+        name_parts = name.split()
+        if len(name_parts) == 1:
+            # Nur Vorname vorhanden, erweitere zu vollständigem Namen
+            full_name = config.get('name_mappings', {}).get(name, name)
+        else:
+            full_name = name  # Vollständiger Name bereits vorhanden
+        
+        actor_elem = ET.SubElement(movie, 'actor')
+        ET.SubElement(actor_elem, 'name').text = full_name
+        ET.SubElement(actor_elem, 'type').text = "Actor"
+        ET.SubElement(actor_elem, 'role').text = role
     
-    # **Hinzufügen der <tag> Elemente**
+    # **Hinzufügen der <tag> Elemente für Gruppierungen**
+    # Bestimme, welche Gruppen im aktuellen Film vertreten sind
+    groups = config.get('groups', {})
+    present_groups = []
+    for group_name, members in groups.items():
+        for member in members:
+            # Nutze den vollständigen Namen nach Mapping
+            mapped_member = config.get('name_mappings', {}).get(member.split()[0], member)
+            if mapped_member in [actor_elem.find('name').text for actor_elem in movie.findall('actor')]:
+                present_groups.append(group_name)
+                break  # Füge die Gruppe nur einmal hinzu, wenn mindestens ein Mitglied vorhanden ist
+    
+    # Füge Gruppierungstags hinzu
+    for group in present_groups:
+        ET.SubElement(movie, 'tag').text = group
+    
+    # **Hinzufügen der <tag> Elemente für Keywords**
     keywords = metadata.get('Keywords', '')
     if keywords:
         # Splitte die Keywords nach Komma
@@ -308,7 +337,8 @@ def integrate_homemovie_to_emby(
     title_image: Optional[Path],
     emby_dir: Path,
     overwrite_existing: bool,
-    delete_source_files: bool
+    delete_source_files: bool,
+    config: Dict
 ) -> None:
     """
     Führt die Integration eines einzelnen Familienfilms in die Emby Mediathek durch.
@@ -318,6 +348,7 @@ def integrate_homemovie_to_emby(
     :param emby_dir: Path zum Emby Mediathek Verzeichnis.
     :param overwrite_existing: Ob bestehende Dateien überschrieben werden sollen.
     :param delete_source_files: Ob Quelldateien nach erfolgreicher Integration gelöscht werden sollen.
+    :param config: Geladene Konfigurationsdaten aus config.toml.
     """
     typer.secho(f"Integriere Familienfilm '{video_file}' in die Emby Mediathek...", fg=typer.colors.BLUE)
     
@@ -338,7 +369,7 @@ def integrate_homemovie_to_emby(
         raise typer.Exit(code=1)
     
     # Schritt 2: Bestimme das Zielverzeichnis (/Album/Jahr/[Titel (Jahr)]/)
-    ziel_sub_dir = determine_target_directory(emby_dir, metadata)
+    ziel_sub_dir = determine_target_directory(emby_dir, metadata, config)
     
     # Bestimme den neuen Dateinamen: Titel (Jahr).ext
     title = metadata.get('Title')
@@ -391,7 +422,7 @@ def integrate_homemovie_to_emby(
     
     # Schritt 6: Erstelle die NFO-Datei gemäß Spezifikation
     try:
-        xml_element = generate_metadata_xml(metadata, base_filename=base_filename)
+        xml_element = generate_metadata_xml(metadata, base_filename=base_filename, config=config)
         nfo_filename = f"{base_filename}{NFO_SUFFIX}"
         nfo_path = ziel_sub_dir / nfo_filename
         write_nfo(nfo_path, xml_element)
@@ -514,6 +545,10 @@ def integrate_homemovies(
     """
     typer.secho(f"Integriere mehrere Familienfilme aus '{search_dir}' in die Mediathek...", fg=typer.colors.BLUE)
     
+    # Lade die Konfiguration aus config.toml
+    config_path = Path(__file__).parent.parent.parent.parent / "config.toml"  # Annahme: config.toml ist im Root-Verzeichnis
+    config = load_config(config_path)
+    
     directories = [search_dir]
     if additional_dir:
         directories.append(additional_dir)
@@ -615,7 +650,8 @@ def integrate_homemovies(
                 title_image=title_image,
                 emby_dir=mediathek_dir,
                 overwrite_existing=overwrite_existing,
-                delete_source_files=delete_source_files  # Übergebe das Flag
+                delete_source_files=delete_source_files,  # Übergebe das Flag
+                config=config  # Übergebe die Konfiguration
             )
         except typer.Exit as e:
             if e.code != 0:
