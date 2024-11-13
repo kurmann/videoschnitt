@@ -14,10 +14,11 @@ Leah = "Leah Kurmann"
 Mika = "Mika Kurmann"
 Tanja = "Tanja Schaffer"
 Dominik = "Dominik Walther"
+Jessica = "Jessica Büschi"
 
 # Gruppierungen
 [groups]
-Kinder = ["Ann-Sophie Kurmann", "Leah Kurmann", "Mika Kurmann"]
+Kinder = ["Mika Kurmann", "Ann-Sophie Kurmann", "Leah Kurmann"]
 Eltern = ["Patrick Kurmann", "Kathrin Glück"]
 Grosseltern = ["Andreas Kurmann sr", "Erika Kurmann"]
 Familie = ["Patrick Kurmann", "Kathrin Glück", "Ann-Sophie Kurmann", "Leah Kurmann", "Mika Kurmann"]
