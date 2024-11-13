@@ -126,6 +126,8 @@ def determine_target_directory(mediathek_dir: Path, metadata: dict) -> Path:
 def generate_metadata_xml(metadata: dict, base_filename: str) -> ET.Element:
     """
     Erstellt das XML-Element für die NFO-Datei basierend auf den extrahierten Metadaten.
+    Anpassung: Jedes Tag wird einzeln als <tag> Element hinzugefügt.
+    Das <keywords> Element wird komplett weggelassen.
     """
     movie = ET.Element('movie')
     
@@ -161,10 +163,7 @@ def generate_metadata_xml(metadata: dict, base_filename: str) -> ET.Element:
     ET.SubElement(movie, 'premiered').text = premiered
     ET.SubElement(movie, 'releasedate').text = premiered
     ET.SubElement(movie, 'published').text = premiered
-    
-    # Keywords
-    keywords = metadata.get('Keywords', '')
-    ET.SubElement(movie, 'keywords').text = keywords
+
     
     # Produzenten als <actor> Tags mit <type>Producer</type>
     producers = [p.strip() for p in metadata.get('Producer', '').split(',') if p.strip()]
@@ -196,10 +195,12 @@ def generate_metadata_xml(metadata: dict, base_filename: str) -> ET.Element:
             ET.SubElement(actor_elem, 'name').text = artist
             ET.SubElement(actor_elem, 'type').text = "Actor"
     
-    # Tags
-    for tag in keywords.split(';'):
-        tag = tag.strip()
-        if tag:
+    # **Hinzufügen der <tag> Elemente**
+    keywords = metadata.get('Keywords', '')
+    if keywords:
+        # Splitte die Keywords nach Komma
+        tags = [tag.strip() for tag in keywords.split(',') if tag.strip()]
+        for tag in tags:
             ET.SubElement(movie, 'tag').text = tag
     
     return movie
@@ -341,7 +342,12 @@ def integrate_homemovie_to_emby(
     
     # Bestimme den neuen Dateinamen: Titel (Jahr).ext
     title = metadata.get('Title')
-    base_filename = f"{title} ({datetime.strptime(metadata.get('CreationDate'), '%Y:%m:%d').year})"
+    try:
+        creation_date = datetime.strptime(metadata.get('CreationDate'), '%Y:%m:%d')
+        jahr = str(creation_date.year)
+    except (ValueError, TypeError):
+        jahr = 'Unknown'
+    base_filename = f"{title} ({jahr})"
     
     # Schritt 3: Überprüfe, ob die Dateien bereits existieren
     existing_files = list(ziel_sub_dir.glob(f"{base_filename}*"))
