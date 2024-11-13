@@ -24,7 +24,6 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Modulvariablen
-POSTER_SUFFIX = "-poster"
 NFO_SUFFIX = ".nfo"
 
 # Konstante für Adobe RGB Profil
@@ -43,22 +42,18 @@ WEEKDAY_MAP = {
     6: "So."
 }
 
-def sanitize_filename(filename: str) -> str:
+def validate_filename(filename: str) -> bool:
     """
-    Entfernt ungültige Zeichen aus dem Dateinamen, erlaubt jedoch Umlaute und bestimmte Sonderzeichen.
-    Normalisiert den Unicode.
+    Überprüft, ob der Dateiname gültige Zeichen enthält.
+    Gültige Zeichen sind in der Regel alle, die vom Betriebssystem unterstützt werden.
+    Hier wird eine einfache Überprüfung auf häufig ungültige Zeichen durchgeführt.
     """
-    # Unicode-Normalisierung
-    filename = unicodedata.normalize('NFC', filename)
-    
-    # Definiere eine Whitelist für erlaubte Zeichen, einschließlich Umlaute und bestimmte Sonderzeichen
-    whitelist = re.compile(r'[^A-Za-z0-9 äöüÄÖÜß.\-_()]')
-    
-    sanitized = whitelist.sub('', filename).rstrip()
-    
-    logger.debug(f"Original filename: '{filename}' -> Sanitized filename: '{sanitized}'")
-    
-    return sanitized
+    # Definiere ungültige Zeichen (für Windows als Beispiel; anpassen für andere OS)
+    invalid_chars = r'<>:"/\|?*'
+    if any(char in invalid_chars for char in filename):
+        logger.debug(f"Ungültige Zeichen gefunden im Dateinamen: '{filename}'")
+        return False
+    return True
 
 def extract_metadata(file_path: Path) -> dict:
     """
@@ -97,11 +92,10 @@ def extract_metadata(file_path: Path) -> dict:
 def determine_target_directory(mediathek_dir: Path, metadata: dict) -> Path:
     """
     Bestimmt das Zielverzeichnis basierend auf den Metadaten.
-    Struktur: /Mediathek/[Album]/[Jahr]/
+    Struktur: /Mediathek/[Album]/[Jahr]/[Titel (Jahr)]/
     """
     album = metadata.get("Album", "Unbekanntes Album")
-    sanitized_album = sanitize_filename(album)
-    ziel_album_dir = mediathek_dir / sanitized_album
+    ziel_album_dir = mediathek_dir / album
     ziel_album_dir.mkdir(parents=True, exist_ok=True)
     
     # Bestimme das Jahresverzeichnis
@@ -113,7 +107,21 @@ def determine_target_directory(mediathek_dir: Path, metadata: dict) -> Path:
     
     ziel_jahr_dir = ziel_album_dir / jahr
     ziel_jahr_dir.mkdir(parents=True, exist_ok=True)
-    return ziel_jahr_dir
+    
+    # Erstelle ein Unterverzeichnis mit dem Namen der Videodatei
+    title = metadata.get('Title', "Unbekannter Titel")
+    if not validate_filename(title):
+        typer.secho(f"Der Titel '{title}' enthält ungültige Zeichen für das Dateisystem.", fg=typer.colors.RED)
+        logger.error(f"Der Titel '{title}' enthält ungültige Zeichen für das Dateisystem.")
+        raise typer.Exit(code=1)
+    
+    base_filename = f"{title} ({jahr})"
+    ziel_sub_dir = ziel_jahr_dir / base_filename
+    ziel_sub_dir.mkdir(parents=True, exist_ok=True)
+    
+    logger.debug(f"Ziel-Unterverzeichnis erstellt: '{ziel_sub_dir}'")
+    
+    return ziel_sub_dir  # Rückgabe des Unterverzeichnisses
 
 def generate_metadata_xml(metadata: dict, base_filename: str) -> ET.Element:
     """
@@ -210,7 +218,7 @@ def write_nfo(nfo_path: Path, xml_element: ET.Element):
                 if not child.tail or not child.tail.strip():
                     child.tail = i
             if not child.tail or not child.tail.strip():
-                child.tail = i
+                elem.tail = i
         if level and (not elem.tail or not elem.tail.strip()):
             elem.tail = i
     
@@ -328,21 +336,15 @@ def integrate_homemovie_to_emby(
         logger.error("Essentielle Metadaten 'Title' oder 'CreationDate' fehlen.")
         raise typer.Exit(code=1)
     
-    # Schritt 2: Bestimme das Zielverzeichnis (/Album/Jahr/)
-    ziel_jahr_dir = determine_target_directory(emby_dir, metadata)
+    # Schritt 2: Bestimme das Zielverzeichnis (/Album/Jahr/[Titel (Jahr)]/)
+    ziel_sub_dir = determine_target_directory(emby_dir, metadata)
     
     # Bestimme den neuen Dateinamen: Titel (Jahr).ext
-    sanitized_title = sanitize_filename(metadata.get('Title'))
-    try:
-        creation_date = datetime.strptime(metadata.get('CreationDate'), '%Y:%m:%d')
-        jahr = str(creation_date.year)
-    except (ValueError, TypeError):
-        jahr = 'Unknown'
-    
-    base_filename = f"{sanitized_title} ({jahr})"
+    title = metadata.get('Title')
+    base_filename = f"{title} ({datetime.strptime(metadata.get('CreationDate'), '%Y:%m:%d').year})"
     
     # Schritt 3: Überprüfe, ob die Dateien bereits existieren
-    existing_files = list(ziel_jahr_dir.glob(f"{base_filename}*"))
+    existing_files = list(ziel_sub_dir.glob(f"{base_filename}*"))
     if existing_files and overwrite_existing:
         typer.secho(f"Dateien für '{base_filename}' existieren bereits in der Emby Mediathek.", fg=typer.colors.YELLOW)
         typer.secho("Überschreibe bestehende Dateien ohne Nachfrage...", fg=typer.colors.YELLOW)
@@ -355,26 +357,27 @@ def integrate_homemovie_to_emby(
             raise typer.Exit(code=1)
         typer.secho(f"Überschreibe bestehende Dateien für '{base_filename}'.", fg=typer.colors.YELLOW)
     
-    # Schritt 4: Erstelle das Zielverzeichnis, falls es noch nicht existiert
-    try:
-        ziel_jahr_dir.mkdir(parents=True, exist_ok=True)
-        typer.secho(f"Zielverzeichnis '{ziel_jahr_dir}' wurde sichergestellt.", fg=typer.colors.GREEN)
-        logger.info(f"Zielverzeichnis '{ziel_jahr_dir}' wurde sichergestellt.")
-    except Exception as e:
-        typer.secho(f"Fehler beim Erstellen des Zielverzeichnisses: {e}", fg=typer.colors.RED)
-        logger.error(f"Fehler beim Erstellen des Zielverzeichnisses: {e}")
-        raise typer.Exit(code=1)
+    # Schritt 4: Zielverzeichnis ist bereits erstellt worden (determine_target_directory)
     
     # Schritt 5: Konvertiere das Titelbild, falls angegeben
     konvertierte_bilder = []
     if title_image:
         try:
-            # Bestimme den neuen Dateinamen: Titel (Jahr)-poster.jpg
-            poster_filename = f"{base_filename}{POSTER_SUFFIX}.jpg"
-            output_image = ziel_jahr_dir / poster_filename
+            # Verwende 'poster.jpg' statt 'base_filename + POSTER_SUFFIX + .jpg'
+            poster_filename = "poster.jpg"
+            output_poster = ziel_sub_dir / poster_filename
             
-            convert_image_to_adobe_rgb(title_image, output_image)
-            konvertierte_bilder.append(output_image)
+            convert_image_to_adobe_rgb(title_image, output_poster)
+            konvertierte_bilder.append(output_poster)
+            
+            # Erstelle 'fanart.jpg' als Kopie von 'poster.jpg'
+            fanart_filename = "fanart.jpg"
+            output_fanart = ziel_sub_dir / fanart_filename
+            shutil.copy2(output_poster, output_fanart)
+            konvertierte_bilder.append(output_fanart)
+            
+            typer.secho(f"Fanart-Bild wurde erstellt: '{output_fanart}'", fg=typer.colors.GREEN)
+            logger.info(f"Fanart-Bild erstellt: '{output_fanart}'")
         except Exception as e:
             typer.secho(f"Fehler bei der Bildkonvertierung: {e}", fg=typer.colors.RED)
             logger.error(f"Fehler bei der Bildkonvertierung: {e}")
@@ -384,7 +387,7 @@ def integrate_homemovie_to_emby(
     try:
         xml_element = generate_metadata_xml(metadata, base_filename=base_filename)
         nfo_filename = f"{base_filename}{NFO_SUFFIX}"
-        nfo_path = ziel_jahr_dir / nfo_filename
+        nfo_path = ziel_sub_dir / nfo_filename
         write_nfo(nfo_path, xml_element)
     except Exception as e:
         typer.secho(f"Fehler beim Erstellen der NFO-Datei: {e}", fg=typer.colors.RED)
@@ -394,7 +397,7 @@ def integrate_homemovie_to_emby(
     # Schritt 7: Kopiere die Videodatei ins Zielverzeichnis mit Benachrichtigung und Dateigröße
     try:
         video_ext = video_file.suffix.lower()
-        target_video_path = ziel_jahr_dir / f"{base_filename}{video_ext}"
+        target_video_path = ziel_sub_dir / f"{base_filename}{video_ext}"
         
         file_size_gb = video_file.stat().st_size / (1024 ** 3)
         typer.secho(f"Beginne mit dem Kopieren von '{video_file}' ({file_size_gb:.2f} GB)...", fg=typer.colors.BLUE)
@@ -416,10 +419,10 @@ def integrate_homemovie_to_emby(
             logger.info(f"Videodatei '{video_file}' wurde gelöscht.")
             
             # Lösche die zugehörigen Audiodateien
-            delete_associated_audio_files(video_file, sanitized_title)
+            delete_associated_audio_files(video_file, title)
             
             # Lösche alle anderen zugehörigen Dateien basierend auf dem Titel
-            delete_associated_files_based_on_title(video_file.parent, sanitized_title)
+            delete_associated_files_based_on_title(video_file.parent, title)
             
             if title_image:
                 title_image.unlink()
@@ -438,10 +441,10 @@ def integrate_homemovie_to_emby(
                     logger.info(f"Videodatei '{video_file}' wurde gelöscht.")
                     
                     # Lösche die zugehörigen Audiodateien
-                    delete_associated_audio_files(video_file, sanitized_title)
+                    delete_associated_audio_files(video_file, title)
                     
                     # Lösche alle anderen zugehörigen Dateien basierend auf dem Titel
-                    delete_associated_files_based_on_title(video_file.parent, sanitized_title)
+                    delete_associated_files_based_on_title(video_file.parent, title)
                     
                 except Exception as e:
                     typer.secho(f"Fehler beim Löschen der Videodatei: {e}", fg=typer.colors.RED)
@@ -457,9 +460,9 @@ def integrate_homemovie_to_emby(
                         logger.error(f"Fehler beim Löschen des Titelbildes: {e}")
             else:
                 typer.secho("Quelldateien wurden nicht gelöscht.", fg=typer.colors.YELLOW)
-
+    
     typer.secho("Familienfilm-Integration erfolgreich abgeschlossen.", fg=typer.colors.GREEN)
-    logger.info(f"Familienfilm '{video_file}' erfolgreich integriert in '{ziel_jahr_dir}'.")
+    logger.info(f"Familienfilm '{video_file}' erfolgreich integriert in '{ziel_sub_dir}'.")
 
 def integrate_homemovies(
     search_dir: Path = typer.Argument(
@@ -547,7 +550,7 @@ def integrate_homemovies(
         try:
             metadata = extract_metadata(file_path)
             title = metadata.get('Title') or metadata.get('DisplayName') or file_path.stem
-            title = sanitize_filename(title)
+            # Hier keine Sanitization mehr, aber Validierung wird später durchgeführt
             if not title:
                 typer.secho(f"Keine Titel-Metadaten in '{file_path}' gefunden. Datei wird übersprungen.", fg=typer.colors.YELLOW)
                 logger.warning(f"Keine Titel-Metadaten in '{file_path}' gefunden. Datei wird übersprungen.")
