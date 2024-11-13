@@ -1,0 +1,33 @@
+# config.toml
+
+# Mapping von Vornamen zu vollständigen Namen
+[name_mappings]
+Patrick = "Patrick Kurmann"
+Kathrin = "Kathrin Glück"
+Babi = "Andreas Kurmann sr"
+Mami = "Erika Kurmann"
+Marco = "Marco Kurmann"
+Andreas = "Andreas Kurmann jr"
+Silvan = "Silvan Kurmann"
+Ann-Sophie = "Ann-Sophie Kurmann"
+Leah = "Leah Kurmann"
+Mika = "Mika Kurmann"
+Tanja = "Tanja Schaffer"
+Dominik = "Dominik Walther"
+
+# Gruppierungen
+[groups]
+Kinder = ["Ann-Sophie Kurmann", "Leah Kurmann", "Mika Kurmann"]
+Eltern = ["Patrick Kurmann", "Kathrin Glück"]
+Grosseltern = ["Andreas Kurmann sr", "Erika Kurmann"]
+Familie = ["Patrick Kurmann", "Kathrin Glück", "Ann-Sophie Kurmann", "Leah Kurmann", "Mika Kurmann"]
+
+# Standardrollen für vollständige Namen
+[default_roles]
+"Patrick Kurmann" = "Familienmitglied"
+"Kathrin Glück" = "Familienmitglied"
+"Ann-Sophie Kurmann" = "Familienmitglied"
+"Leah Kurmann" = "Familienmitglied"
+"Mika Kurmann" = "Familienmitglied"
+"Jessica Büschi" = "Kindermädchen"
+"Tanja Schaffer" = "Tagesmutter"
