@@ -6,7 +6,7 @@ from typing import List
 
 app = typer.Typer()
 
-SUPPORTED_EXTENSIONS = ['.jpg', '.jpeg', '.png']
+SUPPORTED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.srt', '.vtt']
 EXACT_IGNORE_NAMES = ['folder.jpg', 'folder.jpeg', 'folder.png']
 
 def get_human_readable_size(size_in_bytes):
@@ -84,6 +84,17 @@ def integrate_to_library_command(
 
         # Datei verschieben
         shutil.move(str(file_path), str(destination_file))
+
+        # Untertiteldateien zusammen mit den zugehörigen Videodateien verschieben
+        if destination_file.suffix.lower() in ['.mp4', '.mkv', '.avi']:
+            subtitle_files = [
+                f for f in files
+                if f.stem == file_path.stem and f.suffix.lower() in ['.srt', '.vtt']
+            ]
+            for subtitle_file in subtitle_files:
+                subtitle_destination = destination_dir / subtitle_file.name
+                shutil.move(str(subtitle_file), str(subtitle_destination))
+                typer.secho(f"Untertiteldatei verschoben: {subtitle_file.name}", fg=typer.colors.CYAN)
 
         # Artwork-Dateien kopieren und umbenennen, wenn es sich um unterstützte Dateien handelt
         if destination_file.suffix.lower() in SUPPORTED_EXTENSIONS and not should_ignore(destination_file):
