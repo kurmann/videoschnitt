@@ -74,6 +74,23 @@ def integrate_to_library_command(
         # Erstelle das Verzeichnis für die Datei im Ziel
         destination_dir.mkdir(parents=True, exist_ok=True)
 
+        # Überprüfe, ob die Datei existiert, bevor sie verschoben wird
+        if not file_path.exists():
+            typer.secho(f"Die Quelldatei '{file_path}' existiert nicht mehr. Überspringe diese Datei.", fg=typer.colors.RED)
+            continue
+
+        # Untertiteldateien zusammen mit den zugehörigen Videodateien verschieben
+        if file_path.suffix.lower() in ['.mp4', '.mkv', '.avi']:
+            subtitle_files = [
+                f for f in files
+                if f.stem == file_path.stem and f.suffix.lower() in ['.srt', '.vtt']
+            ]
+            for subtitle_file in subtitle_files:
+                subtitle_destination = destination_dir / subtitle_file.name
+                if not subtitle_destination.exists():
+                    shutil.copy2(str(subtitle_file), str(subtitle_destination))
+                    typer.secho(f"Untertiteldatei verschoben: {subtitle_file.name}", fg=typer.colors.CYAN)
+
         # Überprüfe, ob die Zieldatei bereits existiert
         destination_file = destination_dir / file_path.name
         if destination_file.exists():
@@ -84,17 +101,6 @@ def integrate_to_library_command(
 
         # Datei verschieben
         shutil.move(str(file_path), str(destination_file))
-
-        # Untertiteldateien zusammen mit den zugehörigen Videodateien verschieben
-        if destination_file.suffix.lower() in ['.mp4', '.mkv', '.avi']:
-            subtitle_files = [
-                f for f in files
-                if f.stem == file_path.stem and f.suffix.lower() in ['.srt', '.vtt']
-            ]
-            for subtitle_file in subtitle_files:
-                subtitle_destination = destination_dir / subtitle_file.name
-                shutil.move(str(subtitle_file), str(subtitle_destination))
-                typer.secho(f"Untertiteldatei verschoben: {subtitle_file.name}", fg=typer.colors.CYAN)
 
         # Artwork-Dateien kopieren und umbenennen, wenn es sich um unterstützte Dateien handelt
         if destination_file.suffix.lower() in SUPPORTED_EXTENSIONS and not should_ignore(destination_file):
