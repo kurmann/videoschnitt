@@ -7,8 +7,6 @@ from typing import List
 app = typer.Typer()
 
 SUPPORTED_EXTENSIONS = ['.jpg', '.jpeg', '.png']
-POSTFIX = '-poster'
-IGNORE_SUFFIX = '-poster'
 EXACT_IGNORE_NAMES = ['folder.jpg', 'folder.jpeg', 'folder.png']
 
 def get_human_readable_size(size_in_bytes):
@@ -26,25 +24,20 @@ def should_ignore(file: Path) -> bool:
         return True
     return False
 
-def rename_artwork_file(file: Path) -> bool:
-    """Benennt eine Datei gemäß den definierten Regeln um."""
-    if should_ignore(file) or file.suffix.lower() not in SUPPORTED_EXTENSIONS:
+def create_fanart_and_poster_files(file: Path, destination_dir: Path):
+    """Erstellt Kopien der Datei als 'fanart.jpg' und 'poster.jpg' im Zielverzeichnis."""
+    try:
+        fanart_path = destination_dir / "fanart.jpg"
+        poster_path = destination_dir / "poster.jpg"
+        
+        shutil.copy2(file, fanart_path)
+        shutil.copy2(file, poster_path)
+        
+        typer.secho(f"Fanart und Poster erstellt: '{fanart_path}' und '{poster_path}'", fg=typer.colors.GREEN)
+        return True
+    except Exception as e:
+        typer.secho(f"Fehler beim Erstellen von Fanart und Poster für '{file.name}': {e}", fg=typer.colors.RED)
         return False
-
-    if not file.stem.lower().endswith(IGNORE_SUFFIX):
-        new_stem = file.stem + POSTFIX
-        new_name = new_stem + file.suffix
-        new_file = file.with_name(new_name)
-
-        if not new_file.exists():
-            try:
-                file.rename(new_file)
-                typer.secho(f"Erfolgreich umbenannt: '{file.name}' -> '{new_name}'", fg=typer.colors.GREEN)
-                return True
-            except Exception as e:
-                typer.secho(f"Fehler beim Umbenennen von '{file.name}': {e}", fg=typer.colors.RED)
-                return False
-    return False
 
 def integrate_to_library_command(
     source_directory: Path = typer.Argument(..., help="Pfad zum Quellverzeichnis"),
@@ -52,7 +45,7 @@ def integrate_to_library_command(
 ):
     """
     Verschiebt alle Dateien aus dem Quellverzeichnis in das Zielverzeichnis,
-    erhält die relative Verzeichnisstruktur und integriert Artwork-Dateien.
+    erhält die relative Verzeichnisstruktur und integriert Dateien mit Fanart- und Poster-Kopien.
     """
     if not source_directory.is_dir():
         typer.secho(f"Das Quellverzeichnis '{source_directory}' existiert nicht.", fg=typer.colors.RED)
@@ -75,12 +68,14 @@ def integrate_to_library_command(
     for file_path in files:
         # Berechne den relativen Pfad des Quellverzeichnisses
         relative_path = file_path.relative_to(source_directory)
-        destination_file = target_directory / relative_path
+        base_name = file_path.stem
+        destination_dir = target_directory / relative_path.parent / base_name
 
         # Erstelle das Verzeichnis für die Datei im Ziel
-        destination_file.parent.mkdir(parents=True, exist_ok=True)
+        destination_dir.mkdir(parents=True, exist_ok=True)
 
         # Überprüfe, ob die Zieldatei bereits existiert
+        destination_file = destination_dir / file_path.name
         if destination_file.exists():
             overwrite = typer.confirm(f"Die Datei '{destination_file}' existiert bereits. Möchten Sie sie überschreiben?")
             if not overwrite:
@@ -90,9 +85,9 @@ def integrate_to_library_command(
         # Datei verschieben
         shutil.move(str(file_path), str(destination_file))
 
-        # Artwork-Dateien umbenennen, nachdem sie an den Zielort verschoben wurden
-        if destination_file.suffix.lower() in SUPPORTED_EXTENSIONS:
-            rename_artwork_file(destination_file)
+        # Artwork-Dateien kopieren und umbenennen, wenn es sich um unterstützte Dateien handelt
+        if destination_file.suffix.lower() in SUPPORTED_EXTENSIONS and not should_ignore(destination_file):
+            create_fanart_and_poster_files(destination_file, destination_dir)
 
         # Dateigröße ermitteln und Ausgabe der Verschiebung
         size_in_bytes = destination_file.stat().st_size
