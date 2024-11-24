@@ -14,19 +14,17 @@ $ video-compressor [OPTIONS] COMMAND [ARGS]...
 
 **Commands**:
 
-* `convert-to-apple`: Konvertiert eine Videodatei in ein...
+* `analyze`: Analysiert eine Videodatei mit MediaInfo...
 * `convert-to-hevc`: Konvertiert alle nicht H.264 oder HEVC...
 
-## `video-compressor convert-to-apple`
+## `video-compressor analyze`
 
-Konvertiert eine Videodatei in ein Apple-kompatibles Format.
-Videostreams werden remuxt, wenn möglich. DTS wird zu E-AC3 umgewandelt.
-Nicht-kompatible Untertitel werden extrahiert, kompatible übernommen.
+Analysiert eine Videodatei mit MediaInfo und zeigt alle relevanten Informationen an.
 
 **Usage**:
 
 ```console
-$ video-compressor convert-to-apple [OPTIONS] INPUT_FILE
+$ video-compressor analyze [OPTIONS] INPUT_FILE
 ```
 
 **Arguments**:
@@ -35,8 +33,6 @@ $ video-compressor convert-to-apple [OPTIONS] INPUT_FILE
 
 **Options**:
 
-* `--keep-original`: Behalte die Originaldatei.
-* `--constant-quality INTEGER`: Constant Quality für Videotoolbox (CQ-Wert).  [default: 89]
 * `--help`: Show this message and exit.
 
 ## `video-compressor convert-to-hevc`
