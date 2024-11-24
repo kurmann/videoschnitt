@@ -2,13 +2,12 @@
 
 import typer
 from video_compressor.commands.convert_with_handbrake import convert_videos_with_handbrake_command
-# Weitere Imports...
+from video_compressor.commands.analyze_with_mediainfo import analyze
 
 app = typer.Typer()
 
-# Registriere die Commands
 app.command("convert-to-hevc")(convert_videos_with_handbrake_command)
-# Weitere Commands...
+app.command("analyze")(analyze)
 
 if __name__ == "__main__":
     app()
