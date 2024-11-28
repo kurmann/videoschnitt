@@ -253,6 +253,29 @@
                 "kind": "build",
                 "isDefault": true
             }
+        },
+        {
+            "label": "generate-cli-docs-dji-import",
+            "type": "shell",
+            "command": "python",
+            "args": [
+                "-m",
+                "typer",
+                "${workspaceFolder}/src/dji_import/app.py",
+                "utils",
+                "docs",
+                "--name",
+                "dji-import",
+                "--output",
+                "${workspaceFolder}/docs/cli/dji_import.md"
+            ],
+            "problemMatcher": [],
+            "options": {
+                "env": {
+                    "PYTHONPATH": "${workspaceFolder}/src"
+                }
+            },
+            "group": "build"
         }
     ]
 }

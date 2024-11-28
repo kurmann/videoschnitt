@@ -37,6 +37,7 @@ video-compressor = "video_compressor.app:app"
 movie-integrator = "movie_integrator.app:app"
 iclouddrive-integrator = "iclouddrive_integrator.app:app"
 fcp-integrator = "fcp_integrator.app:app"
+dji-import = "dji_import.app:app"
 
 [project.urls]
 Homepage = "https://github.com/kurmann/videoschnitt"
