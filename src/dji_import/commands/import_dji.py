@@ -3,13 +3,9 @@ from datetime import datetime
 from pathlib import Path
 import typer
 
-# Standardwerte für Quell- und Zielverzeichnisse
-DEFAULT_SOURCE_DIR = "/Volumes/SD_Card/DCIM/DJI_001"
-DEFAULT_TARGET_DIR = "/Volumes/Crucial-P3/Import/Originalmedien"
-
 def import_dji_files(
-    source_dir: str = DEFAULT_SOURCE_DIR,
-    target_dir: str = DEFAULT_TARGET_DIR
+    source_dir: str,
+    target_dir: str
 ):
     """
     Importiert Medien von einer DJI Action Kamera und organisiert sie in einem strukturierten Verzeichnis.
