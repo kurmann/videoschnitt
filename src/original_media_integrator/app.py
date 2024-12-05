@@ -1,102 +1,30 @@
-import os
-import shutil
-import logging
-from datetime import datetime
-from pathlib import Path
+# src/original_media_integrator/app.py
+
 import typer
+from original_media_integrator.commands.import_by_created_date import import_by_created_date
+from original_media_integrator.commands.import_by_exif_creation_date import import_by_exif_creation_date
+from config_manager.config_loader import load_app_env
+import logging
 
-app = typer.Typer(help="Importiert Mediendateien basierend auf dem Erstellungsdatum (File Created Date)")
+# Lade die .env Datei
+env_path = load_app_env()
 
-logger = logging.getLogger(__name__)
+# Initialisiere das Logging
 logging.basicConfig(
-    level=logging.INFO,
+    level=logging.INFO,  # Setze auf INFO, kann bei Bedarf auf DEBUG geändert werden
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[logging.StreamHandler()]
+    handlers=[
+        logging.FileHandler("original_media_integrator.log"),
+        logging.StreamHandler()
+    ]
 )
+logger = logging.getLogger(__name__)
 
-from typer import Typer
-from original_media_integrator.commands.import_by_created_date import app as import_by_created_date_app
+app = typer.Typer(help="Original Media Integrator")
 
-app = Typer(help="Original Media Integrator")
-
-app.add_typer(import_by_created_date_app, name="import-by-created-date")
-
-if __name__ == "__main__":
-    app()
-
-@app.command()
-def import_by_created_date(
-    source_dir: Path = typer.Argument(..., help="Pfad zum Quellverzeichnis"),
-    destination_dir: Path = typer.Argument(..., help="Pfad zum Zielverzeichnis")
-):
-    """
-    Importiert Mediendateien basierend auf dem File Created Date ins Zielverzeichnis.
-
-    - Erstellt ein Unterverzeichnis im Zielverzeichnis basierend auf dem ISO-Datum des Erstellungsdatums.
-    - Beibehaltung der relativen Unterverzeichnisstruktur des Quellverzeichnisses innerhalb des Datumsverzeichnisses.
-
-    Argumente:
-    - source_dir: Das Eingangsverzeichnis mit den Mediendateien.
-    - destination_dir: Das Zielverzeichnis für die importierten Dateien.
-    """
-    source_dir = source_dir.resolve()
-    destination_dir = destination_dir.resolve()
-
-    logger.info(f"Starte Import von {source_dir} nach {destination_dir}")
-
-    for root, _, files in os.walk(source_dir):
-        for filename in files:
-            if filename.startswith('.') or not filename.lower().endswith(
-                ('.mov', '.mp4', '.jpg', '.jpeg', '.png', '.heif', '.heic', '.dng')
-            ):
-                logger.debug(f"Überspringe Datei {filename} aufgrund des Dateityps oder versteckter Datei.")
-                continue
-
-            source_file = Path(root) / filename
-
-            try:
-                # Abrufen des Erstellungsdatums
-                created_date = datetime.fromtimestamp(source_file.stat().st_ctime).strftime('%Y-%m-%d')
-
-                # Zielverzeichnis basierend auf Erstellungsdatum und relativer Struktur
-                relative_path = Path(root).relative_to(source_dir)
-                date_path = destination_dir / created_date / relative_path
-
-                # Zielverzeichnis erstellen
-                date_path.mkdir(parents=True, exist_ok=True)
-
-                # Zielpfad für die Datei
-                destination_file = date_path / filename
-
-                logger.info(f"Verschiebe Datei {source_file} nach {destination_file}")
-                shutil.move(str(source_file), str(destination_file))
-            except Exception as e:
-                logger.error(f"Fehler beim Verschieben von {source_file}: {e}")
-                typer.secho(f"Fehler beim Verschieben von {source_file}: {e}", fg=typer.colors.RED)
-
-    # Entferne leere Verzeichnisse im Eingangsverzeichnis
-    remove_empty_directories(source_dir)
-
-    typer.secho("Import abgeschlossen.", fg=typer.colors.GREEN)
-    logger.info("Import abgeschlossen.")
-
-def remove_empty_directories(root_dir: Path):
-    """
-    Entfernt leere Verzeichnisse rekursiv.
-
-    Argumente:
-    - root_dir: Das Verzeichnis, in dem nach leeren Verzeichnissen gesucht wird.
-    """
-    logger.info(f"Entferne leere Verzeichnisse in: {root_dir}")
-    for dirpath, dirnames, filenames in os.walk(root_dir, topdown=False):
-        if not any(fname for fname in filenames if not fname.startswith('.')) and not dirnames:
-            try:
-                Path(dirpath).rmdir()
-                logger.info(f"Leeres Verzeichnis entfernt: {dirpath}")
-                typer.echo(f"Leeres Verzeichnis entfernt: {dirpath}")
-            except Exception as e:
-                logger.error(f"Fehler beim Entfernen des Verzeichnisses {dirpath}: {e}")
-                typer.secho(f"Fehler beim Entfernen des Verzeichnisses {dirpath}: {e}", fg=typer.colors.RED)
+# Registriere die Commands direkt
+app.command(name="import-by-create-date")(import_by_created_date)
+app.command(name="import-by-exif-creation-date")(import_by_exif_creation_date)
 
 if __name__ == "__main__":
     app()

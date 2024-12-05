@@ -4,8 +4,9 @@ import logging
 from datetime import datetime
 from pathlib import Path
 import typer
+from original_media_integrator.media_manager import remove_empty_directories
 
-app = typer.Typer(help="Importiert Mediendateien basierend auf dem Erstellungsdatum (File Created Date)")
+app = typer.Typer(help="Importiert Mediendateien basierend auf dem File Created Date")
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(
@@ -24,10 +25,7 @@ def import_by_created_date(
 
     - Erstellt ein Unterverzeichnis im Zielverzeichnis basierend auf dem ISO-Datum des Erstellungsdatums.
     - Beibehaltung der relativen Unterverzeichnisstruktur des Quellverzeichnisses innerhalb des Datumsverzeichnisses.
-
-    Argumente:
-    - source_dir: Das Eingangsverzeichnis mit den Mediendateien.
-    - destination_dir: Das Zielverzeichnis für die importierten Dateien.
+    - Entfernt leere Verzeichnisse im Eingangsverzeichnis nach dem Verschieben der Dateien.
     """
     source_dir = source_dir.resolve()
     destination_dir = destination_dir.resolve()
@@ -65,28 +63,11 @@ def import_by_created_date(
                 typer.secho(f"Fehler beim Verschieben von {source_file}: {e}", fg=typer.colors.RED)
 
     # Entferne leere Verzeichnisse im Eingangsverzeichnis
+    logger.info(f"Überprüfe auf leere Verzeichnisse in: {source_dir}")
     remove_empty_directories(source_dir)
 
     typer.secho("Import abgeschlossen.", fg=typer.colors.GREEN)
     logger.info("Import abgeschlossen.")
-
-def remove_empty_directories(root_dir: Path):
-    """
-    Entfernt leere Verzeichnisse rekursiv.
-
-    Argumente:
-    - root_dir: Das Verzeichnis, in dem nach leeren Verzeichnissen gesucht wird.
-    """
-    logger.info(f"Entferne leere Verzeichnisse in: {root_dir}")
-    for dirpath, dirnames, filenames in os.walk(root_dir, topdown=False):
-        if not any(fname for fname in filenames if not fname.startswith('.')) and not dirnames:
-            try:
-                Path(dirpath).rmdir()
-                logger.info(f"Leeres Verzeichnis entfernt: {dirpath}")
-                typer.echo(f"Leeres Verzeichnis entfernt: {dirpath}")
-            except Exception as e:
-                logger.error(f"Fehler beim Entfernen des Verzeichnisses {dirpath}: {e}")
-                typer.secho(f"Fehler beim Entfernen des Verzeichnisses {dirpath}: {e}", fg=typer.colors.RED)
 
 if __name__ == "__main__":
     app()
