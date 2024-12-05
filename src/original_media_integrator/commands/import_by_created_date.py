@@ -14,16 +14,6 @@ logging.basicConfig(
     handlers=[logging.StreamHandler()]
 )
 
-from typer import Typer
-from original_media_integrator.commands.import_by_created_date import app as import_by_created_date_app
-
-app = Typer(help="Original Media Integrator")
-
-app.add_typer(import_by_created_date_app, name="import-by-created-date")
-
-if __name__ == "__main__":
-    app()
-
 @app.command()
 def import_by_created_date(
     source_dir: Path = typer.Argument(..., help="Pfad zum Quellverzeichnis"),
