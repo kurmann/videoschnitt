@@ -580,7 +580,7 @@ def integrate_homemovies(
     logger.info(f"Starte Integration in Emby Mediathek...")
     
     # Lade die Konfiguration aus config.toml
-    config_path = Path(__file__).parent.parent.parent.parent / "config.toml"  # Annahme: config.toml ist im Root-Verzeichnis
+    config_path = Path(__file__).parent.parent.parent.parent / "config.toml"
     config = load_config(config_path)
     logger.info(f"Konfiguration geladen: {config_path}")
     
@@ -590,10 +590,8 @@ def integrate_homemovies(
         typer.secho(f"Zusätzliches Verzeichnis hinzugefügt: '{additional_dir}'", fg=typer.colors.BLUE)
         logger.info(f"Zusätzliches Verzeichnis hinzugefügt: '{additional_dir}'")
     
-    # Schritt 1: Sammeln aller unterstützten Mediendateien und ProRes-Dateien
+    # Schritt 1: Sammeln aller unterstützten Mediendateien (ohne ProRes)
     media_files: List[Path] = []
-    prores_files: List[Path] = []
-
     for dir_path in directories:
         typer.secho(f"Durchsuche Verzeichnis: '{dir_path}'", fg=typer.colors.BLUE)
         for file_path in dir_path.rglob('*'):
@@ -607,22 +605,27 @@ def integrate_homemovies(
                 try:
                     metadata = extract_metadata(file_path)
                     video_codec = metadata.get('VideoCodec', '').strip()
-
-                    # Erkenne ProRes-Dateien und speichere sie separat
+                    
+                    # Überspringe ProRes-Dateien direkt
                     if video_codec in ['Apple ProRes 422', 'Apple ProRes 422 HQ', 'Apple ProRes 4444', 'Apple ProRes 4444 XQ']:
-                        prores_files.append(file_path)
-                        logger.debug(f"ProRes-Datei erkannt: {file_path}")
-                        typer.secho(f"ProRes-Datei erkannt und separat gespeichert: {file_path}", fg=typer.colors.YELLOW)
-                    elif file_path.suffix.lower() in ['.mov', '.mp4', '.m4v']:
+                        typer.secho(f"ProRes-Datei erkannt und übersprungen: {file_path}", fg=typer.colors.YELLOW)
+                        logger.info(f"ProRes-Datei übersprungen: {file_path}")
+                        continue
+
+                    # Füge nur nicht-ProRes-Dateien zur Liste hinzu
+                    if file_path.suffix.lower() in ['.mov', '.mp4', '.m4v']:
                         media_files.append(file_path)
                         logger.debug(f"Mediendatei erkannt: {file_path}")
-                    else:
-                        typer.secho(f"Nicht unterstützte Datei übersprungen: {file_path}", fg=typer.colors.YELLOW)
                 except Exception as e:
                     typer.secho(f"Fehler beim Verarbeiten von '{file_path}': {e}", fg=typer.colors.RED)
                     logger.error(f"Fehler beim Verarbeiten von '{file_path}': {e}")
                     continue
-        
+    
+    if not media_files:
+        typer.secho("Keine unterstützten Mediendateien gefunden.", fg=typer.colors.YELLOW)
+        logger.warning("Keine unterstützten Mediendateien gefunden.")
+        raise typer.Exit()
+    
     # Schritt 2: Gruppierung der Mediendateien nach Titel
     groups: Dict[str, Dict[str, List[Path]]] = {}
     for file_path in media_files:
@@ -650,31 +653,7 @@ def integrate_homemovies(
         logger.warning("Keine Gruppen von Mediendateien mit gemeinsamen Titeln gefunden.")
         raise typer.Exit()
     
-    # Schritt 3: Suche nach zugehörigen Titelbildern und Auswahl der besten Videodatei
-    for title, files in groups.items():
-        if len(files['videos']) > 1:
-            sorted_videos = sorted(files['videos'], key=lambda f: f.stat().st_size, reverse=True)
-            best_video = sorted_videos[0]
-            groups[title]['videos'] = [best_video]
-            typer.secho(f"Mehrere Videos gefunden für '{title}'. Wähle die größte Datei: '{best_video}'", fg=typer.colors.GREEN)
-            logger.info(f"Mehrere Videos gefunden für '{title}'. Wähle die größte Datei: '{best_video}'")
-        else:
-            best_video = files['videos'][0]
-        
-        image_found = False
-        for ext in ['.png', '.jpg', '.jpeg']:
-            image_file = Path(best_video.parent) / f"{title}{ext}"
-            if image_file.exists() and image_file.suffix.lower() in SUPPORTED_IMAGE_FORMATS:
-                groups[title]['images'].append(image_file)
-                typer.secho(f"Gefundenes Titelbild für '{title}': '{image_file}'", fg=typer.colors.GREEN)
-                logger.info(f"Gefundenes Titelbild für '{title}': '{image_file}'")
-                image_found = True
-                break
-        if not image_found:
-            typer.secho(f"Kein passendes Titelbild für '{title}' gefunden.", fg=typer.colors.YELLOW)
-            logger.warning(f"Kein passendes Titelbild für '{title}' gefunden.")
-    
-    # Schritt 4: Integration der Mediensets
+    # Schritt 3: Integration der Mediensets
     typer.secho("\nBeginne mit der Integration der Mediensets...", fg=typer.colors.BLUE)
     for title, files in groups.items():
         video_file = files['videos'][0]
@@ -682,14 +661,6 @@ def integrate_homemovies(
         typer.secho(f"\nIntegriere Medienset '{title}'...", fg=typer.colors.CYAN)
 
         try:
-            # Zusätzliche Prüfung: Sicherstellen, dass keine ProRes-Datei integriert wird
-            metadata = extract_metadata(video_file)
-            video_codec = metadata.get('VideoCodec', '').strip()
-            if video_codec in ['Apple ProRes 422', 'Apple ProRes 422 HQ', 'Apple ProRes 4444', 'Apple ProRes 4444 XQ']:
-                typer.secho(f"ProRes-Datei wird nicht integriert: {video_file}", fg=typer.colors.YELLOW)
-                logger.info(f"ProRes-Datei ausgeschlossen: {video_file}")
-                continue
-
             integrate_homemovie_to_emby(
                 video_file=video_file,
                 title_image=title_image,
@@ -699,17 +670,16 @@ def integrate_homemovies(
                 config=config
             )
 
-            # Schritt 5: Lösche zugehörige ProRes-Dateien nach erfolgreicher Integration
-            for prores_file in prores_files:
-                prores_metadata = extract_metadata(prores_file)
-                if prores_metadata.get('Title') == title:
-                    try:
-                        prores_file.unlink()
-                        typer.secho(f"ProRes-Datei '{prores_file}' gelöscht.", fg=typer.colors.GREEN)
-                        logger.info(f"ProRes-Datei '{prores_file}' erfolgreich gelöscht.")
-                    except Exception as e:
-                        typer.secho(f"Fehler beim Löschen der ProRes-Datei '{prores_file}': {e}", fg=typer.colors.RED)
-                        logger.error(f"Fehler beim Löschen der ProRes-Datei '{prores_file}': {e}")
+            # Schritt 4: Lösche zugehörige ProRes-Dateien nach erfolgreicher Integration
+            prores_file = video_file.parent / f"{title}.mov"
+            if prores_file.exists():
+                try:
+                    prores_file.unlink()
+                    typer.secho(f"ProRes-Datei '{prores_file}' gelöscht.", fg=typer.colors.GREEN)
+                    logger.info(f"ProRes-Datei '{prores_file}' erfolgreich gelöscht.")
+                except Exception as e:
+                    typer.secho(f"Fehler beim Löschen der ProRes-Datei '{prores_file}': {e}", fg=typer.colors.RED)
+                    logger.error(f"Fehler beim Löschen der ProRes-Datei '{prores_file}': {e}")
         except Exception as e:
             typer.secho(f"Fehler beim Integrieren von '{title}': {e}", fg=typer.colors.RED)
             logger.error(f"Fehler beim Integrieren von '{title}': {e}")
