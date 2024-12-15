@@ -25,11 +25,10 @@ def import_by_created_date(
     """
     Importiert Mediendateien und organisiert sie in einer Verzeichnisstruktur: Jahr/Jahr-Monat/Jahr-Monat-Tag.
 
+    - Relative Unterverzeichnisse aus der Quelle werden beibehalten.
     - Unterstützte Dateiformate: .mov, .mp4, .jpg, .jpeg, .png, .heif, .heic, .dng.
     - Unterstützte Dateinamenformate: YYYY-MM-DD oder YYYY-MM-DD_hh-mm-ss.
-    - Zielstruktur: /Zielverzeichnis/Jahr/Jahr-Monat/Jahr-Monat-Tag/Datei.ext.
-
-    Verhindert, dass bereits bestehende Datumsverzeichnisse doppelt erstellt werden.
+    - Zielstruktur: /Zielverzeichnis/Jahr/Jahr-Monat/Jahr-Monat-Tag/relative/pfade/Datei.ext.
     """
     source_dir = source_dir.resolve()
     destination_dir = destination_dir.resolve()
@@ -64,9 +63,14 @@ def import_by_created_date(
                 year = creation_datetime.strftime('%Y')
                 year_month = creation_datetime.strftime('%Y-%m')
                 year_month_day = creation_datetime.strftime('%Y-%m-%d')
-                date_path = destination_dir / year / year_month / year_month_day
 
-                # Verzeichnis erstellen (falls nicht vorhanden)
+                # Berechne den relativen Pfad ab dem Quellverzeichnis
+                relative_path = Path(root).relative_to(source_dir)
+
+                # Kombiniere Datumsverzeichnis mit dem relativen Pfad
+                date_path = destination_dir / year / year_month / year_month_day / relative_path
+
+                # Zielverzeichnis erstellen (falls nicht vorhanden)
                 date_path.mkdir(parents=True, exist_ok=True)
 
                 # 3. Zielpfad prüfen und Datei verschieben
