@@ -590,28 +590,32 @@ def integrate_homemovies(
         typer.secho(f"Zusätzliches Verzeichnis hinzugefügt: '{additional_dir}'", fg=typer.colors.BLUE)
         logger.info(f"Zusätzliches Verzeichnis hinzugefügt: '{additional_dir}'")
     
-    # Schritt 1: Sammeln aller unterstützten Videodateien ohne ProRes
+    # Schritt 1: Sammeln aller unterstützten Mediendateien und ProRes-Dateien
     media_files: List[Path] = []
+    prores_files: List[Path] = []
     for dir_path in directories:
         typer.secho(f"Durchsuche Verzeichnis: '{dir_path}'", fg=typer.colors.BLUE)
         for file_path in dir_path.rglob('*'):
-            if file_path.is_file() and file_path.suffix.lower() in ['.mov', '.mp4', '.m4v']:
+            if file_path.is_file():
                 # Überprüfe, ob die Datei gerade verarbeitet wird
                 if is_file_being_processed(file_path):
                     typer.secho(f"Überspringe Datei, die gerade verarbeitet wird: '{file_path}'", fg=typer.colors.YELLOW)
                     logger.info(f"Überspringe Datei, die gerade verarbeitet wird: {file_path}")
-                    continue  # Fahre mit der nächsten Datei fort
+                    continue
                 
                 try:
                     metadata = extract_metadata(file_path)
-                    # Überprüfe, ob der Codec nicht ProRes ist
                     video_codec = metadata.get('VideoCodec', '').strip()
-                    if video_codec not in ['Apple ProRes 422', 'Apple ProRes 422 HQ', 'Apple ProRes 4444', 'Apple ProRes 4444 XQ']:
+                    
+                    if video_codec in ['Apple ProRes 422', 'Apple ProRes 422 HQ', 'Apple ProRes 4444', 'Apple ProRes 4444 XQ']:
+                        prores_files.append(file_path)
+                        logger.debug(f"ProRes-Datei erkannt: {file_path}")
+                        typer.secho(f"ProRes-Datei erkannt und separat gespeichert: {file_path}", fg=typer.colors.YELLOW)
+                    elif file_path.suffix.lower() in ['.mov', '.mp4', '.m4v']:
                         media_files.append(file_path)
-                        logger.debug(f"Hinzufügen von '{file_path}' zur Liste der Mediendateien.")
+                        logger.debug(f"Mediendatei erkannt: {file_path}")
                     else:
-                        typer.secho(f"Überspringe ProRes-Datei: '{file_path}'", fg=typer.colors.YELLOW)
-                        logger.info(f"Überspringe ProRes-Datei: {file_path}")
+                        typer.secho(f"Nicht unterstützte Datei übersprungen: {file_path}", fg=typer.colors.YELLOW)
                 except Exception as e:
                     typer.secho(f"Fehler beim Verarbeiten von '{file_path}': {e}", fg=typer.colors.RED)
                     logger.error(f"Fehler beim Verarbeiten von '{file_path}': {e}")
@@ -628,7 +632,6 @@ def integrate_homemovies(
         try:
             metadata = extract_metadata(file_path)
             title = metadata.get('Title') or metadata.get('DisplayName') or file_path.stem
-            # Hier keine Sanitization mehr, aber Validierung wird später durchgeführt
             if not title:
                 typer.secho(f"Keine Titel-Metadaten in '{file_path}' gefunden. Datei wird übersprungen.", fg=typer.colors.YELLOW)
                 logger.warning(f"Keine Titel-Metadaten in '{file_path}' gefunden. Datei wird übersprungen.")
@@ -652,7 +655,6 @@ def integrate_homemovies(
     
     # Schritt 3: Suche nach zugehörigen Titelbildern und Auswahl der besten Videodatei
     for title, files in groups.items():
-        # Bevorzugt das größte Video als die beste Qualität
         if len(files['videos']) > 1:
             sorted_videos = sorted(files['videos'], key=lambda f: f.stat().st_size, reverse=True)
             best_video = sorted_videos[0]
@@ -662,7 +664,6 @@ def integrate_homemovies(
         else:
             best_video = files['videos'][0]
         
-        # Suche nach zugehörigem Titelbild, bevorzugt PNG über JPG
         image_found = False
         for ext in ['.png', '.jpg', '.jpeg']:
             image_file = Path(best_video.parent) / f"{title}{ext}"
@@ -671,7 +672,7 @@ def integrate_homemovies(
                 typer.secho(f"Gefundenes Titelbild für '{title}': '{image_file}'", fg=typer.colors.GREEN)
                 logger.info(f"Gefundenes Titelbild für '{title}': '{image_file}'")
                 image_found = True
-                break  # Bevorzugt das erste gefundene Bild in der Reihenfolge PNG, JPG, JPEG
+                break
         if not image_found:
             typer.secho(f"Kein passendes Titelbild für '{title}' gefunden.", fg=typer.colors.YELLOW)
             logger.warning(f"Kein passendes Titelbild für '{title}' gefunden.")
@@ -688,18 +689,25 @@ def integrate_homemovies(
                 title_image=title_image,
                 emby_dir=mediathek_dir,
                 overwrite_existing=overwrite_existing,
-                delete_source_files=delete_source_files,  # Übergebe das Flag
-                config=config  # Übergebe die Konfiguration
+                delete_source_files=delete_source_files,
+                config=config
             )
-        except typer.Exit as e:
-            if e.code != 0:
-                typer.secho(f"Fehler beim Integrieren von '{title}': {e}", fg=typer.colors.RED)
-                logger.error(f"Fehler beim Integrieren von '{title}': {e}")
-            continue  # Fahre mit dem nächsten Medienset fort
+            
+            # Schritt 5: Lösche zugehörige ProRes-Dateien nach erfolgreicher Integration
+            for prores_file in prores_files:
+                prores_metadata = extract_metadata(prores_file)
+                if prores_metadata.get('Title') == title:
+                    try:
+                        prores_file.unlink()
+                        typer.secho(f"ProRes-Datei '{prores_file}' gelöscht.", fg=typer.colors.GREEN)
+                        logger.info(f"ProRes-Datei '{prores_file}' erfolgreich gelöscht.")
+                    except Exception as e:
+                        typer.secho(f"Fehler beim Löschen der ProRes-Datei '{prores_file}': {e}", fg=typer.colors.RED)
+                        logger.error(f"Fehler beim Löschen der ProRes-Datei '{prores_file}': {e}")
         except Exception as e:
-            typer.secho(f"Unbekannter Fehler beim Integrieren von '{title}': {e}", fg=typer.colors.RED)
-            logger.error(f"Unbekannter Fehler beim Integrieren von '{title}': {e}")
-            continue  # Fahre mit dem nächsten Medienset fort
+            typer.secho(f"Fehler beim Integrieren von '{title}': {e}", fg=typer.colors.RED)
+            logger.error(f"Fehler beim Integrieren von '{title}': {e}")
+            continue
     
     typer.secho("\nIntegration aller Mediensets abgeschlossen.", fg=typer.colors.GREEN)
     logger.info("Integration aller Mediensets abgeschlossen.")
