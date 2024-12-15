@@ -26,6 +26,7 @@ def import_by_created_date(
     Importiert Mediendateien und organisiert sie in einer Verzeichnisstruktur: Jahr/Jahr-Monat/Jahr-Monat-Tag.
 
     - Relative Unterverzeichnisse aus der Quelle werden beibehalten.
+    - Wenn ein Unterverzeichnis bereits ein Datum enthält, wird es nicht doppelt in der Zielstruktur erstellt.
     - Unterstützte Dateiformate: .mov, .mp4, .jpg, .jpeg, .png, .heif, .heic, .dng.
     - Unterstützte Dateinamenformate: YYYY-MM-DD oder YYYY-MM-DD_hh-mm-ss.
     - Zielstruktur: /Zielverzeichnis/Jahr/Jahr-Monat/Jahr-Monat-Tag/relative/pfade/Datei.ext.
@@ -67,13 +68,20 @@ def import_by_created_date(
                 # Berechne den relativen Pfad ab dem Quellverzeichnis
                 relative_path = Path(root).relative_to(source_dir)
 
-                # Kombiniere Datumsverzeichnis mit dem relativen Pfad
+                # 3. Fallunterscheidung für Datumsunterverzeichnisse
+                # Prüfe, ob ein Teil des relativen Pfads bereits ein gültiges Datum ist
+                relative_parts = relative_path.parts
+                if relative_parts and re.match(r'\d{4}-\d{2}-\d{2}', relative_parts[0]):
+                    # Entferne das Datumsverzeichnis aus dem relativen Pfad
+                    relative_path = Path(*relative_parts[1:])
+
+                # Kombiniere Datumsverzeichnis mit dem bereinigten relativen Pfad
                 date_path = destination_dir / year / year_month / year_month_day / relative_path
 
                 # Zielverzeichnis erstellen (falls nicht vorhanden)
                 date_path.mkdir(parents=True, exist_ok=True)
 
-                # 3. Zielpfad prüfen und Datei verschieben
+                # 4. Zielpfad prüfen und Datei verschieben
                 destination_file = date_path / filename
                 if destination_file.exists():
                     logger.warning(f"Datei {destination_file} existiert bereits, überspringe...")
