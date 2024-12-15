@@ -8,7 +8,7 @@ import typer
 from original_media_integrator.media_manager import remove_empty_directories
 from metadata_manager.exif import get_creation_datetime
 
-app = typer.Typer(help="Importiert Mediendateien basierend auf dem File Created Date oder EXIF-Datum.")
+app = typer.Typer(help="Importiert Mediendateien basierend auf dem Dateinamen, EXIF-Datum oder File Created Date.")
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(
@@ -23,18 +23,13 @@ def import_by_created_date(
     destination_dir: Path = typer.Argument(..., help="Pfad zum Zielverzeichnis")
 ):
     """
-    Importiert Mediendateien basierend auf dem File Created Date, Dateinamen oder EXIF-Datum ins Zielverzeichnis.
+    Importiert Mediendateien und organisiert sie in einer Verzeichnisstruktur: Jahr/Jahr-Monat/Jahr-Monat-Tag.
 
-    Unterstützte Dateinamenformate (wird bevorzugt verarbeitet, ohne EXIF-Daten auszulesen):
-    1. 'YYYY-MM-DD_hh-mm-ss.ext' (z.B. '2024-10-29_19-24-54.mov')
-    2. 'YYYY-MM-DD.ext' (z.B. '2024-10-29.mov')
+    - Unterstützte Dateiformate: .mov, .mp4, .jpg, .jpeg, .png, .heif, .heic, .dng.
+    - Unterstützte Dateinamenformate: YYYY-MM-DD oder YYYY-MM-DD_hh-mm-ss.
+    - Zielstruktur: /Zielverzeichnis/Jahr/Jahr-Monat/Jahr-Monat-Tag/Datei.ext.
 
-    Wenn die Datei eines dieser Formate hat, wird das Datum direkt aus dem Dateinamen extrahiert.
-    Andernfalls versucht das Script, das Datum aus EXIF-Daten zu lesen. Fallback: File Created Date.
-
-    - Erstellt ein Unterverzeichnis im Zielverzeichnis basierend auf dem ISO-Datum des Erstellungsdatums.
-    - Beibehaltung der relativen Unterverzeichnisstruktur des Quellverzeichnisses innerhalb des Datumsverzeichnisses.
-    - Entfernt leere Verzeichnisse im Eingangsverzeichnis nach dem Verschieben der Dateien.
+    Verhindert, dass bereits bestehende Datumsverzeichnisse doppelt erstellt werden.
     """
     source_dir = source_dir.resolve()
     destination_dir = destination_dir.resolve()
@@ -52,35 +47,33 @@ def import_by_created_date(
             source_file = Path(root) / filename
 
             try:
-                # 1. Versuche, das Datum direkt aus dem Dateinamen zu extrahieren
+                # 1. Datum extrahieren (Präferenz: Dateiname > EXIF > File Created Date)
                 date_match = re.match(r'(\d{4}-\d{2}-\d{2})(?:_(\d{2}-\d{2}-\d{2}))?', filename)
                 if date_match:
-                    # ISO-Datum aus dem Dateinamen
-                    date_part = date_match.group(1)
-                    time_part = date_match.group(2) or "12-00-00"  # Falls keine Uhrzeit, setze 12:00 Uhr
-                    created_date = f"{date_part}_{time_part}".split('_')[0]
-                    logger.info(f"Extrahiere Datum {created_date} aus Dateinamen {filename}.")
+                    date_str = date_match.group(1)
+                    creation_datetime = datetime.strptime(date_str, '%Y-%m-%d')
+                    logger.info(f"Extrahiere Datum {date_str} aus Dateinamen {filename}.")
                 else:
-                    # 2. Versuche, das Erstellungsdatum aus EXIF-Daten zu lesen
+                    # Fallback: Versuche EXIF-Daten zu lesen
                     creation_datetime = get_creation_datetime(str(source_file))
                     if not creation_datetime:
-                        # Fallback: Verwende File Created Date
                         logger.warning(f"EXIF-Datum nicht gefunden für {source_file}, verwende File Created Date.")
                         creation_datetime = datetime.fromtimestamp(source_file.stat().st_ctime)
+                
+                # 2. Zielverzeichnisstruktur erstellen (Jahr/Jahr-Monat/Jahr-Monat-Tag)
+                year = creation_datetime.strftime('%Y')
+                year_month = creation_datetime.strftime('%Y-%m')
+                year_month_day = creation_datetime.strftime('%Y-%m-%d')
+                date_path = destination_dir / year / year_month / year_month_day
 
-                    # Setze Zeit auf 12:00 Uhr, um Zeitzonenprobleme zu vermeiden
-                    creation_datetime = creation_datetime.replace(hour=12, minute=0, second=0, microsecond=0)
-                    created_date = creation_datetime.strftime('%Y-%m-%d')
-
-                # Zielverzeichnis basierend auf Erstellungsdatum und relativer Struktur
-                relative_path = Path(root).relative_to(source_dir)
-                date_path = destination_dir / created_date / relative_path
-
-                # Zielverzeichnis erstellen
+                # Verzeichnis erstellen (falls nicht vorhanden)
                 date_path.mkdir(parents=True, exist_ok=True)
 
-                # Zielpfad für die Datei
+                # 3. Zielpfad prüfen und Datei verschieben
                 destination_file = date_path / filename
+                if destination_file.exists():
+                    logger.warning(f"Datei {destination_file} existiert bereits, überspringe...")
+                    continue
 
                 logger.info(f"Verschiebe Datei {source_file} nach {destination_file}")
                 shutil.move(str(source_file), str(destination_file))
@@ -94,6 +87,7 @@ def import_by_created_date(
 
     typer.secho("Import abgeschlossen.", fg=typer.colors.GREEN)
     logger.info("Import abgeschlossen.")
+
 
 if __name__ == "__main__":
     app()
