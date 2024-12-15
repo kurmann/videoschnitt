@@ -21,7 +21,14 @@ $ original-media-integrator [OPTIONS] COMMAND [ARGS]...
 
 ## `original-media-integrator import-by-create-date`
 
-Importiert Mediendateien basierend auf dem File Created Date ins Zielverzeichnis.
+Importiert Mediendateien basierend auf dem File Created Date, Dateinamen oder EXIF-Datum ins Zielverzeichnis.
+
+Unterstützte Dateinamenformate (wird bevorzugt verarbeitet, ohne EXIF-Daten auszulesen):
+1. 'YYYY-MM-DD_hh-mm-ss.ext' (z.B. '2024-10-29_19-24-54.mov')
+2. 'YYYY-MM-DD.ext' (z.B. '2024-10-29.mov')
+
+Wenn die Datei eines dieser Formate hat, wird das Datum direkt aus dem Dateinamen extrahiert.
+Andernfalls versucht das Script, das Datum aus EXIF-Daten zu lesen. Fallback: File Created Date.
 
 - Erstellt ein Unterverzeichnis im Zielverzeichnis basierend auf dem ISO-Datum des Erstellungsdatums.
 - Beibehaltung der relativen Unterverzeichnisstruktur des Quellverzeichnisses innerhalb des Datumsverzeichnisses.
