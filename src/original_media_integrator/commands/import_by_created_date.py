@@ -1,12 +1,14 @@
 import os
+import re
 import shutil
 import logging
 from datetime import datetime
 from pathlib import Path
 import typer
 from original_media_integrator.media_manager import remove_empty_directories
+from metadata_manager.exif import get_creation_datetime
 
-app = typer.Typer(help="Importiert Mediendateien basierend auf dem File Created Date")
+app = typer.Typer(help="Importiert Mediendateien basierend auf dem File Created Date oder EXIF-Datum.")
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(
@@ -21,7 +23,14 @@ def import_by_created_date(
     destination_dir: Path = typer.Argument(..., help="Pfad zum Zielverzeichnis")
 ):
     """
-    Importiert Mediendateien basierend auf dem File Created Date ins Zielverzeichnis.
+    Importiert Mediendateien basierend auf dem File Created Date, Dateinamen oder EXIF-Datum ins Zielverzeichnis.
+
+    Unterstützte Dateinamenformate (wird bevorzugt verarbeitet, ohne EXIF-Daten auszulesen):
+    1. 'YYYY-MM-DD_hh-mm-ss.ext' (z.B. '2024-10-29_19-24-54.mov')
+    2. 'YYYY-MM-DD.ext' (z.B. '2024-10-29.mov')
+
+    Wenn die Datei eines dieser Formate hat, wird das Datum direkt aus dem Dateinamen extrahiert.
+    Andernfalls versucht das Script, das Datum aus EXIF-Daten zu lesen. Fallback: File Created Date.
 
     - Erstellt ein Unterverzeichnis im Zielverzeichnis basierend auf dem ISO-Datum des Erstellungsdatums.
     - Beibehaltung der relativen Unterverzeichnisstruktur des Quellverzeichnisses innerhalb des Datumsverzeichnisses.
@@ -43,8 +52,25 @@ def import_by_created_date(
             source_file = Path(root) / filename
 
             try:
-                # Abrufen des Erstellungsdatums
-                created_date = datetime.fromtimestamp(source_file.stat().st_ctime).strftime('%Y-%m-%d')
+                # 1. Versuche, das Datum direkt aus dem Dateinamen zu extrahieren
+                date_match = re.match(r'(\d{4}-\d{2}-\d{2})(?:_(\d{2}-\d{2}-\d{2}))?', filename)
+                if date_match:
+                    # ISO-Datum aus dem Dateinamen
+                    date_part = date_match.group(1)
+                    time_part = date_match.group(2) or "12-00-00"  # Falls keine Uhrzeit, setze 12:00 Uhr
+                    created_date = f"{date_part}_{time_part}".split('_')[0]
+                    logger.info(f"Extrahiere Datum {created_date} aus Dateinamen {filename}.")
+                else:
+                    # 2. Versuche, das Erstellungsdatum aus EXIF-Daten zu lesen
+                    creation_datetime = get_creation_datetime(str(source_file))
+                    if not creation_datetime:
+                        # Fallback: Verwende File Created Date
+                        logger.warning(f"EXIF-Datum nicht gefunden für {source_file}, verwende File Created Date.")
+                        creation_datetime = datetime.fromtimestamp(source_file.stat().st_ctime)
+
+                    # Setze Zeit auf 12:00 Uhr, um Zeitzonenprobleme zu vermeiden
+                    creation_datetime = creation_datetime.replace(hour=12, minute=0, second=0, microsecond=0)
+                    created_date = creation_datetime.strftime('%Y-%m-%d')
 
                 # Zielverzeichnis basierend auf Erstellungsdatum und relativer Struktur
                 relative_path = Path(root).relative_to(source_dir)
