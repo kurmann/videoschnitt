@@ -597,8 +597,12 @@ def integrate_homemovies(
         typer.secho(f"Zusätzliches Verzeichnis hinzugefügt: '{additional_dir}'", fg=typer.colors.BLUE)
         logger.info(f"Zusätzliches Verzeichnis hinzugefügt: '{additional_dir}'")
     
-    # Schritt 1: Sammeln aller unterstützten Mediendateien (ohne ProRes)
+    image_extensions = ['.png', '.jpg', '.jpeg']
+
+    # Schritt 1: Sammeln aller unterstützten Mediendateien (ohne ProRes) – jetzt auch Bilder
     media_files: List[Path] = []
+    image_files: List[Path] = []
+
     for dir_path in directories:
         typer.secho(f"Durchsuche Verzeichnis: '{dir_path}'", fg=typer.colors.BLUE)
         for file_path in dir_path.rglob('*'):
@@ -615,6 +619,13 @@ def integrate_homemovies(
                     logger.info(f"Überspringe Datei, die gerade verarbeitet wird: {file_path}")
                     continue
 
+                # Prüfe, ob es ein Bild ist
+                if file_path.suffix.lower() in image_extensions:
+                    # Bilddateien werden gleich mit verarbeitet
+                    image_files.append(file_path)
+                    logger.debug(f"Bilddatei erkannt: {file_path}")
+                    continue
+
                 try:
                     metadata = extract_metadata(file_path)
                     video_codec = metadata.get('VideoCodec', '').strip()
@@ -625,7 +636,7 @@ def integrate_homemovies(
                         logger.info(f"ProRes-Datei übersprungen: {file_path}")
                         continue
 
-                    # Füge nur nicht-ProRes-Dateien zur Liste hinzu
+                    # Füge nur nicht-ProRes-Videodateien zur Liste hinzu
                     if file_path.suffix.lower() in ['.mov', '.mp4', '.m4v']:
                         media_files.append(file_path)
                         logger.debug(f"Mediendatei erkannt: {file_path}")
@@ -633,14 +644,11 @@ def integrate_homemovies(
                     typer.secho(f"Fehler beim Verarbeiten von '{file_path}': {e}", fg=typer.colors.RED)
                     logger.error(f"Fehler beim Verarbeiten von '{file_path}': {e}")
                     continue
-    
-    if not media_files:
-        typer.secho("Keine unterstützten Mediendateien gefunden.", fg=typer.colors.YELLOW)
-        logger.warning("Keine unterstützten Mediendateien gefunden.")
-        raise typer.Exit()
-    
+
     # Schritt 2: Gruppierung der Mediendateien nach Titel
     groups: Dict[str, Dict[str, List[Path]]] = {}
+
+    # Zuerst Videos gruppieren
     for file_path in media_files:
         try:
             metadata = extract_metadata(file_path)
@@ -655,16 +663,41 @@ def integrate_homemovies(
                     'images': []
                 }
             groups[title]['videos'].append(file_path)
-            logger.debug(f"Datei '{file_path}' zur Gruppe '{title}' hinzugefügt.")
+            logger.debug(f"Videodatei '{file_path}' zur Gruppe '{title}' hinzugefügt.")
         except Exception as e:
             typer.secho(f"Fehler beim Gruppieren von '{file_path}': {e}", fg=typer.colors.RED)
             logger.error(f"Fehler beim Gruppieren von '{file_path}': {e}")
             continue
-    
-    if not groups:
-        typer.secho("Keine Gruppen von Mediendateien mit gemeinsamen Titeln gefunden.", fg=typer.colors.YELLOW)
-        logger.warning("Keine Gruppen von Mediendateien mit gemeinsamen Titeln gefunden.")
-        raise typer.Exit()
+
+    # Nun Bilder den passenden Gruppen hinzufügen (Titel ermitteln wie bei den Videos)
+    for img_path in image_files:
+        try:
+            # Hier setzen wir voraus, dass die Bilder den gleichen Namen wie das Video tragen oder
+            # zumindest denselben Titel im Namen haben (ggf. müssen Sie hier Logik anpassen,
+            # um den Titel aus dem Bildnamen abzuleiten)
+            # Beispiel: Der Titel ist vom Dateinamen des Bildes abgeleitet:
+            img_title = img_path.stem
+            # Titel entsprechend normalisieren, wenn nötig
+            # Wenn der Titel eindeutig aus Metadaten gezogen werden kann, nutzen Sie auch extract_metadata(img_path) wie oben.
+            
+            # Falls der Titel aus dem Bild- oder Metadaten abgeleitet werden kann:
+            img_metadata = extract_metadata(img_path)
+            actual_title = img_metadata.get('Title') or img_metadata.get('DisplayName') or img_title
+            
+            if actual_title in groups:
+                groups[actual_title]['images'].append(img_path)
+                logger.debug(f"Bilddatei '{img_path}' zur Gruppe '{actual_title}' hinzugefügt.")
+            else:
+                # Falls es noch keine Gruppe für diesen Titel gibt, erstellen wir sie.
+                groups[actual_title] = {
+                    'videos': [],
+                    'images': [img_path]
+                }
+                logger.debug(f"Neue Gruppe für Bilddatei '{img_path}' erstellt: '{actual_title}'")
+        except Exception as e:
+            typer.secho(f"Fehler beim Gruppieren von Bild '{img_path}': {e}", fg=typer.colors.RED)
+            logger.error(f"Fehler beim Gruppieren von Bild '{img_path}': {e}")
+            continue
     
     # Schritt 3: Integration der Mediensets
     typer.secho("\nBeginne mit der Integration der Mediensets...", fg=typer.colors.BLUE)
