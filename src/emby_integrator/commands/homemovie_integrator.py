@@ -356,6 +356,13 @@ def delete_associated_files_based_on_title(directory: Path, title: str, video_ex
         except Exception as e:
             typer.secho(f"Fehler beim Löschen der Datei {associated_file}: {e}", fg=typer.colors.RED)
             logger.error(f"Fehler beim Löschen der Datei {associated_file}: {e}")
+            
+def is_hidden(file_path: Path) -> bool:
+    """
+    Prüft, ob eine Datei versteckt ist.
+    Dies funktioniert auf macOS für Dateien, die mit einem Punkt beginnen.
+    """
+    return file_path.name.startswith(".")
 
 def integrate_homemovie_to_emby(
     video_file: Path,
@@ -596,6 +603,12 @@ def integrate_homemovies(
         typer.secho(f"Durchsuche Verzeichnis: '{dir_path}'", fg=typer.colors.BLUE)
         for file_path in dir_path.rglob('*'):
             if file_path.is_file():
+                # Überspringe versteckte Dateien
+                if is_hidden(file_path):
+                    typer.secho(f"Überspringe versteckte Datei: '{file_path}'", fg=typer.colors.YELLOW)
+                    logger.info(f"Überspringe versteckte Datei: {file_path}")
+                    continue
+
                 # Überprüfe, ob die Datei gerade verarbeitet wird
                 if is_file_being_processed(file_path):
                     typer.secho(f"Überspringe Datei, die gerade verarbeitet wird: '{file_path}'", fg=typer.colors.YELLOW)
@@ -605,7 +618,7 @@ def integrate_homemovies(
                 try:
                     metadata = extract_metadata(file_path)
                     video_codec = metadata.get('VideoCodec', '').strip()
-                    
+
                     # Überspringe ProRes-Dateien direkt
                     if video_codec in ['Apple ProRes 422', 'Apple ProRes 422 HQ', 'Apple ProRes 4444', 'Apple ProRes 4444 XQ']:
                         typer.secho(f"ProRes-Datei erkannt und übersprungen: {file_path}", fg=typer.colors.YELLOW)
