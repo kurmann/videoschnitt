@@ -13,10 +13,7 @@ ADOBE_RGB_PROFILE = "/System/Library/ColorSync/Profiles/AdobeRGB1998.icc"
 
 # Modulvariablen für die Wartezeiten (in Sekunden)
 WAIT_BEFORE_CONVERSION = 5  # Wartezeit vor Beginn der Konvertierung
-WAIT_BEFORE_MOVE = 5        # Wartezeit vor dem Verschieben der Datei
-
-# Modulvariable für das Archiv-Suffix
-ARCHIVE_SUFFIX = "-Archiv"
+WAIT_BEFORE_MOVE = 5        # Wartezeit vor dem Verschieben oder Löschen der Datei
 
 def send_notification(title: str, message: str) -> None:
     """
@@ -59,7 +56,7 @@ def convert_image_to_adobe_rgb(input_file: Path, output_file: Path) -> bool:
     
     try:
         subprocess.run(command, check=True)
-        typer.secho(f"✅ Bild erfolgreich konvertiert: {output_jpg.name}", fg=typer.colors.GREEN)
+        typer.secho(f"✅ Bild erfolgreich konvertiert: {output_file.name}", fg=typer.colors.GREEN)
         return True
     except subprocess.CalledProcessError as e:
         typer.secho(f"❌ Fehler beim Konvertieren von {input_file}: {e}", fg=typer.colors.RED)
@@ -69,13 +66,12 @@ def convert_image_to_adobe_rgb(input_file: Path, output_file: Path) -> bool:
 def convert_images(
     source_dir: Path = typer.Argument(..., exists=True, file_okay=False, dir_okay=True, readable=True, help="Das Quellverzeichnis mit unterstützten Bilddateien (PNG, JPG, JPEG, TIF, TIFF)."),
     target_dir: Optional[Path] = typer.Option(None, "--target-dir", "-t", exists=False, file_okay=False, dir_okay=True, writable=True, readable=True, help="Das Zielverzeichnis für die konvertierten JPEG-Bilder. Wenn nicht angegeben, werden die JPEGs im Quellverzeichnis erstellt."),
-    archive_directory: Optional[Path] = typer.Option(None, "--archive-directory", "-a", exists=False, file_okay=False, dir_okay=True, writable=True, readable=True, help="Das Archivverzeichnis, in das die Originaldateien nach erfolgreicher Konvertierung verschoben werden. Wenn nicht angegeben, wird automatisch ein Archivverzeichnis mit dem Suffix '-Archiv' erstellt und verwendet.")
+    archive_directory: Optional[Path] = typer.Option(None, "--archive-directory", "-a", exists=False, file_okay=False, dir_okay=True, writable=True, readable=True, help="Das Archivverzeichnis, in das die Originaldateien nach erfolgreicher Konvertierung verschoben werden. Wenn nicht angegeben, werden die Originaldateien gelöscht.")
 ):
     """
     Konvertiert alle unterstützten Bilddateien in einem Verzeichnis in AdobeRGB-JPEGs.
     
-    Jeder unterstützte Bild wird als neues JPEG im Zielverzeichnis erstellt.
-    Nach erfolgreicher Konvertierung wird die Originaldatei entweder in das angegebene Archivverzeichnis verschoben oder in ein automatisch erstelltes Archivverzeichnis mit dem Suffix '-Archiv'.
+    Jeder unterstützte Bild wird als neues JPEG im Zielverzeichnis erstellt. Nach erfolgreicher Konvertierung wird die Originaldatei entweder in das angegebene Archivverzeichnis verschoben oder gelöscht.
     """
     typer.secho("Starte die Konvertierung von unterstützten Bilddateien zu AdobeRGB-JPEGs...", fg=typer.colors.GREEN)
     
@@ -86,22 +82,20 @@ def convert_images(
         typer.secho("Kein Zielverzeichnis angegeben. Konvertierte JPEGs werden im Quellverzeichnis erstellt.", fg=typer.colors.BLUE)
         target_dir = source_dir
     
-    # Bestimmen des Archivverzeichnisses
+    # Überprüfen und erstellen des Archivverzeichnisses, falls angegeben
     if archive_directory:
         archive_directory.mkdir(parents=True, exist_ok=True)
         typer.secho(f"Archivverzeichnis festgelegt: {archive_directory}", fg=typer.colors.BLUE)
-    else:
-        # Automatisch ein Archivverzeichnis mit dem Suffix "-Archiv" erstellen
-        archive_directory = source_dir.parent / f"{source_dir.name}{ARCHIVE_SUFFIX}"
-        archive_directory.mkdir(parents=True, exist_ok=True)
-        typer.secho(f"Kein Archivverzeichnis angegeben. Verwende automatisch erstelltes Archivverzeichnis: {archive_directory}", fg=typer.colors.BLUE)
     
     # Wartezeit vor Beginn der Konvertierung
     typer.secho(f"Warte {WAIT_BEFORE_CONVERSION} Sekunden vor Beginn der Konvertierung...", fg=typer.colors.YELLOW)
     time.sleep(WAIT_BEFORE_CONVERSION)
     
-    # Suche nach unterstützten Bilddateien, die NICHT im Archivverzeichnis liegen
-    png_files = [f for f in source_dir.rglob("*") if f.suffix.lower() in SUPPORTED_IMAGE_FORMATS and not f.is_relative_to(archive_directory)]
+    # Suche nach unterstützten Bilddateien, die NICHT im Archivverzeichnis sind (falls angegeben)
+    if archive_directory:
+        png_files = [f for f in source_dir.rglob("*") if f.suffix.lower() in SUPPORTED_IMAGE_FORMATS and not f.is_relative_to(archive_directory)]
+    else:
+        png_files = [f for f in source_dir.rglob("*") if f.suffix.lower() in SUPPORTED_IMAGE_FORMATS]
     
     if not png_files:
         typer.secho("Keine unterstützten Bilddateien im angegebenen Verzeichnis gefunden.", fg=typer.colors.YELLOW)
@@ -121,18 +115,27 @@ def convert_images(
             success_count += 1
             converted_files.append((image.name, target_dir.name))
             
-            # Wartezeit vor dem Verschieben der Datei
+            # Wartezeit vor dem Verschieben oder Löschen der Datei
             typer.secho(f"Warte {WAIT_BEFORE_MOVE} Sekunden bevor die Datei verarbeitet wird...", fg=typer.colors.YELLOW)
             time.sleep(WAIT_BEFORE_MOVE)
             
-            # Verschieben der konvertierten Originaldatei in das Archivverzeichnis
-            try:
-                destination = archive_directory / image.name
-                image.rename(destination)
-                typer.secho(f"✅ Bild archiviert nach: {destination}", fg=typer.colors.GREEN)
-            except Exception as e:
-                typer.secho(f"❌ Fehler beim Archivieren von {image.name}: {e}", fg=typer.colors.RED)
-                failed_files.append(image.name)
+            if archive_directory:
+                # Verschieben der konvertierten Originaldatei in das Archivverzeichnis
+                try:
+                    destination = archive_directory / image.name
+                    image.rename(destination)
+                    typer.secho(f"✅ Bild archiviert nach: {destination}", fg=typer.colors.GREEN)
+                except Exception as e:
+                    typer.secho(f"❌ Fehler beim Archivieren von {image.name}: {e}", fg=typer.colors.RED)
+                    failed_files.append(image.name)
+            else:
+                # Löschen der konvertierten Originaldatei
+                try:
+                    image.unlink()
+                    typer.secho(f"✅ Bild gelöscht: {image.name}", fg=typer.colors.GREEN)
+                except Exception as e:
+                    typer.secho(f"❌ Fehler beim Löschen von {image.name}: {e}", fg=typer.colors.RED)
+                    failed_files.append(image.name)
         else:
             failed_files.append(image.name)
     
@@ -151,7 +154,7 @@ def convert_images(
             success_message = f"{converted_files[0][0]} wurde erfolgreich nach {converted_files[0][1]} konvertiert."
         else:
             success_message = f"{success_count} Bilddateien wurden erfolgreich nach {target_dir.name} konvertiert."
-        failed_message = f"{len(failed_files)} Bilddateien konnten nicht konvertiert oder archiviert werden: {', '.join(failed_files)}."
+        failed_message = f"{len(failed_files)} Bilddateien konnten nicht konvertiert, archiviert oder gelöscht werden: {', '.join(failed_files)}."
         title = "Teilweise Konvertierung abgeschlossen"
         message = f"{success_message}\n{failed_message}"
         send_notification(title, message)
