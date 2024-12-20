@@ -8,7 +8,7 @@ import time  # Import der time-Bibliothek
 
 app = typer.Typer()
 
-SUPPORTED_IMAGE_FORMATS = [".jpg", ".jpeg", ".png", "tif", "tiff"]
+SUPPORTED_IMAGE_FORMATS = [".jpg", ".jpeg", ".png", ".tif", ".tiff"]
 ADOBE_RGB_PROFILE = "/System/Library/ColorSync/Profiles/AdobeRGB1998.icc"
 CONVERTED_SUBDIR = "konvertiert"  # Modulvariable für das Unterverzeichnis
 
@@ -91,8 +91,8 @@ def convert_images(
     typer.secho(f"Warte {WAIT_BEFORE_CONVERSION} Sekunden vor Beginn der Konvertierung...", fg=typer.colors.YELLOW)
     time.sleep(WAIT_BEFORE_CONVERSION)
     
-    # Suche nach PNG-Dateien
-    png_files = list(source_dir.rglob("*.png"))
+    # Suche nach PNG-Dateien, die NICHT im "konvertiert" Unterverzeichnis sind
+    png_files = [f for f in source_dir.rglob("*.png") if CONVERTED_SUBDIR not in f.parts]
     
     if not png_files:
         typer.secho("Keine PNG-Dateien im angegebenen Verzeichnis gefunden.", fg=typer.colors.YELLOW)
