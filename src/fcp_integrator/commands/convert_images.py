@@ -4,11 +4,17 @@ import typer
 from pathlib import Path
 from typing import Optional
 import subprocess
+import time  # Import der time-Bibliothek
 
 app = typer.Typer()
 
-SUPPORTED_IMAGE_FORMATS = [".jpg", ".jpeg", ".png"]
+SUPPORTED_IMAGE_FORMATS = [".jpg", ".jpeg", ".png", "tif", "tiff"]
 ADOBE_RGB_PROFILE = "/System/Library/ColorSync/Profiles/AdobeRGB1998.icc"
+CONVERTED_SUBDIR = "konvertiert"  # Modulvariable für das Unterverzeichnis
+
+# Modulvariablen für die Wartezeiten (in Sekunden)
+WAIT_BEFORE_CONVERSION = 5  # Wartezeit vor Beginn der Konvertierung
+WAIT_BEFORE_MOVE = 5        # Wartezeit vor dem Verschieben der Datei
 
 def send_notification(title: str, message: str) -> None:
     """
@@ -36,7 +42,7 @@ def convert_image_to_adobe_rgb(input_file: Path, output_file: Path) -> bool:
     :param output_file: Pfad zur Ausgabedatei (JPEG).
     :return: True wenn erfolgreich, False sonst.
     """
-    if input_file.suffix.lower() not in [".png", ".jpg", ".jpeg"]:
+    if input_file.suffix.lower() not in SUPPORTED_IMAGE_FORMATS:
         typer.secho("❌ Eingabedatei muss eine PNG- oder JPG/JPEG-Datei sein.", fg=typer.colors.RED)
         return False
     
@@ -76,6 +82,15 @@ def convert_images(
         typer.secho("Kein Zielverzeichnis angegeben. Konvertierte JPEGs werden im Quellverzeichnis erstellt.", fg=typer.colors.BLUE)
         target_dir = source_dir
     
+    # Erstellen des Unterverzeichnisses für konvertierte Bilder
+    converted_dir = source_dir / CONVERTED_SUBDIR
+    converted_dir.mkdir(parents=True, exist_ok=True)
+    typer.secho(f"Unterverzeichnis für konvertierte Bilder: {converted_dir}", fg=typer.colors.BLUE)
+    
+    # Wartezeit vor Beginn der Konvertierung
+    typer.secho(f"Warte {WAIT_BEFORE_CONVERSION} Sekunden vor Beginn der Konvertierung...", fg=typer.colors.YELLOW)
+    time.sleep(WAIT_BEFORE_CONVERSION)
+    
     # Suche nach PNG-Dateien
     png_files = list(source_dir.rglob("*.png"))
     
@@ -96,6 +111,19 @@ def convert_images(
         if success:
             success_count += 1
             converted_files.append((png.name, target_dir.name))
+            
+            # Wartezeit vor dem Verschieben der Datei
+            typer.secho(f"Warte {WAIT_BEFORE_MOVE} Sekunden bevor die Datei verschoben wird...", fg=typer.colors.YELLOW)
+            time.sleep(WAIT_BEFORE_MOVE)
+            
+            # Verschieben der konvertierten PNG-Datei in das Unterverzeichnis "konvertiert"
+            try:
+                destination = converted_dir / png.name
+                png.rename(destination)
+                typer.secho(f"✅ Bild verschoben nach: {destination}", fg=typer.colors.GREEN)
+            except Exception as e:
+                typer.secho(f"❌ Fehler beim Verschieben von {png.name}: {e}", fg=typer.colors.RED)
+                failed_files.append(png.name)
         else:
             failed_files.append(png.name)
     
@@ -104,17 +132,17 @@ def convert_images(
         if success_count == 1:
             file_name, dir_name = converted_files[0]
             title = "Bild erfolgreich konvertiert"
-            message = f"'{file_name}' wurde erfolgreich in '{dir_name}' gespeichert."
+            message = f"'{file_name}' wurde erfolgreich nach '{dir_name}' konvertiert."
         else:
             title = "Bilder erfolgreich konvertiert"
             message = f"{success_count} PNG-Dateien wurden erfolgreich nach '{target_dir.name}' konvertiert als AdobeRGB-JPG."
         send_notification(title, message)
     elif success_count > 0 and failed_files:
         if success_count == 1:
-            success_message = f"{converted_files[0][0]} wurde erfolgreich in {converted_files[0][1]} gespeichert."
+            success_message = f"{converted_files[0][0]} wurde erfolgreich nach {converted_files[0][1]} konvertiert."
         else:
-            success_message = f"{success_count} PNG-Dateien wurden erfolgreich in {target_dir.name} gespeichert."
-        failed_message = f"{len(failed_files)} PNG-Dateien konnten nicht konvertiert werden: {', '.join(failed_files)}."
+            success_message = f"{success_count} PNG-Dateien wurden erfolgreich nach {target_dir.name} konvertiert."
+        failed_message = f"{len(failed_files)} PNG-Dateien konnten nicht konvertiert oder verschoben werden: {', '.join(failed_files)}."
         title = "Teilweise Konvertierung abgeschlossen"
         message = f"{success_message}\n{failed_message}"
         send_notification(title, message)
