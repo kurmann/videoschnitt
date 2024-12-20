@@ -96,7 +96,7 @@ def convert_images(
     
     if not png_files:
         typer.secho("Keine PNG-Dateien im angegebenen Verzeichnis gefunden.", fg=typer.colors.YELLOW)
-        send_notification("FCP Integrator", "Keine PNG-Dateien gefunden.")
+        # Hinweis: Keine gesonderte Benachrichtigung hier weil PNG-Daten häufig fehlen können wenn bspw. gerade eine Masterdatei exportiert wird
         raise typer.Exit()
     
     typer.secho(f"Gefundene PNG-Dateien: {len(png_files)}", fg=typer.colors.BLUE)
