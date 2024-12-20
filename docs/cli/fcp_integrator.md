@@ -16,14 +16,14 @@ $ fcp-integrator [OPTIONS] COMMAND [ARGS]...
 
 **Commands**:
 
-* `convert-images`: Konvertiert alle PNG-Bilder in einem...
+* `convert-images`: Konvertiert alle unterstützten Bilddateien...
 * `run-workflow`: Führt den Workflow aus: Integration in...
 
 ## `fcp-integrator convert-images`
 
-Konvertiert alle PNG-Bilder in einem Verzeichnis in AdobeRGB-JPEGs.
+Konvertiert alle unterstützten Bilddateien in einem Verzeichnis in AdobeRGB-JPEGs.
 
-Jeder PNG wird als neues JPEG im Zielverzeichnis erstellt. Wenn kein Zielverzeichnis angegeben ist, werden die JPEGs im Quellverzeichnis abgelegt.
+Jeder unterstützte Bild wird als neues JPEG im Zielverzeichnis erstellt. Nach erfolgreicher Konvertierung wird die Originaldatei entweder in das angegebene Archivverzeichnis verschoben oder gelöscht.
 
 **Usage**:
 
@@ -33,11 +33,12 @@ $ fcp-integrator convert-images [OPTIONS] SOURCE_DIR
 
 **Arguments**:
 
-* `SOURCE_DIR`: Das Quellverzeichnis mit PNG-Bildern.  [required]
+* `SOURCE_DIR`: Das Quellverzeichnis mit unterstützten Bilddateien (PNG, JPG, JPEG, TIF, TIFF).  [required]
 
 **Options**:
 
 * `-t, --target-dir DIRECTORY`: Das Zielverzeichnis für die konvertierten JPEG-Bilder. Wenn nicht angegeben, werden die JPEGs im Quellverzeichnis erstellt.
+* `-a, --archive-directory DIRECTORY`: Das Archivverzeichnis, in das die Originaldateien nach erfolgreicher Konvertierung verschoben werden. Wenn nicht angegeben, werden die Originaldateien gelöscht.
 * `--help`: Show this message and exit.
 
 ## `fcp-integrator run-workflow`
