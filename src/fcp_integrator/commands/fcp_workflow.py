@@ -1,21 +1,12 @@
-import os
+# src/fcp_integrator/commands/fcp_workflow.py
+
 import typer
 from pathlib import Path
 from typing import Optional
-import logging
 
-from emby_integrator.commands.homemovie_integrator import integrate_homemovies as integrate_into_emby
+from emby_integrator.commands.homemovie_integrator import integrate_homemovies
 
 app = typer.Typer()
-
-# Logging-Konfiguration
-logging.basicConfig(
-    filename='fcp_workflow.log',
-    filemode='a',
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    level=logging.DEBUG
-)
-logger = logging.getLogger(__name__)
 
 @app.command("run")
 def run_workflow(
@@ -43,10 +34,9 @@ def run_workflow(
     
     # Schritt 1: Integration in Emby Mediathek
     typer.secho("\nStarte Integration in Emby Mediathek...", fg=typer.colors.BLUE)
-    logger.info("Starte Integration in Emby Mediathek...")
     
     try:
-        integrate_into_emby(
+        integrate_homemovies(
             search_dir=search_dir,
             additional_dir=additional_dir,
             mediathek_dir=emby_dir,
@@ -54,12 +44,10 @@ def run_workflow(
             delete_source_files=delete_source_files  # Änderung hier
         )
     except Exception as e:
-        logger.exception("Fehler bei der Integration in Emby Mediathek")
         typer.secho(f"Fehler bei der Integration in Emby Mediathek: {e}", fg=typer.colors.RED)
         raise typer.Exit(code=1)
     
     typer.secho("\nWorkflow abgeschlossen.", fg=typer.colors.GREEN)
-    logger.info("Workflow abgeschlossen.")
 
 if __name__ == "__main__":
     app()
