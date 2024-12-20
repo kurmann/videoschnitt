@@ -1,10 +1,9 @@
-import os
 import typer
 from pathlib import Path
 from typing import Optional
 import logging
 
-from emby_integrator.commands.homemovie_integrator import integrate_homemovies as integrate_into_emby
+from emby_integrator.commands.homemovie_integrator import integrate_homemovies
 
 app = typer.Typer()
 
@@ -46,7 +45,7 @@ def run_workflow(
     logger.info("Starte Integration in Emby Mediathek...")
     
     try:
-        integrate_into_emby(
+        integrate_homemovies(
             search_dir=search_dir,
             additional_dir=additional_dir,
             mediathek_dir=emby_dir,
