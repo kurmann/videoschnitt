@@ -10,11 +10,10 @@ app = typer.Typer()
 
 SUPPORTED_IMAGE_FORMATS = [".jpg", ".jpeg", ".png", ".tif", ".tiff"]
 ADOBE_RGB_PROFILE = "/System/Library/ColorSync/Profiles/AdobeRGB1998.icc"
-CONVERTED_SUBDIR = "konvertiert"  # Modulvariable für das Unterverzeichnis
 
 # Modulvariablen für die Wartezeiten (in Sekunden)
 WAIT_BEFORE_CONVERSION = 5  # Wartezeit vor Beginn der Konvertierung
-WAIT_BEFORE_MOVE = 5        # Wartezeit vor dem Verschieben der Datei
+WAIT_BEFORE_MOVE = 5        # Wartezeit vor dem Verschieben oder Löschen der Datei
 
 def send_notification(title: str, message: str) -> None:
     """
@@ -38,12 +37,12 @@ def convert_image_to_adobe_rgb(input_file: Path, output_file: Path) -> bool:
     """
     Konvertiert ein Bild in das Adobe RGB-Farbprofil und speichert es als JPEG.
     
-    :param input_file: Pfad zur Eingabedatei (PNG/JPG/JPEG).
+    :param input_file: Pfad zur Eingabedatei (PNG/JPG/JPEG/TIF/TIFF).
     :param output_file: Pfad zur Ausgabedatei (JPEG).
     :return: True wenn erfolgreich, False sonst.
     """
     if input_file.suffix.lower() not in SUPPORTED_IMAGE_FORMATS:
-        typer.secho("❌ Eingabedatei muss eine PNG- oder JPG/JPEG-Datei sein.", fg=typer.colors.RED)
+        typer.secho("❌ Eingabedatei muss eine unterstützte Bilddatei sein (PNG, JPG, JPEG, TIF, TIFF).", fg=typer.colors.RED)
         return False
     
     if output_file.suffix.lower() != ".jpg":
@@ -65,15 +64,16 @@ def convert_image_to_adobe_rgb(input_file: Path, output_file: Path) -> bool:
 
 @app.command("convert-images")
 def convert_images(
-    source_dir: Path = typer.Argument(..., exists=True, file_okay=False, dir_okay=True, readable=True, help="Das Quellverzeichnis mit PNG-Bildern."),
-    target_dir: Optional[Path] = typer.Option(None, "--target-dir", "-t", exists=False, file_okay=False, dir_okay=True, writable=True, readable=True, help="Das Zielverzeichnis für die konvertierten JPEG-Bilder. Wenn nicht angegeben, werden die JPEGs im Quellverzeichnis erstellt.")
+    source_dir: Path = typer.Argument(..., exists=True, file_okay=False, dir_okay=True, readable=True, help="Das Quellverzeichnis mit unterstützten Bilddateien (PNG, JPG, JPEG, TIF, TIFF)."),
+    target_dir: Optional[Path] = typer.Option(None, "--target-dir", "-t", exists=False, file_okay=False, dir_okay=True, writable=True, readable=True, help="Das Zielverzeichnis für die konvertierten JPEG-Bilder. Wenn nicht angegeben, werden die JPEGs im Quellverzeichnis erstellt."),
+    archive_directory: Optional[Path] = typer.Option(None, "--archive-directory", "-a", exists=False, file_okay=False, dir_okay=True, writable=True, readable=True, help="Das Archivverzeichnis, in das die Originaldateien nach erfolgreicher Konvertierung verschoben werden. Wenn nicht angegeben, werden die Originaldateien gelöscht.")
 ):
     """
-    Konvertiert alle PNG-Bilder in einem Verzeichnis in AdobeRGB-JPEGs.
-
-    Jeder PNG wird als neues JPEG im Zielverzeichnis erstellt. Wenn kein Zielverzeichnis angegeben ist, werden die JPEGs im Quellverzeichnis abgelegt.
+    Konvertiert alle unterstützten Bilddateien in einem Verzeichnis in AdobeRGB-JPEGs.
+    
+    Jeder unterstützte Bild wird als neues JPEG im Zielverzeichnis erstellt. Nach erfolgreicher Konvertierung wird die Originaldatei entweder in das angegebene Archivverzeichnis verschoben oder gelöscht.
     """
-    typer.secho("Starte die Konvertierung von PNG-Bildern zu AdobeRGB-JPEGs...", fg=typer.colors.GREEN)
+    typer.secho("Starte die Konvertierung von unterstützten Bilddateien zu AdobeRGB-JPEGs...", fg=typer.colors.GREEN)
     
     if target_dir:
         target_dir.mkdir(parents=True, exist_ok=True)
@@ -82,50 +82,62 @@ def convert_images(
         typer.secho("Kein Zielverzeichnis angegeben. Konvertierte JPEGs werden im Quellverzeichnis erstellt.", fg=typer.colors.BLUE)
         target_dir = source_dir
     
-    # Erstellen des Unterverzeichnisses für konvertierte Bilder
-    converted_dir = source_dir / CONVERTED_SUBDIR
-    converted_dir.mkdir(parents=True, exist_ok=True)
-    typer.secho(f"Unterverzeichnis für konvertierte Bilder: {converted_dir}", fg=typer.colors.BLUE)
+    # Überprüfen und erstellen des Archivverzeichnisses, falls angegeben
+    if archive_directory:
+        archive_directory.mkdir(parents=True, exist_ok=True)
+        typer.secho(f"Archivverzeichnis festgelegt: {archive_directory}", fg=typer.colors.BLUE)
     
     # Wartezeit vor Beginn der Konvertierung
     typer.secho(f"Warte {WAIT_BEFORE_CONVERSION} Sekunden vor Beginn der Konvertierung...", fg=typer.colors.YELLOW)
     time.sleep(WAIT_BEFORE_CONVERSION)
     
-    # Suche nach PNG-Dateien, die NICHT im "konvertiert" Unterverzeichnis sind
-    png_files = [f for f in source_dir.rglob("*.png") if CONVERTED_SUBDIR not in f.parts]
+    # Suche nach unterstützten Bilddateien, die NICHT im Archivverzeichnis sind (falls angegeben)
+    if archive_directory:
+        png_files = [f for f in source_dir.rglob("*") if f.suffix.lower() in SUPPORTED_IMAGE_FORMATS and not f.is_relative_to(archive_directory)]
+    else:
+        png_files = [f for f in source_dir.rglob("*") if f.suffix.lower() in SUPPORTED_IMAGE_FORMATS]
     
     if not png_files:
-        typer.secho("Keine PNG-Dateien im angegebenen Verzeichnis gefunden.", fg=typer.colors.YELLOW)
-        # Hinweis: Keine gesonderte Benachrichtigung hier weil PNG-Daten häufig fehlen können wenn bspw. gerade eine Masterdatei exportiert wird
+        typer.secho("Keine unterstützten Bilddateien im angegebenen Verzeichnis gefunden.", fg=typer.colors.YELLOW)
+        # Hinweis: Keine gesonderte Benachrichtigung hier, weil Bilddaten häufig fehlen können, z.B. wenn gerade eine Masterdatei exportiert wird
         raise typer.Exit()
     
-    typer.secho(f"Gefundene PNG-Dateien: {len(png_files)}", fg=typer.colors.BLUE)
+    typer.secho(f"Gefundene Bilddateien: {len(png_files)}", fg=typer.colors.BLUE)
     
     success_count = 0
     failed_files = []
     converted_files = []
     
-    for png in png_files:
-        output_jpg = target_dir / (png.stem + ".jpg")
-        success = convert_image_to_adobe_rgb(png, output_jpg)
+    for image in png_files:
+        output_jpg = target_dir / (image.stem + ".jpg")
+        success = convert_image_to_adobe_rgb(image, output_jpg)
         if success:
             success_count += 1
-            converted_files.append((png.name, target_dir.name))
+            converted_files.append((image.name, target_dir.name))
             
-            # Wartezeit vor dem Verschieben der Datei
-            typer.secho(f"Warte {WAIT_BEFORE_MOVE} Sekunden bevor die Datei verschoben wird...", fg=typer.colors.YELLOW)
+            # Wartezeit vor dem Verschieben oder Löschen der Datei
+            typer.secho(f"Warte {WAIT_BEFORE_MOVE} Sekunden bevor die Datei verarbeitet wird...", fg=typer.colors.YELLOW)
             time.sleep(WAIT_BEFORE_MOVE)
             
-            # Verschieben der konvertierten PNG-Datei in das Unterverzeichnis "konvertiert"
-            try:
-                destination = converted_dir / png.name
-                png.rename(destination)
-                typer.secho(f"✅ Bild verschoben nach: {destination}", fg=typer.colors.GREEN)
-            except Exception as e:
-                typer.secho(f"❌ Fehler beim Verschieben von {png.name}: {e}", fg=typer.colors.RED)
-                failed_files.append(png.name)
+            if archive_directory:
+                # Verschieben der konvertierten Originaldatei in das Archivverzeichnis
+                try:
+                    destination = archive_directory / image.name
+                    image.rename(destination)
+                    typer.secho(f"✅ Bild archiviert nach: {destination}", fg=typer.colors.GREEN)
+                except Exception as e:
+                    typer.secho(f"❌ Fehler beim Archivieren von {image.name}: {e}", fg=typer.colors.RED)
+                    failed_files.append(image.name)
+            else:
+                # Löschen der konvertierten Originaldatei
+                try:
+                    image.unlink()
+                    typer.secho(f"✅ Bild gelöscht: {image.name}", fg=typer.colors.GREEN)
+                except Exception as e:
+                    typer.secho(f"❌ Fehler beim Löschen von {image.name}: {e}", fg=typer.colors.RED)
+                    failed_files.append(image.name)
         else:
-            failed_files.append(png.name)
+            failed_files.append(image.name)
     
     # Sende Benachrichtigung basierend auf den Ergebnissen
     if success_count > 0 and not failed_files:
@@ -135,20 +147,20 @@ def convert_images(
             message = f"'{file_name}' wurde erfolgreich nach '{dir_name}' konvertiert."
         else:
             title = "Bilder erfolgreich konvertiert"
-            message = f"{success_count} PNG-Dateien wurden erfolgreich nach '{target_dir.name}' konvertiert als AdobeRGB-JPG."
+            message = f"{success_count} Bilddateien wurden erfolgreich nach '{target_dir.name}' konvertiert als AdobeRGB-JPG."
         send_notification(title, message)
     elif success_count > 0 and failed_files:
         if success_count == 1:
             success_message = f"{converted_files[0][0]} wurde erfolgreich nach {converted_files[0][1]} konvertiert."
         else:
-            success_message = f"{success_count} PNG-Dateien wurden erfolgreich nach {target_dir.name} konvertiert."
-        failed_message = f"{len(failed_files)} PNG-Dateien konnten nicht konvertiert oder verschoben werden: {', '.join(failed_files)}."
+            success_message = f"{success_count} Bilddateien wurden erfolgreich nach {target_dir.name} konvertiert."
+        failed_message = f"{len(failed_files)} Bilddateien konnten nicht konvertiert, archiviert oder gelöscht werden: {', '.join(failed_files)}."
         title = "Teilweise Konvertierung abgeschlossen"
         message = f"{success_message}\n{failed_message}"
         send_notification(title, message)
     else:
         title = "Konvertierung fehlgeschlagen"
-        message = "Keine PNG-Dateien konnten konvertiert werden."
+        message = "Keine Bilddateien konnten konvertiert werden."
         send_notification(title, message)
     
-    typer.secho("Alle PNG-Bilder wurden verarbeitet.", fg=typer.colors.GREEN)
+    typer.secho("Alle Bilddateien wurden verarbeitet.", fg=typer.colors.GREEN)
